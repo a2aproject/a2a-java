@@ -46,10 +46,10 @@ quarkus.agentcard.protocol=HTTP+JSON
 
 ### Run the Python Client
 
-The Python client is part of the [a2a-samples](https://github.com/google-a2a/a2a-samples) project:
+The Python client is part of the [a2a-samples](https://github.com/a2aproject/a2a-samples) project:
 
 ```bash
-git clone https://github.com/google-a2a/a2a-samples.git
+git clone https://github.com/a2aproject/a2a-samples.git
 cd a2a-samples/samples/python/agents/helloworld
 
 uv venv
@@ -67,7 +67,7 @@ This example runs a Java A2A client that talks to a Python server.
 ### Start the Python Server
 
 ```bash
-git clone https://github.com/google-a2a/a2a-samples.git
+git clone https://github.com/a2aproject/a2a-samples.git
 cd a2a-samples/samples/python/agents/helloworld
 
 uv venv

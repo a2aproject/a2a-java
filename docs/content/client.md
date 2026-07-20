@@ -190,8 +190,8 @@ Client client = Client
 
 ## Communicating with v0.3 Agents
 
-See [Backward Compatibility](compatibility#client-communicating-with-v03-agents) for using `Client_v0_3` with older protocol agents.
+See [Backward Compatibility]({site.url('compatibility')}#client-communicating-with-v03-agents) for using `Client_v0_3` with older protocol agents.
 
 ## Examples
 
-See [Examples](examples) for Hello World walkthroughs and sample applications.
+See [Examples]({site.url('examples')}) for Hello World walkthroughs and sample applications.

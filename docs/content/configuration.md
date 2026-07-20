@@ -118,15 +118,18 @@ If you're using a different framework (Spring, Micronaut, etc.), implement your 
 @Priority(100)  // Higher than MicroProfileConfigProvider's priority of 50
 public class MyConfigProvider implements A2AConfigProvider {
 
-    @Inject
-    Environment env; // Your framework's config source (e.g. Spring Environment)
+    private final Properties customConfig;
 
     @Inject
     DefaultValuesConfigProvider defaultValues;
 
+    MyConfigProvider() {
+        customConfig = loadFromYourFramework();
+    }
+
     @Override
     public String getValue(String name) {
-        String value = env.getProperty(name);
+        String value = customConfig.getProperty(name);
         if (value != null) {
             return value;
         }
@@ -135,7 +138,7 @@ public class MyConfigProvider implements A2AConfigProvider {
 
     @Override
     public Optional<String> getOptionalValue(String name) {
-        String value = env.getProperty(name);
+        String value = customConfig.getProperty(name);
         if (value != null) {
             return Optional.of(value);
         }

@@ -25,21 +25,20 @@ Add the reference server dependency to your Maven project:
 </dependency>
 ```
 
-Then implement an `AgentExecutor` and define an `AgentCard`. See the [Server Guide](server) for the full walkthrough.
+Then implement an `AgentExecutor` and define an `AgentCard`. See the [Server Guide]({site.url('server')}) for the full walkthrough.
 
 ## Guides
 
 | Guide | Description |
 |-------|-------------|
-| [Server Guide](server) | Run your Java application as an A2A server |
-| [Client Guide](client) | Communicate with A2A-compliant agents |
-| [Configuration](configuration) | Config properties, MicroProfile Config, custom providers |
-| [Task Authorization](authorization) | Per-user access control for multi-user deployments |
-| [Backward Compatibility](compatibility) | Serve v1.0 and v0.3 clients simultaneously |
-| [REST API Reference](rest-api-reference) | HTTP+JSON endpoint reference |
-| [Extras](extras) | Optional add-ons: database storage, OpenTelemetry, HTTP clients |
-| [BOMs](boms) | Dependency management with Bill of Materials |
-| [Examples](examples) | Hello World walkthroughs and sample applications |
+| [Server Guide]({site.url('server')}) | Run your Java application as an A2A server |
+| [Client Guide]({site.url('client')}) | Communicate with A2A-compliant agents |
+| [Configuration]({site.url('configuration')}) | Config properties, MicroProfile Config, custom providers |
+| [Task Authorization]({site.url('authorization')}) | Per-user access control for multi-user deployments |
+| [Backward Compatibility]({site.url('compatibility')}) | Serve v1.0 and v0.3 clients simultaneously |
+| [Extras]({site.url('extras')}) | Optional add-ons: database storage, OpenTelemetry, HTTP clients |
+| [BOMs]({site.url('boms')}) | Dependency management with Bill of Materials |
+| [Examples]({site.url('examples')}) | Hello World walkthroughs and sample applications |
 
 ## Requirements
 
