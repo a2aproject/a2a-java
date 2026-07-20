@@ -33,7 +33,7 @@ public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
 
     @Override
     public boolean isTaskRecorded(String taskId) {
-        return ownershipStore.contains(taskId);
+        return ownershipStore.containsKey(taskId);
     }
 
     @Override

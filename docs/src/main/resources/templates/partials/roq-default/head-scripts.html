@@ -1,5 +1,9 @@
 {@java.lang.String tag}
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 {#bundle /}
 {#search-script /}
 
@@ -10,45 +14,150 @@
 <script>
 (function () {
     document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.menu-group-label').forEach(function (groupLi) {
-            var anchor = groupLi.querySelector('a');
-            if (!anchor) return;
-            var children = [];
-            var next = groupLi.nextElementSibling;
-            while (next && next.classList.contains('menu-group-child')) {
-                children.push(next);
-                next = next.nextElementSibling;
-            }
-            if (children.length === 0) return;
+        var dropdown = document.querySelector('.version-dropdown');
+        var toggle = document.querySelector('.version-dropdown-toggle');
+        var dropdownMenu = document.querySelector('.version-dropdown-menu');
+        if (!toggle || !dropdownMenu || !dropdown) return;
 
-            // Wrap children in a collapsible <li><ul> structure
-            var wrapperLi = document.createElement('li');
-            wrapperLi.className = 'menu-group-children-li';
-            var wrapperUl = document.createElement('ul');
-            wrapperUl.className = 'menu-group-children-wrapper';
-            children.forEach(function (child) { wrapperUl.appendChild(child); });
-            wrapperLi.appendChild(wrapperUl);
-            groupLi.insertAdjacentElement('afterend', wrapperLi);
+        var dataEl = document.getElementById('version-data');
+        var versions = [];
+        if (dataEl) {
+            try { versions = JSON.parse(dataEl.textContent); } catch (e) { return; }
+        }
+        if (!versions.length) return;
 
-            // Add chevron inside the <a> so it inherits link styling
-            var chevron = document.createElement('i');
-            chevron.className = 'fa-solid fa-chevron-down menu-group-chevron';
-            anchor.appendChild(chevron);
+        versions.sort(function (a, b) { return b.sortOrder - a.sortOrder; });
 
-            var currentPath = window.location.pathname.replace(/\/$/, '');
-            var hasActive = Array.from(wrapperUl.querySelectorAll('a')).some(function (a) {
-                try { return new URL(a.href).pathname.replace(/\/$/, '') === currentPath; } catch (e) { return false; }
+        var defaultVersion = versions.find(function (v) { return v.defaultVersion; }) || versions[0];
+
+        var basePath = dropdown.dataset.baseUrl || '/';
+        if (basePath.charAt(basePath.length - 1) !== '/') basePath += '/';
+
+        // Detect current version from URL
+        var currentPath = window.location.pathname;
+        var relPath = currentPath.startsWith(basePath) ? currentPath.substring(basePath.length) : currentPath.substring(1);
+        var segments = relPath.split('/').filter(Boolean);
+        var firstSegment = segments[0] || '';
+
+        // "latest" in URL maps to the default version
+        var effectiveSegment = (firstSegment === 'latest') ? defaultVersion.path : firstSegment;
+
+        var currentVersion = versions.find(function (v) { return v.path === effectiveSegment; }) || defaultVersion;
+
+        var isVersionedPage = versions.some(function (v) { return v.path === effectiveSegment; }) || firstSegment === 'latest';
+        var pagePath = isVersionedPage ? '/' + segments.slice(1).join('/') : '';
+
+        // Update dropdown label
+        var label = toggle.querySelector('.version-dropdown-label');
+        if (label) label.textContent = currentVersion.label;
+
+        // Sort dropdown items
+        var items = Array.from(dropdownMenu.querySelectorAll('li'));
+        var byPath = {};
+        items.forEach(function (li) { byPath[li.dataset.versionPath] = li; });
+        versions.forEach(function (v) {
+            if (byPath[v.path]) dropdownMenu.appendChild(byPath[v.path]);
+        });
+
+        // Rebuild versioned menu if current version differs from the SSR default
+        var menuContainer = document.querySelector('.version-menu-items');
+        if (menuContainer && (currentVersion.path !== defaultVersion.path || firstSegment === 'latest')) {
+            menuContainer.innerHTML = '';
+            currentVersion.menu.forEach(function (item) {
+                var li = document.createElement('li');
+                var a = document.createElement('a');
+                a.href = basePath + currentVersion.path + item.path;
+                var icon = document.createElement('i');
+                icon.className = item.icon;
+                a.appendChild(icon);
+                a.appendChild(document.createTextNode(item.title));
+                li.appendChild(a);
+                menuContainer.appendChild(li);
             });
-            if (!hasActive) {
-                wrapperUl.classList.add('menu-group-collapsed');
-                chevron.style.transform = 'rotate(-90deg)';
+        }
+
+        // Show dev banner on /dev/ pages
+        var devBanner = document.querySelector('.dev-banner');
+        if (devBanner && currentVersion.devVersion) {
+            devBanner.style.display = '';
+            var bannerLink = devBanner.querySelector('.dev-banner-link');
+            if (bannerLink) {
+                bannerLink.href = basePath + defaultVersion.path + (pagePath || '/getting-started');
+            }
+        }
+
+        // Toggle dropdown
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var expanded = dropdownMenu.classList.toggle('version-dropdown-open');
+            toggle.setAttribute('aria-expanded', expanded);
+        });
+
+        document.addEventListener('click', function () {
+            dropdownMenu.classList.remove('version-dropdown-open');
+            toggle.setAttribute('aria-expanded', 'false');
+        });
+
+        // Version-scoped search filter
+        var searchField = document.getElementById('search-field');
+        var searchResults = document.getElementById('search-results');
+        if (searchField && searchResults) {
+            var toggleDiv = document.createElement('div');
+            toggleDiv.className = 'search-version-toggle';
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'search-version-filter';
+            checkbox.checked = isVersionedPage;
+            var toggleLabel = document.createElement('label');
+            toggleLabel.htmlFor = 'search-version-filter';
+            toggleLabel.textContent = 'Current version only';
+            toggleDiv.appendChild(checkbox);
+            toggleDiv.appendChild(toggleLabel);
+            toggleDiv.addEventListener('click', function (e) { e.stopPropagation(); });
+            searchField.parentNode.insertBefore(toggleDiv, searchField.nextSibling);
+
+            var versionPathnamePrefix = new URL(basePath + currentVersion.path + '/', window.location.origin).pathname;
+            var allVersionPrefixes = versions.map(function (v) {
+                return new URL(basePath + v.path + '/', window.location.origin).pathname;
+            });
+
+            function isVersionedPath(pathname) {
+                return allVersionPrefixes.some(function (p) { return pathname.indexOf(p) === 0; });
             }
 
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                var collapsed = wrapperUl.classList.toggle('menu-group-collapsed');
-                chevron.style.transform = collapsed ? 'rotate(-90deg)' : '';
-            });
+            function filterSearchResults() {
+                var checked = checkbox.checked;
+                searchResults.querySelectorAll('a.search-result-item').forEach(function (a) {
+                    if (!a.href) return;
+                    try {
+                        var pathname = new URL(a.href).pathname;
+                        var show = !checked || pathname.indexOf(versionPathnamePrefix) === 0 || !isVersionedPath(pathname);
+                        a.style.display = show ? '' : 'none';
+                    } catch (e) {
+                        a.style.display = !checked ? '' : 'none';
+                    }
+                });
+            }
+
+            checkbox.addEventListener('change', filterSearchResults);
+
+            // No disconnect needed — static site, observer is cleaned up on full page navigation
+            new MutationObserver(filterSearchResults).observe(searchResults, { childList: true });
+        }
+
+        // Version switch
+        dropdownMenu.addEventListener('click', function (e) {
+            var li = e.target.closest('li[data-version-path]');
+            if (!li) return;
+            var targetPath = li.dataset.versionPath;
+            var targetVersion = versions.find(function (v) { return v.path === targetPath; });
+            if (!targetVersion) return;
+
+            var menuPaths = targetVersion.menu.map(function (m) { return m.path; });
+            var topLevelPath = pagePath ? '/' + pagePath.split('/').filter(Boolean)[0] : '';
+            var targetPageExists = pagePath && (menuPaths.indexOf(pagePath) !== -1 || menuPaths.indexOf(topLevelPath) !== -1);
+            var newPagePath = targetPageExists ? pagePath : menuPaths[0];
+            window.location.href = basePath + targetPath + newPagePath;
         });
     });
 })();

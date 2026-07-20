@@ -127,8 +127,8 @@ public class WeatherAgentExecutorProducer {
                 agentEmitter.cancel();
                 return;
             }
-            if (task.getStatus().state() == TaskState.CANCELED ||
-                task.getStatus().state() == TaskState.COMPLETED) {
+            if (task.status().state() == TaskState.CANCELED ||
+                task.status().state() == TaskState.COMPLETED) {
                 throw new TaskNotCancelableError();
             }
             agentEmitter.cancel();
@@ -152,15 +152,15 @@ public class WeatherAgentExecutorProducer {
 
 ## 4. Configuration
 
-See [Configuration]({site.url('configuration')}) for all config properties and tuning.
+See [Configuration](configuration) for all config properties and tuning.
 
 ## 5. Task Authorization (Optional)
 
-See [Task Authorization]({site.url('authorization')}) for per-user access control.
+See [Task Authorization](authorization) for per-user access control.
 
 ## Backward Compatibility with v0.3
 
-See [Backward Compatibility]({site.url('compatibility')}) for multi-version modules, version routing, and v0.3 client support.
+See [Backward Compatibility](compatibility) for multi-version modules, version routing, and v0.3 client support.
 
 ## Server Integrations
 
