@@ -312,7 +312,7 @@ public class DefaultRequestHandler implements RequestHandler {
      * Limits the history of a task to the most recent N messages.
      *
      * @param task the task to limit
-     * @param historyLength the maximum number of recent messages to keep (0 or negative = unlimited)
+     * @param historyLength the maximum number of recent messages to keep ({@code null} = no limit, 0 = empty history)
      * @return the task with limited history, or the original task if no limiting needed
      */
     private static Task limitTaskHistory(Task task, @Nullable Integer historyLength) {
@@ -736,6 +736,10 @@ public class DefaultRequestHandler implements RequestHandler {
                     @Override
                     public void onNext(StreamingEventKind item) {
                         LOGGER.debug("onNext: {} for task {}", item.getClass().getSimpleName(), taskId.get());
+                        if (item instanceof Task task) {
+                            Integer historyLength = params.configuration() != null ? params.configuration().historyLength() : null;
+                            item = limitTaskHistory(task, historyLength);
+                        }
                         subscriber.onNext(item);
                     }
 
