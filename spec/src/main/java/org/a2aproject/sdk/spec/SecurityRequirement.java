@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 
 /**
  * Represents a security requirement in the A2A Protocol.

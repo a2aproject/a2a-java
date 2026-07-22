@@ -1,6 +1,6 @@
 package org.a2aproject.sdk.client;
 
-import static org.a2aproject.sdk.util.Utils.appendArtifactToTask;
+import static org.a2aproject.sdk.spec.util.Utils.appendArtifactToTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;

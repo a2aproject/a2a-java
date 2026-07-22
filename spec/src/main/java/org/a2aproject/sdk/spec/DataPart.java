@@ -6,7 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 

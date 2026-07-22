@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**

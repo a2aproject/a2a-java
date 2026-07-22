@@ -60,7 +60,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
-import org.a2aproject.sdk.util.Utils;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 public class RestTransport implements ClientTransport {

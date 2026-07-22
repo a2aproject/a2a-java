@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**

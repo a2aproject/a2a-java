@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;

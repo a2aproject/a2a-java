@@ -21,7 +21,6 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueClosedException;
 import org.a2aproject.sdk.server.events.EventQueueItem;
-import org.a2aproject.sdk.server.events.EventQueueTestHelper;
 import org.a2aproject.sdk.server.events.EventQueueUtil;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
@@ -236,7 +235,7 @@ class ReplicatedQueueManagerTest {
         EventQueue retrievedQueue = queueManager.get(taskId);
         assertNotNull(retrievedQueue);
         // queue should be a ChildQueue (cannot be tapped)
-        assertThrows(IllegalStateException.class, () -> EventQueueTestHelper.tapQueue(queue));
+        assertThrows(IllegalStateException.class, () -> EventQueueUtil.tapQueue(queue));
 
         EventQueue tappedQueue = queueManager.tap(taskId);
         assertNotNull(tappedQueue);

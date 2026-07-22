@@ -3,7 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 
 /**
  * Configuration for the OAuth 2.0 Authorization Code flow.
