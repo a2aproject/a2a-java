@@ -184,12 +184,14 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresInputWithFinalTrue() throws Exception {
         agentEmitter.requiresInput(true);
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresInputWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE, true);
@@ -208,12 +210,14 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresAuthWithFinalTrue() throws Exception {
         agentEmitter.requiresAuth(true);
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresAuthWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE, true);
