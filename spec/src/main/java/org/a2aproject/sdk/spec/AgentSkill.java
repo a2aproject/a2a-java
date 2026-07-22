@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.List;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -61,6 +62,11 @@ public record AgentSkill(String id, String name, String description, List<String
         Assert.checkNotNullParam("name", name);
         Assert.checkNotNullParam("description", description);
         Assert.checkNotNullParam("tags", tags);
+        tags = CollectionCopies.immutableList(tags);
+        examples = CollectionCopies.immutableNullableList(examples);
+        inputModes = CollectionCopies.immutableNullableList(inputModes);
+        outputModes = CollectionCopies.immutableNullableList(outputModes);
+        securityRequirements = CollectionCopies.immutableNullableList(securityRequirements);
     }
 
     /**
@@ -237,7 +243,7 @@ public record AgentSkill(String id, String name, String description, List<String
                     Assert.checkNotNullParam("id", id),
                     Assert.checkNotNullParam("name", name),
                     Assert.checkNotNullParam("description", description),
-                    Assert.checkNotNullParam("tags", tags), 
+                    Assert.checkNotNullParam("tags", tags),
                     examples,
                     inputModes,
                     outputModes,

@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 
 /**
  * Configuration for the OAuth 2.0 Authorization Code flow.
@@ -42,5 +43,6 @@ public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refresh
         Assert.checkNotNullParam("authorizationUrl", authorizationUrl);
         Assert.checkNotNullParam("scopes", scopes);
         Assert.checkNotNullParam("tokenUrl", tokenUrl);
+        scopes = CollectionCopies.immutableMap(scopes);
     }
 }

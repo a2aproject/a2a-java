@@ -14,7 +14,7 @@ import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientJSONError_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
-import org.a2aproject.sdk.util.Utils;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 public class A2ACardResolver_v0_3 {

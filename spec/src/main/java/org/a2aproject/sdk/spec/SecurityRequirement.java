@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 
 /**
  * Represents a security requirement in the A2A Protocol.
@@ -53,7 +54,11 @@ public record SecurityRequirement(Map<String, List<String>> schemes) {
      */
     public SecurityRequirement {
         Assert.checkNotNullParam("schemes", schemes);
-        schemes = unmodifiableMap(new LinkedHashMap<>(schemes));
+        LinkedHashMap<String, List<String>> copiedSchemes = new LinkedHashMap<>();
+        for (Map.Entry<String, List<String>> entry : schemes.entrySet()) {
+            copiedSchemes.put(entry.getKey(), CollectionCopies.immutableList(entry.getValue()));
+        }
+        schemes = unmodifiableMap(copiedSchemes);
     }
 
     /**
@@ -94,7 +99,7 @@ public record SecurityRequirement(Map<String, List<String>> schemes) {
          * @return this builder for method chaining
          */
         public Builder scheme(String schemeName, List<String> scopes) {
-            this.schemes.put(schemeName, List.copyOf(scopes));
+            this.schemes.put(schemeName, CollectionCopies.immutableList(scopes));
             return this;
         }
 

@@ -2,6 +2,7 @@ package org.a2aproject.sdk.spec;
 
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
@@ -57,7 +58,7 @@ public record FilePart(FileContent file, @Nullable Map<String, Object> metadata)
      */
     public FilePart (FileContent file, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("file", file);
-        this.metadata = metadata == null ? null : Map.copyOf(metadata);
+        this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.file = file;
     }
 

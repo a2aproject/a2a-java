@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -62,6 +63,7 @@ public record TaskArtifactUpdateEvent(String taskId, Artifact artifact, String c
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("artifact", artifact);
         Assert.checkNotNullParam("contextId", contextId);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 
     @Override

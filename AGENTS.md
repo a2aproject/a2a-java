@@ -66,6 +66,7 @@ mvn clean install
 - Use `org.a2aproject.sdk.util.Assert.checkNotNullParam()` in the compact constructor to validate required fields
 - Use `List.copyOf()` and `Map.copyOf()` for defensive copying of collections
 - Apply the Builder pattern for records with many fields (see `AgentCard.java` as reference)
+- Do not split Java packages across Maven modules in production code (each package must belong to exactly one module). Test code may share a package with production code to access package-private members.
 
 ### Code generation
 

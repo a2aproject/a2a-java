@@ -12,7 +12,7 @@ import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
-import org.a2aproject.sdk.util.PageToken;
+import org.a2aproject.sdk.spec.util.PageToken;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;

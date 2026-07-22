@@ -2,8 +2,8 @@ package org.a2aproject.sdk.server.tasks;
 
 import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_FAILED;
 import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_SUBMITTED;
+import static org.a2aproject.sdk.spec.util.Utils.appendArtifactToTask;
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
-import static org.a2aproject.sdk.util.Utils.appendArtifactToTask;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -103,5 +103,6 @@ class DeviceCodeOAuthFlowTest {
         mutableScopes.put("write", "Write access");
         assertNotEquals(mutableScopes.size(), flow.scopes().size(),
                 "Record should be immutable and perform a defensive copy of the scopes map");
+        assertThrows(UnsupportedOperationException.class, () -> flow.scopes().put("admin", "Admin access"));
     }
 }

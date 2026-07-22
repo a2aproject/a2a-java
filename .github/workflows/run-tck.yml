@@ -53,7 +53,7 @@ jobs:
           path: a2a-tck
           ref: ${{ env.TCK_VERSION }}
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: "a2a-tck/pyproject.toml"
       - name: Install uv and Python dependencies
@@ -149,7 +149,7 @@ jobs:
           path: a2a-tck
           ref: ${{ env.TCK_VERSION_0_3 }}
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: "a2a-tck/pyproject.toml"
       - name: Install uv and Python dependencies

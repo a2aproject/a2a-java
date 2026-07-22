@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.jsonrpc.common.wrappers;
 
+import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
 
 /**
  * Base class for JSON-RPC 2.0 requests in the A2A Protocol.

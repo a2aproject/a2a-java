@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -37,6 +38,7 @@ public record AgentExtension (@Nullable String description, @Nullable Map<String
      */
     public AgentExtension {
         Assert.checkNotNullParam("uri", uri);
+        params = CollectionCopies.unmodifiableNullableShallowMap(params);
     }
 
     /**

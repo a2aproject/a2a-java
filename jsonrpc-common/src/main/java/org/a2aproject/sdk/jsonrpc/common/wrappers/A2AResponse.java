@@ -1,6 +1,6 @@
 package org.a2aproject.sdk.jsonrpc.common.wrappers;
 
-import static org.a2aproject.sdk.util.Utils.defaultIfNull;
+import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.util.Assert;

@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.server.apps.quarkus;
 
 import org.a2aproject.sdk.client.ClientBuilder;
-import org.a2aproject.sdk.client.http.VertxA2AHttpClient;
+import org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfig;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;

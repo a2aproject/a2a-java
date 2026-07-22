@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +70,18 @@ class DataPartTest {
 
         assertInstanceOf(Map.class, part.data());
         assertEquals("sensor", part.metadata().get("source"));
+    }
+
+    @Test
+    void testConstructor_withNullMetadataValuePreservesValueAndIsImmutable() {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("source", null);
+
+        DataPart part = new DataPart(Map.of("temperature", 22.5), metadata);
+
+        assertTrue(part.metadata().containsKey("source"));
+        assertNull(part.metadata().get("source"));
+        assertThrows(UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
     }
 
     @Test

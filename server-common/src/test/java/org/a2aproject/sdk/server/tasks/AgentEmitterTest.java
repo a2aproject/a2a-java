@@ -44,6 +44,7 @@ public class AgentEmitterTest {
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
 
     private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
+    public static final int WAIT_MILLI_SECONDS = 5000;
 
     EventQueue eventQueue;
     private MainEventBus mainEventBus;
@@ -82,7 +83,7 @@ public class AgentEmitterTest {
     @Test
     public void testAddArtifactWithCustomIdAndName() throws Exception {
         agentEmitter.addArtifact(SAMPLE_PARTS, "custom-artifact-id", "Custom Artifact", null);
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
         assertNotNull(event);
@@ -183,12 +184,14 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresInputWithFinalTrue() throws Exception {
         agentEmitter.requiresInput(true);
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresInputWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE, true);
@@ -207,12 +210,14 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresAuthWithFinalTrue() throws Exception {
         agentEmitter.requiresAuth(true);
         checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRequiresAuthWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE, true);
@@ -267,7 +272,7 @@ public class AgentEmitterTest {
     @Test
     public void testAddArtifactWithAppendTrue() throws Exception {
         agentEmitter.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, null);
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
         assertNotNull(event);
@@ -288,7 +293,7 @@ public class AgentEmitterTest {
     @Test
     public void testAddArtifactWithLastChunkTrue() throws Exception {
         agentEmitter.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, null, true);
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
         assertNotNull(event);
@@ -305,7 +310,7 @@ public class AgentEmitterTest {
     @Test
     public void testAddArtifactWithAppendAndLastChunk() throws Exception {
         agentEmitter.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, false);
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
         assertNotNull(event);
@@ -321,7 +326,7 @@ public class AgentEmitterTest {
     @Test
     public void testAddArtifactGeneratesIdWhenNull() throws Exception {
         agentEmitter.addArtifact(SAMPLE_PARTS, null, "Test Artifact", null);
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
         assertNotNull(event);
@@ -419,7 +424,7 @@ public class AgentEmitterTest {
         thread2.join();
 
         // Exactly one event should have been queued
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
         assertNotNull(event);
@@ -433,9 +438,60 @@ public class AgentEmitterTest {
         assertNull(eventQueue.dequeueEventItem(0));
     }
 
+    @Test
+    public void sendMessageWithMatchingIdsSucceeds() throws Exception {
+        agentEmitter.sendMessage(SAMPLE_MESSAGE);
+
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
+        assertNotNull(item);
+        assertInstanceOf(Message.class, item.getEvent());
+        Message message = (Message) item.getEvent();
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+    }
+
+    @Test
+    public void sendMessageWithNullIdsSucceeds() throws Exception {
+        Message message = Message.builder()
+                .role(ROLE_AGENT)
+                .parts(new TextPart("no ids"))
+                .build();
+        agentEmitter.sendMessage(message);
+
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
+        assertNotNull(item);
+        assertInstanceOf(Message.class, item.getEvent());
+    }
+
+    @Test
+    public void sendMessageWithMismatchedTaskIdThrows() {
+        Message mismatchedMessage = Message.builder()
+                .taskId("wrong-task-id")
+                .contextId(TEST_TASK_CONTEXT_ID)
+                .role(ROLE_AGENT)
+                .parts(new TextPart("mismatched"))
+                .build();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> agentEmitter.sendMessage(mismatchedMessage));
+        assertTrue(ex.getMessage().contains("Message taskId does not match"));
+    }
+
+    @Test
+    public void sendMessageWithMismatchedContextIdThrows() {
+        Message mismatchedMessage = Message.builder()
+                .taskId(TEST_TASK_ID)
+                .contextId("wrong-context-id")
+                .role(ROLE_AGENT)
+                .parts(new TextPart("mismatched"))
+                .build();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> agentEmitter.sendMessage(mismatchedMessage));
+        assertTrue(ex.getMessage().contains("Message contextId does not match"));
+    }
+
     private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage) throws Exception {
         // Wait up to 5 seconds for event (async MainEventBusProcessor needs time to distribute)
-        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         Event event = item.getEvent();
 

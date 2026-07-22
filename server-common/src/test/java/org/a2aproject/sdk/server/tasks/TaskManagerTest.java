@@ -95,8 +95,6 @@ public class TaskManagerTest {
 
         assertEquals(initialTask.id(), updated.id());
         assertEquals(initialTask.contextId(), updated.contextId());
-        // TODO type does not get unmarshalled
-        //assertEquals(initialTask.getType(), updated.getType());
         assertSame(newStatus, updated.status());
     }
 

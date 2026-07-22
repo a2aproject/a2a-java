@@ -158,7 +158,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.a2aproject.sdk.test.ExtrasBomVerifier</mainClass>
+                            <mainClass>org.a2aproject.sdk.bom.test.extras.ExtrasBomVerifier</mainClass>
                         </configuration>
                     </execution>
                 </executions>

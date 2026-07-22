@@ -3193,4 +3193,79 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    public void testSendStreamingMessageWithHistoryLengthZero() throws Exception {
+        AtomicReference<String> taskIdRef = new AtomicReference<>();
+
+        try {
+            Message initialMessage = Message.builder(MESSAGE)
+                    .parts(new TextPart("input-required:Trigger INPUT_REQUIRED"))
+                    .build();
+
+            CountDownLatch initialLatch = new CountDownLatch(1);
+            getClient().sendMessage(initialMessage, List.of((event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    taskIdRef.set(te.getTask().id());
+                    initialLatch.countDown();
+                } else if (event instanceof TaskUpdateEvent tue) {
+                    taskIdRef.set(tue.getTask().id());
+                    if (tue.getTask().status().state() == TaskState.TASK_STATE_INPUT_REQUIRED) {
+                        initialLatch.countDown();
+                    }
+                }
+            }), error -> {
+                if (!isStreamClosedError(error)) {
+                    initialLatch.countDown();
+                }
+            });
+
+            assertTrue(initialLatch.await(15, TimeUnit.SECONDS), "Initial streaming sendMessage should complete");
+            String taskId = taskIdRef.get();
+            assertNotNull(taskId, "Should have captured task ID");
+
+            Message followUp = Message.builder(MESSAGE)
+                    .taskId(taskId)
+                    .parts(new TextPart("input-required:User input"))
+                    .build();
+
+            MessageSendParams params = MessageSendParams.builder()
+                    .message(followUp)
+                    .configuration(MessageSendConfiguration.builder()
+                            .historyLength(0)
+                            .build())
+                    .build();
+
+            CountDownLatch followUpLatch = new CountDownLatch(1);
+            AtomicReference<Task> resultTaskRef = new AtomicReference<>();
+            getClient().sendMessage(params, List.of((BiConsumer<ClientEvent, AgentCard>) (event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    resultTaskRef.set(te.getTask());
+                    followUpLatch.countDown();
+                } else if (event instanceof TaskUpdateEvent tue) {
+                    resultTaskRef.set(tue.getTask());
+                    if (tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                        followUpLatch.countDown();
+                    }
+                }
+            }), error -> {
+                if (!isStreamClosedError(error)) {
+                    followUpLatch.countDown();
+                }
+            }, null);
+
+            assertTrue(followUpLatch.await(15, TimeUnit.SECONDS), "Follow-up streaming sendMessage should complete");
+            Task resultTask = resultTaskRef.get();
+            assertNotNull(resultTask, "Should have received a Task response");
+            assertTrue(resultTask.history() == null || resultTask.history().isEmpty(),
+                    "historyLength=0 should return no history, but got " +
+                            (resultTask.history() != null ? resultTask.history().size() : 0) + " messages");
+        } finally {
+            String taskId = taskIdRef.get();
+            if (taskId != null) {
+                deleteTaskInTaskStore(taskId);
+            }
+        }
+    }
+
 }

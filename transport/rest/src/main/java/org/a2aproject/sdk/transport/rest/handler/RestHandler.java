@@ -27,7 +27,6 @@ import com.google.protobuf.util.JsonFormat;
 import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
-import org.a2aproject.sdk.util.ErrorDetail;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
@@ -65,6 +64,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.spec.util.ErrorDetail;
 import org.jspecify.annotations.Nullable;
 
 /**

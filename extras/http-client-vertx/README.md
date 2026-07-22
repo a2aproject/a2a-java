@@ -216,7 +216,7 @@ The `VertxA2AHttpClient` constructor automatically checks for a CDI-managed `Ver
 If you're not using CDI but want to share a Vert.x instance:
 
 ```java
-import org.a2aproject.sdk.client.http.VertxA2AHttpClient;
+import org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient;
 import io.vertx.core.Vertx;
 
 // Create Vertx instance once
@@ -242,7 +242,7 @@ For advanced use cases requiring custom Vert.x WebClient configuration, you can 
 
 ```java
 import org.a2aproject.sdk.client.http.A2AHttpClient;
-import org.a2aproject.sdk.client.http.VertxA2AHttpClient;
+import org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -263,7 +263,7 @@ The module uses Java's `ServiceLoader` mechanism for automatic discovery:
 
 1. **Provider Registration**: `META-INF/services/org.a2aproject.sdk.client.http.A2AHttpClientProvider` contains:
    ```
-   org.a2aproject.sdk.client.http.VertxA2AHttpClientProvider
+   org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClientProvider
    ```
 
 2. **Priority System**: Each provider has a priority:
