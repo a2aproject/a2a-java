@@ -40,6 +40,9 @@ a2a.blocking.agent.timeout.seconds=30
 
 # Timeout for event consumption in blocking calls (default: 5 seconds)
 a2a.blocking.consumption.timeout.seconds=5
+
+# Timeout for TaskStore reconciliation polling in blocking calls (default: 1 second)
+a2a.blocking.reconciliation.timeout.seconds=1
 ```
 
 ### Tuning Guidelines
@@ -48,6 +51,7 @@ a2a.blocking.consumption.timeout.seconds=5
 - **Resource Management**: The dedicated executor prevents streaming operations from competing with the ForkJoinPool.
 - **Concurrency**: In production with high concurrent streaming, increase pool sizes accordingly.
 - **Agent Timeouts**: LLM-based agents may need longer timeouts (60-120s) compared to simple agents.
+- **Reconciliation Timeout**: Increase if blocking calls fail with "Could not find a Task/Message" under heavy load or with slow TaskStore implementations.
 
 ## MicroProfile Config Integration
 

@@ -62,7 +62,7 @@ public class ResultAggregatorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor);
+        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
     }
 
     // Helper methods for creating sample data
@@ -120,7 +120,7 @@ public class ResultAggregatorTest {
     @Test
     void testConstructorWithMessage() {
         Message initialMessage = createSampleMessage("initial", "msg1", Message.Role.ROLE_USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor, testExecutor);
+        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
         // Test that the message is properly stored by checking getCurrentResult
         assertEquals(initialMessage, aggregatorWithMessage.getCurrentResult());
@@ -131,7 +131,7 @@ public class ResultAggregatorTest {
     @Test
     void testGetCurrentResultWithMessageSet() {
         Message sampleMessage = createSampleMessage("hola", "msg1", Message.Role.ROLE_USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor, testExecutor);
+        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
         EventKind result = aggregatorWithMessage.getCurrentResult();
 
@@ -166,7 +166,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testConstructorWithNullMessage() {
-        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor);
+        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
         Task expectedTask = createSampleTask("null_msg_task", TaskState.TASK_STATE_WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
@@ -226,7 +226,7 @@ public class ResultAggregatorTest {
     void testGetCurrentResultWithMessageTakesPrecedence() {
         // Test that when both message and task are available, message takes precedence
         Message message = createSampleMessage("priority message", "pri1", Message.Role.ROLE_USER);
-        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, testExecutor);
+        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
         // Even if we set up the task manager to return something, message should take precedence
         Task task = createSampleTask("should_not_be_returned", TaskState.TASK_STATE_WORKING, "ctx1");
@@ -297,7 +297,7 @@ public class ResultAggregatorTest {
 
         TaskManager taskManager = new TaskManager(taskId, "ctx1", taskStore, null);
         ResultAggregator blockingAggregator =
-                new ResultAggregator(taskManager, null, testExecutor, testExecutor);
+                new ResultAggregator(taskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager =
@@ -325,7 +325,7 @@ public class ResultAggregatorTest {
         TaskStore taskStore = mock(TaskStore.class);
         TaskManager taskManager = new TaskManager(taskId, "ctx1", taskStore, null);
         ResultAggregator blockingAggregator =
-                new ResultAggregator(taskManager, null, testExecutor, testExecutor);
+                new ResultAggregator(taskManager, null, testExecutor, testExecutor, TimeUnit.MILLISECONDS.toNanos(100));
 
         InternalError error = assertThrows(InternalError.class, () ->
                 blockingAggregator.consumeAndBreakOnInterrupt(createClosedEventConsumer(taskId), true));
@@ -339,7 +339,7 @@ public class ResultAggregatorTest {
         TaskStore taskStore = mock(TaskStore.class);
         TaskManager taskManager = new TaskManager(taskId, "ctx1", taskStore, null);
         ResultAggregator nonBlockingAggregator =
-                new ResultAggregator(taskManager, null, testExecutor, testExecutor);
+                new ResultAggregator(taskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
         assertThrows(InternalError.class, () ->
                 nonBlockingAggregator.consumeAndBreakOnInterrupt(createClosedEventConsumer(taskId), false));

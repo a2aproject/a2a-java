@@ -29,19 +29,21 @@ import org.slf4j.LoggerFactory;
 
 public class ResultAggregator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultAggregator.class);
-    private static final long TASK_STORE_RECONCILIATION_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(1);
     private static final long TASK_STORE_RECONCILIATION_POLL_MILLIS = 10;
 
     private final TaskManager taskManager;
     private final Executor executor;
     private final Executor eventConsumerExecutor;
+    private final long reconciliationTimeoutNanos;
     private volatile @Nullable Message message;
 
-    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor, Executor eventConsumerExecutor) {
+    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor,
+            Executor eventConsumerExecutor, long reconciliationTimeoutNanos) {
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
         this.eventConsumerExecutor = eventConsumerExecutor;
+        this.reconciliationTimeoutNanos = reconciliationTimeoutNanos;
     }
 
     public @Nullable EventKind getCurrentResult() {
@@ -238,7 +240,8 @@ public class ResultAggregator {
             Utils.rethrow(error);
         }
 
-        // Return Message if captured, otherwise Task if captured, otherwise reconcile with TaskStore.
+        // Return Message if captured, otherwise Task if captured,
+        // otherwise poll TaskStore with bounded timeout (blocking) or single read (non-blocking).
         EventKind eventKind = message.get();
         if (eventKind == null) {
             eventKind = capturedTask.get();
@@ -268,7 +271,10 @@ public class ResultAggregator {
             return task;
         }
 
-        long deadline = System.nanoTime() + TASK_STORE_RECONCILIATION_TIMEOUT_NANOS;
+        LOGGER.debug("TaskStore reconciliation: task not found on first read, polling for up to {}ms",
+                TimeUnit.NANOSECONDS.toMillis(reconciliationTimeoutNanos));
+
+        long deadline = System.nanoTime() + reconciliationTimeoutNanos;
         while (System.nanoTime() < deadline) {
             try {
                 Thread.sleep(TASK_STORE_RECONCILIATION_POLL_MILLIS);
@@ -279,6 +285,7 @@ public class ResultAggregator {
 
             task = taskManager.getTask();
             if (task != null) {
+                LOGGER.debug("TaskStore reconciliation: task {} found after polling", task.id());
                 return task;
             }
         }
