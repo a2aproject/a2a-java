@@ -62,7 +62,8 @@ public class ResultAggregatorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor);
+        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor,
+                TimeUnit.SECONDS.toNanos(1));
     }
 
     // Helper methods for creating sample data
