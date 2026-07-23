@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class ResultAggregator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultAggregator.class);
+    private static final long DEFAULT_TASK_STORE_RECONCILIATION_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(1);
     private static final long TASK_STORE_RECONCILIATION_POLL_MILLIS = 10;
 
     private final TaskManager taskManager;
@@ -36,6 +37,12 @@ public class ResultAggregator {
     private final Executor eventConsumerExecutor;
     private final long reconciliationTimeoutNanos;
     private volatile @Nullable Message message;
+
+    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor,
+            Executor eventConsumerExecutor) {
+        this(taskManager, message, executor, eventConsumerExecutor,
+                DEFAULT_TASK_STORE_RECONCILIATION_TIMEOUT_NANOS);
+    }
 
     public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor,
             Executor eventConsumerExecutor, long reconciliationTimeoutNanos) {
