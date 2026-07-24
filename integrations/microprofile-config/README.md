@@ -37,6 +37,7 @@ a2a.executor.max-pool-size=100
 # Timeout configuration
 a2a.blocking.agent.timeout.seconds=60
 a2a.blocking.consumption.timeout.seconds=10
+a2a.blocking.reconciliation.timeout.seconds=2
 ```
 
 **Environment variables:**

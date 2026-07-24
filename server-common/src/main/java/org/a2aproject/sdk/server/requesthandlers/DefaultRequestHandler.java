@@ -142,8 +142,9 @@ import org.slf4j.LoggerFactory;
  *   <li><b>Blocking (configuration.blocking=true):</b> Client waits for first event or final task state</li>
  *   <li><b>Streaming:</b> Client receives events as they arrive via reactive streams</li>
  *   <li>Both modes support fire-and-forget (agent continues after client disconnect)</li>
- *   <li>Configurable timeouts via {@code a2a.blocking.agent.timeout.seconds} and
- *       {@code a2a.blocking.consumption.timeout.seconds}</li>
+ *   <li>Configurable timeouts via {@code a2a.blocking.agent.timeout.seconds},
+ *       {@code a2a.blocking.consumption.timeout.seconds}, and
+ *       {@code a2a.blocking.reconciliation.timeout.seconds}</li>
  * </ul>
  *
  * <h2>CDI Dependencies</h2>
@@ -189,6 +190,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private static final String A2A_BLOCKING_AGENT_TIMEOUT_SECONDS = "a2a.blocking.agent.timeout.seconds";
     private static final String A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS = "a2a.blocking.consumption.timeout.seconds";
+    private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS = "a2a.blocking.reconciliation.timeout.seconds";
 
     @Inject
     A2AConfigProvider configProvider;
@@ -214,6 +216,19 @@ public class DefaultRequestHandler implements RequestHandler {
      * (e.g., MicroProfileConfigProvider in reference implementations).
      */
     int consumptionCompletionTimeoutSeconds;
+
+    /**
+     * Timeout in seconds for TaskStore reconciliation polling in blocking calls.
+     * When the in-memory event capture is empty, the aggregator polls TaskStore
+     * with a bounded timeout to handle the race where MainEventBusProcessor
+     * has not yet persisted the task.
+     * <p>
+     * Property: {@code a2a.blocking.reconciliation.timeout.seconds}<br>
+     * Default: 1 second<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath
+     * (e.g., MicroProfileConfigProvider in reference implementations).
+     */
+    int reconciliationTimeoutSeconds;
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -276,6 +291,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_AGENT_TIMEOUT_SECONDS));
         consumptionCompletionTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
+        reconciliationTimeoutSeconds = Integer.parseInt(
+                configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
     }
 
 
@@ -291,6 +308,7 @@ public class DefaultRequestHandler implements RequestHandler {
                         mainEventBusProcessor, executor, eventConsumerExecutor);
         handler.agentCompletionTimeoutSeconds = 5;
         handler.consumptionCompletionTimeoutSeconds = 2;
+        handler.reconciliationTimeoutSeconds = 1;
 
         return handler;
     }
@@ -377,7 +395,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 taskStore,
                 null);
 
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
 
         EventQueue queue = queueManager.createOrTap(task.id());
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
@@ -450,7 +469,8 @@ public class DefaultRequestHandler implements RequestHandler {
         // Create queue with real taskId (no tempId parameter needed)
         EventQueue queue = queueManager.createOrTap(queueTaskId);
         final java.util.concurrent.atomic.AtomicReference<@NonNull String> taskId = new java.util.concurrent.atomic.AtomicReference<>(queueTaskId);
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
 
         // Default to blocking per A2A spec (returnImmediately defaults to false, meaning wait for completion)
         boolean returnImmediately = params.configuration() != null && Boolean.TRUE.equals(params.configuration().returnImmediately());
@@ -668,7 +688,8 @@ public class DefaultRequestHandler implements RequestHandler {
                     .taskId(taskId.get()).build(), version);
         }
 
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
 
         // Create consumer BEFORE starting agent - callback is registered inside registerAndExecuteAgentAsync
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
@@ -857,7 +878,8 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         TaskManager taskManager = new TaskManager(task.id(), task.contextId(), taskStore, null);
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
         EventQueue queue = queueManager.tap(task.id());
         LOGGER.debug("onSubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 

@@ -24,6 +24,8 @@ public class MicroProfileConfigProviderTest {
     private static final String A2A_EXECUTOR_CORE_POOL_SIZE = "a2a.executor.core-pool-size";
     private static final String A2A_EXECUTOR_MAX_POOL_SIZE = "a2a.executor.max-pool-size";
     private static final String A2A_EXECUTOR_KEEP_ALIVE_SECONDS = "a2a.executor.keep-alive-seconds";
+    private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS =
+            "a2a.blocking.reconciliation.timeout.seconds";
 
     @Inject
     A2AConfigProvider configProvider;
@@ -57,6 +59,12 @@ public class MicroProfileConfigProviderTest {
         // Test another default property to ensure fallback works
         String value = configProvider.getValue(A2A_EXECUTOR_KEEP_ALIVE_SECONDS);
         assertEquals("60", value, "Should fall back to default value");
+    }
+
+    @Test
+    public void testGetReconciliationTimeoutDefault() {
+        String value = configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS);
+        assertEquals("1", value, "Should fall back to the reconciliation timeout default");
     }
 
     @Test
