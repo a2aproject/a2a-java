@@ -37,7 +37,7 @@ jobs:
         profile: ['', 'multi-version']
     steps:
       - name: Checkout a2a-java
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
@@ -47,13 +47,13 @@ jobs:
       - name: Build a2a-java SDK
         run: mvn -B install -DskipTests
       - name: Checkout a2a-tck
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: a2aproject/a2a-tck
           path: a2a-tck
           ref: ${{ env.TCK_VERSION }}
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: "a2a-tck/pyproject.toml"
       - name: Install uv and Python dependencies
@@ -133,7 +133,7 @@ jobs:
         profile: ['', 'multi-version']
     steps:
       - name: Checkout a2a-java
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
@@ -143,13 +143,13 @@ jobs:
       - name: Build a2a-java SDK
         run: mvn -B install -DskipTests
       - name: Checkout a2a-tck
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: a2aproject/a2a-tck
           path: a2a-tck
           ref: ${{ env.TCK_VERSION_0_3 }}
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: "a2a-tck/pyproject.toml"
       - name: Install uv and Python dependencies

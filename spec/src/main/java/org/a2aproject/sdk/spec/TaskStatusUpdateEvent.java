@@ -1,15 +1,10 @@
 package org.a2aproject.sdk.spec;
 
-import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_CANCELED;
-import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_COMPLETED;
-import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_FAILED;
-import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_INPUT_REQUIRED;
-import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_REJECTED;
+import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
-import org.jspecify.annotations.Nullable;
 
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
@@ -41,6 +36,7 @@ public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String con
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("status", status);
         Assert.checkNotNullParam("contextId", contextId);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 
     @Override

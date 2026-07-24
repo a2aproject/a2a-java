@@ -27,7 +27,7 @@ package org.a2aproject.sdk.spec;
  *   <li><b>TASK_STATE_CANCELED:</b> Task was explicitly canceled by the user or system</li>
  *   <li><b>TASK_STATE_FAILED:</b> Task failed due to an error during execution</li>
  *   <li><b>TASK_STATE_REJECTED:</b> Task was rejected by the agent (e.g., invalid request, policy violation)</li>
- *   <li><b>UNRECOGNIZED:</b> Task state cannot be determined (error recovery state)</li>
+ *   <li><b>TASK_STATE_UNSPECIFIED:</b> Task state cannot be determined (error recovery state)</li>
  * </ul>
  * <p>
  * The {@link #isFinal()} method can be used to determine if a state is terminal, which is
@@ -64,7 +64,7 @@ public enum TaskState {
     TASK_STATE_REJECTED(true, false),
 
     /** Task state is unknown or cannot be determined (terminal state). */
-    UNRECOGNIZED(true, false);
+    TASK_STATE_UNSPECIFIED(false, false);
 
     private final boolean isFinal;
     private final boolean isInterrupted;
@@ -81,7 +81,7 @@ public enum TaskState {
      * not transition to any other state. This is used by the event queue system
      * to determine when to close queues and by clients to know when to stop polling.
      * <p>
-     * Terminal states: COMPLETED, FAILED, CANCELED, REJECTED, UNRECOGNIZED.
+     * Terminal states: TASK_STATE_COMPLETED, TASK_STATE_FAILED, TASK_STATE_CANCELED, TASK_STATE_REJECTED, TASK_STATE_UNSPECIFIED.
      *
      * @return {@code true} if this is a terminal state, {@code false} else.
      */

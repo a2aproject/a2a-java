@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
@@ -68,7 +69,7 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      */
     public DataPart (Object data, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("data", data);
-        this.metadata = metadata == null ? null : Map.copyOf(metadata);
+        this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.data = data;
     }
 

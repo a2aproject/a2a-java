@@ -152,99 +152,15 @@ public class WeatherAgentExecutorProducer {
 
 ## 4. Configuration
 
-The SDK uses `META-INF/a2a-defaults.properties` for defaults. Override via `application.properties` when using Quarkus/MicroProfile Config:
-
-```properties
-# Thread pool for async/streaming operations
-a2a.executor.core-pool-size=5
-a2a.executor.max-pool-size=50
-a2a.executor.keep-alive-seconds=60
-
-# Timeouts for blocking calls
-a2a.blocking.agent.timeout.seconds=30
-a2a.blocking.consumption.timeout.seconds=5
-```
-
-For LLM-based agents, increase `a2a.blocking.agent.timeout.seconds` to 60–120 seconds.
+See [Configuration]({site.url('configuration')}) for all config properties and tuning.
 
 ## 5. Task Authorization (Optional)
 
-Implement `TaskAuthorizationProvider` to control per-user access:
-
-```java
-@ApplicationScoped
-public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
-
-    @Override
-    public boolean checkRead(ServerCallContext context, String taskId, TaskOperation op) {
-        return isOwner(context.getUser(), taskId);
-    }
-
-    @Override
-    public boolean checkWrite(ServerCallContext context, String taskId, TaskOperation op) {
-        return isOwner(context.getUser(), taskId);
-    }
-
-    @Override
-    public boolean checkCreate(ServerCallContext context, TaskOperation op) {
-        return context.getUser().isAuthenticated();
-    }
-
-    @Override
-    public boolean isTaskRecorded(String taskId) {
-        return ownershipStore.contains(taskId);
-    }
-
-    @Override
-    public void recordOwnership(ServerCallContext context, String taskId, TaskOperation op) {
-        ownershipStore.put(taskId, context.getUser().getUsername());
-    }
-}
-```
-
-The SDK discovers the bean via CDI automatically — no additional wiring needed.
-
-| Operation | Authorization check |
-|-----------|---------------------|
-| `getTask`, `subscribeToTask`, `getTaskPushNotificationConfig`, `listTaskPushNotificationConfigs` | `checkRead` |
-| `cancelTask`, `createTaskPushNotificationConfig`, `deleteTaskPushNotificationConfig` | `checkWrite` |
-| `messageSend` / `messageSendStream` (existing task) | `checkWrite` |
-| `messageSend` / `messageSendStream` (new task) | `checkCreate`, then `recordOwnership` |
-| `listTasks` | `checkRead` per task |
+See [Task Authorization]({site.url('authorization')}) for per-user access control.
 
 ## Backward Compatibility with v0.3
 
-Add compat modules alongside v1.0 modules to serve both protocol versions simultaneously. No changes to your `AgentExecutor` are needed.
-
-### Multi-Version Module (recommended)
-
-```xml
-<!-- JSON-RPC with automatic v1.0 + v0.3 routing -->
-<dependency>
-    <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-reference-multiversion-jsonrpc</artifactId>
-    <version>$\{org.a2aproject.sdk.version}</version>
-</dependency>
-
-<!-- REST with automatic v1.0 + v0.3 routing -->
-<dependency>
-    <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-reference-multiversion-rest</artifactId>
-    <version>$\{org.a2aproject.sdk.version}</version>
-</dependency>
-```
-
-### Individual Compat Modules
-
-```xml
-<dependency>
-    <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
-    <version>$\{org.a2aproject.sdk.version}</version>
-</dependency>
-```
-
-Version routing uses the `A2A-Version` HTTP header for JSON-RPC and REST; for gRPC it is implicit via protobuf package name.
+See [Backward Compatibility]({site.url('compatibility')}) for multi-version modules, version routing, and v0.3 client support.
 
 ## Server Integrations
 

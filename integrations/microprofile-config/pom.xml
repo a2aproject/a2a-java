@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>1.0.1.Final-SNAPSHOT</version>
+        <version>1.1.1.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>a2a-java-sdk-microprofile-config</artifactId>

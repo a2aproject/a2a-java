@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -66,9 +67,9 @@ public record Task(String id, String contextId, TaskStatus status, @Nullable Lis
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);
-        artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
-        history = history != null ? List.copyOf(history) : List.of();
-        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
+        artifacts = CollectionCopies.immutableListOrEmpty(artifacts);
+        history = CollectionCopies.immutableListOrEmpty(history);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 
     @Override

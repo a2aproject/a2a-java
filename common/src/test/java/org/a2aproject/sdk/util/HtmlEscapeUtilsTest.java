@@ -43,4 +43,19 @@ public class HtmlEscapeUtilsTest {
         assertEquals("", HtmlEscapeUtils.removeHtmlEscaping(""));
     }
 
+    @Test
+    public void removeHtmlEscaping_restoresUppercaseAngleBrackets() {
+        assertEquals("<event-topic>", HtmlEscapeUtils.removeHtmlEscaping("\\u003Cevent-topic\\u003E"));
+    }
+
+    @Test
+    public void removeHtmlEscaping_restoresUppercaseEquals() {
+        assertEquals("a=b", HtmlEscapeUtils.removeHtmlEscaping("a\\u003Db"));
+    }
+
+    @Test
+    public void removeHtmlEscaping_handlesMixedCase() {
+        assertEquals("<tag>=value", HtmlEscapeUtils.removeHtmlEscaping("\\u003ctag\\u003E\\u003Dvalue"));
+    }
+
 }

@@ -2,7 +2,9 @@
 {@java.util.List<io.vertx.core.json.JsonObject> menu}
 {@java.lang.String menuTitle}
 
+{#search-overlay /}
 <section class="menu">
+  {#search-button /}
   <h3 class="section-title menu-title">{menuTitle ?: 'MENU'}</h3>
   <ul>
     {#for item in menu}

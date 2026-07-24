@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -68,10 +69,10 @@ public record Message(Role role, List<Part<?>> parts,
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be empty");
         }
-        parts = List.copyOf(parts);
-        referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
-        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
-        extensions = extensions != null ? List.copyOf(extensions) : null;
+        parts = CollectionCopies.immutableList(parts);
+        referenceTaskIds = CollectionCopies.immutableNullableList(referenceTaskIds);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
+        extensions = CollectionCopies.immutableNullableList(extensions);
     }
 
     @Override
@@ -272,7 +273,7 @@ public record Message(Role role, List<Part<?>> parts,
          * @return this builder for method chaining
          */
         public Builder extensions(List<String> extensions) {
-            this.extensions = (extensions == null) ? null : List.copyOf(extensions);
+            this.extensions = CollectionCopies.immutableNullableList(extensions);
             return this;
         }
 

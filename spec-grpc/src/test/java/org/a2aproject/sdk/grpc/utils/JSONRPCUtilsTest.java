@@ -34,7 +34,7 @@ import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TextPart;
-import org.a2aproject.sdk.util.ErrorDetail;
+import org.a2aproject.sdk.spec.util.ErrorDetail;
 import org.junit.jupiter.api.Test;
 
 public class JSONRPCUtilsTest {

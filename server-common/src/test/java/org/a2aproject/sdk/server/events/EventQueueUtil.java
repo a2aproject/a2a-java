@@ -6,6 +6,10 @@ public class EventQueueUtil {
     // Counter for generating unique test taskIds
     private static final AtomicInteger TASK_ID_COUNTER = new AtomicInteger(0);
 
+    public static EventQueue tapQueue(EventQueue queue) {
+        return queue.tap();
+    }
+
     /**
      * Get an EventQueue builder pre-configured with the shared test MainEventBus and a unique taskId.
      * <p>

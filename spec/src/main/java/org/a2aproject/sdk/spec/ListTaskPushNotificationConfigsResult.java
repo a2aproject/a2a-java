@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.List;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -23,8 +24,7 @@ public record ListTaskPushNotificationConfigsResult(List<TaskPushNotificationCon
      */
     public ListTaskPushNotificationConfigsResult {
         Assert.checkNotNullParam("configs", configs);
-        // Make defensive copy
-        configs = List.copyOf(configs);
+        configs = CollectionCopies.immutableList(configs);
     }
 
     /**

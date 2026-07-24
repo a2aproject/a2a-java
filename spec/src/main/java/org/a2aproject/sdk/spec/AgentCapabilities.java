@@ -1,7 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-import java.util.List;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Defines optional capabilities supported by an agent in the A2A Protocol.
@@ -34,6 +36,10 @@ public record AgentCapabilities(boolean streaming,
                                 boolean pushNotifications,
                                 boolean extendedAgentCard,
                                 @Nullable List<AgentExtension> extensions) {
+
+    public AgentCapabilities {
+        extensions = CollectionCopies.immutableNullableList(extensions);
+    }
 
     /**
      * Create a new Builder

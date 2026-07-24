@@ -1,8 +1,5 @@
 package org.a2aproject.sdk.server.requesthandlers;
 
-import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.decorator.Decorator;
@@ -10,10 +7,10 @@ import jakarta.decorator.Delegate;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
@@ -22,6 +19,7 @@ import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -31,8 +29,10 @@ import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
-import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.jspecify.annotations.Nullable;
+
+import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Decorator
 @Priority(50)
@@ -52,7 +52,17 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
     public AuthorizationRequestHandlerDecorator() {
     }
 
-    AuthorizationRequestHandlerDecorator(RequestHandler delegate,
+    /**
+     * Creates an authorization decorator programmatically.
+     *
+     * <p>This constructor is intended for integrations with
+     * non-CDI runtimes such as Spring Framework.</p>
+     *
+     * @param delegate              request handler being protected
+     * @param authorizationProvider task authorization provider;
+     *                              {@code null} disables authorization
+     */
+    public AuthorizationRequestHandlerDecorator(RequestHandler delegate,
             @Nullable TaskAuthorizationProvider authorizationProvider) {
         this.delegate = delegate;
         this.authorizationProvider = authorizationProvider;
@@ -137,6 +147,9 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
             return e.taskId();
         } else if (event instanceof TaskArtifactUpdateEvent e) {
             return e.taskId();
+        } else if (event instanceof Message m) {
+            // Message.taskId() is set by AgentEmitter when a task context exists
+            return m.taskId();
         }
         return null;
     }

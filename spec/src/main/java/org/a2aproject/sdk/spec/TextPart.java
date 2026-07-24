@@ -2,6 +2,7 @@ package org.a2aproject.sdk.spec;
 
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
@@ -45,7 +46,7 @@ public record TextPart(String text, @Nullable Map<String, Object> metadata) impl
      */
     public TextPart (String text, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("text", text);
-        this.metadata = metadata == null ? null : Map.copyOf(metadata);
+        this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.text = text;
     }
 

@@ -38,12 +38,12 @@ import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.MethodNotFoundError;
 import org.a2aproject.sdk.spec.TransportProtocol;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
 import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
-import org.a2aproject.sdk.util.Utils;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -890,7 +890,7 @@ public class A2AServerRoutes {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 String subject = rc.user().subject();
-                user = new AuthenticatedUser(subject != null ? subject : "");
+                user = subject != null ? new AuthenticatedUser(subject) : UnauthenticatedUser.INSTANCE;
             }
             Map<String, Object> state = new HashMap<>();
 

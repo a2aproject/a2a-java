@@ -1,8 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
-import java.util.Collections;
 import java.util.Map;
+
+import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,6 +28,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
      */
     public CancelTaskParams {
         Assert.checkNotNullParam("id", id);
+        metadata = CollectionCopies.unmodifiableShallowMap(metadata);
     }
 
     /**
@@ -35,7 +37,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
      * @param id the task identifier (required)
      */
     public CancelTaskParams(String id) {
-        this(id, null, Collections.emptyMap());
+        this(id, null, Map.of());
     }
 
     /**
@@ -53,7 +55,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
     public static class Builder {
         private @Nullable String id;
         private @Nullable String tenant;
-        private Map<String, Object> metadata = Collections.emptyMap();
+        private Map<String, Object> metadata = Map.of();
 
         /**
          * Creates a new Builder with all fields unset.
@@ -90,7 +92,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
          * @return this builder
          */
         public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = Map.copyOf(metadata);
+            this.metadata = CollectionCopies.unmodifiableShallowMap(metadata);
             return this;
         }
 

@@ -15,12 +15,12 @@ import org.mapstruct.Mapper;
  *   <li>v1.0: {@code TASK_STATE_SUBMITTED, TASK_STATE_WORKING, ...}</li>
  * </ul>
  * <p>
- * Additionally, the {@code UNKNOWN} state in v0.3 maps to {@code UNRECOGNIZED} in v1.0.
+ * Additionally, the {@code UNKNOWN} state in v0.3 maps to {@code TASK_STATE_UNSPECIFIED} in v1.0.
  * <p>
  * This mapper uses manual switch statements instead of {@code @ValueMapping} to:
  * <ul>
  *   <li>Avoid mapstruct-spi-protobuf enum strategy initialization issues</li>
- *   <li>Handle explicit null mapping (null → UNRECOGNIZED/UNKNOWN)</li>
+ *   <li>Handle explicit null mapping (null → TASK_STATE_UNSPECIFIED/UNKNOWN)</li>
  *   <li>Provide clear, compile-time-safe enum conversions</li>
  * </ul>
  *
@@ -50,8 +50,8 @@ public interface TaskStateMapper_v0_3 {
      * CANCELED               → TASK_STATE_CANCELED
      * FAILED                 → TASK_STATE_FAILED
      * REJECTED               → TASK_STATE_REJECTED
-     * UNKNOWN                → UNRECOGNIZED
-     * null                   → UNRECOGNIZED
+     * UNKNOWN                → TASK_STATE_UNSPECIFIED
+     * null                   → TASK_STATE_UNSPECIFIED
      * </pre>
      *
      * @param v03 the v0.3 task state (may be null)
@@ -59,7 +59,7 @@ public interface TaskStateMapper_v0_3 {
      */
     default TaskState toV10(TaskState_v0_3 v03) {
         if (v03 == null) {
-            return TaskState.UNRECOGNIZED;
+            return TaskState.TASK_STATE_UNSPECIFIED;
         }
         return switch (v03) {
             case SUBMITTED -> TaskState.TASK_STATE_SUBMITTED;
@@ -70,7 +70,7 @@ public interface TaskStateMapper_v0_3 {
             case CANCELED -> TaskState.TASK_STATE_CANCELED;
             case FAILED -> TaskState.TASK_STATE_FAILED;
             case REJECTED -> TaskState.TASK_STATE_REJECTED;
-            case UNKNOWN -> TaskState.UNRECOGNIZED;
+            case UNKNOWN -> TaskState.TASK_STATE_UNSPECIFIED;
         };
     }
 
@@ -89,7 +89,7 @@ public interface TaskStateMapper_v0_3 {
      * TASK_STATE_CANCELED          → CANCELED
      * TASK_STATE_FAILED            → FAILED
      * TASK_STATE_REJECTED          → REJECTED
-     * UNRECOGNIZED                 → UNKNOWN
+     * TASK_STATE_UNSPECIFIED        → UNKNOWN
      * null                         → UNKNOWN
      * </pre>
      *
@@ -109,7 +109,7 @@ public interface TaskStateMapper_v0_3 {
             case TASK_STATE_CANCELED -> TaskState_v0_3.CANCELED;
             case TASK_STATE_FAILED -> TaskState_v0_3.FAILED;
             case TASK_STATE_REJECTED -> TaskState_v0_3.REJECTED;
-            case UNRECOGNIZED -> TaskState_v0_3.UNKNOWN;
+            case TASK_STATE_UNSPECIFIED -> TaskState_v0_3.UNKNOWN;
         };
     }
 }

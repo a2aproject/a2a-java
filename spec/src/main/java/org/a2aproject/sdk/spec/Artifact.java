@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -50,6 +51,9 @@ public record Artifact(String artifactId, @Nullable String name, @Nullable Strin
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be empty");
         }
+        parts = CollectionCopies.immutableList(parts);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
+        extensions = CollectionCopies.immutableNullableList(extensions);
     }
 
     /**
@@ -169,7 +173,7 @@ public record Artifact(String artifactId, @Nullable String name, @Nullable Strin
          * @return this builder for method chaining
          */
         public Builder parts(Part<?>... parts) {
-            this.parts = List.of(parts);
+            this.parts = CollectionCopies.immutableList(List.of(parts));
             return this;
         }
 
@@ -191,7 +195,7 @@ public record Artifact(String artifactId, @Nullable String name, @Nullable Strin
          * @return this builder for method chaining
          */
         public Builder extensions(@Nullable List<String> extensions) {
-            this.extensions = (extensions == null) ? null : List.copyOf(extensions);
+            this.extensions = CollectionCopies.immutableNullableList(extensions);
             return this;
         }
 

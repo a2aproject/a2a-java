@@ -9,7 +9,7 @@ layout: home
 ---
 
 
-{#roq/hero logo="/images/a2a-java-sdk.png"}
+{#roq/hero logo=site.url("/images/a2a-java-sdk.png")}
   {#title}A2A <span class="shimmer">Java</span> SDK{/title}
   {#tagline}Implement the Agent2Agent Protocol in Java{/tagline}
   {#subtitle}A multi-module Maven library providing client and server support for A2A agent communication over JSON-RPC, gRPC, and REST transports.{/subtitle}
@@ -42,6 +42,36 @@ layout: home
     &lt;version&gt;$\{org.a2aproject.sdk.version}&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 
-  <p>See the <a href="server">Server Guide</a> and <a href="client">Client Guide</a> for full setup instructions, or browse <a href="community">Community Articles</a> for tutorials and examples.</p>
+  <p>See the <a href="getting-started">Getting Started</a> guide, or jump directly to the <a href="server">Server Guide</a> and <a href="client">Client Guide</a> for full setup instructions.</p>
+</section>
+
+<section class="roq-section">
+  <h2>Compatibility</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>SDK Version</th>
+        <th>A2A Protocol</th>
+        <th>Java</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1.0.0.Final</td>
+        <td>1.0, 0.3</td>
+        <td>17+</td>
+      </tr>
+      <tr>
+        <td>1.1.0.Final</td>
+        <td>1.0, 0.3</td>
+        <td>17+</td>
+      </tr>
+      <tr>
+        <td>dev (unreleased)</td>
+        <td>1.0, 0.3</td>
+        <td>17+</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 

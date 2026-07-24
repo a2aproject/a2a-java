@@ -1,6 +1,6 @@
 package org.a2aproject.sdk.compat03.server.rest.quarkus;
 
-import org.a2aproject.sdk.client.http.AndroidA2AHttpClient;
+import org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransportConfigBuilder_v0_3;

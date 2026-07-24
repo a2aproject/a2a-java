@@ -79,14 +79,20 @@ Open PR on GitHub with title: `chore: release 0.4.0.Alpha1`
 
 ### 4. CI Verification
 
-The `build-with-release-profile.yml` workflow automatically verifies:
-- ✅ Build succeeds with `-Prelease` profile
-- ✅ All JavaDoc generation succeeds
-- ✅ GPG signing works correctly
-- ✅ JBang version validation passes
-- ✅ No compilation or test failures
+The release profile CI runs in two tiers:
 
-**Important**: This workflow tests the actual PR branch (not main) to catch issues before merge.
+**Tier 1** (all PRs, no secrets):
+- ✅ Build succeeds with `-Prelease` profile (`-DskipTests -Dgpg.skip=true -Drelease.auto.publish=false`)
+- ✅ All JavaDoc generation succeeds
+- ✅ JBang version validation passes
+- ✅ No compilation failures
+
+**Tier 2** (allow-listed maintainers and pushes to `main`/`0.3.x`, with secrets):
+- ✅ GPG signing works correctly
+- ✅ Maven Central credentials are valid
+- ✅ Full release profile build succeeds
+
+**Important**: Tier 2 only runs for allow-listed actors (see `build-with-release-profile-run.yml`). Fork PRs from other contributors get Tier 1 only.
 
 Wait for all CI checks to pass before proceeding.
 
@@ -249,10 +255,15 @@ Follow semantic versioning with qualifiers:
 
 ## Workflows Reference
 
-### build-with-release-profile.yml
-- **Triggers**: All PRs, all pushes
-- **Purpose**: Verify builds with `-Prelease` profile
-- **Special**: Tests actual PR branch (not main) using `pull_request_target` with explicit checkout
+### build-with-release-profile.yml (Tier 1 — Trigger)
+- **Triggers**: All PRs, all pushes, manual dispatch
+- **Purpose**: Build with `-Prelease` profile without secrets; upload PR info for Tier 2
+- **Catches**: Compilation, javadoc, plugin configuration issues
+
+### build-with-release-profile-run.yml (Tier 2 — Secrets)
+- **Triggers**: `workflow_run` on Tier 1 completion
+- **Purpose**: Full release profile build with GPG signing and Maven Central credential validation
+- **Access**: Allow-listed maintainers, pushes to `main`/`0.3.x`, manual dispatch
 - **Requires**: GPG and Maven Central secrets
 
 ### release-to-maven-central.yml

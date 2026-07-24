@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -46,6 +47,7 @@ public record AgentCardSignature(@Nullable Map<String, Object> header, @Serializ
     public AgentCardSignature {
         Assert.checkNotNullParam("protectedHeader", protectedHeader);
         Assert.checkNotNullParam("signature", signature);
+        header = CollectionCopies.unmodifiableNullableShallowMap(header);
     }
 
     /**

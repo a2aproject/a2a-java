@@ -408,7 +408,7 @@ public class A2AServerRoutes_v0_3 {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 String subject = rc.user().subject();
-                user = new AuthenticatedUser(subject != null ? subject : "");
+                user = subject != null ? new AuthenticatedUser(subject) : UnauthenticatedUser.INSTANCE;
             }
             Map<String, Object> state = new HashMap<>();
 
