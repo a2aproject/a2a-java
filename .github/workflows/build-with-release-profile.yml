@@ -7,7 +7,11 @@ name: Build with '-Prelease' (Trigger)
 
 on:
   pull_request:  # Changed from pull_request_target for security
+    paths-ignore:
+      - '**/docs/**'
   push:
+    paths-ignore:
+      - '**/docs/**'
   workflow_dispatch:
 
 # Only run the latest job
@@ -24,6 +28,24 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with release profile (no secrets)
+        run: >
+          mvn -B install
+          -Prelease
+          -DskipTests
+          -Dgpg.skip=true
+          -Drelease.auto.publish=false
+
       - name: Prepare PR info
         run: |
           mkdir -p pr_info

@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 
 /**
  * Configuration details for the OAuth 2.0 Device Code flow (RFC 8628).
@@ -33,7 +34,7 @@ public record DeviceCodeOAuthFlow(String deviceAuthorizationUrl, String tokenUrl
         Assert.checkNotNullParam("deviceAuthorizationUrl", deviceAuthorizationUrl);
         Assert.checkNotNullParam("tokenUrl", tokenUrl);
         Assert.checkNotNullParam("scopes", scopes);
-        scopes = Map.copyOf(scopes);
+        scopes = CollectionCopies.immutableMap(scopes);
     }
 
     /**
@@ -43,6 +44,6 @@ public record DeviceCodeOAuthFlow(String deviceAuthorizationUrl, String tokenUrl
      */
     @Override
     public Map<String, String> scopes() {
-        return Map.copyOf(scopes);
+        return scopes;
     }
 }

@@ -142,8 +142,9 @@ import org.slf4j.LoggerFactory;
  *   <li><b>Blocking (configuration.blocking=true):</b> Client waits for first event or final task state</li>
  *   <li><b>Streaming:</b> Client receives events as they arrive via reactive streams</li>
  *   <li>Both modes support fire-and-forget (agent continues after client disconnect)</li>
- *   <li>Configurable timeouts via {@code a2a.blocking.agent.timeout.seconds} and
- *       {@code a2a.blocking.consumption.timeout.seconds}</li>
+ *   <li>Configurable timeouts via {@code a2a.blocking.agent.timeout.seconds},
+ *       {@code a2a.blocking.consumption.timeout.seconds}, and
+ *       {@code a2a.blocking.reconciliation.timeout.seconds}</li>
  * </ul>
  *
  * <h2>CDI Dependencies</h2>
@@ -189,6 +190,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private static final String A2A_BLOCKING_AGENT_TIMEOUT_SECONDS = "a2a.blocking.agent.timeout.seconds";
     private static final String A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS = "a2a.blocking.consumption.timeout.seconds";
+    private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS = "a2a.blocking.reconciliation.timeout.seconds";
 
     @Inject
     A2AConfigProvider configProvider;
@@ -214,6 +216,19 @@ public class DefaultRequestHandler implements RequestHandler {
      * (e.g., MicroProfileConfigProvider in reference implementations).
      */
     int consumptionCompletionTimeoutSeconds;
+
+    /**
+     * Timeout in seconds for TaskStore reconciliation polling in blocking calls.
+     * When the in-memory event capture is empty, the aggregator polls TaskStore
+     * with a bounded timeout to handle the race where MainEventBusProcessor
+     * has not yet persisted the task.
+     * <p>
+     * Property: {@code a2a.blocking.reconciliation.timeout.seconds}<br>
+     * Default: 1 second<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath
+     * (e.g., MicroProfileConfigProvider in reference implementations).
+     */
+    int reconciliationTimeoutSeconds;
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -276,6 +291,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_AGENT_TIMEOUT_SECONDS));
         consumptionCompletionTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
+        reconciliationTimeoutSeconds = Integer.parseInt(
+                configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
     }
 
 
@@ -291,6 +308,7 @@ public class DefaultRequestHandler implements RequestHandler {
                         mainEventBusProcessor, executor, eventConsumerExecutor);
         handler.agentCompletionTimeoutSeconds = 5;
         handler.consumptionCompletionTimeoutSeconds = 2;
+        handler.reconciliationTimeoutSeconds = 1;
 
         return handler;
     }
@@ -312,7 +330,7 @@ public class DefaultRequestHandler implements RequestHandler {
      * Limits the history of a task to the most recent N messages.
      *
      * @param task the task to limit
-     * @param historyLength the maximum number of recent messages to keep (0 or negative = unlimited)
+     * @param historyLength the maximum number of recent messages to keep ({@code null} = no limit, 0 = empty history)
      * @return the task with limited history, or the original task if no limiting needed
      */
     private static Task limitTaskHistory(Task task, @Nullable Integer historyLength) {
@@ -353,7 +371,7 @@ public class DefaultRequestHandler implements RequestHandler {
             }
         }
 
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, context);
         LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
         return result;
     }
@@ -377,7 +395,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 taskStore,
                 null);
 
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
 
         EventQueue queue = queueManager.createOrTap(task.id());
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
@@ -450,7 +469,8 @@ public class DefaultRequestHandler implements RequestHandler {
         // Create queue with real taskId (no tempId parameter needed)
         EventQueue queue = queueManager.createOrTap(queueTaskId);
         final java.util.concurrent.atomic.AtomicReference<@NonNull String> taskId = new java.util.concurrent.atomic.AtomicReference<>(queueTaskId);
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
 
         // Default to blocking per A2A spec (returnImmediately defaults to false, meaning wait for completion)
         boolean returnImmediately = params.configuration() != null && Boolean.TRUE.equals(params.configuration().returnImmediately());
@@ -668,7 +688,8 @@ public class DefaultRequestHandler implements RequestHandler {
                     .taskId(taskId.get()).build(), version);
         }
 
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
 
         // Create consumer BEFORE starting agent - callback is registered inside registerAndExecuteAgentAsync
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
@@ -736,6 +757,10 @@ public class DefaultRequestHandler implements RequestHandler {
                     @Override
                     public void onNext(StreamingEventKind item) {
                         LOGGER.debug("onNext: {} for task {}", item.getClass().getSimpleName(), taskId.get());
+                        if (item instanceof Task task) {
+                            Integer historyLength = params.configuration() != null ? params.configuration().historyLength() : null;
+                            item = limitTaskHistory(task, historyLength);
+                        }
                         subscriber.onNext(item);
                     }
 
@@ -853,7 +878,8 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         TaskManager taskManager = new TaskManager(task.id(), task.contextId(), taskStore, null);
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor,
+                        SECONDS.toNanos(reconciliationTimeoutSeconds));
         EventQueue queue = queueManager.tap(task.id());
         LOGGER.debug("onSubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
@@ -936,7 +962,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 } catch (A2AError e) {
                     // Log A2A errors at WARN level with full stack trace
                     // These are expected business errors but should be tracked
-                    LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}", 
+                    LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}",
                         taskId, e.getClass().getSimpleName(), e.getMessage(), e);
                     emitter.fail(e);
                 } catch (RuntimeException e) {
@@ -958,11 +984,18 @@ public class DefaultRequestHandler implements RequestHandler {
         // CRITICAL: Add callback BEFORE starting CompletableFuture to avoid race condition
         // If agent completes very fast, whenComplete can fire before caller adds callbacks
         runnable.addDoneCallback(doneCallback);
-        
+
         // Mark as started to prevent further callback additions (enforced by runtime check)
         runnable.markStarted();
 
-        CompletableFuture<Void> cf = CompletableFuture.runAsync(runnable, executor)
+        // Apply transport-provided execution wrapper (e.g. gRPC context fork for cancellation isolation)
+        @SuppressWarnings("unchecked")
+        java.util.function.UnaryOperator<Runnable> wrapper = requestContext.getCallContext() != null
+                ? (java.util.function.UnaryOperator<Runnable>) requestContext.getCallContext().getState().get(ServerCallContext.EXECUTION_WRAPPER_KEY)
+                : null;
+        Runnable wrappedRunnable = wrapper != null ? wrapper.apply(runnable) : runnable;
+
+        CompletableFuture<Void> cf = CompletableFuture.runAsync(wrappedRunnable, executor)
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         LOGGER.error("Agent execution failed for task {}", taskId, err);

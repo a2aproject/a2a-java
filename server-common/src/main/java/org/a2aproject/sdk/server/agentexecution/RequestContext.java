@@ -373,14 +373,6 @@ public class RequestContext {
             return task;
         }
 
-        public @Nullable List<Task> getRelatedTasks() {
-            return relatedTasks;
-        }
-
-        public @Nullable ServerCallContext getServerCallContext() {
-            return serverCallContext;
-        }
-
         /**
          * Builds the RequestContext with ID generation and validation.
          *

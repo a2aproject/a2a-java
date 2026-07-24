@@ -28,6 +28,10 @@ import org.a2aproject.sdk.spec.TaskState;
  */
 public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<CancelTaskParams> {
 
+    private CancelTaskRequest() {
+    }
+
+
     /**
      * Creates a new CancelTaskRequest with the specified JSON-RPC parameters.
      *

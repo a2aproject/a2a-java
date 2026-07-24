@@ -5,6 +5,9 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public final class SendMessageResponse_v0_3 extends JSONRPCResponse_v0_3<EventKind_v0_3> {
 
+    private SendMessageResponse_v0_3() {
+    }
+
     public SendMessageResponse_v0_3(String jsonrpc, Object id, EventKind_v0_3 result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, EventKind_v0_3.class);
     }

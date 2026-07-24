@@ -156,8 +156,10 @@ public abstract class DynamicBomVerifier {
         try (Stream<Path> paths = Files.walk(projectRoot)) {
             paths.filter(Files::isRegularFile)
                  .filter(p -> p.toString().endsWith(".java"))
-                 .filter(p -> p.toString().contains("/src/main/java/"))
-                 .filter(p -> pathFilter.test(projectRoot.relativize(p).toString()))
+                 .filter(p -> {
+                     String relativePath = toForwardSlash(projectRoot.relativize(p).toString());
+                     return !relativePath.startsWith(".") && relativePath.contains("/src/main/java/") && pathFilter.test(relativePath);
+                 })
                  .forEach(javaFile -> {
                      try {
                          String className = extractClassName(javaFile);
@@ -179,6 +181,10 @@ public abstract class DynamicBomVerifier {
 
     private boolean isForbidden(String relativePath) {
         return forbiddenPaths.stream().anyMatch(relativePath::startsWith);
+    }
+
+    private static String toForwardSlash(String path) {
+        return path.replace('\\', '/');
     }
 
     private static @Nullable String extractClassName(Path javaFile) throws IOException {

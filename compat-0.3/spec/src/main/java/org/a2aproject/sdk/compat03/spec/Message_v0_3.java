@@ -5,110 +5,51 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a single message in the conversation between a user and an agent.
  */
-public final class Message_v0_3 implements EventKind_v0_3, StreamingEventKind_v0_3 {
+public record Message_v0_3(
+        Role role,
+        List<Part_v0_3<?>> parts,
+        @Nullable String messageId,
+        @Nullable String contextId,
+        @Nullable String taskId,
+        @Nullable List<String> referenceTaskIds,
+        @Nullable Map<String, Object> metadata,
+        @Nullable List<String> extensions,
+        String kind
+) implements EventKind_v0_3, StreamingEventKind_v0_3 {
 
-    public static final String MESSAGE = "message";
-    private final Role role;
-    private final List<Part_v0_3<?>> parts;
-    private final String messageId;
-    private String contextId;
-    private String taskId;
-    private final Map<String, Object> metadata;
-    private final String kind;
-    private final List<String> referenceTaskIds;
-    private final List<String> extensions;
+    public static final String KIND = "message";
 
-    public Message_v0_3(Role role, List<Part_v0_3<?>> parts, String messageId, String contextId, String taskId,
-                        List<String> referenceTaskIds, Map<String, Object> metadata, List<String> extensions) {
-        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, MESSAGE);
-    }
-
-    public Message_v0_3(Role role, List<Part_v0_3<?>> parts,
-                        String messageId, String contextId,
-                        String taskId, List<String> referenceTaskIds,
-                        Map<String, Object> metadata, List<String> extensions,
-                        String kind) {
-        Assert.checkNotNullParam("kind", kind);
-        Assert.checkNotNullParam("parts", parts);
-        if (parts.isEmpty()) {
-            throw new IllegalArgumentException("Parts cannot be empty");
-        }
+    public Message_v0_3(Role role, List<Part_v0_3<?>> parts, @Nullable String messageId, @Nullable String contextId,
+                        @Nullable String taskId, @Nullable List<String> referenceTaskIds,
+                        @Nullable Map<String, Object> metadata, @Nullable List<String> extensions, String kind) {
         Assert.checkNotNullParam("role", role);
-        if (! kind.equals(MESSAGE)) {
-            throw new IllegalArgumentException("Invalid Message");
-        }
-        Assert.checkNotNullParam("messageId", messageId);
+        Assert.checkNotNullParam("parts", parts);
         this.role = role;
-        this.parts = parts;
-        this.messageId = messageId;
-        this.contextId = contextId;
-        this.taskId = taskId;
-        this.referenceTaskIds = referenceTaskIds;
-        this.metadata = metadata;
-        this.extensions = extensions;
-        this.kind = kind;
-    }
-
-    public void check() {
-        Assert.checkNotNullParam("kind", kind);
-        Assert.checkNotNullParam("parts", parts);
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be empty");
         }
-        Assert.checkNotNullParam("role", role);
-        if (!kind.equals(MESSAGE)) {
+        this.parts = List.copyOf(parts);
+        this.messageId = messageId;
+        this.kind = kind != null ? kind : KIND;
+        if (!this.kind.equals(KIND)) {
             throw new IllegalArgumentException("Invalid Message");
         }
-        Assert.checkNotNullParam("messageId", messageId);
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public List<Part_v0_3<?>> getParts() {
-        return parts;
-    }
-
-    public String getMessageId() {
-        return messageId;
-    }
-
-    public String getContextId() {
-        return contextId;
-    }
-
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    public void setContextId(String contextId) {
         this.contextId = contextId;
+        this.taskId = taskId;
+        this.referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
+        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.extensions = extensions != null ? List.copyOf(extensions) : null;
     }
 
-    public List<String> getReferenceTaskIds() {
-        return referenceTaskIds;
-    }
-
-    public List<String> getExtensions() {
-        return extensions;
-    }
-
-    @Override
-    public String getKind() {
-        return kind;
+    public Message_v0_3(Role role, List<Part_v0_3<?>> parts, @Nullable String messageId, @Nullable String contextId,
+                        @Nullable String taskId, @Nullable List<String> referenceTaskIds,
+                        @Nullable Map<String, Object> metadata, @Nullable List<String> extensions) {
+        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, KIND);
     }
 
     public enum Role {
@@ -166,7 +107,7 @@ public final class Message_v0_3 implements EventKind_v0_3, StreamingEventKind_v0
             return this;
         }
 
-        public Builder parts(Part_v0_3<?>...parts) {
+        public Builder parts(Part_v0_3<?>... parts) {
             this.parts = List.of(parts);
             return this;
         }

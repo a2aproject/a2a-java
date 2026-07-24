@@ -15,6 +15,10 @@ import org.a2aproject.sdk.spec.A2AError;
  */
 public final class DeleteTaskPushNotificationConfigResponse extends A2AResponse<Void> {
 
+    private DeleteTaskPushNotificationConfigResponse() {
+    }
+
+
     /**
      * Creates a new DeleteTaskPushNotificationConfigResponse with full JSON-RPC parameters.
      *

@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record ListTaskPushNotificationConfigsParams(String id, int pageSize, String pageToken, String tenant) {
+public record ListTaskPushNotificationConfigsParams(String id, int pageSize, String pageToken, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -30,7 +29,6 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
      */
     public ListTaskPushNotificationConfigsParams {
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("tenant", tenant);
     }
 
     /**
@@ -39,7 +37,7 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
      * @param id the task identifier (required)
      */
     public ListTaskPushNotificationConfigsParams(String id) {
-        this(id, 0, "", "");
+        this(id, 0, "", null);
     }
 
     /**
@@ -117,7 +115,7 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
          * @param tenant the tenant identifier
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -133,7 +131,7 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
                 Assert.checkNotNullParam("id", id),
                 pageSize != null ? pageSize : 0,
                 pageToken != null ? pageToken : "",
-                Utils.defaultIfNull(tenant,"")
+                tenant
             );
         }
     }

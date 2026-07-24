@@ -21,5 +21,5 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public interface EventKind_v0_3 {
 
-    String getKind();
+    String kind();
 }

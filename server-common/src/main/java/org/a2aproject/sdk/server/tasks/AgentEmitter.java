@@ -6,6 +6,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.Artifact;
@@ -94,6 +96,8 @@ import org.jspecify.annotations.Nullable;
  * @since 1.0.0
  */
 public class AgentEmitter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentEmitter.class);
+
     private final EventQueue eventQueue;
     private final String taskId;
     private final String contextId;
@@ -111,10 +115,6 @@ public class AgentEmitter {
         this.contextId = context.getContextId();
     }
 
-    private void updateStatus(TaskState taskState) {
-        updateStatus(taskState, null, taskState.isFinal());
-    }
-
     /**
      * Updates the task status to the given state with an optional message.
      *
@@ -122,17 +122,7 @@ public class AgentEmitter {
      * @param message optional message to include with the status update
      */
     public void updateStatus(TaskState taskState, @Nullable Message message) {
-        updateStatus(taskState, message, taskState.isFinal());
-    }
-
-    /**
-     * Updates the task status to the given state with an optional message and finality flag.
-     *
-     * @param state the new task state
-     * @param message optional message to include with the status update
-     * @param isFinal whether this is a final status (prevents further updates)
-     */
-    private void updateStatus(TaskState state, @Nullable Message message, boolean isFinal) {
+        boolean isFinal = taskState.isFinal();
         // Check terminal state first (fail fast)
         if (terminalStateReached.get()) {
             throw new IllegalStateException("Cannot update task status - terminal state already reached");
@@ -148,7 +138,7 @@ public class AgentEmitter {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(state, message, null))
+                .status(new TaskStatus(taskState, message, null))
                 .build();
         eventQueue.enqueueEvent(event);
     }
@@ -367,7 +357,7 @@ public class AgentEmitter {
      * Marks the task as INPUT_REQUIRED, indicating the agent needs user input to continue.
      */
     public void requiresInput() {
-        requiresInput(null, false);
+        requiresInput(null);
     }
 
     /**
@@ -376,33 +366,39 @@ public class AgentEmitter {
      * @param message optional message to include
      */
     public void requiresInput(@Nullable Message message) {
-        requiresInput(message, false);
+        updateStatus(TaskState.TASK_STATE_INPUT_REQUIRED, message);
     }
 
     /**
-     * Marks the task as INPUT_REQUIRED with a finality flag.
+     * Marks the task as INPUT_REQUIRED.
      *
-     * @param isFinal whether this is a final status (prevents further updates)
+     * @param isFinal ignored — interrupted states are not final per the A2A specification.
+     *                Use {@link #requiresInput()} instead.
+     * @deprecated The {@code isFinal} parameter has no effect. Use {@link #requiresInput()} instead.
      */
+    @Deprecated(forRemoval = true)
     public void requiresInput(boolean isFinal) {
-        requiresInput(null, isFinal);
+        requiresInput();
     }
 
     /**
-     * Marks the task as INPUT_REQUIRED with an optional message and finality flag.
+     * Marks the task as INPUT_REQUIRED with an optional message.
      *
      * @param message optional message to include
-     * @param isFinal whether this is a final status (prevents further updates)
+     * @param isFinal ignored — interrupted states are not final per the A2A specification.
+     *                Use {@link #requiresInput(Message)} instead.
+     * @deprecated The {@code isFinal} parameter has no effect. Use {@link #requiresInput(Message)} instead.
      */
+    @Deprecated(forRemoval = true)
     public void requiresInput(@Nullable Message message, boolean isFinal) {
-        updateStatus(TaskState.TASK_STATE_INPUT_REQUIRED, message, isFinal);
+        requiresInput(message);
     }
 
     /**
      * Marks the task as AUTH_REQUIRED, indicating the agent needs authentication to continue.
      */
     public void requiresAuth() {
-        requiresAuth(null, false);
+        requiresAuth(null);
     }
 
     /**
@@ -411,26 +407,32 @@ public class AgentEmitter {
      * @param message optional message to include
      */
     public void requiresAuth(@Nullable Message message) {
-        requiresAuth(message, false);
+        updateStatus(TaskState.TASK_STATE_AUTH_REQUIRED, message);
     }
 
     /**
-     * Marks the task as AUTH_REQUIRED with a finality flag.
+     * Marks the task as AUTH_REQUIRED.
      *
-     * @param isFinal whether this is a final status (prevents further updates)
+     * @param isFinal ignored — interrupted states are not final per the A2A specification.
+     *                Use {@link #requiresAuth()} instead.
+     * @deprecated The {@code isFinal} parameter has no effect. Use {@link #requiresAuth()} instead.
      */
+    @Deprecated(forRemoval = true)
     public void requiresAuth(boolean isFinal) {
-        requiresAuth(null, isFinal);
+        requiresAuth();
     }
 
     /**
-     * Marks the task as AUTH_REQUIRED with an optional message and finality flag.
+     * Marks the task as AUTH_REQUIRED with an optional message.
      *
      * @param message optional message to include
-     * @param isFinal whether this is a final status (prevents further updates)
+     * @param isFinal ignored — interrupted states are not final per the A2A specification.
+     *                Use {@link #requiresAuth(Message)} instead.
+     * @deprecated The {@code isFinal} parameter has no effect. Use {@link #requiresAuth(Message)} instead.
      */
+    @Deprecated(forRemoval = true)
     public void requiresAuth(@Nullable Message message, boolean isFinal) {
-        updateStatus(TaskState.TASK_STATE_AUTH_REQUIRED, message, isFinal);
+        requiresAuth(message);
     }
 
     /**
@@ -508,6 +510,14 @@ public class AgentEmitter {
      * @since 1.0.0
      */
     public void sendMessage(Message message) {
+        if (message.taskId() != null && !message.taskId().equals(taskId)) {
+            LOGGER.error("Message taskId mismatch: expected={}, actual={}", taskId, message.taskId());
+            throw new IllegalArgumentException("Message taskId does not match the emitter's taskId");
+        }
+        if (message.contextId() != null && !message.contextId().equals(contextId)) {
+            LOGGER.error("Message contextId mismatch: expected={}, actual={}", contextId, message.contextId());
+            throw new IllegalArgumentException("Message contextId does not match the emitter's contextId");
+        }
         eventQueue.enqueueEvent(message);
     }
 
@@ -557,7 +567,6 @@ public class AgentEmitter {
      *         .taskId(context.getTaskId())
      *         .contextId(context.getContextId())
      *         .status(new TaskStatus(TaskState.WORKING))
-     *         .isFinal(false)
      *         .build();
      *     emitter.emitEvent(event);
      * }

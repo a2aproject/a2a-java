@@ -133,22 +133,6 @@ public class AsyncExecutorProducer {
         return executor;
     }
 
-    /**
-     * Log current executor pool statistics for diagnostics.
-     * Useful for debugging pool exhaustion or sizing issues.
-     */
-    public void logPoolStats() {
-        if (executor instanceof ThreadPoolExecutor tpe) {
-            LOGGER.info("Executor pool stats: active={}/{}, queued={}/{}, completed={}, total={}",
-                    tpe.getActiveCount(),
-                    tpe.getPoolSize(),
-                    tpe.getQueue().size(),
-                    queueCapacity,
-                    tpe.getCompletedTaskCount(),
-                    tpe.getTaskCount());
-        }
-    }
-
     private static class A2AThreadFactory implements ThreadFactory {
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private final String namePrefix = "a2a-agent-executor-";

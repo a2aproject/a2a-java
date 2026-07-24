@@ -7,6 +7,9 @@ import java.util.List;
  */
 public final class ListTaskPushNotificationConfigResponse_v0_3 extends JSONRPCResponse_v0_3<List<TaskPushNotificationConfig_v0_3>> {
 
+    private ListTaskPushNotificationConfigResponse_v0_3() {
+    }
+
     public ListTaskPushNotificationConfigResponse_v0_3(String jsonrpc, Object id, List<TaskPushNotificationConfig_v0_3> result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, (Class<List<TaskPushNotificationConfig_v0_3>>) (Class<?>) List.class);
     }

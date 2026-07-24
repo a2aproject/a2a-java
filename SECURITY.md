@@ -17,8 +17,10 @@ Our preferred way of reporting security issues is listed below.
 
 ### Email the A2A Java SDK team
 
-To report a security issue, please email <a href="mailto:fjuma@redhat.com">fjuma@redhat.com</a>,
-<a href="mailto:kkhan@redhat.com">kkhan@redhat.com</a>, and/or <a href="mailto:smaestri@redhat.com">smaestri@redhat.com</a>. A member of the team will open the required issues.
+To report a security issue, please email
+<a href="mailto:kkhan@redhat.com">kkhan@redhat.com</a>, <a href="mailto:ehugonne@redhat.com">ehugonne@redhat.com</a>, 
+<a href="mailto:jmesnil@redhat.com">jmesnil@redhat.com</a> and/or <a href="mailto:smaestri@redhat.com">smaestri@redhat.com</a>. 
+A member of the team will open the required issues.
 
 ### Other considerations
 

@@ -16,7 +16,7 @@ import org.mapstruct.Mapper;
  * <p>
  * Key differences:
  * <ul>
- *   <li>v0.3: Message is a class with getter methods (e.g., {@code getRole()}, {@code getParts()})</li>
+ *   <li>v0.3: Message is a record with accessor methods (e.g., {@code role()}, {@code parts()})</li>
  *   <li>v1.0: Message is a record with accessor methods (e.g., {@code role()}, {@code parts()})</li>
  *   <li>Role enum values have "ROLE_" prefix in v1.0</li>
  *   <li>Part types (TextPart, FilePart, DataPart) changed from classes to records in v1.0</li>
@@ -46,20 +46,20 @@ public interface MessageMapper_v0_3 {
             return null;
         }
 
-        Message.Role role = RoleMapper_v0_3.INSTANCE.toV10(v03.getRole());
-        List<Part<?>> parts = v03.getParts().stream()
+        Message.Role role = RoleMapper_v0_3.INSTANCE.toV10(v03.role());
+        List<Part<?>> parts = v03.parts().stream()
             .map(PartMapper_v0_3.INSTANCE::toV10)
             .collect(Collectors.toList());
 
         return new Message(
             role,
             parts,
-            v03.getMessageId(),
-            v03.getContextId(),
-            v03.getTaskId(),
-            v03.getReferenceTaskIds(),
-            v03.getMetadata(),
-            v03.getExtensions()
+            v03.messageId(),
+            v03.contextId(),
+            v03.taskId(),
+            v03.referenceTaskIds(),
+            v03.metadata(),
+            v03.extensions()
         );
     }
 

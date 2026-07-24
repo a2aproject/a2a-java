@@ -25,7 +25,7 @@ public record ListTasksParams(
         @Nullable Integer historyLength,
         @Nullable Instant statusTimestampAfter,
         @Nullable Boolean includeArtifacts,
-        String tenant
+        @Nullable String tenant
 ) {
     private static final int MIN_PAGE_SIZE = 1;
     private static final int MAX_PAGE_SIZE = 100;
@@ -42,10 +42,9 @@ public record ListTasksParams(
      * @param statusTimestampAfter filter by status timestamp
      * @param includeArtifacts whether to include artifacts
      * @param tenant the tenant identifier
-     * @throws InvalidParamsError if tenant is null or if pageSize or historyLength are out of valid range
+     * @throws InvalidParamsError if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
-        Assert.checkNotNullParam("tenant", tenant);
         // Validate pageSize (1-100)
         if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
             throw new InvalidParamsError(null,
@@ -62,7 +61,7 @@ public record ListTasksParams(
      * Default constructor for listing all tasks.
      */
     public ListTasksParams() {
-        this(null, null, null, null, null, null, null, "");
+        this(null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -72,7 +71,7 @@ public record ListTasksParams(
      * @param pageToken Token for pagination
      */
     public ListTasksParams(Integer pageSize, String pageToken) {
-        this(null, null, pageSize, pageToken, null, null, null, "");
+        this(null, null, pageSize, pageToken, null, null, null, null);
     }
 
     /**
@@ -215,7 +214,7 @@ public record ListTasksParams(
          * @param tenant the tenant
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -227,7 +226,7 @@ public record ListTasksParams(
          */
         public ListTasksParams build() {
             return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
-                    statusTimestampAfter, includeArtifacts, tenant == null ? "" : tenant);
+                    statusTimestampAfter, includeArtifacts, tenant);
         }
     }
 }

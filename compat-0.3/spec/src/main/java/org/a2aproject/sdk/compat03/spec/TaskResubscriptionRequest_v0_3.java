@@ -11,6 +11,10 @@ import java.util.UUID;
  */
 public final class TaskResubscriptionRequest_v0_3 extends StreamingJSONRPCRequest_v0_3<TaskIdParams_v0_3> {
 
+    private TaskResubscriptionRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/resubscribe";
 
     public TaskResubscriptionRequest_v0_3(String jsonrpc, Object id, String method, TaskIdParams_v0_3 params) {

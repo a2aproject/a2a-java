@@ -31,5 +31,5 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public sealed interface StreamingEventKind_v0_3 extends Event_v0_3 permits Task_v0_3, Message_v0_3, TaskStatusUpdateEvent_v0_3, TaskArtifactUpdateEvent_v0_3 {
 
-    String getKind();
+    String kind();
 }

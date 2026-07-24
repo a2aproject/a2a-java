@@ -705,8 +705,8 @@ public class JsonUtil_v0_3 {
 
             String kind = kindElement.getAsString();
             return switch (kind) {
-                case Task_v0_3.TASK -> delegateGson.fromJson(jsonElement, Task_v0_3.class);
-                case Message_v0_3.MESSAGE -> delegateGson.fromJson(jsonElement, Message_v0_3.class);
+                case Task_v0_3.KIND -> delegateGson.fromJson(jsonElement, Task_v0_3.class);
+                case Message_v0_3.KIND -> delegateGson.fromJson(jsonElement, Message_v0_3.class);
                 default -> throw new JsonSyntaxException("Unknown EventKind kind: " + kind);
             };
         }
@@ -850,15 +850,15 @@ public class JsonUtil_v0_3 {
 
             String type = typeElement.getAsString();
             return switch (type) {
-                case APIKeySecurityScheme_v0_3.API_KEY ->
+                case APIKeySecurityScheme_v0_3.TYPE ->
                     delegateGson.fromJson(jsonElement, APIKeySecurityScheme_v0_3.class);
-                case HTTPAuthSecurityScheme_v0_3.HTTP ->
+                case HTTPAuthSecurityScheme_v0_3.TYPE ->
                     delegateGson.fromJson(jsonElement, HTTPAuthSecurityScheme_v0_3.class);
-                case OAuth2SecurityScheme_v0_3.OAUTH2 ->
+                case OAuth2SecurityScheme_v0_3.TYPE ->
                     delegateGson.fromJson(jsonElement, OAuth2SecurityScheme_v0_3.class);
-                case OpenIdConnectSecurityScheme_v0_3.OPENID_CONNECT ->
+                case OpenIdConnectSecurityScheme_v0_3.TYPE ->
                     delegateGson.fromJson(jsonElement, OpenIdConnectSecurityScheme_v0_3.class);
-                case MutualTLSSecurityScheme_v0_3.MUTUAL_TLS ->
+                case MutualTLSSecurityScheme_v0_3.TYPE ->
                     delegateGson.fromJson(jsonElement, MutualTLSSecurityScheme_v0_3.class);
                 default ->
                     throw new JsonSyntaxException("Unknown SecurityScheme type: " + type);

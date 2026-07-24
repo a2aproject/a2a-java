@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.server.tasks;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Task;
 import org.jspecify.annotations.Nullable;
@@ -82,7 +83,7 @@ import org.jspecify.annotations.Nullable;
  * conflicts appropriately (last-write-wins, optimistic locking, etc.).
  *
  * <h2>List Operation Performance</h2>
- * The {@link #list(org.a2aproject.sdk.spec.ListTasksParams)} method may need to scan and filter
+ * The {@link #list(ListTasksParams, ServerCallContext)} method may need to scan and filter
  * many tasks. Database implementations should:
  * <ul>
  *   <li>Use indexes on contextId, status, lastUpdatedAt</li>
@@ -189,8 +190,23 @@ public interface TaskStore {
 
     /**
      * List tasks with optional filtering and pagination.
+     * <p>
+     * <b>Authorization filtering:</b> When a
+     * {@link org.a2aproject.sdk.server.auth.TaskAuthorizationProvider TaskAuthorizationProvider}
+     * bean is present, implementations <b>must</b> call
+     * {@link org.a2aproject.sdk.server.auth.TaskAuthorizationProvider#checkRead checkRead} for
+     * each candidate task and exclude tasks for which the check returns {@code false}.
+     * The filtering should be applied before pagination so that page sizes are correct
+     * from the caller's perspective. If no provider is present, all tasks are returned.
+     * <p>
+     * <b>⚠ Custom implementation warning:</b> Returning unfiltered results bypasses the
+     * authorization model and can leak tasks belonging to other users. Custom implementations
+     * must apply per-task {@code checkRead} filtering before pagination. The
+     * {@code TaskAuthorizationProvider} should be declared as a CDI dependency and injected
+     * via the constructor or {@code @Inject}.
      *
      * @param params the filtering and pagination parameters
+     * @param context the server call context (used for authorization filtering)
      * @return the list of tasks matching the criteria with pagination info
      * @throws TaskSerializationException if any persisted task data cannot be deserialized during listing
      *                                    (corrupted JSON in database)
@@ -198,5 +214,5 @@ public interface TaskStore {
      *                                  connection error)
      * @throws TaskStoreException for other listing failures not covered by specific subclasses
      */
-    ListTasksResult list(ListTasksParams params);
+    ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context);
 }

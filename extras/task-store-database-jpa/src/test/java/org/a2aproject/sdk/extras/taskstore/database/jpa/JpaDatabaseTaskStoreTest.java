@@ -291,7 +291,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("non-existent-context-12345")
                 .tenant("tenant")
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertNotNull(result);
         assertEquals(0, result.totalSize());
@@ -331,7 +331,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("context-A")
                 .tenant("tenant")
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertEquals(2, result.totalSize());
         assertEquals(2, result.pageSize());
@@ -371,7 +371,7 @@ public class JpaDatabaseTaskStoreTest {
                 .tenant("tenant")
                 .status(TaskState.TASK_STATE_WORKING)
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertEquals(1, result.totalSize());
         assertEquals(1, result.pageSize());
@@ -411,7 +411,7 @@ public class JpaDatabaseTaskStoreTest {
                 .tenant("tenant")
                 .status(TaskState.TASK_STATE_WORKING)
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertEquals(1, result.totalSize());
         assertEquals(1, result.pageSize());
@@ -441,7 +441,7 @@ public class JpaDatabaseTaskStoreTest {
                 .tenant("tenant")
                 .pageSize(2)
                 .build();
-        ListTasksResult result1 = taskStore.list(params1);
+        ListTasksResult result1 = taskStore.list(params1, null);
 
         assertEquals(5, result1.totalSize());
         assertEquals(2, result1.pageSize());
@@ -455,7 +455,7 @@ public class JpaDatabaseTaskStoreTest {
                 .pageSize(2)
                 .pageToken(result1.nextPageToken())
                 .build();
-        ListTasksResult result2 = taskStore.list(params2);
+        ListTasksResult result2 = taskStore.list(params2, null);
 
         assertEquals(5, result2.totalSize());
         assertEquals(2, result2.pageSize());
@@ -468,7 +468,7 @@ public class JpaDatabaseTaskStoreTest {
                 .pageSize(2)
                 .pageToken(result2.nextPageToken())
                 .build();
-        ListTasksResult result3 = taskStore.list(params3);
+        ListTasksResult result3 = taskStore.list(params3, null);
 
         assertEquals(5, result3.totalSize());
         assertEquals(1, result3.pageSize());
@@ -535,7 +535,7 @@ public class JpaDatabaseTaskStoreTest {
                 .tenant("tenant")
                 .pageSize(2)
                 .build();
-        ListTasksResult result1 = taskStore.list(params1);
+        ListTasksResult result1 = taskStore.list(params1, null);
 
         assertEquals(5, result1.totalSize());
         assertEquals(2, result1.pageSize());
@@ -558,7 +558,7 @@ public class JpaDatabaseTaskStoreTest {
                 .pageSize(2)
                 .pageToken(result1.nextPageToken())
                 .build();
-        ListTasksResult result2 = taskStore.list(params2);
+        ListTasksResult result2 = taskStore.list(params2, null);
 
         assertEquals(5, result2.totalSize());
         assertEquals(2, result2.pageSize());
@@ -575,7 +575,7 @@ public class JpaDatabaseTaskStoreTest {
                 .pageSize(2)
                 .pageToken(result2.nextPageToken())
                 .build();
-        ListTasksResult result3 = taskStore.list(params3);
+        ListTasksResult result3 = taskStore.list(params3, null);
 
         assertEquals(5, result3.totalSize());
         assertEquals(1, result3.pageSize());
@@ -624,7 +624,7 @@ public class JpaDatabaseTaskStoreTest {
                 .tenant("tenant")
                 .historyLength(3)
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertEquals(1, result.tasks().size());
         Task retrieved = result.tasks().get(0);
@@ -661,7 +661,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("context-artifact-unique")
                 .tenant("tenant")
                 .build();
-        ListTasksResult resultWithout = taskStore.list(paramsWithoutArtifacts);
+        ListTasksResult resultWithout = taskStore.list(paramsWithoutArtifacts, null);
 
         assertEquals(1, resultWithout.tasks().size());
         assertTrue(resultWithout.tasks().get(0).artifacts().isEmpty(),
@@ -673,7 +673,7 @@ public class JpaDatabaseTaskStoreTest {
                 .tenant("tenant")
                 .includeArtifacts(true)
                 .build();
-        ListTasksResult resultWith = taskStore.list(paramsWithArtifacts);
+        ListTasksResult resultWith = taskStore.list(paramsWithArtifacts, null);
 
         assertEquals(1, resultWith.tasks().size());
         assertEquals(1, resultWith.tasks().get(0).artifacts().size(),
@@ -699,7 +699,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("context-default-pagesize")
                 .tenant("tenant")
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertEquals(100, result.totalSize());
         assertEquals(50, result.pageSize(), "Default page size should be 50");
@@ -725,7 +725,7 @@ public class JpaDatabaseTaskStoreTest {
                 .build();
 
         try {
-            taskStore.list(params1);
+            taskStore.list(params1, null);
             throw new AssertionError("Expected InvalidParamsError for legacy ID-only pageToken");
         } catch (org.a2aproject.sdk.spec.InvalidParamsError e) {
             // Expected - legacy format not supported
@@ -741,7 +741,7 @@ public class JpaDatabaseTaskStoreTest {
                 .build();
 
         try {
-            taskStore.list(params2);
+            taskStore.list(params2, null);
             throw new AssertionError("Expected InvalidParamsError for malformed timestamp");
         } catch (org.a2aproject.sdk.spec.InvalidParamsError e) {
             // Expected - malformed timestamp
@@ -786,7 +786,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("context-order")
                 .tenant("tenant")
                 .build();
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, null);
 
         assertEquals(3, result.tasks().size());
         assertEquals("task-order-a", result.tasks().get(0).id());

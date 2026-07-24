@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * @param tenant optional tenant, provided as a path parameter.
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record DeleteTaskPushNotificationConfigParams(String taskId, String id, String tenant) {
+public record DeleteTaskPushNotificationConfigParams(String taskId, String id, @Nullable String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -30,7 +29,6 @@ public record DeleteTaskPushNotificationConfigParams(String taskId, String id, S
     public DeleteTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("tenant", tenant);
     }
 
     /**
@@ -41,7 +39,7 @@ public record DeleteTaskPushNotificationConfigParams(String taskId, String id, S
      * @throws IllegalArgumentException if taskId or id is null
      */
     public DeleteTaskPushNotificationConfigParams(String taskId, String id) {
-        this(taskId, id, "");
+        this(taskId, id, null);
     }
 
     /**
@@ -97,7 +95,7 @@ public record DeleteTaskPushNotificationConfigParams(String taskId, String id, S
          * @param tenant arbitrary tenant (optional)
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -112,7 +110,7 @@ public record DeleteTaskPushNotificationConfigParams(String taskId, String id, S
             return new DeleteTaskPushNotificationConfigParams(
                     Assert.checkNotNullParam("taskId", taskId),
                     Assert.checkNotNullParam("id", id),
-                    Utils.defaultIfNull(tenant,""));
+                    tenant);
         }
     }
 }

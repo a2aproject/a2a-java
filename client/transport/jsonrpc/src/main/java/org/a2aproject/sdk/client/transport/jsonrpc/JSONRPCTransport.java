@@ -65,7 +65,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
-import org.a2aproject.sdk.util.Utils;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransport implements ClientTransport {
@@ -328,7 +328,7 @@ public class JSONRPCTransport implements ClientTransport {
         if (!response.success()) {
             int status = response.status();
             String message = "Request failed with HTTP " + status;
-            throw new A2AClientException(message, new A2AClientHTTPError(status, message, response.body()));
+            throw new A2AClientException(message, new A2AClientHTTPError(status, message, response.body(), response.headers().toMap()));
         }
         return response.body();
     }

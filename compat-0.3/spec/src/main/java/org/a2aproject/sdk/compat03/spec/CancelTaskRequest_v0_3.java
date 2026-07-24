@@ -12,6 +12,10 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class CancelTaskRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<TaskIdParams_v0_3> {
 
+    private CancelTaskRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/cancel";
 
     public CancelTaskRequest_v0_3(String jsonrpc, Object id, String method, TaskIdParams_v0_3 params) {

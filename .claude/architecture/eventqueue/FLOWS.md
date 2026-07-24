@@ -91,15 +91,17 @@ Events that cause polling loop exit:
 **Purpose**: Consumes events from EventQueue and exposes as reactive stream
 
 **Key Methods**:
-- `consume()` → Returns `Flow.Publisher<Event>`
+- `consumeOne()` → Returns single `Event` (non-blocking, throws if queue is empty)
+- `consumeAll()` → Returns `Flow.Publisher<EventQueueItem>` (reactive)
 - Polls queue with 500ms timeout
 - Closes queue on final event
 - Thread-safe concurrent consumption
+- Handles thread offloading internally
 
 **Usage**:
 ```java
-EventConsumer consumer = new EventConsumer(eventQueue);
-Flow.Publisher<Event> publisher = consumer.consume();
+EventConsumer consumer = new EventConsumer(eventQueue, executor);
+Flow.Publisher<EventQueueItem> publisher = consumer.consumeAll();
 // Subscribe to receive events as they arrive
 ```
 
@@ -111,41 +113,31 @@ Flow.Publisher<Event> publisher = consumer.consume();
 
 Bridges EventConsumer and DefaultRequestHandler with three consumption modes:
 
-### 1. consumeAndBreakOnInterrupt()
+### 1. consumeAndBreakOnInterrupt(consumer, blocking)
 
 **Used by**: `onMessageSend()` (non-streaming)
 
 **Behavior**:
+- Subscribes to `EventConsumer.consumeAll()` on `@EventConsumerExecutor` thread pool
 - Polls queue until terminal event or AUTH_REQUIRED
-- Returns `EventTypeAndInterrupt(event, interrupted)`
-- Blocking operation
+- Returns `EventTypeAndInterrupt(eventType, interrupted, consumptionFuture)`
+- `consumptionFuture` tracks background consumption completion for cleanup coordination
 - Exits early on AUTH_REQUIRED (interrupted = true)
+- For blocking calls: interrupts to free Vert.x thread, continues background consumption
 
 **Use Case**: Non-streaming requests that need single final response
 
-### 2. consumeAndEmit()
+### 2. consumeAndEmit(consumer)
 
 **Used by**: `onMessageSendStream()` (streaming)
 
 **Behavior**:
-- Returns all events as `Flow.Publisher<Event>`
+- Returns all events as `Flow.Publisher<EventQueueItem>`
 - Non-blocking, immediate return
 - Client subscribes to stream
 - Events delivered as they arrive
 
 **Use Case**: Streaming requests where client wants all events in real-time
-
-### 3. consumeAll()
-
-**Used by**: `onCancelTask()`
-
-**Behavior**:
-- Consumes all events from queue
-- Returns first `Message` or final `Task` found
-- Simple consumption without streaming
-- Blocks until queue exhausted
-
-**Use Case**: Task cancellation where final state matters
 
 ---
 
@@ -154,7 +146,7 @@ Bridges EventConsumer and DefaultRequestHandler with three consumption modes:
 | Aspect | Non-Streaming | Streaming |
 |--------|---------------|-----------|
 | **ResultAggregator Mode** | consumeAndBreakOnInterrupt | consumeAndEmit |
-| **Return Type** | Task/Message | Flow.Publisher |
+| **Return Type** | Task/Message | Flow.Publisher\<EventQueueItem\> |
 | **Blocking** | Yes (until terminal event) | No (immediate return) |
 | **Cleanup** | Immediate or async | Always async |
 | **AUTH_REQUIRED** | Early exit, return task | Continue streaming |
@@ -211,7 +203,8 @@ cleanup(queue, task, true);  // ALWAYS async for streaming
 - Persists to TaskStore, distributes to ChildQueues
 
 ### Consumer Thread
-- Non-streaming: Request handler thread (blocking)
+- `@EventConsumerExecutor` cached thread pool (avoids deadlock under high concurrency)
+- Non-streaming: Background thread via `CompletableFuture.runAsync()` on `@EventConsumerExecutor`
 - Streaming: Subscriber thread (reactive)
 - Polls ChildQueue for events
 

@@ -1,49 +1,33 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines a security scheme using HTTP authentication.
  */
-public final class HTTPAuthSecurityScheme_v0_3 implements SecurityScheme_v0_3 {
+public record HTTPAuthSecurityScheme_v0_3(
+        @Nullable String bearerFormat,
+        String scheme,
+        @Nullable String description,
+        String type
+) implements SecurityScheme_v0_3 {
 
-    public static final String HTTP = "http";
-    private final String bearerFormat;
-    private final String scheme;
-    private final String description;
-    private final String type;
+    public static final String TYPE = "http";
 
-    public HTTPAuthSecurityScheme_v0_3(String bearerFormat, String scheme, String description) {
-        this(bearerFormat, scheme, description, HTTP);
-    }
-
-    public HTTPAuthSecurityScheme_v0_3(String bearerFormat, String scheme, String description, String type) {
+    public HTTPAuthSecurityScheme_v0_3(@Nullable String bearerFormat, String scheme, @Nullable String description, @Nullable String type) {
         Assert.checkNotNullParam("scheme", scheme);
-        Assert.checkNotNullParam("type", type);
-        if (! HTTP.equals(type)) {
+        if (type != null && !TYPE.equals(type)) {
             throw new IllegalArgumentException("Invalid type for HTTPAuthSecurityScheme");
         }
         this.bearerFormat = bearerFormat;
         this.scheme = scheme;
         this.description = description;
-        this.type = type;
+        this.type = TYPE;
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public String getBearerFormat() {
-        return bearerFormat;
-    }
-
-    public String getScheme() {
-        return scheme;
-    }
-
-    public String getType() {
-        return type;
+    public HTTPAuthSecurityScheme_v0_3(@Nullable String bearerFormat, String scheme, @Nullable String description) {
+        this(bearerFormat, scheme, description, TYPE);
     }
 
     public static class Builder {

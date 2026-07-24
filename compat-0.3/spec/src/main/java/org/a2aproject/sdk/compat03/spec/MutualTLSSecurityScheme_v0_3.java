@@ -1,40 +1,27 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines a security scheme using mTLS authentication.
  */
-public final class MutualTLSSecurityScheme_v0_3 implements SecurityScheme_v0_3 {
+public record MutualTLSSecurityScheme_v0_3(@Nullable String description, String type) implements SecurityScheme_v0_3 {
 
-    public static final String MUTUAL_TLS = "mutualTLS";
-    private final String description;
-    private final String type;
+    public static final String TYPE = "mutualTLS";
 
-    public MutualTLSSecurityScheme_v0_3(String description) {
-        this(description, MUTUAL_TLS);
-    }
-
-    public MutualTLSSecurityScheme_v0_3() {
-        this(null, MUTUAL_TLS);
-    }
-
-    public MutualTLSSecurityScheme_v0_3(String description, String type) {
-        Assert.checkNotNullParam("type", type);
-        if (!type.equals(MUTUAL_TLS)) {
+    public MutualTLSSecurityScheme_v0_3(@Nullable String description, @Nullable String type) {
+        if (type != null && !type.equals(TYPE)) {
             throw new IllegalArgumentException("Invalid type for MutualTLSSecurityScheme");
         }
         this.description = description;
-        this.type = type;
+        this.type = TYPE;
     }
 
-    @Override
-    public String getDescription() {
-        return description;
+    public MutualTLSSecurityScheme_v0_3(@Nullable String description) {
+        this(description, TYPE);
     }
 
-    public String getType() {
-        return type;
+    public MutualTLSSecurityScheme_v0_3() {
+        this(null, TYPE);
     }
-
 }

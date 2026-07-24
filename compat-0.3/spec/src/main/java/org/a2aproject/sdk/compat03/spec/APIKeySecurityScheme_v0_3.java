@@ -1,17 +1,14 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines a security scheme using an API key.
  */
-public final class APIKeySecurityScheme_v0_3 implements SecurityScheme_v0_3 {
+public record APIKeySecurityScheme_v0_3(String in, String name, @Nullable String description, String type) implements SecurityScheme_v0_3 {
 
-    public static final String API_KEY = "apiKey";
-    private final String in;
-    private final String name;
-    private final String type;
-    private final String description;
+    public static final String TYPE = "apiKey";
 
     /**
      * Represents the location of the API key.
@@ -47,40 +44,20 @@ public final class APIKeySecurityScheme_v0_3 implements SecurityScheme_v0_3 {
         }
     }
 
-    public APIKeySecurityScheme_v0_3(String in, String name, String description) {
-        this(in, name, description, API_KEY);
-    }
-
-    public APIKeySecurityScheme_v0_3(String in, String name,
-                                     String description, String type) {
+    public APIKeySecurityScheme_v0_3(String in, String name, @Nullable String description, @Nullable String type) {
         Assert.checkNotNullParam("in", in);
         Assert.checkNotNullParam("name", name);
-        Assert.checkNotNullParam("type", type);
-        if (! type.equals(API_KEY)) {
+        if (type != null && !type.equals(TYPE)) {
             throw new IllegalArgumentException("Invalid type for APIKeySecurityScheme");
         }
         this.in = in;
         this.name = name;
         this.description = description;
-        this.type = type;
+        this.type = TYPE;
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-
-    public String getIn() {
-        return in;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
+    public APIKeySecurityScheme_v0_3(String in, String name, @Nullable String description) {
+        this(in, name, description, TYPE);
     }
 
     public static class Builder {

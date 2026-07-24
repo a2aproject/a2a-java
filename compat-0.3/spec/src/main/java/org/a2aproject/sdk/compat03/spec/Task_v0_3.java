@@ -4,34 +4,30 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a single, stateful operation or conversation between a client and an agent.
  */
-public final class Task_v0_3 implements EventKind_v0_3, StreamingEventKind_v0_3 {
+public record Task_v0_3(
+        String id,
+        String contextId,
+        TaskStatus_v0_3 status,
+        List<Artifact_v0_3> artifacts,
+        List<Message_v0_3> history,
+        @Nullable Map<String, Object> metadata,
+        String kind
+) implements EventKind_v0_3, StreamingEventKind_v0_3 {
 
-    public static final String TASK = "task";
-    private final String id;
-    private final String contextId;
-    private final TaskStatus_v0_3 status;
-    private final List<Artifact_v0_3> artifacts;
-    private final List<Message_v0_3> history;
-    private final Map<String, Object> metadata;
-    private final String kind;
+    public static final String KIND = "task";
 
-    public Task_v0_3(String id, String contextId, TaskStatus_v0_3 status, List<Artifact_v0_3> artifacts,
-                     List<Message_v0_3> history, Map<String, Object> metadata) {
-        this(id, contextId, status, artifacts, history, metadata, TASK);
-    }
-
-    public Task_v0_3(String id, String contextId, TaskStatus_v0_3 status,
-                     List<Artifact_v0_3> artifacts, List<Message_v0_3> history,
-                     Map<String, Object> metadata, String kind) {
+    public Task_v0_3 (String id, String contextId, TaskStatus_v0_3 status, List<Artifact_v0_3> artifacts,
+                     List<Message_v0_3> history, @Nullable Map<String, Object> metadata, String kind){
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);
-        Assert.checkNotNullParam("kind", kind);
-        if (! kind.equals(TASK)) {
+        this.kind = kind != null ? kind : KIND;
+        if (!KIND.equals(this.kind)) {
             throw new IllegalArgumentException("Invalid Task");
         }
         this.id = id;
@@ -39,37 +35,12 @@ public final class Task_v0_3 implements EventKind_v0_3, StreamingEventKind_v0_3 
         this.status = status;
         this.artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
         this.history = history != null ? List.copyOf(history) : List.of();
-        this.metadata = metadata;
-        this.kind = kind;
+        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getContextId() {
-        return contextId;
-    }
-
-    public TaskStatus_v0_3 getStatus() {
-        return status;
-    }
-
-    public List<Artifact_v0_3> getArtifacts() {
-        return artifacts;
-    }
-
-    public List<Message_v0_3> getHistory() {
-        return history;
-    }
-
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
-    @Override
-    public String getKind() {
-        return kind;
+    public Task_v0_3(String id, String contextId, TaskStatus_v0_3 status, List<Artifact_v0_3> artifacts,
+                     List<Message_v0_3> history, @Nullable Map<String, Object> metadata) {
+        this(id, contextId, status, artifacts, history, metadata, KIND);
     }
 
     public static class Builder {
@@ -81,7 +52,6 @@ public final class Task_v0_3 implements EventKind_v0_3, StreamingEventKind_v0_3 
         private Map<String, Object> metadata;
 
         public Builder() {
-
         }
 
         public Builder(Task_v0_3 task) {
@@ -91,7 +61,6 @@ public final class Task_v0_3 implements EventKind_v0_3, StreamingEventKind_v0_3 
             artifacts = task.artifacts;
             history = task.history;
             metadata = task.metadata;
-
         }
 
         public Builder id(String id) {

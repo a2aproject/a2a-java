@@ -41,6 +41,7 @@ import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
@@ -49,11 +50,13 @@ import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.jspecify.annotations.Nullable;
 
 public class RestTransport_v0_3 implements ClientTransport_v0_3 {
@@ -372,21 +375,35 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException_v0_3 {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders);
+        MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
+        String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(body);
+        }
+        A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
-            log.fine("Error on POST processing " + JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Error on POST processing " + body);
+            }
             throw RestErrorMapper_v0_3.mapRestError(response);
         }
         return response.body();
     }
 
     private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws JsonProcessingException_v0_3, InvalidProtocolBufferException {
-        log.fine(JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+        String body = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(body);
+        }
+        return buildPost(url, payloadAndHeaders, body);
+    }
+
+    private A2AHttpClient.PostBuilder buildPost(String url, PayloadAndHeaders_v0_3 payloadAndHeaders, String body) throws JsonProcessingException_v0_3 {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
-                .body(JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+                .body(body);
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {

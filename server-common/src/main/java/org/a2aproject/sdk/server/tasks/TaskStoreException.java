@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  *   <li>{@code save(Task, boolean)} - Task persistence failures</li>
  *   <li>{@code get(String)} - Task retrieval failures</li>
  *   <li>{@code delete(String)} - Task deletion failures</li>
- *   <li>{@code list(ListTasksParams)} - Task listing failures</li>
+ *   <li>{@code list(ListTasksParams, ServerCallContext)} - Task listing failures</li>
  * </ul>
  *
  * <h2>Error Handling Pattern</h2>

@@ -2,6 +2,7 @@ package org.a2aproject.sdk.spec;
 
 import java.util.List;
 
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -36,6 +37,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
      * @throws IllegalArgumentException if historyLength is negative
      */
     public MessageSendConfiguration {
+        acceptedOutputModes = CollectionCopies.immutableNullableList(acceptedOutputModes);
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }

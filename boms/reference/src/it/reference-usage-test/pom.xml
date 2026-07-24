@@ -155,7 +155,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.a2aproject.sdk.test.ReferenceBomVerifier</mainClass>
+                            <mainClass>org.a2aproject.sdk.bom.test.reference.ReferenceBomVerifier</mainClass>
                         </configuration>
                     </execution>
                 </executions>

@@ -77,7 +77,7 @@ public class AuthInterceptor_v0_3_Test {
         AuthTestCase authTestCase = new AuthTestCase(
                 "http://agent.com/rpc",
                 "session-id",
-                APIKeySecurityScheme_v0_3.API_KEY,
+                APIKeySecurityScheme_v0_3.TYPE,
                 "secret-api-key",
                 new APIKeySecurityScheme_v0_3("header", "x-api-key", "API Key authentication"),
                 "x-api-key",
@@ -91,7 +91,7 @@ public class AuthInterceptor_v0_3_Test {
         AuthTestCase authTestCase = new AuthTestCase(
                 "http://agent.com/rpc",
                 "session-id",
-                OAuth2SecurityScheme_v0_3.OAUTH2,
+                OAuth2SecurityScheme_v0_3.TYPE,
                 "secret-oauth-access-token",
                 new OAuth2SecurityScheme_v0_3(new OAuthFlows_v0_3.Builder().build(), "OAuth2 authentication", null),
                 "Authorization",
@@ -105,7 +105,7 @@ public class AuthInterceptor_v0_3_Test {
         AuthTestCase authTestCase = new AuthTestCase(
                 "http://agent.com/rpc",
                 "session-id",
-                OpenIdConnectSecurityScheme_v0_3.OPENID_CONNECT,
+                OpenIdConnectSecurityScheme_v0_3.TYPE,
                 "secret-oidc-id-token",
                 new OpenIdConnectSecurityScheme_v0_3("http://provider.com/.well-known/openid-configuration", "OIDC authentication"),
                 "Authorization",

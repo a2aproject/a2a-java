@@ -72,6 +72,12 @@ public class Convert_v0_3_To10RequestHandler {
      */
     private final RequestHandler v10Handler;
 
+    @SuppressWarnings("NullAway.Init")
+    public Convert_v0_3_To10RequestHandler() {
+        // No-args constructor needed for spec-compliant CDI environments
+        this.v10Handler = null;
+    }
+
     @Inject
     public Convert_v0_3_To10RequestHandler(org.a2aproject.sdk.server.requesthandlers.RequestHandler v10Handler) {
         this.v10Handler = v10Handler;

@@ -17,8 +17,14 @@ jobs:
   build:
     # Only run for successful trigger workflow from main repository
     if: >
-      ${{ github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.repository.full_name == 'a2aproject/a2a-java' }}
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.repository.full_name == 'a2aproject/a2a-java' &&
+      (
+        (github.event.workflow_run.event == 'push' &&
+         contains(fromJSON('["main", "0.3.x"]'), github.event.workflow_run.head_branch)) ||
+        github.event.workflow_run.event == 'workflow_dispatch' ||
+        contains(fromJSON('["kkhan", "jmesnil", "ehsavoie", "maeste"]'), github.event.workflow_run.actor.login)
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -68,11 +74,13 @@ jobs:
             });
 
       - name: Checkout PR code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
-          # Checkout the exact commit from the PR (or push)
-          # This is safe because the workflow code (this file) is always from main
           ref: ${{ steps.pr_info.outputs.pr_sha }}
+          # Safe: the job-level if condition restricts this to allow-listed actors
+          # and protected branch pushes. This file is always loaded from the default
+          # branch, so fork PRs cannot modify the allow-list.
+          allow-unsafe-pr-checkout: true
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -94,6 +102,19 @@ jobs:
         run: |
           mkdir -p ~/.m2
           echo "<settings><servers><server><id>central-a2asdk-temp</id><username>${{ secrets.CENTRAL_TOKEN_USERNAME }}</username><password>${{ secrets.CENTRAL_TOKEN_PASSWORD }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      - name: Validate Maven Central credentials
+        run: |
+          TOKEN=$(printf "%s:%s" "${{ secrets.CENTRAL_TOKEN_USERNAME }}" "${{ secrets.CENTRAL_TOKEN_PASSWORD }}" | base64)
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $TOKEN" \
+            -X POST \
+            "https://central.sonatype.com/api/v1/publisher/status?id=nonexistent")
+          if [ "$HTTP_STATUS" != "404" ]; then
+            echo "::error::Maven Central credentials validation failed (HTTP $HTTP_STATUS, expected 404)"
+            exit 1
+          fi
+          echo "Maven Central credentials are valid"
 
       # Build with the same settings as the deploy job
       # -s uses the settings file we created.

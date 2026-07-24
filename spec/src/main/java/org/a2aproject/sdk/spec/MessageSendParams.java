@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -22,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record MessageSendParams(Message message, @Nullable MessageSendConfiguration configuration,
-                                @Nullable Map<String, Object> metadata, String tenant) {
+                                @Nullable Map<String, Object> metadata, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -35,7 +36,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
      */
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
-        Assert.checkNotNullParam("tenant", tenant);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 
     /**
@@ -46,7 +47,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
      * @param metadata optional metadata
      */
      public MessageSendParams(Message message, @Nullable MessageSendConfiguration configuration, @Nullable Map<String, Object> metadata) {
-        this(message, configuration, metadata, "");
+        this(message, configuration, metadata, null);
     }
 
     /**
@@ -115,7 +116,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
          * @param tenant arbitrary key-value metadata
          * @return this builder
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -131,7 +132,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
                     Assert.checkNotNullParam("message", message),
                     configuration,
                     metadata,
-                    tenant == null ? "" : tenant);
+                    tenant);
         }
     }
 }

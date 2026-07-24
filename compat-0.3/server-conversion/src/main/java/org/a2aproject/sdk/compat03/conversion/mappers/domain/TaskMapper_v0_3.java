@@ -18,9 +18,9 @@ import org.mapstruct.Mapper;
  * <p>
  * Key differences:
  * <ul>
- *   <li>v0.3: Task is a class with getter methods (e.g., {@code getId()}, {@code getStatus()})</li>
+ *   <li>v0.3: Task is a record with accessor methods (e.g., {@code id()}, {@code status()})</li>
  *   <li>v1.0: Task is a record with accessor methods (e.g., {@code id()}, {@code status()})</li>
- *   <li>v0.3 has a {@code kind} field with {@code getKind()} method</li>
+ *   <li>v0.3 has a {@code kind} field with {@code kind()} method</li>
  *   <li>v1.0 has a {@code kind()} method from the {@link org.a2aproject.sdk.spec.StreamingEventKind} interface</li>
  * </ul>
  * <p>
@@ -52,25 +52,25 @@ public interface TaskMapper_v0_3 {
             return null;
         }
 
-        List<Artifact> artifacts = v03.getArtifacts() != null
-            ? v03.getArtifacts().stream()
+        List<Artifact> artifacts = v03.artifacts() != null
+            ? v03.artifacts().stream()
                 .map(ArtifactMapper_v0_3.INSTANCE::toV10)
                 .collect(Collectors.toList())
             : null;
 
-        List<Message> history = v03.getHistory() != null
-            ? v03.getHistory().stream()
+        List<Message> history = v03.history() != null
+            ? v03.history().stream()
                 .map(MessageMapper_v0_3.INSTANCE::toV10)
                 .collect(Collectors.toList())
             : null;
 
         return new Task(
-            v03.getId(),
-            v03.getContextId(),
-            TaskStatusMapper_v0_3.INSTANCE.toV10(v03.getStatus()),
+            v03.id(),
+            v03.contextId(),
+            TaskStatusMapper_v0_3.INSTANCE.toV10(v03.status()),
             artifacts,
             history,
-            v03.getMetadata()
+            v03.metadata()
         );
     }
 

@@ -11,6 +11,10 @@ import org.a2aproject.sdk.compat03.util.Utils_v0_3;
  */
 public final class GetAuthenticatedExtendedCardRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<Void> {
 
+    private GetAuthenticatedExtendedCardRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "agent/getAuthenticatedExtendedCard";
 
     public GetAuthenticatedExtendedCardRequest_v0_3(String jsonrpc, Object id, String method, Void params) {

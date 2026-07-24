@@ -5,6 +5,9 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public final class SetTaskPushNotificationConfigResponse_v0_3 extends JSONRPCResponse_v0_3<TaskPushNotificationConfig_v0_3> {
 
+    private SetTaskPushNotificationConfigResponse_v0_3() {
+    }
+
     public SetTaskPushNotificationConfigResponse_v0_3(String jsonrpc, Object id, TaskPushNotificationConfig_v0_3 result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, TaskPushNotificationConfig_v0_3.class);
     }

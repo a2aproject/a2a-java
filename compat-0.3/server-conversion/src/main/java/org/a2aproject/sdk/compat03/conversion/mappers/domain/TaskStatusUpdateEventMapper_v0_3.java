@@ -40,10 +40,10 @@ public interface TaskStatusUpdateEventMapper_v0_3 {
         }
 
         return new TaskStatusUpdateEvent(
-            v03.getTaskId(),
-            TaskStatusMapper_v0_3.INSTANCE.toV10(v03.getStatus()),
-            v03.getContextId(),
-            v03.getMetadata()
+            v03.taskId(),
+            TaskStatusMapper_v0_3.INSTANCE.toV10(v03.status()),
+            v03.contextId(),
+            v03.metadata()
         );
     }
 

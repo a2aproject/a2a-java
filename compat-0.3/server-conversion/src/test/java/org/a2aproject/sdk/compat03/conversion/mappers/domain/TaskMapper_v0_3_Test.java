@@ -125,14 +125,14 @@ class TaskMapper_v0_3_Test {
 
         // Verify round-trip conversion
         assertNotNull(v03TaskRoundTrip);
-        assertEquals("task-001", v03TaskRoundTrip.getId());
-        assertEquals("ctx-001", v03TaskRoundTrip.getContextId());
-        assertEquals(TaskState_v0_3.WORKING, v03TaskRoundTrip.getStatus().state());
-        assertEquals("msg-001", v03TaskRoundTrip.getStatus().message().getMessageId());
-        assertEquals(1, v03TaskRoundTrip.getArtifacts().size());
-        assertEquals("artifact-001", v03TaskRoundTrip.getArtifacts().get(0).artifactId());
-        assertEquals(1, v03TaskRoundTrip.getHistory().size());
-        assertEquals("msg-002", v03TaskRoundTrip.getHistory().get(0).getMessageId());
+        assertEquals("task-001", v03TaskRoundTrip.id());
+        assertEquals("ctx-001", v03TaskRoundTrip.contextId());
+        assertEquals(TaskState_v0_3.WORKING, v03TaskRoundTrip.status().state());
+        assertEquals("msg-001", v03TaskRoundTrip.status().message().messageId());
+        assertEquals(1, v03TaskRoundTrip.artifacts().size());
+        assertEquals("artifact-001", v03TaskRoundTrip.artifacts().get(0).artifactId());
+        assertEquals(1, v03TaskRoundTrip.history().size());
+        assertEquals("msg-002", v03TaskRoundTrip.history().get(0).messageId());
     }
 
     @Test
@@ -173,8 +173,8 @@ class TaskMapper_v0_3_Test {
         // Round trip
         Task_v0_3 v03TaskRoundTrip = TaskMapper_v0_3.INSTANCE.fromV10(v10Task);
         assertNotNull(v03TaskRoundTrip);
-        assertEquals("task-minimal", v03TaskRoundTrip.getId());
-        assertEquals(TaskState_v0_3.SUBMITTED, v03TaskRoundTrip.getStatus().state());
+        assertEquals("task-minimal", v03TaskRoundTrip.id());
+        assertEquals(TaskState_v0_3.SUBMITTED, v03TaskRoundTrip.status().state());
     }
 
     @Test

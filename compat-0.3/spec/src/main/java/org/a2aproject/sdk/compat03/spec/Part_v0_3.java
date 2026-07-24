@@ -1,13 +1,11 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import java.util.Map;
-
 /**
  * A fundamental unit with a Message or Artifact.
  * @param <T> the type of unit
  */
-public abstract class Part_v0_3<T> {
-    public enum Kind {
+public sealed interface Part_v0_3<T> permits TextPart_v0_3, FilePart_v0_3, DataPart_v0_3 {
+    enum Kind {
         TEXT("text"),
         FILE("file"),
         DATA("data");
@@ -27,9 +25,4 @@ public abstract class Part_v0_3<T> {
             return this.kind;
         }
     }
-
-    public abstract Kind getKind();
-
-    public abstract Map<String, Object> getMetadata();
-
 }

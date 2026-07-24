@@ -5,6 +5,9 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public final class GetAuthenticatedExtendedCardResponse_v0_3 extends JSONRPCResponse_v0_3<AgentCard_v0_3> {
 
+    private GetAuthenticatedExtendedCardResponse_v0_3() {
+    }
+
     public GetAuthenticatedExtendedCardResponse_v0_3(String jsonrpc, Object id, AgentCard_v0_3 result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, AgentCard_v0_3.class);
     }

@@ -11,7 +11,7 @@ import org.mapstruct.Mapper;
  * <p>
  * Key differences:
  * <ul>
- *   <li>v0.3: TaskArtifactUpdateEvent is a class with getter methods (e.g., {@code getTaskId()}, {@code isAppend()})</li>
+ *   <li>v0.3: TaskArtifactUpdateEvent is a record with accessor methods (e.g., {@code taskId()}, {@code append()})</li>
  *   <li>v1.0: TaskArtifactUpdateEvent is a record with accessor methods (e.g., {@code taskId()}, {@code append()})</li>
  * </ul>
  * <p>
@@ -40,12 +40,12 @@ public interface TaskArtifactUpdateEventMapper_v0_3 {
         }
 
         return new TaskArtifactUpdateEvent(
-            v03.getTaskId(),
-            ArtifactMapper_v0_3.INSTANCE.toV10(v03.getArtifact()),
-            v03.getContextId(),
-            v03.isAppend(),
-            v03.isLastChunk(),
-            v03.getMetadata()
+            v03.taskId(),
+            ArtifactMapper_v0_3.INSTANCE.toV10(v03.artifact()),
+            v03.contextId(),
+            v03.append(),
+            v03.lastChunk(),
+            v03.metadata()
         );
     }
 

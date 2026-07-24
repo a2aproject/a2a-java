@@ -25,7 +25,7 @@ import org.mapstruct.Mapper;
  * <p>
  * Key differences:
  * <ul>
- *   <li>v0.3: Part types are classes with getter methods (e.g., {@code getText()}, {@code getMetadata()})</li>
+ *   <li>v0.3: Part types are records with accessor methods (e.g., {@code text()}, {@code metadata()})</li>
  *   <li>v1.0: Part types are records with accessor methods (e.g., {@code text()}, {@code metadata()})</li>
  * </ul>
  * <p>
@@ -54,14 +54,14 @@ public interface PartMapper_v0_3 {
         }
 
         if (v03 instanceof TextPart_v0_3 v03Text) {
-            return new TextPart(v03Text.getText(), v03Text.getMetadata());
+            return new TextPart(v03Text.text(), v03Text.metadata());
         } else if (v03 instanceof FilePart_v0_3 v03File) {
             return new FilePart(
-                FileContentMapper_v0_3.INSTANCE.toV10(v03File.getFile()),
-                v03File.getMetadata()
+                FileContentMapper_v0_3.INSTANCE.toV10(v03File.file()),
+                v03File.metadata()
             );
         } else if (v03 instanceof DataPart_v0_3 v03Data) {
-            return new DataPart(v03Data.getData(), v03Data.getMetadata());
+            return new DataPart(v03Data.data(), v03Data.metadata());
         }
 
         throw new InvalidRequestError(null, "Unrecognized Part type: " + v03.getClass().getName(), null);

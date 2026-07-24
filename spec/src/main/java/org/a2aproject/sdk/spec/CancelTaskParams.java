@@ -1,9 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
-import java.util.Collections;
 import java.util.Map;
+
+import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @param metadata optional arbitrary key-value metadata (e.g. cancellation reason)
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record CancelTaskParams(String id, String tenant, Map<String, Object> metadata) {
+public record CancelTaskParams(String id, @Nullable String tenant, Map<String, Object> metadata) {
 
     /**
      * Compact constructor for validation.
@@ -28,7 +28,7 @@ public record CancelTaskParams(String id, String tenant, Map<String, Object> met
      */
     public CancelTaskParams {
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("tenant", tenant);
+        metadata = CollectionCopies.unmodifiableShallowMap(metadata);
     }
 
     /**
@@ -37,7 +37,7 @@ public record CancelTaskParams(String id, String tenant, Map<String, Object> met
      * @param id the task identifier (required)
      */
     public CancelTaskParams(String id) {
-        this(id, "", Collections.emptyMap());
+        this(id, null, Map.of());
     }
 
     /**
@@ -55,7 +55,7 @@ public record CancelTaskParams(String id, String tenant, Map<String, Object> met
     public static class Builder {
         private @Nullable String id;
         private @Nullable String tenant;
-        private Map<String, Object> metadata = Collections.emptyMap();
+        private Map<String, Object> metadata = Map.of();
 
         /**
          * Creates a new Builder with all fields unset.
@@ -80,7 +80,7 @@ public record CancelTaskParams(String id, String tenant, Map<String, Object> met
          * @param tenant the tenant identifier
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -92,7 +92,7 @@ public record CancelTaskParams(String id, String tenant, Map<String, Object> met
          * @return this builder
          */
         public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = Map.copyOf(metadata);
+            this.metadata = CollectionCopies.unmodifiableShallowMap(metadata);
             return this;
         }
 
@@ -105,7 +105,7 @@ public record CancelTaskParams(String id, String tenant, Map<String, Object> met
         public CancelTaskParams build() {
             return new CancelTaskParams(
                 Assert.checkNotNullParam("id", id),
-                Utils.defaultIfNull(tenant,""),
+                tenant,
                 metadata
             );
         }

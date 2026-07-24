@@ -21,6 +21,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  */
 public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
+    private CreateTaskPushNotificationConfigRequest() {
+    }
+
+
     /**
      * Constructs request with all parameters.
      *

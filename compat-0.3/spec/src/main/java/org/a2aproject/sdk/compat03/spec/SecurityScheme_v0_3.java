@@ -7,5 +7,8 @@ package org.a2aproject.sdk.compat03.spec;
 public sealed interface SecurityScheme_v0_3 permits APIKeySecurityScheme_v0_3, HTTPAuthSecurityScheme_v0_3, OAuth2SecurityScheme_v0_3,
         OpenIdConnectSecurityScheme_v0_3, MutualTLSSecurityScheme_v0_3 {
 
-    String getDescription();
+    @org.jspecify.annotations.Nullable
+    String description();
+
+    String type();
 }

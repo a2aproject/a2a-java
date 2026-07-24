@@ -49,9 +49,9 @@ public class SSEEventListener_v0_3_Test {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof Task_v0_3);
         Task_v0_3 task = (Task_v0_3) receivedEvent.get();
-        assertEquals("task-123", task.getId());
-        assertEquals("context-456", task.getContextId());
-        assertEquals(TaskState_v0_3.WORKING, task.getStatus().state());
+        assertEquals("task-123", task.id());
+        assertEquals("context-456", task.contextId());
+        assertEquals(TaskState_v0_3.WORKING, task.status().state());
     }
 
     @Test
@@ -74,12 +74,12 @@ public class SSEEventListener_v0_3_Test {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof Message_v0_3);
         Message_v0_3 message = (Message_v0_3) receivedEvent.get();
-        assertEquals(Message_v0_3.Role.AGENT, message.getRole());
-        assertEquals("msg-123", message.getMessageId());
-        assertEquals("context-456", message.getContextId());
-        assertEquals(1, message.getParts().size());
-        assertTrue(message.getParts().get(0) instanceof TextPart_v0_3);
-        assertEquals("Hello, world!", ((TextPart_v0_3) message.getParts().get(0)).getText());
+        assertEquals(Message_v0_3.Role.AGENT, message.role());
+        assertEquals("msg-123", message.messageId());
+        assertEquals("context-456", message.contextId());
+        assertEquals(1, message.parts().size());
+        assertTrue(message.parts().get(0) instanceof TextPart_v0_3);
+        assertEquals("Hello, world!", ((TextPart_v0_3) message.parts().get(0)).text());
     }
 
     @Test
@@ -102,10 +102,10 @@ public class SSEEventListener_v0_3_Test {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof TaskStatusUpdateEvent_v0_3);
         TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent = (TaskStatusUpdateEvent_v0_3) receivedEvent.get();
-        assertEquals("1", taskStatusUpdateEvent.getTaskId());
-        assertEquals("2", taskStatusUpdateEvent.getContextId());
+        assertEquals("1", taskStatusUpdateEvent.taskId());
+        assertEquals("2", taskStatusUpdateEvent.contextId());
         assertFalse(taskStatusUpdateEvent.isFinal());
-        assertEquals(TaskState_v0_3.SUBMITTED, taskStatusUpdateEvent.getStatus().state());
+        assertEquals(TaskState_v0_3.SUBMITTED, taskStatusUpdateEvent.status().state());
     }
 
     @Test
@@ -129,15 +129,15 @@ public class SSEEventListener_v0_3_Test {
         assertTrue(receivedEvent.get() instanceof TaskArtifactUpdateEvent_v0_3);
 
         TaskArtifactUpdateEvent_v0_3 taskArtifactUpdateEvent = (TaskArtifactUpdateEvent_v0_3) receivedEvent.get();
-        assertEquals("1", taskArtifactUpdateEvent.getTaskId());
-        assertEquals("2", taskArtifactUpdateEvent.getContextId());
-        assertFalse(taskArtifactUpdateEvent.isAppend());
-        assertTrue(taskArtifactUpdateEvent.isLastChunk());
-        Artifact_v0_3 artifact = taskArtifactUpdateEvent.getArtifact();
+        assertEquals("1", taskArtifactUpdateEvent.taskId());
+        assertEquals("2", taskArtifactUpdateEvent.contextId());
+        assertFalse(taskArtifactUpdateEvent.append());
+        assertTrue(taskArtifactUpdateEvent.lastChunk());
+        Artifact_v0_3 artifact = taskArtifactUpdateEvent.artifact();
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals(1, artifact.parts().size());
-        assertEquals(Part_v0_3.Kind.TEXT, artifact.parts().get(0).getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) artifact.parts().get(0)).getText());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) artifact.parts().get(0)).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) artifact.parts().get(0)).text());
     }
 
     @Test
@@ -223,10 +223,10 @@ public class SSEEventListener_v0_3_Test {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof TaskStatusUpdateEvent_v0_3);
         TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent = (TaskStatusUpdateEvent_v0_3) receivedEvent.get();
-        assertEquals("1", taskStatusUpdateEvent.getTaskId());
-        assertEquals("2", taskStatusUpdateEvent.getContextId());
+        assertEquals("1", taskStatusUpdateEvent.taskId());
+        assertEquals("2", taskStatusUpdateEvent.contextId());
         assertTrue(taskStatusUpdateEvent.isFinal());
-        assertEquals(TaskState_v0_3.COMPLETED, taskStatusUpdateEvent.getStatus().state());
+        assertEquals(TaskState_v0_3.COMPLETED, taskStatusUpdateEvent.status().state());
 
         assertTrue(future.cancelHandlerCalled);
     }

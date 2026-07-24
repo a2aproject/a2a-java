@@ -20,6 +20,7 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
@@ -474,7 +475,11 @@ public class JsonUtil {
             return Collections.emptyMap();
         }
         try {
-            return readMetadata(JsonParser.parseString(json).getAsJsonObject());
+            JsonElement element = JsonParser.parseString(json);
+            if (!element.isJsonObject()) {
+                return Collections.emptyMap();
+            }
+            return readMetadata(element.getAsJsonObject());
         } catch (JsonSyntaxException e) {
             throw new JsonProcessingException("Failed to parse metadata JSON", e);
         }

@@ -11,6 +11,10 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class SetTaskPushNotificationConfigRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<TaskPushNotificationConfig_v0_3> {
 
+    private SetTaskPushNotificationConfigRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/pushNotificationConfig/set";
 
     public SetTaskPushNotificationConfigRequest_v0_3(String jsonrpc, Object id, String method, TaskPushNotificationConfig_v0_3 params) {

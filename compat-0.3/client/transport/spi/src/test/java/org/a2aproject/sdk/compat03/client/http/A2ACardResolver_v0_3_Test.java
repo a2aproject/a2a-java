@@ -62,8 +62,45 @@ public class A2ACardResolver_v0_3_Test {
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
+
+        // baseUrl with sub-path and trailing slash — the original URI.resolve() bug silently
+        // dropped the sub-path, producing http://example.com/.well-known/agent-card.json instead
+        resolver = new A2ACardResolver_v0_3(client, "http://example.com/jsonrpc/", AGENT_CARD_PATH);
+        card = resolver.getAgentCard();
+
+        assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
+
+        // baseUrl with sub-path, no trailing slash
+        resolver = new A2ACardResolver_v0_3(client, "http://example.com/jsonrpc", AGENT_CARD_PATH);
+        card = resolver.getAgentCard();
+
+        assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
     }
 
+
+    @Test
+    public void testBaseUrl_alreadyContainsWellKnownPath() throws Exception {
+        TestHttpClient client = new TestHttpClient();
+        client.body = JsonMessages_v0_3.AGENT_CARD;
+
+        String fullUrl = "https://example.com/spec03" + AGENT_CARD_PATH;
+        A2ACardResolver_v0_3 resolver = new A2ACardResolver_v0_3(client, fullUrl);
+        resolver.getAgentCard();
+
+        assertEquals(fullUrl, client.url);
+    }
+
+    @Test
+    public void testFullWellKnownUrlWithCustomAgentCardPath() throws Exception {
+        TestHttpClient client = new TestHttpClient();
+        client.body = JsonMessages_v0_3.AGENT_CARD;
+
+        A2ACardResolver_v0_3 resolver = new A2ACardResolver_v0_3(
+                client, "https://example.com/spec03" + AGENT_CARD_PATH, "/custom/card.json");
+        resolver.getAgentCard();
+
+        assertEquals("https://example.com/spec03/custom/card.json", client.url);
+    }
 
     @Test
     public void testGetAgentCardSuccess() throws Exception {

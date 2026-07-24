@@ -31,12 +31,12 @@ public record Artifact_v0_3(String artifactId, String name, String description, 
         }
 
         public Builder(Artifact_v0_3 existingArtifact) {
-            artifactId = existingArtifact.artifactId;
-            name = existingArtifact.name;
-            description = existingArtifact.description;
-            parts = existingArtifact.parts;
-            metadata = existingArtifact.metadata;
-            extensions = existingArtifact.extensions;
+            artifactId = existingArtifact.artifactId();
+            name = existingArtifact.name();
+            description = existingArtifact.description();
+            parts = existingArtifact.parts();
+            metadata = existingArtifact.metadata();
+            extensions = existingArtifact.extensions();
         }
 
         public Builder artifactId(String artifactId) {
@@ -56,7 +56,7 @@ public record Artifact_v0_3(String artifactId, String name, String description, 
         }
 
         public Builder parts(List<Part_v0_3<?>> parts) {
-            this.parts = parts;
+            this.parts = List.copyOf(parts);
             return this;
         }
 
@@ -66,12 +66,12 @@ public record Artifact_v0_3(String artifactId, String name, String description, 
         }
 
         public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = metadata;
+            this.metadata = Map.copyOf(metadata);
             return this;
         }
 
         public Builder extensions(List<String> extensions) {
-            this.extensions = (extensions == null) ? null : List.copyOf(extensions);
+            this.extensions = List.copyOf(extensions);
             return this;
         }
 

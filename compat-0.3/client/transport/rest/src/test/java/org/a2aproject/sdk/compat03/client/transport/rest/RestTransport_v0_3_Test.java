@@ -131,26 +131,26 @@ public class RestTransport_v0_3_Test {
         
         RestTransport_v0_3 instance = new RestTransport_v0_3(CARD);
         EventKind_v0_3 result = instance.sendMessage(messageSendParams, context);
-        assertEquals("task", result.getKind());
+        assertEquals("task", result.kind());
         Task_v0_3 task = (Task_v0_3) result;
-        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState_v0_3.SUBMITTED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
-        assertEquals(true, task.getArtifacts().isEmpty());
-        assertEquals(1, task.getHistory().size());
-        Message_v0_3 history = task.getHistory().get(0);
-        assertEquals("message", history.getKind());
-        assertEquals(Message_v0_3.Role.USER, history.getRole());
-        assertEquals("context-1234", history.getContextId());
-        assertEquals("message-1234", history.getMessageId());
-        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.getTaskId());
-        assertEquals(1, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
-        assertEquals("tell me a joke", ((TextPart_v0_3) history.getParts().get(0)).getText());
-        assertNull(history.getMetadata());
-        assertNull(history.getReferenceTaskIds());
+        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.id());
+        assertEquals("context-1234", task.contextId());
+        assertEquals(TaskState_v0_3.SUBMITTED, task.status().state());
+        assertNull(task.status().message());
+        assertNull(task.metadata());
+        assertEquals(true, task.artifacts().isEmpty());
+        assertEquals(1, task.history().size());
+        Message_v0_3 history = task.history().get(0);
+        assertEquals("message", history.kind());
+        assertEquals(Message_v0_3.Role.USER, history.role());
+        assertEquals("context-1234", history.contextId());
+        assertEquals("message-1234", history.messageId());
+        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.taskId());
+        assertEquals(1, history.parts().size());
+        assertEquals(Kind.TEXT, ((TextPart_v0_3) history.parts().get(0)).kind());
+        assertEquals("tell me a joke", ((TextPart_v0_3) history.parts().get(0)).text());
+        assertNull(history.metadata());
+        assertNull(history.referenceTaskIds());
     }
 
     /**
@@ -173,10 +173,10 @@ public class RestTransport_v0_3_Test {
         RestTransport_v0_3 instance = new RestTransport_v0_3(CARD);
         Task_v0_3 task = instance.cancelTask(new TaskIdParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new HashMap<>()), context);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals(TaskState_v0_3.CANCELED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals(TaskState_v0_3.CANCELED, task.status().state());
+        assertNull(task.status().message());
+        assertNull(task.metadata());
     }
 
     /**
@@ -198,36 +198,36 @@ public class RestTransport_v0_3_Test {
         TaskQueryParams_v0_3 request = new TaskQueryParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64", 10);
         RestTransport_v0_3 instance = new RestTransport_v0_3(CARD);
         Task_v0_3 task = instance.getTask(request, context);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
-        assertEquals(false, task.getArtifacts().isEmpty());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact_v0_3 artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        assertNull(task.status().message());
+        assertNull(task.metadata());
+        assertEquals(false, task.artifacts().isEmpty());
+        assertEquals(1, task.artifacts().size());
+        Artifact_v0_3 artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("", artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
-        assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) artifact.parts().get(0)).getText());
-        assertEquals(1, task.getHistory().size());
-        Message_v0_3 history = task.getHistory().get(0);
-        assertEquals("message", history.getKind());
-        assertEquals(Message_v0_3.Role.USER, history.getRole());
-        assertEquals("message-123", history.getMessageId());
-        assertEquals(3, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
-        assertEquals("tell me a joke", ((TextPart_v0_3) history.getParts().get(0)).getText());
-        assertEquals(Kind.FILE, history.getParts().get(1).getKind());
-        FilePart_v0_3 part = (FilePart_v0_3) history.getParts().get(1);
-        assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("file:///path/to/file.txt", ((FileWithUri_v0_3) part.getFile()).uri());
-        part = (FilePart_v0_3) history.getParts().get(2);
-        assertEquals(Kind.FILE, part.getKind());
-        assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("hello", ((FileWithBytes_v0_3) part.getFile()).bytes());
-        assertNull(history.getMetadata());
-        assertNull(history.getReferenceTaskIds());
+        assertEquals(Kind.TEXT, ((TextPart_v0_3) artifact.parts().get(0)).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) artifact.parts().get(0)).text());
+        assertEquals(1, task.history().size());
+        Message_v0_3 history = task.history().get(0);
+        assertEquals("message", history.kind());
+        assertEquals(Message_v0_3.Role.USER, history.role());
+        assertEquals("message-123", history.messageId());
+        assertEquals(3, history.parts().size());
+        assertEquals(Kind.TEXT, ((TextPart_v0_3) history.parts().get(0)).kind());
+        assertEquals("tell me a joke", ((TextPart_v0_3) history.parts().get(0)).text());
+        assertEquals(Kind.FILE, ((FilePart_v0_3) history.parts().get(1)).kind());
+        FilePart_v0_3 part = (FilePart_v0_3) history.parts().get(1);
+        assertEquals("text/plain", part.file().mimeType());
+        assertEquals("file:///path/to/file.txt", ((FileWithUri_v0_3) part.file()).uri());
+        part = (FilePart_v0_3) history.parts().get(2);
+        assertEquals(Kind.FILE, part.kind());
+        assertEquals("text/plain", part.file().mimeType());
+        assertEquals("hello", ((FileWithBytes_v0_3) part.file()).bytes());
+        assertNull(history.metadata());
+        assertNull(history.referenceTaskIds());
     }
 
     /**
@@ -276,9 +276,9 @@ public class RestTransport_v0_3_Test {
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);
         assertNotNull(receivedEvent.get());
-        assertEquals("task", receivedEvent.get().getKind());
+        assertEquals("task", receivedEvent.get().kind());
         Task_v0_3 task = (Task_v0_3) receivedEvent.get();
-        assertEquals("2", task.getId());
+        assertEquals("2", task.id());
     }
 
     /**
@@ -437,16 +437,16 @@ public class RestTransport_v0_3_Test {
         assertNotNull(eventKind);
         assertInstanceOf(Task_v0_3.class, eventKind);
         Task_v0_3 task = (Task_v0_3) eventKind;
-        assertEquals("2", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        List<Artifact_v0_3> artifacts = task.getArtifacts();
+        assertEquals("2", task.id());
+        assertEquals("context-1234", task.contextId());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        List<Artifact_v0_3> artifacts = task.artifacts();
         assertEquals(1, artifacts.size());
         Artifact_v0_3 artifact = artifacts.get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part_v0_3<?> part = artifact.parts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).getText());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
     }
 }

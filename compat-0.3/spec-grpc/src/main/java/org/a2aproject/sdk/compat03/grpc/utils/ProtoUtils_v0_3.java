@@ -35,7 +35,6 @@ import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.ImplicitOAuthFlow_v0_3;
-import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
@@ -136,33 +135,35 @@ public class ProtoUtils_v0_3 {
 
         public static org.a2aproject.sdk.compat03.grpc.Task task(Task_v0_3 task) {
             org.a2aproject.sdk.compat03.grpc.Task.Builder builder = org.a2aproject.sdk.compat03.grpc.Task.newBuilder();
-            builder.setId(task.getId());
-            builder.setContextId(task.getContextId());
-            builder.setStatus(taskStatus(task.getStatus()));
-            if (task.getArtifacts() != null) {
-                builder.addAllArtifacts(task.getArtifacts().stream().map(ToProto::artifact).collect(Collectors.toList()));
+            builder.setId(task.id());
+            builder.setContextId(task.contextId());
+            builder.setStatus(taskStatus(task.status()));
+            if (task.artifacts() != null) {
+                builder.addAllArtifacts(task.artifacts().stream().map(ToProto::artifact).collect(Collectors.toList()));
             }
-            if (task.getHistory() != null) {
-                builder.addAllHistory(task.getHistory().stream().map(ToProto::message).collect(Collectors.toList()));
+            if (task.history() != null) {
+                builder.addAllHistory(task.history().stream().map(ToProto::message).collect(Collectors.toList()));
             }
-            builder.setMetadata(struct(task.getMetadata()));
+            builder.setMetadata(struct(task.metadata()));
             return builder.build();
         }
 
         public static org.a2aproject.sdk.compat03.grpc.Message message(Message_v0_3 message) {
             org.a2aproject.sdk.compat03.grpc.Message.Builder builder = org.a2aproject.sdk.compat03.grpc.Message.newBuilder();
-            builder.setMessageId(message.getMessageId());
-            if (message.getContextId() != null) {
-                builder.setContextId(message.getContextId());
+            if (message.messageId() != null) {
+                builder.setMessageId(message.messageId());
             }
-            if (message.getTaskId() != null) {
-                builder.setTaskId(message.getTaskId());
+            if (message.contextId() != null) {
+                builder.setContextId(message.contextId());
             }
-            builder.setRole(role(message.getRole()));
-            if (message.getParts() != null) {
-                builder.addAllContent(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
+            if (message.taskId() != null) {
+                builder.setTaskId(message.taskId());
             }
-            builder.setMetadata(struct(message.getMetadata()));
+            builder.setRole(role(message.role()));
+            if (message.parts() != null) {
+                builder.addAllContent(message.parts().stream().map(ToProto::part).collect(Collectors.toList()));
+            }
+            builder.setMetadata(struct(message.metadata()));
             return builder.build();
         }
 
@@ -193,29 +194,29 @@ public class ProtoUtils_v0_3 {
 
         public static org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent taskArtifactUpdateEvent(TaskArtifactUpdateEvent_v0_3 event) {
             org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.newBuilder();
-            builder.setTaskId(event.getTaskId());
-            builder.setContextId(event.getContextId());
-            builder.setArtifact(artifact(event.getArtifact()));
-            if (event.isAppend() != null) {
-                builder.setAppend(event.isAppend());
+            builder.setTaskId(event.taskId());
+            builder.setContextId(event.contextId());
+            builder.setArtifact(artifact(event.artifact()));
+            if (event.append() != null) {
+                builder.setAppend(event.append());
             }
-            if (event.isLastChunk() != null) {
-                builder.setLastChunk(event.isLastChunk());
+            if (event.lastChunk() != null) {
+                builder.setLastChunk(event.lastChunk());
             }
-            if (event.getMetadata() != null) {
-                builder.setMetadata(struct(event.getMetadata()));
+            if (event.metadata() != null) {
+                builder.setMetadata(struct(event.metadata()));
             }
             return builder.build();
         }
 
         public static org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent taskStatusUpdateEvent(TaskStatusUpdateEvent_v0_3 event) {
             org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.newBuilder();
-            builder.setTaskId(event.getTaskId());
-            builder.setContextId(event.getContextId());
-            builder.setStatus(taskStatus(event.getStatus()));
+            builder.setTaskId(event.taskId());
+            builder.setContextId(event.contextId());
+            builder.setStatus(taskStatus(event.status()));
             builder.setFinal(event.isFinal());
-            if (event.getMetadata() != null) {
-                builder.setMetadata(struct(event.getMetadata()));
+            if (event.metadata() != null) {
+                builder.setMetadata(struct(event.metadata()));
             }
             return builder.build();
         }
@@ -242,19 +243,19 @@ public class ProtoUtils_v0_3 {
 
         private static org.a2aproject.sdk.compat03.grpc.Part part(Part_v0_3<?> part) {
             org.a2aproject.sdk.compat03.grpc.Part.Builder builder = org.a2aproject.sdk.compat03.grpc.Part.newBuilder();
-            if (part instanceof TextPart_v0_3) {
-                builder.setText(((TextPart_v0_3) part).getText());
-            } else if (part instanceof FilePart_v0_3) {
-                builder.setFile(filePart((FilePart_v0_3) part));
-            } else if (part instanceof DataPart_v0_3) {
-                builder.setData(dataPart((DataPart_v0_3) part));
+            if (part instanceof TextPart_v0_3 textPart) {
+                builder.setText(textPart.text());
+            } else if (part instanceof FilePart_v0_3 fp) {
+                builder.setFile(filePart(fp));
+            } else if (part instanceof DataPart_v0_3 dp) {
+                builder.setData(dataPart(dp));
             }
             return builder.build();
         }
 
         private static org.a2aproject.sdk.compat03.grpc.FilePart filePart(FilePart_v0_3 filePart) {
             org.a2aproject.sdk.compat03.grpc.FilePart.Builder builder = org.a2aproject.sdk.compat03.grpc.FilePart.newBuilder();
-            FileContent_v0_3 fileContent = filePart.getFile();
+            FileContent_v0_3 fileContent = filePart.file();
             if (fileContent instanceof FileWithBytes_v0_3) {
                 builder.setFileWithBytes(ByteString.copyFrom(((FileWithBytes_v0_3) fileContent).bytes(), StandardCharsets.UTF_8));
             } else if (fileContent instanceof FileWithUri_v0_3) {
@@ -265,8 +266,8 @@ public class ProtoUtils_v0_3 {
 
         private static org.a2aproject.sdk.compat03.grpc.DataPart dataPart(DataPart_v0_3 dataPart) {
             org.a2aproject.sdk.compat03.grpc.DataPart.Builder builder = org.a2aproject.sdk.compat03.grpc.DataPart.newBuilder();
-            if (dataPart.getData() != null) {
-                builder.setData(struct(dataPart.getData()));
+            if (dataPart.data() != null) {
+                builder.setData(struct(dataPart.data()));
             }
             return builder.build();
         }
@@ -458,42 +459,42 @@ public class ProtoUtils_v0_3 {
 
         private static org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme apiKeySecurityScheme(APIKeySecurityScheme_v0_3 apiKeySecurityScheme) {
             org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme.newBuilder();
-            if (apiKeySecurityScheme.getDescription() != null) {
-                builder.setDescription(apiKeySecurityScheme.getDescription());
+            if (apiKeySecurityScheme.description() != null) {
+                builder.setDescription(apiKeySecurityScheme.description());
             }
-            if (apiKeySecurityScheme.getIn() != null) {
-                builder.setLocation(apiKeySecurityScheme.getIn());
+            if (apiKeySecurityScheme.in() != null) {
+                builder.setLocation(apiKeySecurityScheme.in());
             }
-            if (apiKeySecurityScheme.getName() != null) {
-                builder.setName(apiKeySecurityScheme.getName());
+            if (apiKeySecurityScheme.name() != null) {
+                builder.setName(apiKeySecurityScheme.name());
             }
             return builder.build();
         }
 
         private static org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme httpAuthSecurityScheme(HTTPAuthSecurityScheme_v0_3 httpAuthSecurityScheme) {
             org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme.newBuilder();
-            if (httpAuthSecurityScheme.getBearerFormat() != null) {
-                builder.setBearerFormat(httpAuthSecurityScheme.getBearerFormat());
+            if (httpAuthSecurityScheme.bearerFormat() != null) {
+                builder.setBearerFormat(httpAuthSecurityScheme.bearerFormat());
             }
-            if (httpAuthSecurityScheme.getDescription() != null) {
-                builder.setDescription(httpAuthSecurityScheme.getDescription());
+            if (httpAuthSecurityScheme.description() != null) {
+                builder.setDescription(httpAuthSecurityScheme.description());
             }
-            if (httpAuthSecurityScheme.getScheme() != null) {
-                builder.setScheme(httpAuthSecurityScheme.getScheme());
+            if (httpAuthSecurityScheme.scheme() != null) {
+                builder.setScheme(httpAuthSecurityScheme.scheme());
             }
             return builder.build();
         }
 
         private static org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme oauthSecurityScheme(OAuth2SecurityScheme_v0_3 oauth2SecurityScheme) {
             org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme.newBuilder();
-            if (oauth2SecurityScheme.getDescription() != null) {
-                builder.setDescription(oauth2SecurityScheme.getDescription());
+            if (oauth2SecurityScheme.description() != null) {
+                builder.setDescription(oauth2SecurityScheme.description());
             }
-            if (oauth2SecurityScheme.getFlows() != null) {
-                builder.setFlows(oauthFlows(oauth2SecurityScheme.getFlows()));
+            if (oauth2SecurityScheme.flows() != null) {
+                builder.setFlows(oauthFlows(oauth2SecurityScheme.flows()));
             }
-            if (oauth2SecurityScheme.getOauth2MetadataUrl() != null) {
-                builder.setOauth2MetadataUrl(oauth2SecurityScheme.getOauth2MetadataUrl());
+            if (oauth2SecurityScheme.oauth2MetadataUrl() != null) {
+                builder.setOauth2MetadataUrl(oauth2SecurityScheme.oauth2MetadataUrl());
             }
             return builder.build();
         }
@@ -584,19 +585,19 @@ public class ProtoUtils_v0_3 {
 
         private static org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme openIdConnectSecurityScheme(OpenIdConnectSecurityScheme_v0_3 openIdConnectSecurityScheme) {
             org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme.newBuilder();
-            if (openIdConnectSecurityScheme.getDescription() != null) {
-                builder.setDescription(openIdConnectSecurityScheme.getDescription());
+            if (openIdConnectSecurityScheme.description() != null) {
+                builder.setDescription(openIdConnectSecurityScheme.description());
             }
-            if (openIdConnectSecurityScheme.getOpenIdConnectUrl() != null) {
-                builder.setOpenIdConnectUrl(openIdConnectSecurityScheme.getOpenIdConnectUrl());
+            if (openIdConnectSecurityScheme.openIdConnectUrl() != null) {
+                builder.setOpenIdConnectUrl(openIdConnectSecurityScheme.openIdConnectUrl());
             }
             return builder.build();
         }
 
         private static org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme mutualTlsSecurityScheme(MutualTLSSecurityScheme_v0_3 mutualTlsSecurityScheme) {
             org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme.newBuilder();
-            if (mutualTlsSecurityScheme.getDescription() != null) {
-                builder.setDescription(mutualTlsSecurityScheme.getDescription());
+            if (mutualTlsSecurityScheme.description() != null) {
+                builder.setDescription(mutualTlsSecurityScheme.description());
             }
             return builder.build();
         }
@@ -612,7 +613,7 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        public static Struct struct(Map<String, Object> map) {
+        public static Struct struct(@Nullable Map<String, Object> map) {
             Struct.Builder structBuilder = Struct.newBuilder();
             if (map != null) {
                 map.forEach((k, v) -> structBuilder.putFields(k, value(v)));
@@ -863,10 +864,6 @@ public class ProtoUtils_v0_3 {
         }
 
         public static Message_v0_3 message(org.a2aproject.sdk.compat03.grpc.MessageOrBuilder message) {
-            if (message.getMessageId().isEmpty()) {
-                throw new InvalidParamsError_v0_3();
-            }
-
             return new Message_v0_3(
                     role(message.getRole()),
                     message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),

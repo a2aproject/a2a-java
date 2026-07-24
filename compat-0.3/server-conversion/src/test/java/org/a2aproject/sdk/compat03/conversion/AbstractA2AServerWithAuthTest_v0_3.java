@@ -195,14 +195,14 @@ public abstract class AbstractA2AServerWithAuthTest_v0_3 {
 
         Client_v0_3 unauthClient = getUnauthenticatedClient();
         A2AClientException_v0_3 error = assertThrows(A2AClientException_v0_3.class, () -> {
-            unauthClient.getTask(new TaskQueryParams_v0_3(MINIMAL_TASK.getId()));
+            unauthClient.getTask(new TaskQueryParams_v0_3(MINIMAL_TASK.id()));
         });
         assertTrue(error.getMessage().contains("Authentication failed") ||
                    error.getMessage().contains("401") ||
                    error.getMessage().contains("Unauthorized"),
                 "Expected authentication error, got: " + error.getMessage());
 
-        deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        deleteTaskInTaskStore(MINIMAL_TASK.id());
     }
 
     @Test
@@ -210,11 +210,11 @@ public abstract class AbstractA2AServerWithAuthTest_v0_3 {
         saveTaskInTaskStore(MINIMAL_TASK);
 
         Client_v0_3 client = getAuthenticatedClient();
-        Task_v0_3 result = client.getTask(new TaskQueryParams_v0_3(MINIMAL_TASK.getId()));
+        Task_v0_3 result = client.getTask(new TaskQueryParams_v0_3(MINIMAL_TASK.id()));
         assertNotNull(result);
-        assertEquals(MINIMAL_TASK.getId(), result.getId());
+        assertEquals(MINIMAL_TASK.id(), result.id());
 
-        deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        deleteTaskInTaskStore(MINIMAL_TASK.id());
     }
 
     @Test
@@ -231,11 +231,11 @@ public abstract class AbstractA2AServerWithAuthTest_v0_3 {
 
         givenAuthenticated()
                 .contentType("application/json")
-                .body("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tasks/get\",\"params\":{\"id\":\"" + MINIMAL_TASK.getId() + "\"}}")
+                .body("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tasks/get\",\"params\":{\"id\":\"" + MINIMAL_TASK.id() + "\"}}")
                 .post("/")
                 .then()
                 .statusCode(200);
 
-        deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        deleteTaskInTaskStore(MINIMAL_TASK.id());
     }
 }

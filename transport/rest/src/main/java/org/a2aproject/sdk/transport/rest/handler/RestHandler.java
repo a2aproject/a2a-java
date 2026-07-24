@@ -25,8 +25,8 @@ import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
-import org.a2aproject.sdk.util.ErrorDetail;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
@@ -64,6 +64,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.spec.util.ErrorDetail;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -666,7 +667,7 @@ public class RestHandler {
     private HTTPRestResponse createSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
         try {
             // Include default value fields to ensure empty arrays, zeros, etc. are present in JSON
-            String jsonBody = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(builder);
+            String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
             return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
             return createErrorResponse(new InternalError("Failed to serialize response: " + e.getMessage()));
@@ -717,7 +718,8 @@ public class RestHandler {
                     public void onNext(StreamingEventKind item) {
                         log.log(Level.FINE, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
                         try {
-                            String payload = JsonFormat.printer().omittingInsignificantWhitespace().print(ProtoUtils.ToProto.taskOrMessageStream(item));
+                            String payload = ProtoJsonUtils.toJson(
+                                    JsonFormat.printer().omittingInsignificantWhitespace(), ProtoUtils.ToProto.taskOrMessageStream(item));
                             log.log(Level.FINE, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
                             tube.send(payload);
                             log.log(Level.FINE, "REST: tube.send() completed, requesting next event from EventConsumer");

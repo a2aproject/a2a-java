@@ -3,70 +3,45 @@ package org.a2aproject.sdk.compat03.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An event sent by the agent to notify the client that an artifact has been
  * generated or updated. This is typically used in streaming models.
  */
-public final class TaskArtifactUpdateEvent_v0_3 implements EventKind_v0_3, StreamingEventKind_v0_3, UpdateEvent_v0_3 {
+public record TaskArtifactUpdateEvent_v0_3(
+        String taskId,
+        @Nullable Boolean append,
+        @Nullable Boolean lastChunk,
+        Artifact_v0_3 artifact,
+        String contextId,
+        Map<String, Object> metadata,
+        String kind
+) implements EventKind_v0_3, StreamingEventKind_v0_3, UpdateEvent_v0_3 {
 
-    public static final String ARTIFACT_UPDATE = "artifact-update";
-    private final String taskId;
-    private final Boolean append;
-    private final Boolean lastChunk;
-    private final Artifact_v0_3 artifact;
-    private final String contextId;
-    private final Map<String, Object> metadata;
-    private final String kind;
+    public static final String KIND = "artifact-update";
 
-    public TaskArtifactUpdateEvent_v0_3(String taskId, Artifact_v0_3 artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata) {
-        this(taskId, artifact, contextId, append, lastChunk, metadata, ARTIFACT_UPDATE);
-    }
-
-    public TaskArtifactUpdateEvent_v0_3(String taskId, Artifact_v0_3 artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata, String kind) {
+    public TaskArtifactUpdateEvent_v0_3 (String taskId, @Nullable Boolean append, @Nullable Boolean lastChunk,
+                                         Artifact_v0_3 artifact, String contextId,@Nullable Map<String, Object> metadata, String kind){
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("artifact", artifact);
         Assert.checkNotNullParam("contextId", contextId);
-        Assert.checkNotNullParam("kind", kind);
-        if (! kind.equals(ARTIFACT_UPDATE)) {
+        this.kind = kind != null ? kind : KIND;
+        if (!KIND.equals(this.kind)) {
             throw new IllegalArgumentException("Invalid TaskArtifactUpdateEvent");
         }
         this.taskId = taskId;
-        this.artifact = artifact;
-        this.contextId = contextId;
         this.append = append;
         this.lastChunk = lastChunk;
-        this.metadata = metadata;
-        this.kind = kind;
+        this.artifact = artifact;
+        this.contextId = contextId;
+        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
     }
 
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public Artifact_v0_3 getArtifact() {
-        return artifact;
-    }
-
-    public String getContextId() {
-        return contextId;
-    }
-
-    public Boolean isAppend() {
-        return append;
-    }
-
-    public Boolean isLastChunk() {
-        return lastChunk;
-    }
-
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
-    @Override
-    public String getKind() {
-        return kind;
+    public TaskArtifactUpdateEvent_v0_3(String taskId, Artifact_v0_3 artifact, String contextId,
+                                         @Nullable Boolean append, @Nullable Boolean lastChunk,
+                                         @Nullable Map<String, Object> metadata) {
+        this(taskId, append, lastChunk, artifact, contextId, metadata, KIND);
     }
 
     public static class Builder {
@@ -81,13 +56,13 @@ public final class TaskArtifactUpdateEvent_v0_3 implements EventKind_v0_3, Strea
         public Builder() {
         }
 
-        public Builder(TaskArtifactUpdateEvent_v0_3 existingTaskArtifactUpdateEvent) {
-            this.taskId = existingTaskArtifactUpdateEvent.taskId;
-            this.artifact = existingTaskArtifactUpdateEvent.artifact;
-            this.contextId = existingTaskArtifactUpdateEvent.contextId;
-            this.append = existingTaskArtifactUpdateEvent.append;
-            this.lastChunk = existingTaskArtifactUpdateEvent.lastChunk;
-            this.metadata = existingTaskArtifactUpdateEvent.metadata;
+        public Builder(TaskArtifactUpdateEvent_v0_3 existing) {
+            this.taskId = existing.taskId;
+            this.artifact = existing.artifact;
+            this.contextId = existing.contextId;
+            this.append = existing.append;
+            this.lastChunk = existing.lastChunk;
+            this.metadata = existing.metadata;
         }
 
         public Builder taskId(String taskId) {
@@ -111,10 +86,9 @@ public final class TaskArtifactUpdateEvent_v0_3 implements EventKind_v0_3, Strea
         }
 
         public Builder lastChunk(Boolean lastChunk) {
-            this.lastChunk  = lastChunk;
+            this.lastChunk = lastChunk;
             return this;
         }
-
 
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;

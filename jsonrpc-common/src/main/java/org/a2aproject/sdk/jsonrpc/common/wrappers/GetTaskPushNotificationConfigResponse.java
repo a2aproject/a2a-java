@@ -18,6 +18,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  */
 public final class GetTaskPushNotificationConfigResponse extends A2AResponse<TaskPushNotificationConfig> {
 
+    private GetTaskPushNotificationConfigResponse() {
+    }
+
+
     /**
      * Constructs response with full parameters.
      *

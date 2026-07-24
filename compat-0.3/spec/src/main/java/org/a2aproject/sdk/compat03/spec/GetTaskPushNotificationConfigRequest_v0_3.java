@@ -10,6 +10,10 @@ import java.util.UUID;
  */
 public final class GetTaskPushNotificationConfigRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<GetTaskPushNotificationConfigParams_v0_3> {
 
+    private GetTaskPushNotificationConfigRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/pushNotificationConfig/get";
 
     public GetTaskPushNotificationConfigRequest_v0_3(String jsonrpc, Object id, String method, GetTaskPushNotificationConfigParams_v0_3 params) {

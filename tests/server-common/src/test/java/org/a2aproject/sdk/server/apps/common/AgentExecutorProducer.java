@@ -42,6 +42,9 @@ public class AgentExecutorProducer {
     @PublicAgentCard
     AgentCard agentCard;
 
+    @Inject
+    RequestScopedBean requestScopedBean;
+
     @Produces
     public AgentExecutor agentExecutor() {
         return new AgentExecutor() {
@@ -53,6 +56,15 @@ public class AgentExecutorProducer {
                 // Agent-to-agent communication test (routed by message content prefix)
                 if (input.startsWith("delegate:") || input.startsWith("a2a-local:")) {
                     handleAgentToAgentTest(context, agentEmitter);
+                    return;
+                }
+
+                // Request-scoped bean test: verify CDI request context propagation
+                if (input.startsWith("request-scoped:")) {
+                    agentEmitter.startWork();
+                    String value = requestScopedBean.getValue();
+                    agentEmitter.addArtifact(List.of(new TextPart("request-scoped:" + value)));
+                    agentEmitter.complete();
                     return;
                 }
 

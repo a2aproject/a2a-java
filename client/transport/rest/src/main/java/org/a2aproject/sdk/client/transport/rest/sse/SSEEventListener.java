@@ -30,7 +30,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
     @Override
     public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
         try {
-            log.fine("Streaming message received: " + event.data());
+            log.fine("REST SSE raw data: " + event.data());
             org.a2aproject.sdk.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(event.data(), builder);
             parseAndHandleMessage(builder.build(), completableFuture);

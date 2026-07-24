@@ -284,7 +284,7 @@ public class ToProto_v0_3_Test {
 
         org.a2aproject.sdk.compat03.grpc.Task grpcTask = ProtoUtils_v0_3.ToProto.task(task);
         task = ProtoUtils_v0_3.FromProto.task(grpcTask);
-        TaskStatus_v0_3 status = task.getStatus();
+        TaskStatus_v0_3 status = task.status();
         assertEquals(TaskState_v0_3.COMPLETED, status.state());
         assertNotNull(status.timestamp());
         assertEquals(expectedTimestamp, status.timestamp());

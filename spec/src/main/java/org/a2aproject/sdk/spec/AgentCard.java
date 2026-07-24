@@ -1,12 +1,11 @@
 package org.a2aproject.sdk.spec;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
-import org.jspecify.annotations.Nullable;
 
 /**
  * The AgentCard is a self-describing manifest for an agent in the A2A Protocol.
@@ -89,6 +88,14 @@ public record AgentCard(
         Assert.checkNotNullParam("skills", skills);
         Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces);
         Assert.checkNotNullParam("version", version);
+        defaultInputModes = CollectionCopies.immutableList(defaultInputModes);
+        defaultOutputModes = CollectionCopies.immutableList(defaultOutputModes);
+        skills = CollectionCopies.immutableList(skills);
+        securitySchemes = CollectionCopies.immutableNullableMap(securitySchemes);
+        securityRequirements = CollectionCopies.immutableNullableList(securityRequirements);
+        supportedInterfaces = CollectionCopies.immutableList(supportedInterfaces);
+        signatures = CollectionCopies.immutableNullableList(signatures);
+        additionalInterfaces = CollectionCopies.immutableNullableList(additionalInterfaces);
     }
 
     /**
@@ -184,17 +191,17 @@ public record AgentCard(
             this.version = card.version();
             this.documentationUrl = card.documentationUrl();
             this.capabilities = card.capabilities();
-            this.defaultInputModes = card.defaultInputModes() != null ? new ArrayList<>(card.defaultInputModes()) : Collections.emptyList();
-            this.defaultOutputModes = card.defaultOutputModes() != null ? new ArrayList<>(card.defaultOutputModes()) : Collections.emptyList();
-            this.skills = card.skills() != null ? new ArrayList<>(card.skills()) : Collections.emptyList();
-            this.securitySchemes = card.securitySchemes() != null ? Map.copyOf(card.securitySchemes()) : Collections.emptyMap();
-            this.securityRequirements = card.securityRequirements() != null ? new ArrayList<>(card.securityRequirements()) : Collections.emptyList();
+            this.defaultInputModes = CollectionCopies.mutableListCopyOrEmpty(card.defaultInputModes());
+            this.defaultOutputModes = CollectionCopies.mutableListCopyOrEmpty(card.defaultOutputModes());
+            this.skills = CollectionCopies.mutableListCopyOrEmpty(card.skills());
+            this.securitySchemes = CollectionCopies.mutableMapCopyOrEmpty(card.securitySchemes());
+            this.securityRequirements = CollectionCopies.mutableListCopyOrEmpty(card.securityRequirements());
             this.iconUrl = card.iconUrl();
-            this.supportedInterfaces = card.supportedInterfaces() != null ? new ArrayList<>(card.supportedInterfaces()) : Collections.emptyList();
-            this.signatures = card.signatures() != null ? new ArrayList<>(card.signatures()) : null;
-            this.url =  card.url();
-            this.preferredTransport= card.preferredTransport();
-            this.additionalInterfaces = card.additionalInterfaces() != null ? new ArrayList<>(card.additionalInterfaces()) : null;
+            this.supportedInterfaces = CollectionCopies.mutableListCopyOrEmpty(card.supportedInterfaces());
+            this.signatures = CollectionCopies.immutableNullableList(card.signatures());
+            this.url = card.url();
+            this.preferredTransport = card.preferredTransport();
+            this.additionalInterfaces = CollectionCopies.immutableNullableList(card.additionalInterfaces());
         }
 
         /**

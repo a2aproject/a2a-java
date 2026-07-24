@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.server.events.EventQueueUtil;
@@ -144,6 +147,22 @@ public class DefaultRequestHandlerTest {
      */
     protected interface AgentExecutorMethod {
         void invoke(RequestContext context, AgentEmitter agentEmitter) throws A2AError;
+    }
+
+    @Test
+    void testInitConfigReadsBlockingTimeouts() {
+        A2AConfigProvider configProvider = mock(A2AConfigProvider.class);
+        when(configProvider.getValue("a2a.blocking.agent.timeout.seconds")).thenReturn("30");
+        when(configProvider.getValue("a2a.blocking.consumption.timeout.seconds")).thenReturn("5");
+        when(configProvider.getValue("a2a.blocking.reconciliation.timeout.seconds")).thenReturn("7");
+
+        DefaultRequestHandler handler = new DefaultRequestHandler();
+        handler.configProvider = configProvider;
+        handler.initConfig();
+
+        assertEquals(30, handler.agentCompletionTimeoutSeconds);
+        assertEquals(5, handler.consumptionCompletionTimeoutSeconds);
+        assertEquals(7, handler.reconciliationTimeoutSeconds);
     }
 
     /**

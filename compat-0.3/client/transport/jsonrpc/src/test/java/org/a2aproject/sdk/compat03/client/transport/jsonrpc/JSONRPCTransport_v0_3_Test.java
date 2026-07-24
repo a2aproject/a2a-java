@@ -121,18 +121,18 @@ public class JSONRPCTransport_v0_3_Test {
         EventKind_v0_3 result = client.sendMessage(params, null);
         assertInstanceOf(Task_v0_3.class, result);
         Task_v0_3 task = (Task_v0_3) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState_v0_3.COMPLETED,task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact_v0_3 artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState_v0_3.COMPLETED,task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact_v0_3 artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part_v0_3<?> part = artifact.parts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -169,11 +169,11 @@ public class JSONRPCTransport_v0_3_Test {
         EventKind_v0_3 result = client.sendMessage(params, null);
         assertInstanceOf(Message_v0_3.class, result);
         Message_v0_3 agentMessage = (Message_v0_3) result;
-        assertEquals(Message_v0_3.Role.AGENT, agentMessage.getRole());
-        Part_v0_3<?> part = agentMessage.getParts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).getText());
-        assertEquals("msg-456", agentMessage.getMessageId());
+        assertEquals(Message_v0_3.Role.AGENT, agentMessage.role());
+        Part_v0_3<?> part = agentMessage.parts().get(0);
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
+        assertEquals("msg-456", agentMessage.messageId());
     }
 
 
@@ -234,39 +234,39 @@ public class JSONRPCTransport_v0_3_Test {
         JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
         Task_v0_3 task = client.getTask(new TaskQueryParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 10), null);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact_v0_3 artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact_v0_3 artifact = task.artifacts().get(0);
         assertEquals(1, artifact.parts().size());
         assertEquals("artifact-1", artifact.artifactId());
         Part_v0_3<?> part = artifact.parts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
-        List<Message_v0_3> history = task.getHistory();
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
+        assertTrue(task.metadata().isEmpty());
+        List<Message_v0_3> history = task.history();
         assertNotNull(history);
         assertEquals(1, history.size());
         Message_v0_3 message = history.get(0);
-        assertEquals(Message_v0_3.Role.USER, message.getRole());
-        List<Part_v0_3<?>> parts = message.getParts();
+        assertEquals(Message_v0_3.Role.USER, message.role());
+        List<Part_v0_3<?>> parts = message.parts();
         assertNotNull(parts);
         assertEquals(3, parts.size());
         part = parts.get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("tell me a joke", ((TextPart_v0_3)part).getText());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("tell me a joke", ((TextPart_v0_3)part).text());
         part = parts.get(1);
-        assertEquals(Part_v0_3.Kind.FILE, part.getKind());
-        FileContent_v0_3 filePart = ((FilePart_v0_3) part).getFile();
+        assertEquals(Part_v0_3.Kind.FILE, ((FilePart_v0_3) part).kind());
+        FileContent_v0_3 filePart = ((FilePart_v0_3) part).file();
         assertEquals("file:///path/to/file.txt", ((FileWithUri_v0_3) filePart).uri());
         assertEquals("text/plain", filePart.mimeType());
         part = parts.get(2);
-        assertEquals(Part_v0_3.Kind.FILE, part.getKind());
-        filePart = ((FilePart_v0_3) part).getFile();
+        assertEquals(Part_v0_3.Kind.FILE, ((FilePart_v0_3) part).kind());
+        filePart = ((FilePart_v0_3) part).file();
         assertEquals("aGVsbG8=", ((FileWithBytes_v0_3) filePart).bytes());
         assertEquals("hello.txt", filePart.name());
-        assertTrue(task.getMetadata().isEmpty());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -287,10 +287,10 @@ public class JSONRPCTransport_v0_3_Test {
         JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
         Task_v0_3 task = client.cancelTask(new TaskIdParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new HashMap<>()), null);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
-        assertEquals(TaskState_v0_3.CANCELED, task.getStatus().state());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
+        assertEquals(TaskState_v0_3.CANCELED, task.status().state());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -380,8 +380,8 @@ public class JSONRPCTransport_v0_3_Test {
         Map<String, SecurityScheme_v0_3> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme_v0_3 google = (OpenIdConnectSecurityScheme_v0_3) securitySchemes.get("google");
-        assertEquals("openIdConnect", google.getType());
-        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.getOpenIdConnectUrl());
+        assertEquals("openIdConnect", google.type());
+        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.openIdConnectUrl());
         List<Map<String, List<String>>> security = agentCard.security();
         assertEquals(1, security.size());
         Map<String, List<String>> securityMap = security.get(0);
@@ -469,8 +469,8 @@ public class JSONRPCTransport_v0_3_Test {
         Map<String, SecurityScheme_v0_3> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme_v0_3 google = (OpenIdConnectSecurityScheme_v0_3) securitySchemes.get("google");
-        assertEquals("openIdConnect", google.getType());
-        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.getOpenIdConnectUrl());
+        assertEquals("openIdConnect", google.type());
+        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.openIdConnectUrl());
         List<Map<String, List<String>>> security = agentCard.security();
         assertEquals(1, security.size());
         Map<String, List<String>> securityMap = security.get(0);
@@ -551,18 +551,18 @@ public class JSONRPCTransport_v0_3_Test {
         EventKind_v0_3 result = client.sendMessage(params, null);
         assertInstanceOf(Task_v0_3.class, result);
         Task_v0_3 task = (Task_v0_3) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact_v0_3 artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact_v0_3 artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("image-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part_v0_3<?> part = artifact.parts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart_v0_3) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart_v0_3) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -609,18 +609,18 @@ public class JSONRPCTransport_v0_3_Test {
         EventKind_v0_3 result = client.sendMessage(params, null);
         assertInstanceOf(Task_v0_3.class, result);
         Task_v0_3 task = (Task_v0_3) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact_v0_3 artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact_v0_3 artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("data-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part_v0_3<?> part = artifact.parts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart_v0_3) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart_v0_3) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -667,17 +667,17 @@ public class JSONRPCTransport_v0_3_Test {
         EventKind_v0_3 result = client.sendMessage(params, null);
         assertInstanceOf(Task_v0_3.class, result);
         Task_v0_3 task = (Task_v0_3) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact_v0_3 artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact_v0_3 artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("mixed-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part_v0_3<?> part = artifact.parts().get(0);
-        assertEquals(Part_v0_3.Kind.TEXT, part.getKind());
-        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart_v0_3) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
+        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart_v0_3) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 }

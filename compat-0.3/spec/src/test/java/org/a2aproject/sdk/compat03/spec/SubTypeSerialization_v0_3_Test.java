@@ -32,24 +32,24 @@ public class SubTypeSerialization_v0_3_Test {
         return Stream.of(
                 Arguments.of(
                         new TaskStatusUpdateEvent_v0_3.Builder()
-                                .taskId(MINIMAL_TASK.getId())
-                                .contextId(MINIMAL_TASK.getContextId())
+                                .taskId(MINIMAL_TASK.id())
+                                .contextId(MINIMAL_TASK.contextId())
                                 .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
                                 .isFinal(true)
-                                .build(), "kind", TaskStatusUpdateEvent_v0_3.STATUS_UPDATE
+                                .build(), "kind", TaskStatusUpdateEvent_v0_3.KIND
                 ),
                 Arguments.of(
                         new TaskArtifactUpdateEvent_v0_3.Builder()
-                                .taskId(MINIMAL_TASK.getId())
-                                .contextId(MINIMAL_TASK.getContextId())
+                                .taskId(MINIMAL_TASK.id())
+                                .contextId(MINIMAL_TASK.contextId())
                                 .artifact(new Artifact_v0_3.Builder()
                                         .artifactId("11")
                                         .parts(new TextPart_v0_3("text"))
                                         .build())
-                                .build(), "kind", TaskArtifactUpdateEvent_v0_3.ARTIFACT_UPDATE
+                                .build(), "kind", TaskArtifactUpdateEvent_v0_3.KIND
                 ),
                 Arguments.of(
-                        MINIMAL_TASK, "kind", Task_v0_3.TASK
+                        MINIMAL_TASK, "kind", Task_v0_3.KIND
                 ),
                 Arguments.of(
                         new Message_v0_3.Builder()
@@ -57,7 +57,7 @@ public class SubTypeSerialization_v0_3_Test {
                                 .parts(new TextPart_v0_3("tell me some jokes"))
                                 .contextId("context-1234")
                                 .messageId("message-1234")
-                                .build(), "kind", Message_v0_3.MESSAGE
+                                .build(), "kind", Message_v0_3.KIND
                 ),
                 Arguments.of(
                         new TextPart_v0_3("text"), "kind", TextPart_v0_3.TEXT
@@ -73,28 +73,28 @@ public class SubTypeSerialization_v0_3_Test {
                 Arguments.of(
                         new APIKeySecurityScheme_v0_3.Builder()
                                 .in("test").name("name").description("description").build(),
-                        "type", APIKeySecurityScheme_v0_3.API_KEY
+                        "type", APIKeySecurityScheme_v0_3.TYPE
                 ),
                 Arguments.of(
                         new HTTPAuthSecurityScheme_v0_3.Builder()
                         .scheme("basic").description("Basic Auth").build(),
-                        "type", HTTPAuthSecurityScheme_v0_3.HTTP
+                        "type", HTTPAuthSecurityScheme_v0_3.TYPE
                 ),
                 Arguments.of(
                         new OAuth2SecurityScheme_v0_3.Builder()
                                 .flows(new OAuthFlows_v0_3.Builder().build())
                                 .description("oAuth2SecurityScheme").build(),
-                        "type", OAuth2SecurityScheme_v0_3.OAUTH2
+                        "type", OAuth2SecurityScheme_v0_3.TYPE
                 ),
                 Arguments.of(
                         new OpenIdConnectSecurityScheme_v0_3.Builder()
                                 .openIdConnectUrl("https://accounts.google.com/.well-known/openid-configuration")
                                 .description("OpenId").build(),
-                        "type", OpenIdConnectSecurityScheme_v0_3.OPENID_CONNECT
+                        "type", OpenIdConnectSecurityScheme_v0_3.TYPE
                 ),
                 Arguments.of(
                         new MutualTLSSecurityScheme_v0_3("mutual tls test"),
-                        "type", MutualTLSSecurityScheme_v0_3.MUTUAL_TLS
+                        "type", MutualTLSSecurityScheme_v0_3.TYPE
                 )
         );
     }

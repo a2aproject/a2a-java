@@ -24,6 +24,10 @@ import org.a2aproject.sdk.spec.TaskState;
 
 public final class CancelTaskResponse extends A2AResponse<Task> {
 
+    private CancelTaskResponse() {
+    }
+
+
     /**
      * Constructs a CancelTaskResponse with full parameters.
      *

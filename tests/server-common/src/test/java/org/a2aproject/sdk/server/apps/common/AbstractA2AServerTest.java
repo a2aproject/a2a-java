@@ -505,6 +505,94 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    public void testRequestScopedBeanAvailableOnAgentExecutorThread() throws Exception {
+        Message message = Message.builder()
+                .messageId("request-scoped-test")
+                .role(Message.Role.ROLE_USER)
+                .parts(new TextPart("request-scoped:test"))
+                .build();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Task> receivedTask = new AtomicReference<>();
+        AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+        getNonStreamingClient().sendMessage(message, List.of((event, agentCard) -> {
+            if (event instanceof TaskEvent te) {
+                receivedTask.set(te.getTask());
+                if (te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                    latch.countDown();
+                }
+            } else if (event instanceof TaskUpdateEvent tue) {
+                receivedTask.set(tue.getTask());
+                if (tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                    latch.countDown();
+                }
+            }
+        }), error -> {
+            errorRef.set(error);
+            latch.countDown();
+        });
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS), "Request should complete within timeout");
+        assertNull(errorRef.get(), "Should not have received an error");
+
+        Task task = receivedTask.get();
+        assertNotNull(task, "Should have received a task");
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
+        assertNotNull(task.artifacts());
+        assertFalse(task.artifacts().isEmpty());
+
+        Part<?> part = task.artifacts().get(0).parts().get(0);
+        assertInstanceOf(TextPart.class, part);
+        assertEquals("request-scoped:request-scoped-value", ((TextPart) part).text());
+    }
+
+    @Test
+    public void testRequestScopedBeanAvailableOnAgentExecutorThreadStreaming() throws Exception {
+        Message message = Message.builder()
+                .messageId("request-scoped-streaming-test")
+                .role(Message.Role.ROLE_USER)
+                .parts(new TextPart("request-scoped:test"))
+                .build();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Task> receivedTask = new AtomicReference<>();
+        AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+        getClient().sendMessage(message, List.of((event, agentCard) -> {
+            if (event instanceof TaskEvent te) {
+                receivedTask.set(te.getTask());
+                if (te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                    latch.countDown();
+                }
+            } else if (event instanceof TaskUpdateEvent tue) {
+                receivedTask.set(tue.getTask());
+                if (tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                    latch.countDown();
+                }
+            }
+        }), error -> {
+            if (!isStreamClosedError(error)) {
+                errorRef.set(error);
+            }
+            latch.countDown();
+        });
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS), "Request should complete within timeout");
+        assertNull(errorRef.get(), "Should not have received an error");
+
+        Task task = receivedTask.get();
+        assertNotNull(task, "Should have received a task");
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
+        assertNotNull(task.artifacts());
+        assertFalse(task.artifacts().isEmpty());
+
+        Part<?> part = task.artifacts().get(0).parts().get(0);
+        assertInstanceOf(TextPart.class, part);
+        assertEquals("request-scoped:request-scoped-value", ((TextPart) part).text());
+    }
+
+    @Test
     public void testSendMessageExistingTaskSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
@@ -747,6 +835,9 @@ public abstract class AbstractA2AServerTest {
                 eventLatch.countDown();
             };
 
+            // Capture child queue count before subscribing (ensureQueueForTask creates one)
+            int childCountBefore = getChildQueueCount(MINIMAL_TASK.id());
+
             // Count down when the streaming subscription is established
             CountDownLatch subscriptionLatch = new CountDownLatch(1);
             awaitStreamingSubscription()
@@ -757,6 +848,11 @@ public abstract class AbstractA2AServerTest {
 
             // Wait for subscription to be established
             assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
+
+            // Wait for EventConsumer polling loop to start (transport-level subscription
+            // does not guarantee the consumer is ready to receive events)
+            assertTrue(awaitChildQueueCountStable(MINIMAL_TASK.id(), childCountBefore + 1, 15000),
+                    "subscribeToTask child queue should be created and stable");
 
             // Enqueue events on the server
             List<Event> events = List.of(
@@ -865,6 +961,9 @@ public abstract class AbstractA2AServerTest {
 
             Client clientWithConsumer = clientBuilder.build();
 
+            // Capture child queue count before subscribing (ensureQueueForTask creates one)
+            int childCountBefore = getChildQueueCount(MINIMAL_TASK.id());
+
             // Count down when the streaming subscription is established
             CountDownLatch subscriptionLatch = new CountDownLatch(1);
             awaitStreamingSubscription()
@@ -875,6 +974,11 @@ public abstract class AbstractA2AServerTest {
 
             // Wait for subscription to be established
             assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
+
+            // Wait for EventConsumer polling loop to start (transport-level subscription
+            // does not guarantee the consumer is ready to receive events)
+            assertTrue(awaitChildQueueCountStable(MINIMAL_TASK.id(), childCountBefore + 1, 15000),
+                    "subscribeToTask child queue should be created and stable");
 
             // Enqueue events on the server
             List<Event> events = List.of(
@@ -2370,16 +2474,17 @@ public abstract class AbstractA2AServerTest {
     }
 
     protected boolean isStreamClosedError(Throwable throwable) {
-        // Unwrap the CompletionException
         Throwable cause = throwable;
 
         while (cause != null) {
             if (cause instanceof EOFException) {
                 return true;
             }
+            if (cause instanceof java.util.concurrent.CancellationException) {
+                return true;
+            }
             if (cause instanceof IOException && cause.getMessage() != null
                     && cause.getMessage().contains("cancelled")) {
-                // stream is closed upon cancellation
                 return true;
             }
             cause = cause.getCause();
@@ -3080,6 +3185,81 @@ public abstract class AbstractA2AServerTest {
             assertTrue(resultTask.history().isEmpty(),
                     "historyLength=0 should return no history, but got " +
                             resultTask.history().size() + " messages");
+        } finally {
+            String taskId = taskIdRef.get();
+            if (taskId != null) {
+                deleteTaskInTaskStore(taskId);
+            }
+        }
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    public void testSendStreamingMessageWithHistoryLengthZero() throws Exception {
+        AtomicReference<String> taskIdRef = new AtomicReference<>();
+
+        try {
+            Message initialMessage = Message.builder(MESSAGE)
+                    .parts(new TextPart("input-required:Trigger INPUT_REQUIRED"))
+                    .build();
+
+            CountDownLatch initialLatch = new CountDownLatch(1);
+            getClient().sendMessage(initialMessage, List.of((event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    taskIdRef.set(te.getTask().id());
+                    initialLatch.countDown();
+                } else if (event instanceof TaskUpdateEvent tue) {
+                    taskIdRef.set(tue.getTask().id());
+                    if (tue.getTask().status().state() == TaskState.TASK_STATE_INPUT_REQUIRED) {
+                        initialLatch.countDown();
+                    }
+                }
+            }), error -> {
+                if (!isStreamClosedError(error)) {
+                    initialLatch.countDown();
+                }
+            });
+
+            assertTrue(initialLatch.await(15, TimeUnit.SECONDS), "Initial streaming sendMessage should complete");
+            String taskId = taskIdRef.get();
+            assertNotNull(taskId, "Should have captured task ID");
+
+            Message followUp = Message.builder(MESSAGE)
+                    .taskId(taskId)
+                    .parts(new TextPart("input-required:User input"))
+                    .build();
+
+            MessageSendParams params = MessageSendParams.builder()
+                    .message(followUp)
+                    .configuration(MessageSendConfiguration.builder()
+                            .historyLength(0)
+                            .build())
+                    .build();
+
+            CountDownLatch followUpLatch = new CountDownLatch(1);
+            AtomicReference<Task> resultTaskRef = new AtomicReference<>();
+            getClient().sendMessage(params, List.of((BiConsumer<ClientEvent, AgentCard>) (event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    resultTaskRef.set(te.getTask());
+                    followUpLatch.countDown();
+                } else if (event instanceof TaskUpdateEvent tue) {
+                    resultTaskRef.set(tue.getTask());
+                    if (tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                        followUpLatch.countDown();
+                    }
+                }
+            }), error -> {
+                if (!isStreamClosedError(error)) {
+                    followUpLatch.countDown();
+                }
+            }, null);
+
+            assertTrue(followUpLatch.await(15, TimeUnit.SECONDS), "Follow-up streaming sendMessage should complete");
+            Task resultTask = resultTaskRef.get();
+            assertNotNull(resultTask, "Should have received a Task response");
+            assertTrue(resultTask.history() == null || resultTask.history().isEmpty(),
+                    "historyLength=0 should return no history, but got " +
+                            (resultTask.history() != null ? resultTask.history().size() : 0) + " messages");
         } finally {
             String taskId = taskIdRef.get();
             if (taskId != null) {

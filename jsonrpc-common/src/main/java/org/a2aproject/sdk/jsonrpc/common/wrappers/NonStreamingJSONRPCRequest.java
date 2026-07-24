@@ -10,6 +10,9 @@ public abstract sealed class NonStreamingJSONRPCRequest<T> extends A2ARequest<T>
         SendMessageRequest, DeleteTaskPushNotificationConfigRequest, ListTaskPushNotificationConfigsRequest,
         GetExtendedAgentCardRequest, ListTasksRequest {
 
+    NonStreamingJSONRPCRequest() {
+    }
+
     NonStreamingJSONRPCRequest(String jsonrpc, String method, Object id, T params) {
         validateAndSetJsonParameters(jsonrpc, method, id, params, true);
     }

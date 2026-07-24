@@ -3,41 +3,31 @@ package org.a2aproject.sdk.compat03.spec;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a file segment within a message or artifact. The file content can be
  * provided either directly as bytes or as a URI.
  */
-public class FilePart_v0_3 extends Part_v0_3<FileContent_v0_3> {
+public record FilePart_v0_3(FileContent_v0_3 file, Map<String, Object> metadata, Kind kind) implements Part_v0_3<FileContent_v0_3> {
 
     public static final String FILE = "file";
-    private final FileContent_v0_3 file;
-    private final Map<String, Object> metadata;
-    private final Kind kind;
+
+    public FilePart_v0_3 (FileContent_v0_3 file, @Nullable Map<String, Object> metadata, Kind kind){
+        Assert.checkNotNullParam("file", file);
+        if (kind != Kind.FILE) {
+            throw new IllegalArgumentException("Invalid FilePart kind: " + kind);
+        }
+        this.file = file;
+        this.metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+        this.kind = kind;
+    }
 
     public FilePart_v0_3(FileContent_v0_3 file) {
-        this(file, null);
+        this(file, null, Kind.FILE);
     }
 
-    public FilePart_v0_3(FileContent_v0_3 file, Map<String, Object> metadata) {
-        Assert.checkNotNullParam("file", file);
-        this.file = file;
-        this.metadata = metadata;
-        this.kind = Kind.FILE;
+    public FilePart_v0_3(FileContent_v0_3 file, @Nullable Map<String, Object> metadata) {
+        this(file, metadata, Kind.FILE);
     }
-
-    @Override
-    public Kind getKind() {
-        return kind;
-    }
-
-    public FileContent_v0_3 getFile() {
-        return file;
-    }
-
-    @Override
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
 }

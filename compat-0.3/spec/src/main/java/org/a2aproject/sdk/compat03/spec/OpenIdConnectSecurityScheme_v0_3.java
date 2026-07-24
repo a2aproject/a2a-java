@@ -1,43 +1,31 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines a security scheme using OpenID Connect.
  */
-public final class OpenIdConnectSecurityScheme_v0_3 implements SecurityScheme_v0_3 {
+public record OpenIdConnectSecurityScheme_v0_3(
+        String openIdConnectUrl,
+        @Nullable String description,
+        String type
+) implements SecurityScheme_v0_3 {
 
-    public static final String OPENID_CONNECT = "openIdConnect";
-    private final String openIdConnectUrl;
-    private final String description;
-    private final String type;
+    public static final String TYPE = "openIdConnect";
 
-    public OpenIdConnectSecurityScheme_v0_3(String openIdConnectUrl, String description) {
-        this(openIdConnectUrl, description, OPENID_CONNECT);
-    }
-
-    public OpenIdConnectSecurityScheme_v0_3(String openIdConnectUrl, String description, String type) {
-        Assert.checkNotNullParam("type", type);
+    public OpenIdConnectSecurityScheme_v0_3 {
         Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl);
-        if (!type.equals(OPENID_CONNECT)) {
+        if (type == null) {
+            type = TYPE;
+        }
+        if (!type.equals(TYPE)) {
             throw new IllegalArgumentException("Invalid type for OpenIdConnectSecurityScheme");
         }
-        this.openIdConnectUrl = openIdConnectUrl;
-        this.description = description;
-        this.type = type;
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public String getOpenIdConnectUrl() {
-        return openIdConnectUrl;
-    }
-
-    public String getType() {
-        return type;
+    public OpenIdConnectSecurityScheme_v0_3(String openIdConnectUrl, @Nullable String description) {
+        this(openIdConnectUrl, description, TYPE);
     }
 
     public static class Builder {
@@ -58,5 +46,4 @@ public final class OpenIdConnectSecurityScheme_v0_3 implements SecurityScheme_v0
             return new OpenIdConnectSecurityScheme_v0_3(openIdConnectUrl, description);
         }
     }
-
 }

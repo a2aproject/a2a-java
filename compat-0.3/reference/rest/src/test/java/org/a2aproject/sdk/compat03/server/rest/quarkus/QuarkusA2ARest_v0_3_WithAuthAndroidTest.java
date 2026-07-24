@@ -1,6 +1,6 @@
 package org.a2aproject.sdk.compat03.server.rest.quarkus;
 
-import org.a2aproject.sdk.client.http.AndroidA2AHttpClient;
+import org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransportConfigBuilder_v0_3;
@@ -54,10 +54,10 @@ public class QuarkusA2ARest_v0_3_WithAuthAndroidTest extends AbstractA2AServerWi
         saveTaskInTaskStore(MINIMAL_TASK);
 
         givenAuthenticated()
-                .get("/v1/tasks/" + MINIMAL_TASK.getId())
+                .get("/v1/tasks/" + MINIMAL_TASK.id())
                 .then()
                 .statusCode(200);
 
-        deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        deleteTaskInTaskStore(MINIMAL_TASK.id());
     }
 }

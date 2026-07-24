@@ -99,7 +99,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         // Save v0.3 task by converting to v1.0 for taskStore
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
-        GetTaskRequest_v0_3 request = new GetTaskRequest_v0_3("1", new TaskQueryParams_v0_3(MINIMAL_TASK.getId()));
+        GetTaskRequest_v0_3 request = new GetTaskRequest_v0_3("1", new TaskQueryParams_v0_3(MINIMAL_TASK.id()));
         GetTaskResponse_v0_3 response = handler.onGetTask(request, callContext);
 
         assertEquals(request.getId(), response.getId());
@@ -107,15 +107,15 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         // Response should contain v0.3 task (converted back from v1.0)
         Task_v0_3 result = response.getResult();
-        assertEquals(MINIMAL_TASK.getId(), result.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), result.getContextId());
+        assertEquals(MINIMAL_TASK.id(), result.id());
+        assertEquals(MINIMAL_TASK.contextId(), result.contextId());
     }
 
     @Test
     public void testOnGetTaskNotFound() throws Exception {
         JSONRPCHandler_v0_3 handler = new JSONRPCHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
 
-        GetTaskRequest_v0_3 request = new GetTaskRequest_v0_3("1", new TaskQueryParams_v0_3(MINIMAL_TASK.getId()));
+        GetTaskRequest_v0_3 request = new GetTaskRequest_v0_3("1", new TaskQueryParams_v0_3(MINIMAL_TASK.id()));
         GetTaskResponse_v0_3 response = handler.onGetTask(request, callContext);
 
         assertEquals(request.getId(), response.getId());
@@ -140,7 +140,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
             emitter.cancel();
         };
 
-        CancelTaskRequest_v0_3 request = new CancelTaskRequest_v0_3("111", new TaskIdParams_v0_3(MINIMAL_TASK.getId()));
+        CancelTaskRequest_v0_3 request = new CancelTaskRequest_v0_3("111", new TaskIdParams_v0_3(MINIMAL_TASK.id()));
         CancelTaskResponse_v0_3 response = handler.onCancelTask(request, callContext);
 
         assertNull(response.getError());
@@ -148,9 +148,9 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         // Verify task was canceled
         Task_v0_3 task = response.getResult();
-        assertEquals(MINIMAL_TASK.getId(), task.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), task.getContextId());
-        assertEquals(TaskState_v0_3.CANCELED, task.getStatus().state());
+        assertEquals(MINIMAL_TASK.id(), task.id());
+        assertEquals(MINIMAL_TASK.contextId(), task.contextId());
+        assertEquals(TaskState_v0_3.CANCELED, task.status().state());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
             throw new org.a2aproject.sdk.spec.UnsupportedOperationError();
         };
 
-        CancelTaskRequest_v0_3 request = new CancelTaskRequest_v0_3("1", new TaskIdParams_v0_3(MINIMAL_TASK.getId()));
+        CancelTaskRequest_v0_3 request = new CancelTaskRequest_v0_3("1", new TaskIdParams_v0_3(MINIMAL_TASK.id()));
         CancelTaskResponse_v0_3 response = handler.onCancelTask(request, callContext);
 
         assertEquals(request.getId(), response.getId());
@@ -177,7 +177,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
     public void testOnCancelTaskNotFound() {
         JSONRPCHandler_v0_3 handler = new JSONRPCHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
 
-        CancelTaskRequest_v0_3 request = new CancelTaskRequest_v0_3("1", new TaskIdParams_v0_3(MINIMAL_TASK.getId()));
+        CancelTaskRequest_v0_3 request = new CancelTaskRequest_v0_3("1", new TaskIdParams_v0_3(MINIMAL_TASK.id()));
         CancelTaskResponse_v0_3 response = handler.onCancelTask(request, callContext);
 
         assertEquals(request.getId(), response.getId());
@@ -204,8 +204,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         };
 
         Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .build();
 
         SendMessageRequest_v0_3 request = new SendMessageRequest_v0_3("1", new MessageSendParams_v0_3(message, null, null));
@@ -215,7 +215,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         // Response should contain the message (converted back from v1.0)
         EventKind_v0_3 result = response.getResult();
         if (result instanceof Message_v0_3) {
-            assertEquals(message.getMessageId(), ((Message_v0_3) result).getMessageId());
+            assertEquals(message.messageId(), ((Message_v0_3) result).messageId());
         }
     }
 
@@ -233,8 +233,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         };
 
         Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .build();
 
         SendMessageRequest_v0_3 request = new SendMessageRequest_v0_3("1", new MessageSendParams_v0_3(message, null, null));
@@ -243,7 +243,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         assertNull(response.getError());
         EventKind_v0_3 result = response.getResult();
         if (result instanceof Message_v0_3) {
-            assertEquals(message.getMessageId(), ((Message_v0_3) result).getMessageId());
+            assertEquals(message.messageId(), ((Message_v0_3) result).messageId());
         }
     }
 
@@ -260,8 +260,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         };
 
         Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .build();
 
         SendMessageRequest_v0_3 request = new SendMessageRequest_v0_3("1", new MessageSendParams_v0_3(message, null, null));
@@ -289,8 +289,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         };
 
         Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .build();
 
         SendStreamingMessageRequest_v0_3 request = new SendStreamingMessageRequest_v0_3(
@@ -344,7 +344,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         // Verify the event is the message (converted back from v1.0)
         Message_v0_3 receivedMessage = assertInstanceOf(Message_v0_3.class, results.get(0), "Event should be a Message");
-        assertEquals(message.getMessageId(), receivedMessage.getMessageId());
+        assertEquals(message.messageId(), receivedMessage.messageId());
     }
 
     @Test
@@ -360,8 +360,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
                 .build();
 
         TaskArtifactUpdateEvent_v0_3 v03ArtifactEvent = new TaskArtifactUpdateEvent_v0_3.Builder()
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .artifact(new Artifact_v0_3.Builder()
                         .artifactId("artifact-1")
                         .parts(new TextPart_v0_3("Generated artifact content"))
@@ -369,8 +369,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
                 .build();
 
         TaskStatusUpdateEvent_v0_3 v03StatusEvent = new TaskStatusUpdateEvent_v0_3.Builder()
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
                 .isFinal(true) // Must be true for COMPLETED state in v1.0
                 .build();
@@ -385,8 +385,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         };
 
         Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
                 .build();
 
         SendStreamingMessageRequest_v0_3 request = new SendStreamingMessageRequest_v0_3(
@@ -440,21 +440,21 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         // Verify the first event is the task
         Task_v0_3 receivedTask = assertInstanceOf(Task_v0_3.class, results.get(0), "First event should be a Task");
-        assertEquals(MINIMAL_TASK.getId(), receivedTask.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), receivedTask.getContextId());
-        assertEquals(TaskState_v0_3.WORKING, receivedTask.getStatus().state());
+        assertEquals(MINIMAL_TASK.id(), receivedTask.id());
+        assertEquals(MINIMAL_TASK.contextId(), receivedTask.contextId());
+        assertEquals(TaskState_v0_3.WORKING, receivedTask.status().state());
 
         // Verify the second event is the artifact update
         TaskArtifactUpdateEvent_v0_3 receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent_v0_3.class, results.get(1),
                 "Second event should be a TaskArtifactUpdateEvent");
-        assertEquals(MINIMAL_TASK.getId(), receivedArtifact.getTaskId());
-        assertEquals("artifact-1", receivedArtifact.getArtifact().artifactId());
+        assertEquals(MINIMAL_TASK.id(), receivedArtifact.taskId());
+        assertEquals("artifact-1", receivedArtifact.artifact().artifactId());
 
         // Verify the third event is the status update
         TaskStatusUpdateEvent_v0_3 receivedStatus = assertInstanceOf(TaskStatusUpdateEvent_v0_3.class, results.get(2),
                 "Third event should be a TaskStatusUpdateEvent");
-        assertEquals(MINIMAL_TASK.getId(), receivedStatus.getTaskId());
-        assertEquals(TaskState_v0_3.COMPLETED, receivedStatus.getStatus().state());
+        assertEquals(MINIMAL_TASK.id(), receivedStatus.taskId());
+        assertEquals(TaskState_v0_3.COMPLETED, receivedStatus.status().state());
     }
 
     @Test
@@ -474,8 +474,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(v03Task), false);
 
         Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(v03Task.getId())
-                .contextId(v03Task.getContextId())
+                .taskId(v03Task.id())
+                .contextId(v03Task.contextId())
                 .build();
 
         SendStreamingMessageRequest_v0_3 request = new SendStreamingMessageRequest_v0_3(
@@ -531,8 +531,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         // Verify the task was received
         assertEquals(1, results.size(), "Should have received exactly 1 event");
         Task_v0_3 receivedTask = assertInstanceOf(Task_v0_3.class, results.get(0), "Event should be a Task");
-        assertEquals(v03Task.getId(), receivedTask.getId());
-        assertEquals(v03Task.getContextId(), receivedTask.getContextId());
+        assertEquals(v03Task.id(), receivedTask.id());
+        assertEquals(v03Task.contextId(), receivedTask.contextId());
         // Note: v1.0 backend manages task history differently than v0.3
         // The key assertion is that we received a Task event for the existing task
     }
@@ -715,7 +715,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         JSONRPCHandler_v0_3 handler = new JSONRPCHandler_v0_3(nonStreamingCard, internalExecutor, convert03To10Handler);
 
-        TaskResubscriptionRequest_v0_3 request = new TaskResubscriptionRequest_v0_3("1", new TaskIdParams_v0_3(MINIMAL_TASK.getId()));
+        TaskResubscriptionRequest_v0_3 request = new TaskResubscriptionRequest_v0_3("1", new TaskIdParams_v0_3(MINIMAL_TASK.id()));
         Flow.Publisher<SendStreamingMessageResponse_v0_3> response = handler.onResubscribeToTask(request, callContext);
 
         List<SendStreamingMessageResponse_v0_3> results = new ArrayList<>();
@@ -771,7 +771,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 taskPushConfig =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
                                 .build());
@@ -783,10 +783,10 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 taskPushConfigResult =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
-                                .id(MINIMAL_TASK.getId())
+                                .id(MINIMAL_TASK.id())
                                 .build());
         assertEquals(taskPushConfigResult, response.getResult());
     }
@@ -805,7 +805,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 taskPushConfig =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
                                 .build());
@@ -814,11 +814,11 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         handler.setPushNotificationConfig(request, callContext);
 
         GetTaskPushNotificationConfigRequest_v0_3 getRequest =
-                new GetTaskPushNotificationConfigRequest_v0_3("111", new GetTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.getId()));
+                new GetTaskPushNotificationConfigRequest_v0_3("111", new GetTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
         GetTaskPushNotificationConfigResponse_v0_3 getResponse = handler.getPushNotificationConfig(getRequest, callContext);
 
-        TaskPushNotificationConfig_v0_3 expectedConfig = new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.getId(),
-                new PushNotificationConfig_v0_3.Builder().id(MINIMAL_TASK.getId()).url("http://example.com").build());
+        TaskPushNotificationConfig_v0_3 expectedConfig = new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.id(),
+                new PushNotificationConfig_v0_3.Builder().id(MINIMAL_TASK.id()).url("http://example.com").build());
         assertEquals(expectedConfig, getResponse.getResult());
     }
 
@@ -836,16 +836,16 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 taskPushConfig =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
-                                .id(MINIMAL_TASK.getId())
+                                .id(MINIMAL_TASK.id())
                                 .build());
         SetTaskPushNotificationConfigRequest_v0_3 request = new SetTaskPushNotificationConfigRequest_v0_3("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         DeleteTaskPushNotificationConfigRequest_v0_3 deleteRequest =
-                new DeleteTaskPushNotificationConfigRequest_v0_3("111", new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.getId(), MINIMAL_TASK.getId()));
+                new DeleteTaskPushNotificationConfigRequest_v0_3("111", new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
         DeleteTaskPushNotificationConfigResponse_v0_3 deleteResponse =
                 handler.deletePushNotificationConfig(deleteRequest, callContext);
 
@@ -873,7 +873,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         taskStore.save(v10Task, false);
 
         GetTaskPushNotificationConfigRequest_v0_3 request =
-                new GetTaskPushNotificationConfigRequest_v0_3("id", new GetTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.getId()));
+                new GetTaskPushNotificationConfigRequest_v0_3("id", new GetTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
         GetTaskPushNotificationConfigResponse_v0_3 response = handler.getPushNotificationConfig(request, callContext);
 
         assertNotNull(response.getError());
@@ -901,7 +901,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 config =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
                                 .build());
@@ -930,16 +930,16 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 taskPushConfig =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
-                                .id(MINIMAL_TASK.getId())
+                                .id(MINIMAL_TASK.id())
                                 .build());
         SetTaskPushNotificationConfigRequest_v0_3 request = new SetTaskPushNotificationConfigRequest_v0_3("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         DeleteTaskPushNotificationConfigRequest_v0_3 deleteRequest =
-                new DeleteTaskPushNotificationConfigRequest_v0_3("111", new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.getId(), MINIMAL_TASK.getId()));
+                new DeleteTaskPushNotificationConfigRequest_v0_3("111", new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
         DeleteTaskPushNotificationConfigResponse_v0_3 deleteResponse =
                 handler.deletePushNotificationConfig(deleteRequest, callContext);
 
@@ -971,16 +971,16 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         TaskPushNotificationConfig_v0_3 taskPushConfig =
                 new TaskPushNotificationConfig_v0_3(
-                        MINIMAL_TASK.getId(),
+                        MINIMAL_TASK.id(),
                         new PushNotificationConfig_v0_3.Builder()
                                 .url("http://example.com")
-                                .id(MINIMAL_TASK.getId())
+                                .id(MINIMAL_TASK.id())
                                 .build());
         SetTaskPushNotificationConfigRequest_v0_3 request = new SetTaskPushNotificationConfigRequest_v0_3("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         DeleteTaskPushNotificationConfigRequest_v0_3 deleteRequest =
-                new DeleteTaskPushNotificationConfigRequest_v0_3("111", new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.getId(), MINIMAL_TASK.getId()));
+                new DeleteTaskPushNotificationConfigRequest_v0_3("111", new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
         DeleteTaskPushNotificationConfigResponse_v0_3 deleteResponse =
                 handler.deletePushNotificationConfig(deleteRequest, callContext);
 
@@ -1009,16 +1009,16 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         List<Event_v0_3> events = List.of(
                 MINIMAL_TASK,
                 new TaskArtifactUpdateEvent_v0_3.Builder()
-                        .taskId(MINIMAL_TASK.getId())
-                        .contextId(MINIMAL_TASK.getContextId())
+                        .taskId(MINIMAL_TASK.id())
+                        .contextId(MINIMAL_TASK.contextId())
                         .artifact(new Artifact_v0_3.Builder()
                                 .artifactId("11")
                                 .parts(new TextPart_v0_3("text"))
                                 .build())
                         .build(),
                 new TaskStatusUpdateEvent_v0_3.Builder()
-                        .taskId(MINIMAL_TASK.getId())
-                        .contextId(MINIMAL_TASK.getContextId())
+                        .taskId(MINIMAL_TASK.id())
+                        .contextId(MINIMAL_TASK.contextId())
                         .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
                         .isFinal(true)
                         .build());
@@ -1038,7 +1038,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         // Set push notification config
         TaskPushNotificationConfig_v0_3 config = new TaskPushNotificationConfig_v0_3(
-                MINIMAL_TASK.getId(),
+                MINIMAL_TASK.id(),
                 new PushNotificationConfig_v0_3.Builder().url("http://example.com").build());
         SetTaskPushNotificationConfigRequest_v0_3 stpnRequest = new SetTaskPushNotificationConfigRequest_v0_3("1", config);
         SetTaskPushNotificationConfigResponse_v0_3 stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
@@ -1046,7 +1046,7 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
 
         // Send streaming message
         Message_v0_3 msg = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
+                .taskId(MINIMAL_TASK.id())
                 .build();
         SendStreamingMessageRequest_v0_3 request = new SendStreamingMessageRequest_v0_3("1", new MessageSendParams_v0_3(msg, null, null));
         Flow.Publisher<SendStreamingMessageResponse_v0_3> response = handler.onMessageSendStream(request, callContext);
@@ -1115,8 +1115,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         org.a2aproject.sdk.spec.StreamingEventKind pushEvent0 = httpClient.events.get(0);
         assertTrue(pushEvent0 instanceof org.a2aproject.sdk.spec.Task);
         org.a2aproject.sdk.spec.Task v10PushedTask0 = (org.a2aproject.sdk.spec.Task) pushEvent0;
-        assertEquals(MINIMAL_TASK.getId(), v10PushedTask0.id());
-        assertEquals(MINIMAL_TASK.getContextId(), v10PushedTask0.contextId());
+        assertEquals(MINIMAL_TASK.id(), v10PushedTask0.id());
+        assertEquals(MINIMAL_TASK.contextId(), v10PushedTask0.contextId());
         // v0.3 SUBMITTED maps to v1.0 TASK_STATE_SUBMITTED
         assertEquals(org.a2aproject.sdk.spec.TaskState.TASK_STATE_SUBMITTED, v10PushedTask0.status().state());
         assertTrue(v10PushedTask0.artifacts() == null || v10PushedTask0.artifacts().isEmpty());
@@ -1125,8 +1125,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         org.a2aproject.sdk.spec.StreamingEventKind pushEvent1 = httpClient.events.get(1);
         assertTrue(pushEvent1 instanceof org.a2aproject.sdk.spec.TaskArtifactUpdateEvent);
         org.a2aproject.sdk.spec.TaskArtifactUpdateEvent v10ArtifactUpdate = (org.a2aproject.sdk.spec.TaskArtifactUpdateEvent) pushEvent1;
-        assertEquals(MINIMAL_TASK.getId(), v10ArtifactUpdate.taskId());
-        assertEquals(MINIMAL_TASK.getContextId(), v10ArtifactUpdate.contextId());
+        assertEquals(MINIMAL_TASK.id(), v10ArtifactUpdate.taskId());
+        assertEquals(MINIMAL_TASK.contextId(), v10ArtifactUpdate.contextId());
         assertNotNull(v10ArtifactUpdate.artifact());
         assertEquals(1, v10ArtifactUpdate.artifact().parts().size());
         assertEquals("text", ((org.a2aproject.sdk.spec.TextPart) v10ArtifactUpdate.artifact().parts().get(0)).text());
@@ -1135,8 +1135,8 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         org.a2aproject.sdk.spec.StreamingEventKind pushEvent2 = httpClient.events.get(2);
         assertTrue(pushEvent2 instanceof org.a2aproject.sdk.spec.TaskStatusUpdateEvent);
         org.a2aproject.sdk.spec.TaskStatusUpdateEvent v10StatusUpdate = (org.a2aproject.sdk.spec.TaskStatusUpdateEvent) pushEvent2;
-        assertEquals(MINIMAL_TASK.getId(), v10StatusUpdate.taskId());
-        assertEquals(MINIMAL_TASK.getContextId(), v10StatusUpdate.contextId());
+        assertEquals(MINIMAL_TASK.id(), v10StatusUpdate.taskId());
+        assertEquals(MINIMAL_TASK.contextId(), v10StatusUpdate.contextId());
         assertEquals(org.a2aproject.sdk.spec.TaskState.TASK_STATE_COMPLETED, v10StatusUpdate.status().state());
         } finally {
             // Reset push notification executor to async

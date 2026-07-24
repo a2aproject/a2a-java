@@ -11,6 +11,10 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class SendMessageRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<MessageSendParams_v0_3> {
 
+    private SendMessageRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "message/send";
 
     /**

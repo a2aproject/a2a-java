@@ -40,8 +40,8 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify deserialized task matches original
-        assertEquals(task.getId(), deserialized.getId());
-        assertEquals(task.getStatus().state(), deserialized.getStatus().state());
+        assertEquals(task.id(), deserialized.id());
+        assertEquals(task.status().state(), deserialized.status().state());
     }
 
     @Test
@@ -61,8 +61,8 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify OffsetDateTime timestamp is preserved
-        assertNotNull(deserialized.getStatus().timestamp());
-        assertEquals(task.getStatus().timestamp(), deserialized.getStatus().timestamp());
+        assertNotNull(deserialized.status().timestamp());
+        assertEquals(task.status().timestamp(), deserialized.status().timestamp());
     }
 
     @Test
@@ -96,10 +96,10 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify artifacts are preserved
-        assertNotNull(deserialized.getArtifacts());
-        assertEquals(1, deserialized.getArtifacts().size());
-        assertEquals("artifact-1", deserialized.getArtifacts().get(0).artifactId());
-        assertEquals(2, deserialized.getArtifacts().get(0).parts().size());
+        assertNotNull(deserialized.artifacts());
+        assertEquals(1, deserialized.artifacts().size());
+        assertEquals("artifact-1", deserialized.artifacts().get(0).artifactId());
+        assertEquals(2, deserialized.artifacts().get(0).parts().size());
     }
 
     @Test
@@ -127,10 +127,10 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify history is preserved
-        assertNotNull(deserialized.getHistory());
-        assertEquals(1, deserialized.getHistory().size());
-        assertEquals(Message_v0_3.Role.USER, deserialized.getHistory().get(0).getRole());
-        assertEquals(1, deserialized.getHistory().get(0).getParts().size());
+        assertNotNull(deserialized.history());
+        assertEquals(1, deserialized.history().size());
+        assertEquals(Message_v0_3.Role.USER, deserialized.history().get(0).role());
+        assertEquals(1, deserialized.history().get(0).parts().size());
     }
 
     @Test
@@ -167,14 +167,14 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify all fields are preserved
-        assertEquals(task.getId(), deserialized.getId());
-        assertEquals(task.getContextId(), deserialized.getContextId());
-        assertEquals(task.getStatus().state(), deserialized.getStatus().state());
-        assertEquals(task.getStatus().timestamp(), deserialized.getStatus().timestamp());
-        assertEquals(task.getHistory().size(), deserialized.getHistory().size());
-        assertEquals(task.getArtifacts().size(), deserialized.getArtifacts().size());
-        assertNotNull(deserialized.getMetadata());
-        assertEquals("value1", deserialized.getMetadata().get("key1"));
+        assertEquals(task.id(), deserialized.id());
+        assertEquals(task.contextId(), deserialized.contextId());
+        assertEquals(task.status().state(), deserialized.status().state());
+        assertEquals(task.status().timestamp(), deserialized.status().timestamp());
+        assertEquals(task.history().size(), deserialized.history().size());
+        assertEquals(task.artifacts().size(), deserialized.artifacts().size());
+        assertNotNull(deserialized.metadata());
+        assertEquals("value1", deserialized.metadata().get("key1"));
     }
 
     @Test
@@ -196,7 +196,7 @@ class TaskSerialization_v0_3_Test {
             Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
             // Verify state is preserved
-            assertEquals(state, deserialized.getStatus().state());
+            assertEquals(state, deserialized.status().state());
         }
     }
 
@@ -216,15 +216,15 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify required fields are present
-        assertEquals("task-123", deserialized.getId());
-        assertEquals("context-456", deserialized.getContextId());
-        assertEquals(TaskState_v0_3.SUBMITTED, deserialized.getStatus().state());
+        assertEquals("task-123", deserialized.id());
+        assertEquals("context-456", deserialized.contextId());
+        assertEquals(TaskState_v0_3.SUBMITTED, deserialized.status().state());
 
         // Verify optional lists default to empty
-        assertNotNull(deserialized.getArtifacts());
-        assertEquals(0, deserialized.getArtifacts().size());
-        assertNotNull(deserialized.getHistory());
-        assertEquals(0, deserialized.getHistory().size());
+        assertNotNull(deserialized.artifacts());
+        assertEquals(0, deserialized.artifacts().size());
+        assertNotNull(deserialized.history());
+        assertEquals(0, deserialized.history().size());
     }
 
     @Test
@@ -255,11 +255,11 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify file part is preserved
-        Part_v0_3<?> part = deserialized.getArtifacts().get(0).parts().get(0);
+        Part_v0_3<?> part = deserialized.artifacts().get(0).parts().get(0);
         assertTrue(part instanceof FilePart_v0_3);
         FilePart_v0_3 deserializedFilePart = (FilePart_v0_3) part;
-        assertTrue(deserializedFilePart.getFile() instanceof FileWithBytes_v0_3);
-        FileWithBytes_v0_3 fileWithBytes = (FileWithBytes_v0_3) deserializedFilePart.getFile();
+        assertTrue(deserializedFilePart.file() instanceof FileWithBytes_v0_3);
+        FileWithBytes_v0_3 fileWithBytes = (FileWithBytes_v0_3) deserializedFilePart.file();
         assertEquals("document.pdf", fileWithBytes.name());
         assertEquals("application/pdf", fileWithBytes.mimeType());
     }
@@ -290,11 +290,11 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify file part URI is preserved
-        Part_v0_3<?> part = deserialized.getArtifacts().get(0).parts().get(0);
+        Part_v0_3<?> part = deserialized.artifacts().get(0).parts().get(0);
         assertTrue(part instanceof FilePart_v0_3);
         FilePart_v0_3 deserializedFilePart = (FilePart_v0_3) part;
-        assertTrue(deserializedFilePart.getFile() instanceof FileWithUri_v0_3);
-        FileWithUri_v0_3 fileWithUri = (FileWithUri_v0_3) deserializedFilePart.getFile();
+        assertTrue(deserializedFilePart.file() instanceof FileWithUri_v0_3);
+        FileWithUri_v0_3 fileWithUri = (FileWithUri_v0_3) deserializedFilePart.file();
         assertEquals("https://example.com/photo.png", fileWithUri.uri());
     }
 
@@ -325,10 +325,10 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify data part is preserved
-        Part_v0_3<?> part = deserialized.getArtifacts().get(0).parts().get(0);
+        Part_v0_3<?> part = deserialized.artifacts().get(0).parts().get(0);
         assertTrue(part instanceof DataPart_v0_3);
         DataPart_v0_3 deserializedDataPart = (DataPart_v0_3) part;
-        assertNotNull(deserializedDataPart.getData());
+        assertNotNull(deserializedDataPart.data());
     }
 
     @Test
@@ -372,11 +372,11 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized2 = JsonUtil_v0_3.fromJson(json2, Task_v0_3.class);
 
         // Verify multiple round-trips produce identical results
-        assertEquals(deserialized.getId(), deserialized2.getId());
-        assertEquals(deserialized.getContextId(), deserialized2.getContextId());
-        assertEquals(deserialized.getStatus().state(), deserialized2.getStatus().state());
-        assertEquals(deserialized.getHistory().size(), deserialized2.getHistory().size());
-        assertEquals(deserialized.getArtifacts().size(), deserialized2.getArtifacts().size());
+        assertEquals(deserialized.id(), deserialized2.id());
+        assertEquals(deserialized.contextId(), deserialized2.contextId());
+        assertEquals(deserialized.status().state(), deserialized2.status().state());
+        assertEquals(deserialized.history().size(), deserialized2.history().size());
+        assertEquals(deserialized.artifacts().size(), deserialized2.artifacts().size());
     }
 
     @Test
@@ -403,10 +403,10 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify status message is preserved
-        assertEquals(TaskState_v0_3.COMPLETED, deserialized.getStatus().state());
-        assertNotNull(deserialized.getStatus().message());
-        assertEquals(Message_v0_3.Role.AGENT, deserialized.getStatus().message().getRole());
-        assertTrue(deserialized.getStatus().message().getParts().get(0) instanceof TextPart_v0_3);
+        assertEquals(TaskState_v0_3.COMPLETED, deserialized.status().state());
+        assertNotNull(deserialized.status().message());
+        assertEquals(Message_v0_3.Role.AGENT, deserialized.status().message().role());
+        assertTrue(deserialized.status().message().parts().get(0) instanceof TextPart_v0_3);
     }
 
     @Test
@@ -424,12 +424,12 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        assertEquals("context-456", task.getContextId());
-        assertEquals(TaskState_v0_3.SUBMITTED, task.getStatus().state());
-        assertNull(task.getStatus().message());
+        assertEquals("task-123", task.id());
+        assertEquals("context-456", task.contextId());
+        assertEquals(TaskState_v0_3.SUBMITTED, task.status().state());
+        assertNull(task.status().message());
         // TaskStatus automatically sets timestamp to current time if not provided
-        assertNotNull(task.getStatus().timestamp());
+        assertNotNull(task.status().timestamp());
     }
 
     @Test
@@ -459,14 +459,14 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        assertEquals(TaskState_v0_3.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        assertEquals("artifact-1", task.getArtifacts().get(0).artifactId());
-        assertEquals("Result", task.getArtifacts().get(0).name());
-        assertEquals(1, task.getArtifacts().get(0).parts().size());
-        assertTrue(task.getArtifacts().get(0).parts().get(0) instanceof TextPart_v0_3);
-        assertEquals("Hello World", ((TextPart_v0_3) task.getArtifacts().get(0).parts().get(0)).getText());
+        assertEquals("task-123", task.id());
+        assertEquals(TaskState_v0_3.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        assertEquals("artifact-1", task.artifacts().get(0).artifactId());
+        assertEquals("Result", task.artifacts().get(0).name());
+        assertEquals(1, task.artifacts().get(0).parts().size());
+        assertTrue(task.artifacts().get(0).parts().get(0) instanceof TextPart_v0_3);
+        assertEquals("Hello World", ((TextPart_v0_3) task.artifacts().get(0).parts().get(0)).text());
     }
 
     @Test
@@ -499,13 +499,13 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        assertEquals(1, task.getArtifacts().size());
-        Part_v0_3<?> part = task.getArtifacts().get(0).parts().get(0);
+        assertEquals("task-123", task.id());
+        assertEquals(1, task.artifacts().size());
+        Part_v0_3<?> part = task.artifacts().get(0).parts().get(0);
         assertTrue(part instanceof FilePart_v0_3);
         FilePart_v0_3 filePart = (FilePart_v0_3) part;
-        assertTrue(filePart.getFile() instanceof FileWithBytes_v0_3);
-        FileWithBytes_v0_3 fileWithBytes = (FileWithBytes_v0_3) filePart.getFile();
+        assertTrue(filePart.file() instanceof FileWithBytes_v0_3);
+        FileWithBytes_v0_3 fileWithBytes = (FileWithBytes_v0_3) filePart.file();
         assertEquals("application/pdf", fileWithBytes.mimeType());
         assertEquals("document.pdf", fileWithBytes.name());
         assertEquals("base64encodeddata", fileWithBytes.bytes());
@@ -541,12 +541,12 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        Part_v0_3<?> part = task.getArtifacts().get(0).parts().get(0);
+        assertEquals("task-123", task.id());
+        Part_v0_3<?> part = task.artifacts().get(0).parts().get(0);
         assertTrue(part instanceof FilePart_v0_3);
         FilePart_v0_3 filePart = (FilePart_v0_3) part;
-        assertTrue(filePart.getFile() instanceof FileWithUri_v0_3);
-        FileWithUri_v0_3 fileWithUri = (FileWithUri_v0_3) filePart.getFile();
+        assertTrue(filePart.file() instanceof FileWithUri_v0_3);
+        FileWithUri_v0_3 fileWithUri = (FileWithUri_v0_3) filePart.file();
         assertEquals("image/png", fileWithUri.mimeType());
         assertEquals("photo.png", fileWithUri.name());
         assertEquals("https://example.com/photo.png", fileWithUri.uri());
@@ -581,11 +581,11 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        Part_v0_3<?> part = task.getArtifacts().get(0).parts().get(0);
+        assertEquals("task-123", task.id());
+        Part_v0_3<?> part = task.artifacts().get(0).parts().get(0);
         assertTrue(part instanceof DataPart_v0_3);
         DataPart_v0_3 dataPart = (DataPart_v0_3) part;
-        assertNotNull(dataPart.getData());
+        assertNotNull(dataPart.data());
     }
 
     @Test
@@ -599,6 +599,7 @@ class TaskSerialization_v0_3_Test {
               },
               "history": [
                 {
+                  "messageId": "msg-001",
                   "role": "user",
                   "parts": [
                     {
@@ -608,6 +609,7 @@ class TaskSerialization_v0_3_Test {
                   ]
                 },
                 {
+                  "messageId": "msg-002",
                   "role": "agent",
                   "parts": [
                     {
@@ -623,12 +625,12 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        assertEquals(2, task.getHistory().size());
-        assertEquals(Message_v0_3.Role.USER, task.getHistory().get(0).getRole());
-        assertEquals(Message_v0_3.Role.AGENT, task.getHistory().get(1).getRole());
-        assertTrue(task.getHistory().get(0).getParts().get(0) instanceof TextPart_v0_3);
-        assertEquals("User message", ((TextPart_v0_3) task.getHistory().get(0).getParts().get(0)).getText());
+        assertEquals("task-123", task.id());
+        assertEquals(2, task.history().size());
+        assertEquals(Message_v0_3.Role.USER, task.history().get(0).role());
+        assertEquals(Message_v0_3.Role.AGENT, task.history().get(1).role());
+        assertTrue(task.history().get(0).parts().get(0) instanceof TextPart_v0_3);
+        assertEquals("User message", ((TextPart_v0_3) task.history().get(0).parts().get(0)).text());
     }
 
     @Test
@@ -647,10 +649,10 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        assertEquals(TaskState_v0_3.WORKING, task.getStatus().state());
-        assertNotNull(task.getStatus().timestamp());
-        assertEquals("2023-10-01T12:00:00.234-05:00", task.getStatus().timestamp().toString());
+        assertEquals("task-123", task.id());
+        assertEquals(TaskState_v0_3.WORKING, task.status().state());
+        assertNotNull(task.status().timestamp());
+        assertEquals("2023-10-01T12:00:00.234-05:00", task.status().timestamp().toString());
     }
 
     @Test
@@ -672,9 +674,9 @@ class TaskSerialization_v0_3_Test {
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
-        assertEquals("task-123", task.getId());
-        assertNotNull(task.getMetadata());
-        assertEquals("value1", task.getMetadata().get("key1"));
+        assertEquals("task-123", task.id());
+        assertNotNull(task.metadata());
+        assertEquals("value1", task.metadata().get("key1"));
     }
 
     @Test
@@ -703,7 +705,7 @@ class TaskSerialization_v0_3_Test {
         Task_v0_3 deserialized = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
         // Verify all part types are preserved
-        List<Part_v0_3<?>> parts = deserialized.getArtifacts().get(0).parts();
+        List<Part_v0_3<?>> parts = deserialized.artifacts().get(0).parts();
         assertEquals(4, parts.size());
         assertTrue(parts.get(0) instanceof TextPart_v0_3);
         assertTrue(parts.get(1) instanceof FilePart_v0_3);

@@ -73,12 +73,13 @@ Single background thread "MainEventBusProcessor" that processes events in order:
 ### EventConsumer & ResultAggregator
 **Locations**: `server-common/.../events/EventConsumer.java`, `server-common/.../tasks/ResultAggregator.java`
 
-**EventConsumer**: Polls queue, returns `Flow.Publisher<Event>`, closes queue on final event
+**EventConsumer**: Polls queue, returns `Flow.Publisher<EventQueueItem>`, closes queue on final event
+- `consumeOne()` - Returns single `Event`, non-blocking (throws if queue is empty)
+- `consumeAll()` - Returns `Flow.Publisher<EventQueueItem>` for reactive consumption
 
 **ResultAggregator** bridges EventConsumer and DefaultRequestHandler:
-- `consumeAndBreakOnInterrupt()` - Non-streaming (polls until terminal/AUTH_REQUIRED)
-- `consumeAndEmit()` - Streaming (returns Flow.Publisher immediately)
-- `consumeAll()` - Simple consumption
+- `consumeAndBreakOnInterrupt(consumer, blocking)` - Non-streaming (polls until terminal/AUTH_REQUIRED)
+- `consumeAndEmit(consumer)` - Streaming (returns Flow.Publisher immediately)
 
 ---
 

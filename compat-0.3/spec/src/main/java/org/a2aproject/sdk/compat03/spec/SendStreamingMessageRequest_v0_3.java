@@ -11,6 +11,10 @@ import java.util.UUID;
  */
 public final class SendStreamingMessageRequest_v0_3 extends StreamingJSONRPCRequest_v0_3<MessageSendParams_v0_3> {
 
+    private SendStreamingMessageRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "message/stream";
 
     public SendStreamingMessageRequest_v0_3(String jsonrpc, Object id, String method, MessageSendParams_v0_3 params) {

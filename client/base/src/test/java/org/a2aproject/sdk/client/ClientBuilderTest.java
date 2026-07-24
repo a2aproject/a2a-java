@@ -163,13 +163,13 @@ public class ClientBuilderTest {
     }
 
     @Test
-    public void shouldPreserveEmptyTenant() throws A2AClientException {
+    public void shouldHaveNullTenantWhenNotSet() throws A2AClientException {
         ClientBuilder builder = Client
                 .builder(card)
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
 
         AgentInterface selectedInterface = builder.findBestClientTransport();
 
-        Assertions.assertEquals("", selectedInterface.tenant());
+        Assertions.assertNull(selectedInterface.tenant());
     }
 }

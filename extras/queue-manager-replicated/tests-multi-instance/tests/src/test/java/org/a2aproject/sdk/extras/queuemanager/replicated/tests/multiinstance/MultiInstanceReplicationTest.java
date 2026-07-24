@@ -397,11 +397,11 @@ public class MultiInstanceReplicationTest {
         getClient1().subscribeToTask(new TaskIdParams(taskId), List.of(app1Subscriber), app1ErrorHandler);
         getClient2().subscribeToTask(new TaskIdParams(taskId), List.of(app2Subscriber), app2ErrorHandler);
 
-        // Wait for subscriptions to be established - at least one event should arrive on each
+        // Wait for subscriptions to be established - initial TaskEvent should arrive on each
         await()
             .atMost(Duration.ofSeconds(10))
             .pollInterval(Duration.ofMillis(500))
-            .until(() -> app1EventCount.get() >= 1 && app2EventCount.get() >= 1);
+            .until(() -> app1ReceivedInitialTask.get() && app2ReceivedInitialTask.get());
 
         // Step 3: Send message on app1 (should generate TaskArtifactUpdateEvent)
         int app1BeforeMsg1 = app1EventCount.get();

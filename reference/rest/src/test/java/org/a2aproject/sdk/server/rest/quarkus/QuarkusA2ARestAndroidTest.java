@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
 import org.a2aproject.sdk.client.ClientBuilder;
-import org.a2aproject.sdk.client.http.AndroidA2AHttpClient;
+import org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient;
 import org.a2aproject.sdk.client.transport.rest.RestTransport;
 import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
 import io.quarkus.test.junit.QuarkusTest;
