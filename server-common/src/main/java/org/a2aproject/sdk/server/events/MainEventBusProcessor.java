@@ -137,7 +137,12 @@ public class MainEventBusProcessor implements Runnable {
 
     @SuppressWarnings("NullAway.Init")
     @PostConstruct
-    void start() {
+    synchronized void start() {
+        if (processorThread != null) {
+            LOGGER.debug("MainEventBusProcessor already started");
+            return;
+        }
+        running = true;
         processorThread = new Thread(this, "MainEventBusProcessor");
         processorThread.setDaemon(true); // Allow JVM to exit even if this thread is running
         processorThread.start();
@@ -145,15 +150,18 @@ public class MainEventBusProcessor implements Runnable {
     }
 
     /**
-     * No-op method to force CDI proxy resolution and ensure @PostConstruct has been called.
-     * Called by MainEventBusProcessorInitializer during application startup.
+     * Ensures the background processor thread has been started.
+     * <p>
+     * In CDI runtimes, this forces proxy resolution and {@link PostConstruct}. For manual
+     * wiring, this starts the processor directly.
+     * </p>
      */
     public void ensureStarted() {
-        // Method intentionally empty - just forces proxy resolution
+        start();
     }
 
     @PreDestroy
-    void stop() {
+    synchronized void stop() {
         LOGGER.info("MainEventBusProcessor stopping...");
         running = false;
         if (processorThread != null) {

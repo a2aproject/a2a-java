@@ -309,6 +309,7 @@ public class DefaultRequestHandler implements RequestHandler {
         handler.agentCompletionTimeoutSeconds = 5;
         handler.consumptionCompletionTimeoutSeconds = 2;
         handler.reconciliationTimeoutSeconds = 1;
+        handler.mainEventBusProcessor.ensureStarted();
 
         return handler;
     }
