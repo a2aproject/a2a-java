@@ -185,7 +185,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
             }
         } else {
             try {
-                body = JsonUtil.toJson(event);
+                body = JsonUtil.toJsonStreamingEvent(event);
             } catch (Throwable throwable) {
                 LOGGER.error("Error serializing StreamingEventKind to JSON: {}", throwable.getMessage(), throwable);
                 return false;

@@ -34,6 +34,7 @@ import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.APIKeySecurityScheme;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.DataPart;
+import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.FileContent;
@@ -93,7 +94,8 @@ public class JsonUtil {
      */
     public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
             .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
-            .registerTypeHierarchyAdapter(StreamingEventKind.class, new StreamingEventKindTypeAdapter())
+            .registerTypeAdapter(EventKind.class, new EventKindTypeAdapter())
+            .registerTypeAdapter(StreamingEventKind.class, new StreamingEventKindTypeAdapter())
             .registerTypeHierarchyAdapter(SecurityScheme.class, new SecuritySchemeTypeAdapter())
             .create();
 
@@ -144,6 +146,21 @@ public class JsonUtil {
     public static String toJson(Object data) throws JsonProcessingException {
         try {
             return OBJECT_MAPPER.toJson(data);
+        } catch (JsonSyntaxException e) {
+            throw new JsonProcessingException("Failed to generate JSON", e);
+        }
+    }
+
+    /**
+     * Serializes a streaming event using the A2A streaming wrapper format.
+     *
+     * @param data the streaming event to serialize
+     * @return JSON string representation of the wrapped streaming event
+     * @throws JsonProcessingException if conversion fails
+     */
+    public static String toJsonStreamingEvent(StreamingEventKind data) throws JsonProcessingException {
+        try {
+            return OBJECT_MAPPER.toJson(data, StreamingEventKind.class);
         } catch (JsonSyntaxException e) {
             throw new JsonProcessingException("Failed to generate JSON", e);
         }
@@ -620,6 +637,36 @@ public class JsonUtil {
                 return "";
             }
             return el.getAsString();
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link EventKind} in oneof wrapper format.
+     */
+    static class EventKindTypeAdapter extends TypeAdapter<EventKind> {
+
+        private final Gson delegateGson = createBaseGsonBuilder()
+                .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
+                .create();
+        private final StreamingEventKindTypeAdapter streamingEventKindTypeAdapter =
+                new StreamingEventKindTypeAdapter();
+
+        @Override
+        public void write(JsonWriter out, EventKind value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+            out.name(value.kind());
+            delegateGson.toJson(value, value.getClass(), out);
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable EventKind read(JsonReader in) throws java.io.IOException {
+            StreamingEventKind event = streamingEventKindTypeAdapter.read(in);
+            return event == null ? null : (EventKind) event;
         }
     }
 
