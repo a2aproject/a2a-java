@@ -461,6 +461,12 @@ public class AgentEmitterTest {
         EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
         assertInstanceOf(Message.class, item.getEvent());
+        Message emittedMessage = (Message) item.getEvent();
+        assertEquals(TEST_TASK_ID, emittedMessage.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, emittedMessage.contextId());
+        assertEquals(message.messageId(), emittedMessage.messageId());
+        assertEquals(message.role(), emittedMessage.role());
+        assertEquals(message.parts(), emittedMessage.parts());
     }
 
     @Test
