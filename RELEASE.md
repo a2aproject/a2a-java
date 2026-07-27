@@ -161,7 +161,32 @@ Artifacts should include:
 - `.pom` files
 - `.asc` GPG signatures for all artifacts
 
-### 9. Increment to Next SNAPSHOT
+### 9. Update Versioned Documentation
+
+Create a new documentation version for the release:
+
+```bash
+# Copy dev docs to the new version folder
+cp -r docs/content/dev docs/content/X.Y.Z.Final
+
+# Create a new version data file
+cp docs/data/versions/dev.yml docs/data/versions/X.Y.Z.Final.yml
+```
+
+Edit `docs/data/versions/X.Y.Z.Final.yml`:
+- Set `label` to `"X.Y.Z.Final"`
+- Set `path` to `"X.Y.Z.Final"`
+- Set `sortOrder` to the next number (higher than the previous release)
+- Set `defaultVersion` to `true`
+- Set `devVersion` to `false`
+- Adjust the `menu` list if the new version adds or removes pages
+
+Update the previous default version's data file (e.g., `docs/data/versions/OLD_VERSION.yml`):
+- Set `defaultVersion` to `false`
+
+Review the new version's content for accuracy — ensure all pages reflect features available in this release.
+
+### 10. Increment to Next SNAPSHOT
 
 Prepare repository for next development cycle:
 
