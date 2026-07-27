@@ -138,7 +138,7 @@ public class MainEventBusProcessor implements Runnable {
     @SuppressWarnings("NullAway.Init")
     @PostConstruct
     synchronized void start() {
-        if (processorThread != null) {
+        if (processorThread != null && processorThread.isAlive()) {
             LOGGER.debug("MainEventBusProcessor already started");
             return;
         }
