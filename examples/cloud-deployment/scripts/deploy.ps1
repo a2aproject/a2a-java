@@ -72,9 +72,17 @@ $RegPort = "5001"
 $running = ([string](& $ContainerTool inspect -f '{{.State.Running}}' $RegName 2>$null)).Trim()
 if ($running -ne "true") {
     Write-Host "Creating registry container..."
+    # --platform linux/amd64 is required on Windows hosts: the registry image has no
+    # Windows manifest, and without an explicit platform the Docker CLI can try to match
+    # the host OS and fail with "no matching manifest for windows/amd64"
     & $ContainerTool run `
         -d --restart=always -p "127.0.0.1:${RegPort}:5000" --network bridge --name $RegName `
+        --platform linux/amd64 `
         mirror.gcr.io/library/registry:2
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to create registry container" -ForegroundColor Red
+        exit 1
+    }
     Write-Host "✓ Registry container created" -ForegroundColor Green
 } else {
     Write-Host "✓ Registry container already running" -ForegroundColor Green
@@ -177,7 +185,8 @@ try {
     $Registry = "localhost:${RegPort}"
     Write-Host ""
     Write-Host "Building container image..."
-    & $ContainerTool build -t "${Registry}/a2a-cloud-deployment:latest" .
+    # --platform linux/amd64: the app's base image has no Windows manifest either
+    & $ContainerTool build --platform linux/amd64 -t "${Registry}/a2a-cloud-deployment:latest" .
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Container image build failed" -ForegroundColor Red
         exit 1
