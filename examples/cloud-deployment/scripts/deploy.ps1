@@ -67,8 +67,9 @@ $RegName = "kind-registry"
 $RegPort = "5001"
 
 # Create registry container if it doesn't exist
-# .Trim() strips trailing \r\n from docker/podman output on Windows
-$running = (& $ContainerTool inspect -f '{{.State.Running}}' $RegName 2>$null).Trim()
+# [string] cast avoids a null-reference error if the command produces no output at all;
+# .Trim() then strips trailing \r\n from docker/podman output on Windows
+$running = ([string](& $ContainerTool inspect -f '{{.State.Running}}' $RegName 2>$null)).Trim()
 if ($running -ne "true") {
     Write-Host "Creating registry container..."
     & $ContainerTool run `
@@ -112,6 +113,9 @@ Write-Host ""
 Write-Host "Configuring registry on cluster nodes..."
 $RegistryDir = "/etc/containerd/certs.d/localhost:${RegPort}"
 foreach ($node in (kind get nodes)) {
+    # Trim trailing \r from node names returned on Windows before using them in exec calls
+    $node = $node.Trim()
+    if ([string]::IsNullOrEmpty($node)) { continue }
     & $ContainerTool exec $node mkdir -p $RegistryDir
     "[host.`"http://${RegName}:5000`"]" | & $ContainerTool exec -i $node sh -c "cat > ${RegistryDir}/hosts.toml"
 }
@@ -120,8 +124,9 @@ Write-Host "✓ Registry configured on nodes" -ForegroundColor Green
 # Connect registry to cluster network
 Write-Host ""
 Write-Host "Connecting registry to cluster network..."
-# .Trim() strips trailing \r\n from docker/podman output on Windows
-$networkInfo = (& $ContainerTool inspect -f '{{json .NetworkSettings.Networks.kind}}' $RegName 2>$null).Trim()
+# [string] cast avoids a null-reference error if the command produces no output at all;
+# .Trim() then strips trailing \r\n from docker/podman output on Windows
+$networkInfo = ([string](& $ContainerTool inspect -f '{{json .NetworkSettings.Networks.kind}}' $RegName 2>$null)).Trim()
 if ($networkInfo -eq "null" -or [string]::IsNullOrEmpty($networkInfo)) {
     & $ContainerTool network connect "kind" $RegName
     Write-Host "✓ Registry connected to cluster network" -ForegroundColor Green
@@ -295,6 +300,8 @@ if ($env:SKIP_ENTITY_OPERATOR_WAIT -eq "true") {
             kubectl get events -n kafka --sort-by='.lastTimestamp'
             exit 1
         }
+
+        Start-Sleep -Seconds 5
     }
 }
 
