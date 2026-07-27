@@ -326,6 +326,7 @@ public class DefaultRequestHandler implements RequestHandler {
         //  I am unsure about the correct scope.
         //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false, null);
+        this.mainEventBusProcessor.start();
     }
 
     @SuppressWarnings("NullAway.Init")
