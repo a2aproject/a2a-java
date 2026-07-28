@@ -665,6 +665,43 @@
                 <quarkus.jvm.args></quarkus.jvm.args>
             </properties>
         </profile>
+        <profile>
+            <id>flaky-test-retry</id>
+            <activation>
+                <file>
+                    <!--
+                        Activated per-module: only modules containing a .flaky-tests-marker file
+                        get the two-phase surefire execution that retries @Tag("flaky") tests if they fail.
+                    -->
+                    <exists>.flaky-tests-marker</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <configuration>
+                                    <excludedGroups>flaky</excludedGroups>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>flaky-tests</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <groups>flaky</groups>
+                                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
