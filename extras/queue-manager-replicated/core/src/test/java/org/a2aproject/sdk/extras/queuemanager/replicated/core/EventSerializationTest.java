@@ -51,8 +51,8 @@ public class EventSerializationTest {
                 .status(status)
                 .build();
 
-        // Test serialization as Event
-        String json = JsonUtil.toJson(originalTask);
+        // Test streaming-event serialization
+        String json = JsonUtil.toJsonStreamingEvent(originalTask);
         assertTrue(json.contains("\"task\""), "JSON should contain task wrapper");
         assertTrue(json.contains("\"id\":\"test-task-123\""), "JSON should contain task ID");
 
@@ -82,8 +82,8 @@ public class EventSerializationTest {
                 .contextId("test-context-123")
                 .build();
 
-        // Test serialization as Event
-        String json = JsonUtil.toJson(originalMessage);
+        // Test streaming-event serialization
+        String json = JsonUtil.toJsonStreamingEvent(originalMessage);
         assertTrue(json.contains("\"message\""), "JSON should contain message wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-789\""), "JSON should contain task ID");
 
@@ -112,8 +112,8 @@ public class EventSerializationTest {
                 .status(status)
                 .build();
 
-        // Test serialization as Event
-        String json = JsonUtil.toJson((Event) originalEvent);
+        // Test streaming-event serialization
+        String json = JsonUtil.toJsonStreamingEvent(originalEvent);
         assertTrue(json.contains("\"statusUpdate\""), "JSON should contain statusUpdate wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-abc\""), "JSON should contain task ID");
         assertFalse(json.contains("\"final\""), "JSON should not contain final field");
@@ -145,8 +145,8 @@ public class EventSerializationTest {
                 .artifact(artifact)
                 .build();
 
-        // Test serialization as Event
-        String json = JsonUtil.toJson((Event) originalEvent);
+        // Test streaming-event serialization
+        String json = JsonUtil.toJsonStreamingEvent(originalEvent);
         assertTrue(json.contains("\"artifactUpdate\""), "JSON should contain artifactUpdate wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-xyz\""), "JSON should contain task ID");
         assertTrue(json.contains("\"test-artifact-123\""), "JSON should contain artifact ID");
