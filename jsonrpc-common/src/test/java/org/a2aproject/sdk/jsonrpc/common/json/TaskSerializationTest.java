@@ -15,6 +15,11 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.FileContent;
@@ -49,6 +54,8 @@ class TaskSerializationTest {
 
         // Verify JSON contains expected fields
         assertNotNull(json);
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        assertFalse(jsonObject.has(Task.STREAMING_EVENT_ID));
         assertTrue(json.contains("\"id\":\"task-123\""));
         assertTrue(json.contains("\"state\":\"TASK_STATE_SUBMITTED\""));
 
@@ -58,6 +65,60 @@ class TaskSerializationTest {
         // Verify deserialized task matches original
         assertEquals(task.id(), deserialized.id());
         assertEquals(task.status().state(), deserialized.status().state());
+    }
+
+    @Test
+    void testListTasksSerializationDoesNotWrapTaskItems() throws JsonProcessingException {
+        Task task = Task.builder()
+                .id("task-123")
+                .contextId("context-456")
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                .build();
+
+        ListTasksResult result = new ListTasksResult(List.of(task));
+        String resultJson = JsonUtil.toJson(result);
+        JsonObject resultTaskJson = JsonParser.parseString(resultJson)
+                .getAsJsonObject()
+                .getAsJsonArray("tasks")
+                .get(0)
+                .getAsJsonObject();
+
+        assertFalse(resultTaskJson.has(Task.STREAMING_EVENT_ID));
+        assertEquals(task.id(), resultTaskJson.get("id").getAsString());
+        assertEquals(task.contextId(), resultTaskJson.get("contextId").getAsString());
+
+        ListTasksResponse response = new ListTasksResponse("request-1", result);
+        String responseJson = JsonUtil.toJson(response);
+        JsonObject responseTaskJson = JsonParser.parseString(responseJson)
+                .getAsJsonObject()
+                .getAsJsonObject("result")
+                .getAsJsonArray("tasks")
+                .get(0)
+                .getAsJsonObject();
+
+        assertFalse(responseTaskJson.has(Task.STREAMING_EVENT_ID));
+        assertEquals(task.id(), responseTaskJson.get("id").getAsString());
+        assertEquals(task.contextId(), responseTaskJson.get("contextId").getAsString());
+    }
+
+    @Test
+    void testSendMessageResponseSerializationKeepsEventKindWrapper() throws JsonProcessingException {
+        Task task = Task.builder()
+                .id("task-123")
+                .contextId("context-456")
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                .build();
+
+        SendMessageResponse response = new SendMessageResponse("request-1", task);
+        String responseJson = JsonUtil.toJson(response);
+        JsonObject responseResultJson = JsonParser.parseString(responseJson)
+                .getAsJsonObject()
+                .getAsJsonObject("result");
+
+        assertTrue(responseResultJson.has(Task.STREAMING_EVENT_ID));
+        JsonObject taskJson = responseResultJson.getAsJsonObject(Task.STREAMING_EVENT_ID);
+        assertEquals(task.id(), taskJson.get("id").getAsString());
+        assertEquals(task.contextId(), taskJson.get("contextId").getAsString());
     }
 
     @Test

@@ -37,7 +37,7 @@ class StreamingEventKindSerializationTest {
                 .build();
 
         // Serialize as StreamingEventKind
-        String json = JsonUtil.toJson((StreamingEventKind) task);
+        String json = JsonUtil.toJsonStreamingEvent(task);
 
         // Verify JSON contains task wrapper, not "kind" field
         assertNotNull(json);
@@ -69,7 +69,7 @@ class StreamingEventKindSerializationTest {
                 .build();
 
         // Serialize as StreamingEventKind
-        String json = JsonUtil.toJson((StreamingEventKind) message);
+        String json = JsonUtil.toJsonStreamingEvent(message);
 
         // Verify JSON contains message wrapper, not "kind" field
         assertNotNull(json);
@@ -100,7 +100,7 @@ class StreamingEventKindSerializationTest {
                 .build();
 
         // Serialize as StreamingEventKind
-        String json = JsonUtil.toJson((StreamingEventKind) statusEvent);
+        String json = JsonUtil.toJsonStreamingEvent(statusEvent);
 
         // Verify JSON contains statusUpdate wrapper, not "kind" field
         assertNotNull(json);
@@ -137,7 +137,7 @@ class StreamingEventKindSerializationTest {
                 .build();
 
         // Serialize as StreamingEventKind
-        String json = JsonUtil.toJson((StreamingEventKind) artifactEvent);
+        String json = JsonUtil.toJsonStreamingEvent(artifactEvent);
 
         // Verify JSON contains artifactUpdate wrapper, not "kind" field
         assertNotNull(json);
