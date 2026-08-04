@@ -48,6 +48,10 @@ nbproject/
 # TLS Certificates
 .certs/
 
+# Generated Javadoc (keep only the placeholder)
+docs/public/dev/apidocs/*
+!docs/public/dev/apidocs/index.html
+
 # Private Claude config
 .claude/settings.local.json
 .serena/

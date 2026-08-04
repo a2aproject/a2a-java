@@ -99,8 +99,7 @@ Wait for all CI checks to pass before proceeding.
 ### 5. Merge Release PR
 
 Once all checks pass and the PR is approved:
-- Merge the PR to `main` branch
-- **Do NOT squash** - keep the release commit message intact for changelog
+- Merge the PR to `main` branch (squash merge — enforced by repo settings)
 
 ### 6. Tag and Push
 
@@ -161,7 +160,52 @@ Artifacts should include:
 - `.pom` files
 - `.asc` GPG signatures for all artifacts
 
-### 9. Increment to Next SNAPSHOT
+### 9. Update Versioned Documentation
+
+Create a new documentation version for the release:
+
+```bash
+# Copy dev docs to the new version folder
+cp -r docs/content/dev docs/content/X.Y.Z.Final
+
+# Create a new version data file
+cp docs/data/versions/dev.yml docs/data/versions/X.Y.Z.Final.yml
+```
+
+Edit `docs/data/versions/X.Y.Z.Final.yml`:
+- Set `label` to `"X.Y.Z.Final"`
+- Set `path` to `"X.Y.Z.Final"`
+- Set `sortOrder` to the next number (higher than the previous release)
+- Set `defaultVersion` to `true`
+- Set `devVersion` to `false`
+- Verify the `menu` list matches the pages in the new version's content folder (add/remove entries if pages were added or removed since the previous release)
+
+Update the previous default version's data file (e.g., `docs/data/versions/<previous-version>.yml`):
+- Set `defaultVersion` to `false`
+
+Review the new version's content for accuracy — ensure all pages reflect features available in this release.
+
+#### Generate Javadoc (major/minor releases only)
+
+For major and minor releases (X.Y.0.Final), generate aggregated Javadoc. Skip this step for micro/patch releases (X.Y.Z.Final where Z > 0) — the API surface doesn't change meaningfully.
+
+```bash
+# Generate aggregated Javadoc (from the tagged commit)
+mvn javadoc:aggregate -Psite-javadoc
+
+# Copy to the release version directory (overwrites the placeholder)
+cp -r docs/public/dev/apidocs docs/public/X.Y.Z.Final/apidocs
+
+# Commit the generated Javadoc
+git add docs/public/X.Y.Z.Final/apidocs
+git commit -m "docs: add Javadoc for X.Y.Z.Final"
+```
+
+The Javadoc menu entry structure matches `dev.yml` — copy it into the new version's data file when creating version files.
+
+**Validation**: The docs site enforces that exactly one version has `defaultVersion: true` and all `sortOrder` values are unique (see `docs/src/main/java/org/a2aproject/docs/Versions.java`). Run the docs site locally (`cd docs && mvn quarkus:dev`) to verify the new version renders correctly.
+
+### 10. Increment to Next SNAPSHOT
 
 Prepare repository for next development cycle:
 
@@ -247,10 +291,10 @@ https://github.com/a2aproject/a2a-java/releases/new
 
 Follow semantic versioning with qualifiers:
 
-- **Major.Minor.Patch** - Standard releases (e.g., `1.0.0`)
+- **Major.Minor.Patch.Final** - Standard releases (e.g., `1.0.0.Final`)
 - **Major.Minor.Patch.AlphaN** - Alpha releases (e.g., `0.4.0.Alpha1`)
 - **Major.Minor.Patch.BetaN** - Beta releases (e.g., `0.3.0.Beta1`)
-- **Major.Minor.Patch.RCN** - Release candidates (e.g., `1.0.0.RC1`)
+- **Major.Minor.Patch.CRN** - Candidate releases (e.g., `1.0.0.CR1`)
 - **-SNAPSHOT** - Development versions (e.g., `0.4.0.Alpha2-SNAPSHOT`)
 
 ## Workflows Reference

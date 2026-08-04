@@ -7,10 +7,10 @@
 //DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-rest:1.1.1.Final-SNAPSHOT
 //DEPS org.a2aproject.sdk:a2a-java-sdk-opentelemetry-client:1.1.1.Final-SNAPSHOT
 //DEPS org.a2aproject.sdk:a2a-java-sdk-opentelemetry-client-propagation:1.1.1.Final-SNAPSHOT
-//DEPS io.opentelemetry:opentelemetry-sdk:1.55.0
-//DEPS io.opentelemetry:opentelemetry-exporter-otlp:1.55.0
-//DEPS io.opentelemetry:opentelemetry-exporter-logging:1.55.0
-//DEPS io.grpc:grpc-netty:1.77.0
+//DEPS io.opentelemetry:opentelemetry-sdk:1.60.1
+//DEPS io.opentelemetry:opentelemetry-exporter-otlp:1.60.1
+//DEPS io.opentelemetry:opentelemetry-exporter-logging:1.60.1
+//DEPS io.grpc:grpc-netty:1.81.0
 //SOURCES HelloWorldClient.java
 
 /**

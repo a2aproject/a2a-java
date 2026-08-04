@@ -31,7 +31,10 @@ cleanup() {
 # Register cleanup function to run on script exit
 trap cleanup EXIT
 
-# 1. Pull a2a-itk and checkout revision
+# 1. Pull a2a-itk and checkout revision.
+#    The clone doubles as the single source of truth for instruction.proto:
+#    protobuf-maven-plugin in itk/pom.xml reads it directly from
+#    ${project.basedir}/a2a-itk/protos (see the `a2a.itk.proto.dir` property).
 : "${A2A_ITK_REVISION:?A2A_ITK_REVISION environment variable must be set}"
 
 if [ ! -d "a2a-itk" ]; then
@@ -47,17 +50,14 @@ if git symbolic-ref -q HEAD > /dev/null; then
 fi
 cd ..
 
-# 2. Copy latest instruction.proto from a2a-itk
-cp a2a-itk/protos/instruction.proto src/main/proto/instruction.proto
-
-# 3. Build itk_service container image from root of a2a-itk
+# 2. Build itk_service container image from root of a2a-itk
 CONTAINER_BUILD_ARGS=""
 if [ "$CONTAINER_RT" = "podman" ]; then
   CONTAINER_BUILD_ARGS="--format docker"
 fi
 $CONTAINER_RT build $CONTAINER_BUILD_ARGS -t itk_service a2a-itk
 
-# 4. Start container service with a single mount: the a2a-java repo
+# 3. Start container service with a single mount: the a2a-java repo
 A2A_JAVA_ROOT=$(cd .. && pwd)
 
 # Stop existing container if any
@@ -80,7 +80,7 @@ $CONTAINER_RT run -d --name itk-service \
   -p 8000:8000 \
   itk_service
 
-# 5. Verify service is up and send post request
+# 4. Verify service is up and send post request
 MAX_RETRIES=30
 echo "Waiting for ITK service to start on 127.0.0.1:8000..."
 set +e

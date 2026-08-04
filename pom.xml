@@ -49,24 +49,24 @@
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <gmavenplus-plugin.version>5.0.0</gmavenplus-plugin.version>
-        <sonatype-central-publishing-plugin.version>0.10.0</sonatype-central-publishing-plugin.version>
+        <sonatype-central-publishing-plugin.version>0.11.0</sonatype-central-publishing-plugin.version>
         <groovy.version>5.0.6</groovy.version>
         <gson.version>2.14.0</gson.version>
         <jakarta.enterprise.cdi-api.version>4.1.0</jakarta.enterprise.cdi-api.version>
         <jakarta.inject.jakarta.inject-api.version>2.0.1</jakarta.inject.jakarta.inject-api.version>
         <jakarta.json-api.version>2.1.3</jakarta.json-api.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
-        <junit.version>6.0.3</junit.version>
+        <junit.version>6.1.1</junit.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <mapstruct-spi-protobuf.version>1.52.0</mapstruct-spi-protobuf.version>
+        <mapstruct-spi-protobuf.version>1.62.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.23.0</mockito-core.version>
         <mockserver.version>6.1.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
-        <protobuf-java.version>4.33.2</protobuf-java.version>
-        <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
-        <quarkus.platform.version>3.36.3</quarkus.platform.version>
-        <rest-assured.version>6.0.0</rest-assured.version>
+        <protobuf-java.version>4.35.0</protobuf-java.version>
+        <protobuf-maven-plugin.version>5.1.7</protobuf-maven-plugin.version>
+        <quarkus.platform.version>3.37.3</quarkus.platform.version>
+        <rest-assured.version>6.0.1</rest-assured.version>
         <slf4j.version>2.0.18</slf4j.version>
         <logback.version>1.5.18</logback.version>
         <version.testcontainers>2.0.5</version.testcontainers>
@@ -599,8 +599,13 @@
         <module>transport/grpc</module>
         <module>transport/rest</module>
 
-        <!-- ITK (Integration Test Kit) agent -->
-        <module>itk</module>
+        <!--
+            ITK (Integration Test Kit) agent is intentionally NOT in the
+            default reactor because it consumes instruction.proto directly
+            from a sibling clone of a2a-itk that only exists at ITK test
+            time (fetched by itk/run_itk.sh). Enable via -Pitk when running
+            the ITK workflow.
+        -->
 
         <!-- A2A Protocol v0.3 backward compatibility layer -->
         <module>compat-0.3</module>
@@ -644,6 +649,42 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!--
+                Adds the ITK (Integration Test Kit) agent module to the reactor.
+                Enabled by itk/run_itk.sh (via test_suite/current.py) which
+                fetches a2a-itk into itk/a2a-itk, providing the .proto sources
+                the module needs at generate-sources time. Off by default so
+                the standard reactor build works without an a2a-itk checkout.
+            -->
+            <id>itk</id>
+            <modules>
+                <module>itk</module>
+            </modules>
+        </profile>
+        <profile>
+            <!--
+                This profile generates aggregated Javadoc across all SDK modules into the docs site.
+                Cross-module @see and {@link} references resolve automatically.
+                Used during the release process for major/minor releases.
+            -->
+            <id>site-javadoc</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/docs/public/dev</outputDirectory>
+                            <excludePackageNames>org.a2aproject.sdk.testutils:org.a2aproject.sdk.bom.test</excludePackageNames>
+                            <source>17</source>
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

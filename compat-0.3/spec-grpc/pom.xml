@@ -95,7 +95,6 @@
         <profile>
             <id>proto-compile</id>
                 <build>
-
                     <plugins>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
@@ -125,21 +124,29 @@
                         </plugin>
                         <!-- Protocol Buffers Compiler Plugin -->
                         <plugin>
-                            <groupId>org.xolstice.maven.plugins</groupId>
+                            <groupId>io.github.ascopes</groupId>
                             <artifactId>protobuf-maven-plugin</artifactId>
                             <version>${protobuf-maven-plugin.version}</version>
                             <configuration>
-                                <protocArtifact>com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}</protocArtifact>
-                                <pluginId>grpc-java</pluginId>
-                                <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                                <outputDirectory>src/main/java</outputDirectory>
-                                <clearOutputDirectory>false</clearOutputDirectory>
+                                <skip>${skip.protobuf.generate}</skip>
+                                <cleanOutputDirectories>true</cleanOutputDirectories>
+                                <protoc kind="binary-maven">
+                                    <version>${protobuf-java.version}</version>
+                                </protoc>
+                                <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                                <plugins>
+                                    <plugin kind="binary-maven">
+                                        <groupId>io.grpc</groupId>
+                                        <artifactId>protoc-gen-grpc-java</artifactId>
+                                        <version>${grpc.version}</version>
+                                    </plugin>
+                                </plugins>
                             </configuration>
                             <executions>
                                 <execution>
+                                    <phase>generate-sources</phase>
                                     <goals>
-                                        <goal>compile</goal>
-                                        <goal>compile-custom</goal>
+                                        <goal>generate</goal>
                                     </goals>
                                 </execution>
                             </executions>

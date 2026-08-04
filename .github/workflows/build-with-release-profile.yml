@@ -46,6 +46,9 @@ jobs:
           -Dgpg.skip=true
           -Drelease.auto.publish=false
 
+      - name: Verify aggregated Javadoc generation
+        run: mvn -B javadoc:aggregate -Psite-javadoc
+
       - name: Prepare PR info
         run: |
           mkdir -p pr_info

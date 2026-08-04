@@ -74,6 +74,22 @@ mvn clean install
 - Try to use existing code instead of generating new similar code
 - Use the same code convention than existing code. If the existing convention seems incorrect, make suggestion before doing any changes
 
+### Documentation Site
+
+The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1.1.0.Final/`, `docs/content/dev/`).
+
+**Editing rules:**
+- Only edit pages under `docs/content/dev/` — released version folders are frozen snapshots and must not be modified
+- New versioned folders are created at release time (see RELEASE.md step 9)
+
+**Version metadata:** Each version has a YAML file in `docs/data/versions/` (e.g. `dev.yml`, `1.1.0.Final.yml`) that defines the label, URL path, sort order, default/dev flags, and sidebar menu. When adding or removing a documentation page, update the `menu` list in `docs/data/versions/dev.yml` accordingly.
+
+**Running the docs site locally:**
+```bash
+cd docs
+mvn quarkus:dev
+```
+
 ### PR instructions
 - Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) for the commit title and message
 - Always ask if the commit is related to a GitHub issue. If that's the case, add a `This fixes #{issue_number}` at the end of the commit message
@@ -82,6 +98,7 @@ mvn clean install
 
 - [update-a2a-proto](.agents/skills/update-a2a-proto/SKILL.md) — Update the gRPC proto file `a2a.proto` from upstream and regenerate Java sources
 - [fix-tck-issue](.agents/skills/fix-tck-issue/SKILL.md) — Analyze and fix A2A TCK compatibility issues across transports
+- [release](.agents/skills/release/SKILL.md) — Guide the full release process: version bump, CI, tagging, Maven Central deploy, docs, SNAPSHOT bump
 
 ### Commands
 
