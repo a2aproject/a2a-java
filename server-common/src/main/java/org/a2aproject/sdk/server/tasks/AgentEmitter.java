@@ -491,7 +491,8 @@ public class AgentEmitter {
      * Sends an existing Message object directly to the client.
      * <p>
      * Use this when you need to forward or echo an existing message without creating a new one.
-     * The message is enqueued as-is, preserving its messageId, metadata, and all other fields.
+     * The message is enqueued with this emitter's task and context IDs when they are missing,
+     * preserving its messageId, metadata, and all other fields.
      * </p>
      * <p>
      * <b>Note:</b> This is typically used for forwarding user messages or preserving specific
@@ -518,7 +519,14 @@ public class AgentEmitter {
             LOGGER.error("Message contextId mismatch: expected={}, actual={}", contextId, message.contextId());
             throw new IllegalArgumentException("Message contextId does not match the emitter's contextId");
         }
-        eventQueue.enqueueEvent(message);
+        Message messageToSend = message;
+        if (message.taskId() == null || message.contextId() == null) {
+            messageToSend = Message.builder(message)
+                    .taskId(taskId)
+                    .contextId(contextId)
+                    .build();
+        }
+        eventQueue.enqueueEvent(messageToSend);
     }
 
     /**
