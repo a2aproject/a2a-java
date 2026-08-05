@@ -16,6 +16,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
         <roq.version>2.1.6</roq.version>
+        <roq.version>2.1.4</roq.version>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <dependencyManagement>
@@ -58,6 +60,11 @@
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.roq</groupId>
+            <artifactId>quarkus-roq-plugin-asciidoc</artifactId>
+            <version>${roq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.roq</groupId>
             <artifactId>quarkus-roq-plugin-sitemap</artifactId>
             <version>${roq.version}</version>
         </dependency>
@@ -96,6 +103,26 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>require-java-21</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[21,)</version>
+                                    <message>The docs module requires Java 21+ (Roq ${roq.version} is compiled for Java 21)</message>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
