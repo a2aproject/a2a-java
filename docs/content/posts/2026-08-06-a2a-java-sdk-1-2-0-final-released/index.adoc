@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'A2A Java SDK 1.2.0.Final Released'
-date: 2026-08-05
+date: 2026-08-06
 tags: ai a2a
 synopsis: 'A2A Java SDK 1.2.0.Final is now available -- with authorization hardening, stream lifecycle hooks, and improved spec compliance.'
 author: kkhan
@@ -115,7 +115,7 @@ All remaining spec records now enforce deep immutability (link:https://github.co
 
 === Multi-Version Documentation
 
-The link:https://a2aproject.github.io/a2a-java/[project website] now supports versioned documentation (link:https://github.com/a2aproject/a2a-java/pull/1000[\#1000]) with a version dropdown, per-version sidebar menus, and a version-scoped search filter. Each release produces a frozen documentation snapshot, while the `dev` version tracks the latest changes.
+The link:https://a2aproject.github.io/a2a-java/[project website] now supports versioned documentation (link:https://github.com/a2aproject/a2a-java/pull/1000[\#1000]) with a version dropdown, per-version sidebar menus, and a version-scoped search filter. Each release produces a frozen documentation snapshot, while the `dev.next` version tracks the latest changes.
 
 === Aggregated Javadoc
 
