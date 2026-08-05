@@ -374,6 +374,15 @@ public class RequestContext {
         }
 
         /**
+         * Returns the server call context set on this builder.
+         *
+         * @return the server call context, or null if not set
+         */
+        @Nullable ServerCallContext getServerCallContext() {
+            return serverCallContext;
+        }
+
+        /**
          * Builds the RequestContext with ID generation and validation.
          *
          * @return the constructed RequestContext

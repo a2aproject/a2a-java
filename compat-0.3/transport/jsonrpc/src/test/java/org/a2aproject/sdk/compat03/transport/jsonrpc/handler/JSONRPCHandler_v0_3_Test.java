@@ -858,9 +858,14 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
     public void testOnGetPushNotificationNoPushNotifierConfig() {
         // Create v1.0 request handler without push config store
         org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler v10Handler =
-                org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler.create(
-                        agentExecutor, taskStore, queueManager, null, mainEventBusProcessor,
-                        internalExecutor, internalExecutor);
+                org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler.builder()
+                        .agentExecutor(agentExecutor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
 
         // Wrap in v0.3 conversion handler
         Convert_v0_3_To10RequestHandler handlerWithoutPushConfig = new Convert_v0_3_To10RequestHandler(v10Handler);
@@ -885,9 +890,14 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
     public void testOnSetPushNotificationNoPushNotifierConfig() {
         // Create v1.0 request handler without push config store
         org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler v10Handler =
-                org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler.create(
-                        agentExecutor, taskStore, queueManager, null, mainEventBusProcessor,
-                        internalExecutor, internalExecutor);
+                org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler.builder()
+                        .agentExecutor(agentExecutor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
 
         // Wrap in v0.3 conversion handler
         Convert_v0_3_To10RequestHandler handlerWithoutPushConfig = new Convert_v0_3_To10RequestHandler(v10Handler);
@@ -952,9 +962,14 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
     public void testDeletePushNotificationConfigNoPushConfigStore() {
         // Create v1.0 request handler without push config store
         org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler v10Handler =
-                org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler.create(
-                        agentExecutor, taskStore, queueManager, null, mainEventBusProcessor,
-                        internalExecutor, internalExecutor);
+                org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler.builder()
+                        .agentExecutor(agentExecutor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
 
         // Wrap in v0.3 conversion handler
         Convert_v0_3_To10RequestHandler handlerWithoutPushConfig = new Convert_v0_3_To10RequestHandler(v10Handler);

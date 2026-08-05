@@ -24,7 +24,6 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
-import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.server.tasks.TaskStore;
@@ -292,7 +291,12 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             boolean hasMore;
             int totalSize;
 
-            if (authorizationProvider != null && context != null) {
+            if (authorizationProvider != null && context == null) {
+                LOGGER.warn("Authorization provider is configured but no ServerCallContext available — "
+                        + "returning empty result (fail-closed)");
+                return new ListTasksResult(List.of(), 0, 0, null);
+            }
+            if (authorizationProvider != null) {
                 // Iterative fetch: accumulate pageSize authorized results across DB pages
                 tasks = new ArrayList<>(pageSize);
                 PageToken cursor = PageToken.fromString(params.pageToken());
@@ -314,7 +318,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                     for (JpaTask jpaTask : batch) {
                         processedCount++;
                         Task task = deserializeTask(jpaTask);
-                        if (authorizationProvider.checkRead(context, task.id(), TaskOperation.LIST_TASKS)) {
+                        if (isReadAuthorized(authorizationProvider, context, task.id())) {
                             tasks.add(task);
                             if (tasks.size() == pageSize) {
                                 break;

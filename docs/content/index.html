@@ -13,8 +13,8 @@ layout: home
   {#title}A2A <span class="shimmer">Java</span> SDK{/title}
   {#tagline}Implement the Agent2Agent Protocol in Java{/tagline}
   {#subtitle}A multi-module Maven library providing client and server support for A2A agent communication over JSON-RPC, gRPC, and REST transports.{/subtitle}
-  <a href="server" class="btn btn-primary">Server Guide <i class="fa-solid fa-arrow-right"></i></a>
-  <a href="client" class="btn btn-secondary">Client Guide <i class="fa-solid fa-arrow-right"></i></a>
+  {#for v in cdi:versions.list}{#if v.defaultVersion}<a href="{site.url(v.path + '/server')}" class="btn btn-primary">Server Guide <i class="fa-solid fa-arrow-right"></i></a>
+  <a href="{site.url(v.path + '/client')}" class="btn btn-secondary">Client Guide <i class="fa-solid fa-arrow-right"></i></a>{/if}{/for}
 {/}
 
 <div class="roq-features">
@@ -42,7 +42,7 @@ layout: home
     &lt;version&gt;$\{org.a2aproject.sdk.version}&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 
-  <p>See the <a href="getting-started">Getting Started</a> guide, or jump directly to the <a href="server">Server Guide</a> and <a href="client">Client Guide</a> for full setup instructions.</p>
+  {#for v in cdi:versions.list}{#if v.defaultVersion}<p>See the <a href="{site.url(v.path + '/getting-started')}">Getting Started</a> guide, or jump directly to the <a href="{site.url(v.path + '/server')}">Server Guide</a> and <a href="{site.url(v.path + '/client')}">Client Guide</a> for full setup instructions.</p>{/if}{/for}
 </section>
 
 <section class="roq-section">

@@ -1125,7 +1125,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnGetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1144,7 +1148,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnSetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1235,7 +1243,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageSendErrorHandling() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1396,7 +1408,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
@@ -1490,7 +1506,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
         DefaultRequestHandler requestHandler =
-                DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+                DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {

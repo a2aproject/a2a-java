@@ -56,6 +56,7 @@ import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 
 import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -381,7 +382,7 @@ public class JSONRPCHandler {
                             request.getId(),
                             new InvalidRequestError("Streaming is not supported by the agent")));
         }
-        requestHandler.validateRequestedTask(request.getParams().id());
+        requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onSubscribeToTask(request.getParams(), context);
@@ -743,7 +744,7 @@ public class JSONRPCHandler {
             });
     }
 
-    public void validateRequestedTask(String requestedTaskId) {
-        requestHandler.validateRequestedTask(requestedTaskId);
+    public void authorizeTaskAccess(String requestedTaskId, ServerCallContext context, TaskOperation operation) {
+        requestHandler.authorizeTaskAccess(requestedTaskId, context, operation);
     }
 }

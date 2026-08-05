@@ -4,6 +4,7 @@ import java.util.concurrent.Flow;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
@@ -61,5 +62,6 @@ public interface RequestHandler {
             DeleteTaskPushNotificationConfigParams params,
             ServerCallContext context) throws A2AError;
 
-    void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError;
+    void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context,
+            TaskOperation operation) throws A2AError;
 }

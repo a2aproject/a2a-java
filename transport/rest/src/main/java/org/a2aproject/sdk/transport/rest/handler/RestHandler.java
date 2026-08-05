@@ -35,6 +35,7 @@ import org.a2aproject.sdk.server.AgentCardValidator;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
@@ -301,7 +302,7 @@ public class RestHandler {
             request.setTenant(tenant);
             MessageSendParams params = ProtoUtils.FromProto.messageSendParams(request);
             try {
-                requestHandler.validateRequestedTask(params.message().taskId());
+                requestHandler.authorizeTaskAccess(params.message().taskId(), context, TaskOperation.MESSAGE_SEND_STREAM);
             } catch (A2AError e) {
                 return createErrorResponse(e);
             }
@@ -428,7 +429,7 @@ public class RestHandler {
             }
             TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             try {
-                requestHandler.validateRequestedTask(params.id());
+                requestHandler.authorizeTaskAccess(params.id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
             } catch (A2AError e) {
                 return createErrorResponse(e);
             }

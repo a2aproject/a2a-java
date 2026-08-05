@@ -127,8 +127,15 @@ public class DefaultRequestHandlerTest {
         EventQueueUtil.start(mainEventBusProcessor);
 
         // Create DefaultRequestHandler
-        requestHandler = DefaultRequestHandler.create(
-            executor, taskStore, queueManager, pushConfigStore, mainEventBusProcessor, internalExecutor, internalExecutor);
+        requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .build();
     }
 
     @AfterEach

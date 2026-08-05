@@ -98,8 +98,46 @@
         </dependency>
     </dependencies>
 
+    <properties>
+        <!--
+          Single-source location of the canonical .proto files. The a2a-itk
+          repository is fetched at the ref pinned by A2A_ITK_REVISION (see
+          run_itk.sh) into ${project.basedir}/a2a-itk. Override via
+          -Da2a.itk.proto.dir=... when building outside run_itk.sh.
+        -->
+        <a2a.itk.proto.dir>${project.basedir}/a2a-itk/protos</a2a.itk.proto.dir>
+    </properties>
+
     <build>
         <plugins>
+            <plugin>
+                <!--
+                  Generates Java classes from the canonical instruction.proto
+                  fetched from a2a-itk. Mirrors the baseline configuration used
+                  by a2a-itk/agents/java/v10 so generated code (package `itk`,
+                  outer class `InstructionOuterClass`) stays byte-identical
+                  across the two paths during the strangler migration.
+                -->
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>${protobuf-maven-plugin.version}</version>
+                <configuration>
+                    <protoc kind="binary-maven">
+                        <version>${protobuf-java.version}</version>
+                    </protoc>
+                    <sourceDirectories>
+                        <sourceDirectory>${a2a.itk.proto.dir}</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>

@@ -2,6 +2,7 @@ package org.a2aproject.sdk.server.auth;
 
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.A2AError;
+import org.jspecify.annotations.Nullable;
 
 /**
  * SPI for per-user task authorization.
@@ -93,7 +94,7 @@ import org.a2aproject.sdk.spec.A2AError;
  *       so the first writer wins and the second is a harmless no-op.</li>
  *   <li><b>CDI injection requirement:</b> When task authorization is required, always obtain
  *       {@code RequestHandler} through CDI injection. Manual instantiation via
- *       {@code DefaultRequestHandler.create()} bypasses the
+ *       {@code DefaultRequestHandler.builder().build()} bypasses the
  *       {@code AuthorizationRequestHandlerDecorator}.</li>
  * </ul>
  *
@@ -156,4 +157,28 @@ public interface TaskAuthorizationProvider {
      * @throws A2AError if recording fails
      */
     void recordOwnership(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError;
+
+    /**
+     * Fail-closed read-access check that handles absent provider and missing call context.
+     * <p>
+     * Returns {@code true} (allow) when no provider is configured.
+     * Returns {@code false} (deny) when a provider is configured but no call context is available.
+     * Otherwise delegates to {@link #checkRead}.
+     *
+     * @param provider the authorization provider, or {@code null} if authorization is disabled
+     * @param context  the server call context, or {@code null} if unavailable
+     * @param taskId   the task being accessed
+     * @param operation which RequestHandler method triggered the check
+     * @return {@code true} to allow, {@code false} to deny
+     */
+    static boolean checkReadAccess(@Nullable TaskAuthorizationProvider provider,
+            @Nullable ServerCallContext context, String taskId, TaskOperation operation) {
+        if (provider == null) {
+            return true;
+        }
+        if (context == null) {
+            return false;
+        }
+        return provider.checkRead(context, taskId, operation);
+    }
 }

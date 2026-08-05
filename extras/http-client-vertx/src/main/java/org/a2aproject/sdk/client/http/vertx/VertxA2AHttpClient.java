@@ -455,10 +455,20 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                                     });
                         });
                     } else {
-                        // Non-SSE response (error body): deliver lines to messageConsumer so
-                        // the SSEEventListener up the call stack can parse the JSON-RPC error.
-                        response.pipe().to(new PlainBodyWriteStream(messageConsumer))
-                                .onSuccess(v -> {
+                        // Non-SSE response (error body): collect the full body and deliver it
+                        // to messageConsumer so the SSEEventListener can parse the JSON-RPC error.
+                        // Using body() instead of pipe() avoids a race where small responses
+                        // are already ended before pipe() can attach, causing
+                        // "Response already ended" IllegalStateException.
+                        response.resume();
+                        response.body()
+                                .onSuccess(body -> {
+                                    if (body != null && body.length() > 0) {
+                                        String text = body.toString(StandardCharsets.UTF_8).trim();
+                                        if (!text.isEmpty()) {
+                                            messageConsumer.accept(new ServerSentEvent(text));
+                                        }
+                                    }
                                     if (futureCompleted.compareAndSet(false, true)) {
                                         completeRunnable.run();
                                         future.complete(null);

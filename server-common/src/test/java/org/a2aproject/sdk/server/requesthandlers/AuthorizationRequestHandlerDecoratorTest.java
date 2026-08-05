@@ -115,6 +115,13 @@ class AuthorizationRequestHandlerDecoratorTest {
             assertEquals(expected, result);
             verify(delegate).onCancelTask(params, context);
         }
+
+        @Test
+        void authorizeTaskAccess_delegatesWithoutChecks() throws A2AError {
+            decorator.authorizeTaskAccess("task-1", context, TaskOperation.SUBSCRIBE_TO_TASK);
+
+            verify(delegate).authorizeTaskAccess(eq("task-1"), eq(context), eq(TaskOperation.SUBSCRIBE_TO_TASK));
+        }
     }
 
     @Nested
@@ -177,6 +184,43 @@ class AuthorizationRequestHandlerDecoratorTest {
             assertThrows(TaskNotFoundError.class,
                     () -> decorator.onListTaskPushNotificationConfigs(params, context));
             verifyNoInteractions(delegate);
+        }
+
+        @Test
+        void authorizeTaskAccess_allowed() throws A2AError {
+            when(authorizationProvider.checkRead(context, "task-1", TaskOperation.SUBSCRIBE_TO_TASK)).thenReturn(true);
+
+            decorator.authorizeTaskAccess("task-1", context, TaskOperation.SUBSCRIBE_TO_TASK);
+
+            verify(authorizationProvider).checkRead(context, "task-1", TaskOperation.SUBSCRIBE_TO_TASK);
+            verify(delegate).authorizeTaskAccess(eq("task-1"), eq(context), eq(TaskOperation.SUBSCRIBE_TO_TASK));
+        }
+
+        @Test
+        void authorizeTaskAccess_denied() throws A2AError {
+            when(authorizationProvider.checkRead(context, "task-1", TaskOperation.SUBSCRIBE_TO_TASK)).thenReturn(false);
+
+            assertThrows(TaskNotFoundError.class,
+                    () -> decorator.authorizeTaskAccess("task-1", context, TaskOperation.SUBSCRIBE_TO_TASK));
+            verifyNoInteractions(delegate);
+        }
+
+        @Test
+        void authorizeTaskAccess_nullTaskId_skipsAuthCheck() throws A2AError {
+            decorator.authorizeTaskAccess(null, context, TaskOperation.SUBSCRIBE_TO_TASK);
+
+            verifyNoInteractions(authorizationProvider);
+            verify(delegate).authorizeTaskAccess(null, context, TaskOperation.SUBSCRIBE_TO_TASK);
+        }
+
+        @Test
+        void authorizeTaskAccess_passesOperationToEnforceRead() throws A2AError {
+            when(authorizationProvider.checkRead(context, "task-1", TaskOperation.GET_TASK)).thenReturn(true);
+
+            decorator.authorizeTaskAccess("task-1", context, TaskOperation.GET_TASK);
+
+            verify(authorizationProvider).checkRead(context, "task-1", TaskOperation.GET_TASK);
+            verify(delegate).authorizeTaskAccess(eq("task-1"), eq(context), eq(TaskOperation.GET_TASK));
         }
 
         @Test

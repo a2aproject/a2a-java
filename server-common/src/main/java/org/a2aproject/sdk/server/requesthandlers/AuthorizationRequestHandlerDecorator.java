@@ -261,7 +261,10 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
     }
 
     @Override
-    public void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError {
-        delegate.validateRequestedTask(requestedTaskId);
+    public void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context, TaskOperation operation) throws A2AError {
+        if (requestedTaskId != null) {
+            enforceRead(context, requestedTaskId, operation);
+        }
+        delegate.authorizeTaskAccess(requestedTaskId, context, operation);
     }
 }

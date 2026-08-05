@@ -277,7 +277,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnGetPushNotificationNoPushNotifierConfig() throws Exception {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = getTaskPushNotificationConfigRequest(handler,
@@ -288,7 +292,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnSetPushNotificationNoPushNotifierConfig() throws Exception {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler,
@@ -687,7 +695,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
@@ -758,7 +770,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()
                 .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())

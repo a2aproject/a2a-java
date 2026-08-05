@@ -23,6 +23,8 @@ import java.util.function.Supplier;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
@@ -30,6 +32,8 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.agentexecution.SimpleRequestContextBuilder;
+import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.events.EnhancedRunnable;
 import org.a2aproject.sdk.server.events.EventConsumer;
@@ -67,6 +71,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -191,9 +196,19 @@ public class DefaultRequestHandler implements RequestHandler {
     private static final String A2A_BLOCKING_AGENT_TIMEOUT_SECONDS = "a2a.blocking.agent.timeout.seconds";
     private static final String A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS = "a2a.blocking.consumption.timeout.seconds";
     private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS = "a2a.blocking.reconciliation.timeout.seconds";
+    private static final String A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS = "a2a.request-context.populate-referred-tasks";
 
     @Inject
     A2AConfigProvider configProvider;
+
+    // Only used inside initConfig() (CDI lifecycle). In static create() paths this field
+    // remains null and is never accessed, hence the NullAway suppression.
+    @Inject
+    @Any
+    @SuppressWarnings("NullAway")
+    @Nullable Instance<TaskAuthorizationProvider> authorizationProviderInstance;
+
+    private @Nullable TaskAuthorizationProvider authorizationProvider;
 
     /**
      * Timeout in seconds to wait for agent execution to complete in blocking calls.
@@ -281,7 +296,7 @@ public class DefaultRequestHandler implements RequestHandler {
         //  implementation if the parameter is null. Skip that for now, since otherwise I get CDI errors, and
         //  I am unsure about the correct scope.
         //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
-        this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false);
+        this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false, null);
     }
 
     @SuppressWarnings("NullAway.Init")
@@ -293,24 +308,95 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
         reconciliationTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
+        if (authorizationProviderInstance != null && authorizationProviderInstance.isResolvable()) {
+            authorizationProvider = authorizationProviderInstance.get();
+        }
+        boolean populateReferredTasks = Boolean.parseBoolean(
+                configProvider.getValue(A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS));
+        this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
     }
 
 
-    /**
-     * For testing
-     */
-    public static DefaultRequestHandler create(AgentExecutor agentExecutor, TaskStore taskStore,
-                         QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
-                         MainEventBusProcessor mainEventBusProcessor,
-                         Executor executor, Executor eventConsumerExecutor) {
-        DefaultRequestHandler handler =
-                new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore,
-                        mainEventBusProcessor, executor, eventConsumerExecutor);
-        handler.agentCompletionTimeoutSeconds = 5;
-        handler.consumptionCompletionTimeoutSeconds = 2;
-        handler.reconciliationTimeoutSeconds = 1;
+    public static Builder builder() {
+        return new Builder();
+    }
 
-        return handler;
+    @SuppressWarnings("NullAway.Init")
+    public static class Builder {
+        private AgentExecutor agentExecutor;
+        private TaskStore taskStore;
+        private QueueManager queueManager;
+        private @Nullable PushNotificationConfigStore pushConfigStore;
+        private MainEventBusProcessor mainEventBusProcessor;
+        private Executor executor;
+        private Executor eventConsumerExecutor;
+        private @Nullable TaskAuthorizationProvider authorizationProvider;
+        private boolean populateReferredTasks;
+
+        public Builder agentExecutor(AgentExecutor agentExecutor) {
+            this.agentExecutor = agentExecutor;
+            return this;
+        }
+
+        public Builder taskStore(TaskStore taskStore) {
+            this.taskStore = taskStore;
+            return this;
+        }
+
+        public Builder queueManager(QueueManager queueManager) {
+            this.queueManager = queueManager;
+            return this;
+        }
+
+        public Builder pushConfigStore(@Nullable PushNotificationConfigStore pushConfigStore) {
+            this.pushConfigStore = pushConfigStore;
+            return this;
+        }
+
+        public Builder mainEventBusProcessor(MainEventBusProcessor mainEventBusProcessor) {
+            this.mainEventBusProcessor = mainEventBusProcessor;
+            return this;
+        }
+
+        public Builder executor(Executor executor) {
+            this.executor = executor;
+            return this;
+        }
+
+        public Builder eventConsumerExecutor(Executor eventConsumerExecutor) {
+            this.eventConsumerExecutor = eventConsumerExecutor;
+            return this;
+        }
+
+        public Builder authorizationProvider(@Nullable TaskAuthorizationProvider authorizationProvider) {
+            this.authorizationProvider = authorizationProvider;
+            return this;
+        }
+
+        public Builder populateReferredTasks(boolean populateReferredTasks) {
+            this.populateReferredTasks = populateReferredTasks;
+            return this;
+        }
+
+        @SuppressWarnings("NullAway") // pushConfigStore is intentionally @Nullable
+        public DefaultRequestHandler build() {
+            Assert.checkNotNullParam("agentExecutor", agentExecutor);
+            Assert.checkNotNullParam("taskStore", taskStore);
+            Assert.checkNotNullParam("queueManager", queueManager);
+            Assert.checkNotNullParam("mainEventBusProcessor", mainEventBusProcessor);
+            Assert.checkNotNullParam("executor", executor);
+            Assert.checkNotNullParam("eventConsumerExecutor", eventConsumerExecutor);
+            DefaultRequestHandler handler =
+                    new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore,
+                            mainEventBusProcessor, executor, eventConsumerExecutor);
+            handler.agentCompletionTimeoutSeconds = 5;
+            handler.consumptionCompletionTimeoutSeconds = 2;
+            handler.reconciliationTimeoutSeconds = 1;
+            handler.authorizationProvider = authorizationProvider;
+            handler.requestContextBuilder =
+                    () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
+            return handler;
+        }
     }
 
     @Override
@@ -1063,7 +1149,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
-        Task task = validateRequestedTask(params, context);
+        Task task = authorizeTaskAccess(params, context);
         MessageSendParams requestParams = task == null ? params : normalizeRequestParamsForTask(params, task);
 
         RequestContext requestContext = requestContextBuilder.get()
@@ -1104,8 +1190,11 @@ public class DefaultRequestHandler implements RequestHandler {
         return new MessageSendSetup(taskManager, task, requestContext);
     }
 
+    /**
+     * The authorization is done by the AuthorizationRequestHandlerDecorator
+     */
     @Override
-    public void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError {
+    public void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context, TaskOperation operation) throws A2AError {
         if (requestedTaskId == null) {
             return;
         }
@@ -1121,7 +1210,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
     }
 
-    private @Nullable Task validateRequestedTask(MessageSendParams params, ServerCallContext context) throws A2AError {
+    private @Nullable Task authorizeTaskAccess(MessageSendParams params, ServerCallContext context) throws A2AError {
         String requestedTaskId = params.message().taskId();
         if (requestedTaskId == null) {
             return null;

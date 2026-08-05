@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
-import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -146,8 +145,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                         (task.status() != null &&
                          task.status().timestamp() != null &&
                          task.status().timestamp().toInstant().isAfter(params.statusTimestampAfter())))
-                .filter(task -> authorizationProvider == null || context == null ||
-                        authorizationProvider.checkRead(context, task.id(), TaskOperation.LIST_TASKS))
+                .filter(task -> isReadAuthorized(authorizationProvider, context, task.id()))
                 .sorted(Comparator.comparing(
                         (Task t) -> (t.status() != null && t.status().timestamp() != null)
                                 // Truncate to milliseconds for consistency with pageToken precision

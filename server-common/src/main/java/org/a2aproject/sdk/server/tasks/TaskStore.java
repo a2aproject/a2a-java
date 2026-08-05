@@ -2,6 +2,8 @@ package org.a2aproject.sdk.server.tasks;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Task;
 import org.jspecify.annotations.Nullable;
@@ -215,4 +217,21 @@ public interface TaskStore {
      * @throws TaskStoreException for other listing failures not covered by specific subclasses
      */
     ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context);
+
+    /**
+     * Checks whether a task is authorized for reading during list operations.
+     * <p>
+     * Delegates to {@link TaskAuthorizationProvider#checkReadAccess} with
+     * {@link TaskOperation#LIST_TASKS}. Implementations should call this method when
+     * filtering tasks in {@link #list} to ensure consistent authorization behavior.
+     *
+     * @param provider  the authorization provider, or {@code null} if authorization is disabled
+     * @param context   the server call context, or {@code null} if unavailable
+     * @param taskId    the task being checked
+     * @return {@code true} to include the task, {@code false} to exclude it
+     */
+    default boolean isReadAuthorized(@Nullable TaskAuthorizationProvider provider,
+            @Nullable ServerCallContext context, String taskId) {
+        return TaskAuthorizationProvider.checkReadAccess(provider, context, taskId, TaskOperation.LIST_TASKS);
+    }
 }

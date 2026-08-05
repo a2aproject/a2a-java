@@ -27,6 +27,7 @@ import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
@@ -458,8 +459,9 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError {
-        delegate.validateRequestedTask(requestedTaskId);
+    public void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context,
+            TaskOperation operation) throws A2AError {
+        delegate.authorizeTaskAccess(requestedTaskId, context, operation);
     }
 
     private boolean extractRequest() {

@@ -116,8 +116,15 @@ public class AbstractA2ARequestHandlerTest {
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, pushSender, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
-        requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, pushConfigStore, mainEventBusProcessor, internalExecutor, internalExecutor);
+        requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .build();
     }
 
     @AfterEach

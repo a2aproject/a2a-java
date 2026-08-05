@@ -1,18 +1,86 @@
 {@io.quarkiverse.roq.frontmatter.runtime.model.Site site}
 {@java.util.List<io.vertx.core.json.JsonObject> menu}
-{@java.lang.String menuTitle}
 
+{#let versions=cdi:versions}
 {#search-overlay /}
 <section class="menu">
   {#search-button /}
-  <h3 class="section-title menu-title">{menuTitle ?: 'MENU'}</h3>
+
+  {! Top menu items (Home) — items with position="top" !}
   <ul>
     {#for item in menu}
-    {#if item.getString("type")??}
-    <li class="menu-group-label"><a href="#"><i class="{item.icon}"></i>{item.title}</a></li>
-    {#else}
-    <li {#if item.containsKey("group")}class="menu-group-child"{/if}><a href="{site.url(item.path)}" {#if item.target??}target="{item.target}"{/if}><i class="{item.icon}"></i>{item.title}</a></li>
+    {#if item.getString("position","") == "top"}
+    <li><a href="{site.url(item.getString("path"))}" {#if item.getString("target")?? }target="{item.getString("target")}"{/if}><i class="{item.getString("icon")}"></i>{item.getString("title")}</a></li>
     {/if}
     {/for}
   </ul>
+
+  {! Versioned documentation menu — JS updates this when current version differs from default !}
+  <h3 class="section-title menu-title">DOCUMENTATION</h3>
+
+  {! Version dropdown !}
+  <div class="version-dropdown" data-base-url="{site.url('/')}">
+    <button class="version-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+      <span class="version-dropdown-label">
+        {#for v in versions.list}
+          {#if v.defaultVersion}{v.label}{/if}
+        {/for}
+      </span>
+      <i class="fa-solid fa-chevron-down version-dropdown-chevron"></i>
+    </button>
+    <ul class="version-dropdown-menu" role="listbox">
+      {#for v in versions.list}
+      <li role="option" data-version-path="{v.path}" class="{#if v.defaultVersion}version-default{/if}{#if v.devVersion}version-dev{/if}">
+        {v.label}
+        {#if v.defaultVersion} <span class="version-badge">latest</span>{/if}
+        {#if v.devVersion} <span class="version-badge version-badge-dev">dev</span>{/if}
+      </li>
+      {/for}
+    </ul>
+  </div>
+
+  {! Dev banner — shown by JavaScript when viewing /dev/ pages !}
+  <div class="dev-banner" style="display:none">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    Unreleased docs. <a class="dev-banner-link" href="#">Switch to latest</a>.
+  </div>
+  <ul class="version-menu-items">
+    {! SSR default: render the default version's menu items (no-JS fallback) !}
+    {#for v in versions.list}
+      {#if v.defaultVersion}
+        {#for item in v.menu}
+        <li><a href="{site.url(v.path + item.path)}" {#if item.target?? }target="{item.target}"{/if}><i class="{item.icon}"></i>{item.title}</a></li>
+        {/for}
+      {/if}
+    {/for}
+  </ul>
+
+  {! Bottom menu items — items with position="bottom" !}
+  <h3 class="section-title menu-title">RESOURCES</h3>
+  <ul>
+    {#for item in menu}
+    {#if item.getString("position","") == "bottom"}
+    <li><a href="{site.url(item.getString("path"))}" {#if item.getString("target")?? }target="{item.getString("target")}"{/if}><i class="{item.getString("icon")}"></i>{item.getString("title")}</a></li>
+    {/if}
+    {/for}
+  </ul>
+
+  {! Embed version data as JSON for client-side version switching.
+     Includes full menu items (title, path, icon) so JS can rebuild the sidebar menu
+     when the detected version differs from the SSR default. !}
+  <script type="application/json" id="version-data">
+  [
+    {#for v in versions.list}
+    \{
+      "label": "{v.label}",
+      "path": "{v.path}",
+      "sortOrder": {v.sortOrder},
+      "defaultVersion": {v.defaultVersion},
+      "devVersion": {v.devVersion},
+      "menu": [{#for item in v.menu}\{"title":"{item.title}","path":"{item.path}","icon":"{item.icon}"{#if item.target??},"target":"{item.target}"{/if}\}{#if !item_isLast},{/if}{/for}]
+    \}{#if !v_isLast},{/if}
+    {/for}
+  ]
+  </script>
 </section>
+{/let}

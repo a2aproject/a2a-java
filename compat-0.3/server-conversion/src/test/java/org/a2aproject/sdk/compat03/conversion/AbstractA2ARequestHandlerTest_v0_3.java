@@ -139,9 +139,15 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
 
         // Create v1.0 DefaultRequestHandler
         org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler v10Handler =
-                DefaultRequestHandler.create(
-                        agentExecutor, taskStore, queueManager, pushConfigStore,
-                        mainEventBusProcessor, internalExecutor, internalExecutor);
+                DefaultRequestHandler.builder()
+                        .agentExecutor(agentExecutor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
 
         // Wrap in v0.3 conversion handler
         convert03To10Handler = new Convert_v0_3_To10RequestHandler(v10Handler);

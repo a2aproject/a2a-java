@@ -29,6 +29,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.a2aproject.sdk.common.A2AHeaders;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.IdJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
@@ -484,9 +485,11 @@ public class A2AServerRoutes {
     private Multi<? extends A2AResponse<?>> processStreamingRequest(
             A2ARequest<?> request, ServerCallContext context) throws A2AError {
         if (request instanceof SendStreamingMessageRequest req) {
-            jsonRpcHandler.validateRequestedTask(req.getParams().message().taskId());
+            jsonRpcHandler.authorizeTaskAccess(req.getParams().message().taskId(), context,
+                    TaskOperation.MESSAGE_SEND_STREAM);
         } else if (request instanceof SubscribeToTaskRequest req) {
-            jsonRpcHandler.validateRequestedTask(req.getParams().id());
+            jsonRpcHandler.authorizeTaskAccess(req.getParams().id(), context,
+                    TaskOperation.SUBSCRIBE_TO_TASK);
         }
         try {
             Flow.Publisher<? extends A2AResponse<?>> publisher;
