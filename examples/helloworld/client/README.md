@@ -4,7 +4,7 @@ This example demonstrates how to use the A2A Java SDK to communicate with an A2A
 
 ## Prerequisites
 
-- Java 11 or higher
+- Java 17 or higher
 - [JBang](https://www.jbang.dev/documentation/guide/latest/installation.html) (see [INSTALL_JBANG.md](INSTALL_JBANG.md) for quick installation instructions)
 - Python 3.8 or higher
 - [uv](https://github.com/astral-sh/uv) (recommended) or pip
