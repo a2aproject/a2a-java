@@ -108,10 +108,12 @@ Documentation is created before the SNAPSHOT bump so that Javadoc generation use
 
 When applicable:
 
-1. Copy dev docs to the new version:
+1. Copy dev docs to the new version (replace dots with underscores in directory names to
+   work around a Roq bug where dots break GitHub Pages serving):
    ```bash
-   cp -r docs/content/dev.next docs/content/<version>
+   cp -r docs/content/dev docs/content/<version_underscored>
    ```
+   For example, `1.2.0.Final` → directory name `1_2_0_Final`.
 
 2. Create the version data file by copying `dev.yml` (it has the most up-to-date menu):
    ```bash
@@ -120,20 +122,20 @@ When applicable:
 
 3. Edit `docs/data/versions/<version>.yml`:
    - Set `label` to `"<version>"`
-   - Set `path` to `"<version>"`
+   - Set `path` to `"<version_underscored>"` (underscores, matching the content directory name)
    - Set `sortOrder` to the next value — scan existing ymls for max `sortOrder` **excluding** `dev.yml` (which uses 999 as a sentinel), then increment by 1
    - Set `defaultVersion` to `true` only for Final releases
    - Set `devVersion` to `false`
 
 4. For Final releases: set the previous default version's `defaultVersion` to `false`.
 
-5. For pre-releases superseding a prior pre-release in the same X.Y.Z series: remove the old pre-release's content folder (`docs/content/<old-version>`), version yml (`docs/data/versions/<old-version>.yml`), and apidocs folder (`docs/public/<old-version>/apidocs/`).
+5. For pre-releases superseding a prior pre-release in the same X.Y.Z series: remove the old pre-release's content folder (`docs/content/<old-version_underscored>`), version yml (`docs/data/versions/<old-version>.yml`), and apidocs folder (`docs/public/<old-version_underscored>/apidocs/`).
 
 6. Generate Javadoc:
    ```bash
    mvn javadoc:aggregate -Psite-javadoc
-   mkdir -p docs/public/<version>/apidocs
-   cp -r target/reports/apidocs/* docs/public/<version>/apidocs/
+   mkdir -p docs/public/<version_underscored>/apidocs
+   cp -r target/reports/apidocs/* docs/public/<version_underscored>/apidocs/
    ```
    If the `site-javadoc` profile doesn't exist, note it and skip.
 

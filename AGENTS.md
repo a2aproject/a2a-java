@@ -76,10 +76,10 @@ mvn clean install
 
 ### Documentation Site
 
-The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1.1.0.Final/`, `docs/content/dev.next/`).
+The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1_1_0_Final/`, `docs/content/dev/`). Version directory names use underscores instead of dots to work around a Roq bug where dots in path components break GitHub Pages serving.
 
 **Editing rules:**
-- Only edit pages under `docs/content/dev.next/` — released version folders are frozen snapshots and must not be modified
+- Only edit pages under `docs/content/dev/` — released version folders are frozen snapshots and must not be modified
 - New versioned folders are created at release time (see RELEASE.md step 9)
 
 **Version metadata:** Each version has a YAML file in `docs/data/versions/` (e.g. `dev.yml`, `1.1.0.Final.yml`) that defines the label, URL path, sort order, default/dev flags, and sidebar menu. When adding or removing a documentation page, update the `menu` list in `docs/data/versions/dev.yml` accordingly.
