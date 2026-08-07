@@ -682,6 +682,7 @@
                         <configuration>
                             <outputDirectory>${project.basedir}/docs/public/dev</outputDirectory>
                             <excludePackageNames>org.a2aproject.sdk.testutils:org.a2aproject.sdk.bom.test</excludePackageNames>
+                            <skippedModules>a2a-java-sdk-itk,a2a-java-sdk-opentelemetry-integration-tests</skippedModules>
                             <source>17</source>
                             <doclint>none</doclint>
                             <quiet>true</quiet>
