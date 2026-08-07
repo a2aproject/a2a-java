@@ -15,7 +15,7 @@
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
-        <roq.version>2.1.4</roq.version>
+        <roq.version>2.1.6</roq.version>
     </properties>
 
     <dependencyManagement>

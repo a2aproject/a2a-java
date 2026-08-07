@@ -76,7 +76,7 @@ mvn clean install
 
 ### Documentation Site
 
-The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1.1.0.Final/`, `docs/content/dev/`).
+The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1_1_0_Final/`, `docs/content/dev/`). Version directory names use underscores instead of dots to work around a Roq bug where dots in path components break GitHub Pages serving.
 
 **Editing rules:**
 - Only edit pages under `docs/content/dev/` — released version folders are frozen snapshots and must not be modified
