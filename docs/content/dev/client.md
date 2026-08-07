@@ -185,6 +185,10 @@ Client client = Client
         .build();
 ```
 
+## Observability (Optional)
+
+Add distributed tracing and W3C Trace Context propagation to client calls with the [OpenTelemetry extras modules](extra/opentelemetry#client).
+
 ## Communicating with v0.3 Agents
 
 See [Backward Compatibility](compatibility#client-communicating-with-v03-agents) for using `Client_v0_3` with older protocol agents.

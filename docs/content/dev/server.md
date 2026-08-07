@@ -223,6 +223,10 @@ public class CloseStreamsHook implements TaskStreamLifecycleHook {
 
 See the [`examples/stream-lifecycle`](https://github.com/a2aproject/a2a-java/tree/main/examples/stream-lifecycle) directory for a complete working example with server, client, and integration tests for all three transports.
 
+## Observability (Optional)
+
+Add distributed tracing to your server with the [OpenTelemetry extras module](extra/opentelemetry). It decorates the request handler to create spans for every A2A protocol method, with automatic error tracking and optional request/response extraction.
+
 ## Backward Compatibility with v0.3
 
 See [Backward Compatibility](compatibility) for multi-version modules, version routing, and v0.3 client support.

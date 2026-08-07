@@ -1,12 +1,12 @@
 ---
 title: OpenTelemetry
-description: OpenTelemetry observability integration for the A2A Java SDK with distributed tracing, context propagation, and metrics for servers and clients.
+description: OpenTelemetry observability integration for the A2A Java SDK with distributed tracing and context propagation for servers and clients.
 layout: page
 ---
 
 # OpenTelemetry
 
-Adds distributed tracing, metrics, and context propagation to A2A servers and clients using [OpenTelemetry](https://opentelemetry.io/).
+Adds distributed tracing and context propagation to A2A servers and clients using [OpenTelemetry](https://opentelemetry.io/).
 
 ## Features
 
@@ -28,7 +28,7 @@ Adds distributed tracing, metrics, and context propagation to A2A servers and cl
 
 The `OpenTelemetryRequestHandlerDecorator` wraps the default request handler to create spans for every A2A protocol method, with automatic error tracking.
 
-### 1. Add Dependency
+### Add Dependency
 
 ```xml
 <dependency>
@@ -90,12 +90,20 @@ For other runtimes, consult your MicroProfile Context Propagation implementation
 
 ### Span Attributes
 
-The following attributes are automatically added to spans:
+The following attributes are automatically added to spans (defined in `A2AObservabilityNames`):
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.agent.a2a.request` | Request parameters (if extraction enabled) |
-| `gen_ai.agent.a2a.response` | Response data (if extraction enabled) |
+| `gen_ai.agent.a2a.operation.name` | The A2A method name (e.g., `message/send`, `tasks/get`) |
+| `gen_ai.agent.a2a.task_id` | Task identifier (when available) |
+| `gen_ai.agent.a2a.context_id` | Context/conversation identifier (when available) |
+| `gen_ai.agent.a2a.message_id` | Message identifier (when available) |
+| `gen_ai.agent.a2a.role` | Message role (when available) |
+| `gen_ai.agent.a2a.extensions` | Comma-separated extension names (when present) |
+| `gen_ai.agent.a2a.parts.number` | Number of message parts |
+| `gen_ai.agent.a2a.config_id` | Push notification config identifier (when available) |
+| `gen_ai.agent.a2a.request` | Full request parameters (only if extraction enabled) |
+| `gen_ai.agent.a2a.response` | Full response data (only if extraction enabled) |
 | `error.type` | Error message (on failures) |
 
 ### Request/Response Extraction
