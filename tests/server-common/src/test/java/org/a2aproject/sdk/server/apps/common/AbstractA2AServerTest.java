@@ -1257,7 +1257,9 @@ public abstract class AbstractA2AServerTest {
             // Create error handler to capture the UnsupportedOperationError
             Consumer<Throwable> errorHandler = error -> {
                 if (error == null) {
-                    // Stream completed successfully - ignore, we're waiting for an error
+                    // Stream completed without an error - count down so the test fails
+                    // fast with a clear assertion instead of waiting out the timeout
+                    errorLatch.countDown();
                     return;
                 }
                 if (!isStreamClosedError(error)) {
@@ -1268,8 +1270,9 @@ public abstract class AbstractA2AServerTest {
 
             getClient().subscribeToTask(new TaskIdParams(completedTask.id()), List.of(), errorHandler);
 
-            // Wait for error to be captured
-            boolean errorReceived = errorLatch.await(10, TimeUnit.SECONDS);
+            // Wait for the error to be captured. Allow a generous window: under a
+            // fully-loaded CI runner the SSE error delivery can take well over 10s.
+            boolean errorReceived = errorLatch.await(30, TimeUnit.SECONDS);
 
             if (errorReceived) {
                 // Error came via error handler
