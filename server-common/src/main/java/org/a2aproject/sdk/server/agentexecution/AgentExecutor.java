@@ -97,6 +97,7 @@ import org.a2aproject.sdk.spec.A2AError;
  * @see org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler
  * @see org.a2aproject.sdk.spec.AgentCard
  */
+@FunctionalInterface
 public interface AgentExecutor {
     /**
      * Executes the agent's business logic for a message.
@@ -147,5 +148,7 @@ public interface AgentExecutor {
      * @throws org.a2aproject.sdk.spec.TaskNotCancelableError if this agent does not support cancellation
      * @throws A2AError if cancellation is supported but failed to execute
      */
-    void cancel(RequestContext context, AgentEmitter emitter) throws A2AError;
+    default void cancel(RequestContext context, AgentEmitter emitter) throws A2AError {
+        throw new org.a2aproject.sdk.spec.TaskNotCancelableError("Agent execution is not cancelable.");
+    }
 }
