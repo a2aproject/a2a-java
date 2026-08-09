@@ -66,8 +66,13 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore,
-                                       Instance<PushNotificationPayloadFormatter> formatters) {
-        this.httpClient = A2AHttpClientFactory.create();
+                                       Instance<PushNotificationPayloadFormatter> formatters,
+                                       Instance<A2AHttpClient> httpClientInstance) {
+        if (!httpClientInstance.isUnsatisfied()) {
+            this.httpClient = httpClientInstance.get();
+        } else {
+            this.httpClient = A2AHttpClientFactory.create();
+        }
         this.configStore = configStore;
         this.formattersByVersion = new HashMap<>();
         for (PushNotificationPayloadFormatter f : formatters) {
