@@ -1,36 +1,34 @@
 # OpenTelemetry Integration for A2A
 
-This module provides OpenTelemetry observability integration for A2A servers, including distributed tracing, metrics, and context propagation across asynchronous boundaries.
+This module provides OpenTelemetry observability integration for A2A servers and clients, including distributed tracing and context propagation.
 
 ## Features
 
-- **Distributed Tracing**: Automatic span creation for all A2A protocol methods
-- **Context Propagation**: OpenTelemetry trace context propagation across async operations
-- **Request/Response Logging**: Optional extraction of request and response data into spans
+- **Distributed Tracing**: Automatic span creation for all A2A protocol methods (both client and server)
+- **Context Propagation**: W3C Trace Context injection into outbound client requests
+- **Request/Response Logging**: Optional extraction of request and response data into span attributes
 - **Error Tracking**: Automatic error status and error type attributes on failures
 
 ## Modules
 
 ### `opentelemetry-common`
-Common utilities and constants shared across OpenTelemetry modules.
+Constants and span attribute names shared across client and server modules. See `A2AObservabilityNames` for the full list of attribute keys.
 
 ### `opentelemetry-client`
-OpenTelemetry integration for A2A clients.
+Client-side distributed tracing. Wraps `ClientTransport` to create spans for every A2A operation. Discovered automatically via `ServiceLoader` when a `Tracer` is present in the transport configuration parameters.
 
 ### `opentelemetry-client-propagation`
-Context propagation support for A2A clients.
+Injects W3C Trace Context headers into outbound client requests using `OpenTelemetry.getPropagators().getTextMapPropagator()`. Discovered automatically via `ServiceLoader` when an `OpenTelemetry` instance is present in the transport configuration parameters.
 
 ### `opentelemetry-server`
-OpenTelemetry integration for A2A servers, including the context-aware executor.
+CDI decorator (`OpenTelemetryRequestHandlerDecorator`) that wraps `RequestHandler` to create server-side spans. Automatically activated when the module JAR is on the classpath (via the bundled `beans.xml`).
 
 ### `opentelemetry-integration-tests`
-Integration tests for OpenTelemetry functionality.
+Quarkus-based integration tests for OpenTelemetry functionality.
 
-## Usage
+## Server Usage
 
-### Basic Setup
-
-Add the OpenTelemetry server module to your dependencies:
+### Add Dependency
 
 ```xml
 <dependency>
@@ -40,120 +38,131 @@ Add the OpenTelemetry server module to your dependencies:
 </dependency>
 ```
 
-### Context-Aware Async Executor
+The `OpenTelemetryRequestHandlerDecorator` is registered automatically via the `beans.xml` bundled in the module JAR. No additional configuration is required.
 
-The `AsyncManagedExecutorProducer` provides a `ManagedExecutor` that automatically propagates OpenTelemetry trace context across asynchronous boundaries. This ensures that spans created in async tasks are properly linked to their parent spans.
-
-#### How It Works
-
-When the OpenTelemetry server module is included, the `AsyncManagedExecutorProducer` automatically replaces the default `AsyncExecutorProducer` using CDI alternatives:
-
-- **Priority 20**: Takes precedence over the default executor producer (priority 10)
-- **Automatic Activation**: No configuration needed - just include the module
-- **Context Propagation**: Uses MicroProfile Context Propagation to maintain trace context
-
-#### Configuration
-
-The `ManagedExecutor` is container-managed and configured through your runtime environment:
-
-**Quarkus:**
-```properties
-# Configure the managed executor pool
-quarkus.thread-pool.core-threads=10
-quarkus.thread-pool.max-threads=50
-quarkus.thread-pool.queue-size=100
-```
-
-**Other Runtimes:**
-Consult your MicroProfile Context Propagation implementation documentation for configuration options.
-
-> **Note**: Unlike the default `AsyncExecutorProducer`, the `AsyncManagedExecutorProducer` does not use the `a2a.executor.*` configuration properties. Pool sizing is controlled by the container's ManagedExecutor configuration.
-
-#### Example
-
-```java
-@ApplicationScoped
-public class MyAgent implements Agent {
-    
-    @Inject
-    @Internal
-    Executor executor;  // Automatically uses ManagedExecutor with context propagation
-    
-    @Override
-    public void execute(RequestContext context, AgentEmitter emitter) {
-        // Current span context is automatically propagated
-        executor.execute(() -> {
-            // This code runs in a different thread but maintains the trace context
-            Span currentSpan = Span.current();
-            currentSpan.addEvent("Processing in async task");
-            
-            // Do async work...
-        });
-    }
-}
-```
+> **Note**: The decorator relies on the runtime (e.g., Quarkus OpenTelemetry extension) to extract trace context from incoming HTTP requests. It does not perform context extraction itself — it creates a new span within the already-established trace context.
 
 ### Request/Response Extraction
 
-Enable request and response data extraction in spans:
+Optionally include full request/response data as span attributes. These are controlled by **JVM system properties** (not application config), read via `Boolean.getBoolean()`:
 
-```properties
-# Extract request parameters into span attributes
-a2a.opentelemetry.extract-request=true
-
-# Extract response data into span attributes
-a2a.opentelemetry.extract-response=true
+```bash
+# Pass as JVM system properties (-D flags)
+-Dorg.a2aproject.sdk.server.extract.request=true
+-Dorg.a2aproject.sdk.server.extract.response=true
 ```
 
 > **Warning**: Extracting request/response data may expose sensitive information in traces. Use with caution in production environments.
 
 ### Span Attributes
 
-The following attributes are automatically added to spans:
+The following attributes are automatically added to spans (defined in `A2AObservabilityNames`):
 
-- `genai.request`: Request parameters (if extraction enabled)
-- `genai.response`: Response data (if extraction enabled)
-- `error.type`: Error message (on failures)
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.agent.a2a.operation.name` | The A2A method name (e.g., `message/send`, `tasks/get`) |
+| `gen_ai.agent.a2a.task_id` | Task identifier (when available) |
+| `gen_ai.agent.a2a.context_id` | Context/conversation identifier (when available) |
+| `gen_ai.agent.a2a.message_id` | Message identifier (when available) |
+| `gen_ai.agent.a2a.role` | Message role (when available) |
+| `gen_ai.agent.a2a.extensions` | Comma-separated extension names (when present) |
+| `gen_ai.agent.a2a.parts.number` | Number of message parts |
+| `gen_ai.agent.a2a.config_id` | Push notification config identifier (when available) |
+| `gen_ai.agent.a2a.request` | Full request parameters (only if extraction enabled) |
+| `gen_ai.agent.a2a.response` | Full response data (only if extraction enabled) |
+| `error.type` | Error message (on failures) |
+
+### Streaming Methods
+
+For streaming methods (`onMessageSendStream`, `onSubscribeToTask`), the server-side span covers only the creation of the `Flow.Publisher`, not the actual streaming of events. The span is started and ended synchronously before events are emitted, and the response attribute is set to `"Stream publisher created"`. This means the span duration does not reflect the actual duration of the streaming operation.
+
+On the client side, streaming is handled differently: the `OpenTelemetryClientTransport` creates child spans linked to the parent for each streaming event and error callback, providing per-event tracing.
+
+## Client Usage
+
+### Instrumentation (Tracing Spans)
+
+Add the client tracing module:
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-extras-opentelemetry-client</artifactId>
+    <version>${a2a.version}</version>
+</dependency>
+```
+
+Enable tracing by adding a `Tracer` instance to the transport configuration parameters:
+
+```java
+import static org.a2aproject.sdk.extras.opentelemetry.client.OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY;
+
+config.setParameters(Map.of(
+    OTEL_TRACER_KEY, openTelemetry.getTracer("my-service")
+));
+```
+
+### Context Propagation (W3C Trace Headers)
+
+Add the propagation module:
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-extras-opentelemetry-client-propagation</artifactId>
+    <version>${a2a.version}</version>
+</dependency>
+```
+
+Enable propagation by adding an `OpenTelemetry` instance to the transport configuration parameters:
+
+```java
+import static org.a2aproject.sdk.extras.opentelemetry.client.propagation.OpenTelemetryClientPropagatorTransportWrapper.OTEL_OPEN_TELEMETRY_KEY;
+
+config.setParameters(Map.of(
+    OTEL_TRACER_KEY, openTelemetry.getTracer("my-service"),
+    OTEL_OPEN_TELEMETRY_KEY, openTelemetry
+));
+```
+
+Both wrappers are discovered automatically via `ServiceLoader` and activate only when their respective keys are present in the configuration parameters. The client wrapper (priority 600) runs after the propagation wrapper (priority 500), so trace context headers are injected before the tracing span is created.
 
 ## Architecture
 
-### Request Handler Decoration
-
-The `OpenTelemetryRequestHandlerDecorator` wraps the default request handler and creates spans for each A2A protocol method:
+### Server Request Handler Decoration
 
 ```
 Client Request
     ↓
-OpenTelemetryRequestHandlerDecorator
-    ↓ (creates span)
+Runtime (e.g., Quarkus OTel) extracts trace context from HTTP headers
+    ↓
+OpenTelemetryRequestHandlerDecorator creates span within trace context
+    ↓
 Default RequestHandler
     ↓
-Agent Execution (with context propagation)
+Agent Execution
     ↓
 Response
 ```
 
-### Context Propagation Flow
+### Client Transport Wrapping
 
 ```
-HTTP Request (with trace headers)
+Application calls ClientTransport method
     ↓
-OpenTelemetry extracts context
+OpenTelemetryClientPropagatorTransport injects W3C trace context headers (priority 500)
     ↓
-Span created for A2A method
+OpenTelemetryClientTransport creates tracing span (priority 600)
     ↓
-ManagedExecutor propagates context
+Underlying transport (JSON-RPC, gRPC, REST)
     ↓
-Async agent execution (maintains trace context)
-    ↓
-Response (with trace headers)
+Response
 ```
 
 ## Testing
 
-The module includes comprehensive unit tests:
+The module includes:
 
-- `AsyncManagedExecutorProducerTest`: Tests for the context-aware executor producer
 - `OpenTelemetryRequestHandlerDecoratorTest`: Tests for span creation and error handling
 
 Run tests:
@@ -167,28 +176,13 @@ mvn test -pl extras/opentelemetry/server
 
 **Symptom**: Spans in async tasks are not linked to parent spans.
 
-**Solution**: Ensure the OpenTelemetry server module is included and the `ManagedExecutor` is being injected correctly. Check logs for:
-```
-Initializing OpenTelemetry-aware ManagedExecutor for async operations
-```
-
-### ManagedExecutor Not Available
-
-**Symptom**: `IllegalStateException: ManagedExecutor not injected - ensure MicroProfile Context Propagation is available`
-
-**Solution**: Ensure your runtime provides MicroProfile Context Propagation support. For Quarkus, add:
-```xml
-<dependency>
-    <groupId>io.quarkus</groupId>
-    <artifactId>quarkus-smallrye-context-propagation</artifactId>
-</dependency>
-```
+**Solution**: Ensure your runtime provides trace context propagation for async boundaries. For Quarkus, this is handled automatically by MicroProfile Context Propagation. The context-aware `ManagedExecutor` that propagates trace context across async boundaries is provided by the reference server module (`reference/common`), not this OpenTelemetry module.
 
 ### Performance Impact
 
 **Symptom**: Increased latency with OpenTelemetry enabled.
 
-**Solution**: 
+**Solution**:
 - Disable request/response extraction in production
 - Configure sampling rate to reduce trace volume
 - Ensure your OpenTelemetry collector is properly sized
@@ -203,13 +197,12 @@ Initializing OpenTelemetry-aware ManagedExecutor for async operations
 
 ## Dependencies
 
-- MicroProfile Telemetry 2.0.1+
-- MicroProfile Context Propagation 1.3+
 - OpenTelemetry API
-- A2A Server Common
+- A2A Server Common (for server module)
+- A2A Client Transport SPI (for client modules)
 
 ## See Also
 
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
 - [MicroProfile Telemetry Specification](https://github.com/eclipse/microprofile-telemetry)
-- [MicroProfile Context Propagation](https://github.com/eclipse/microprofile-context-propagation)
+- [Helloworld Example with OpenTelemetry](../../examples/helloworld/)
