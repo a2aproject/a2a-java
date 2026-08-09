@@ -75,7 +75,8 @@ import org.mockito.ArgumentCaptor;
 public class A2AServerRoutesTest {
 
     private A2AServerRoutes routes;
-    private JSONRPCHandler mockJsonRpcHandler;
+    private Instance<JSONRPCHandler> mockJsonRpcHandler;
+    private JSONRPCHandler mockHandlerInstance;
     private Executor mockExecutor;
     private Instance<CallContextFactory> mockCallContextFactory;
     private RoutingContext mockRoutingContext;
@@ -87,7 +88,14 @@ public class A2AServerRoutesTest {
     @BeforeEach
     public void setUp() {
         routes = new A2AServerRoutes();
-        mockJsonRpcHandler = mock(JSONRPCHandler.class);
+        mockJsonRpcHandler = mock(Instance.class);
+        mockHandlerInstance = mock(JSONRPCHandler.class);
+        when(mockHandlerInstance.isUnsatisfied()).thenReturn(false);
+        when(mockHandlerInstance.get()).thenReturn(mockHandlerInstance);
+        
+        Instance<org.a2aproject.sdk.server.apps.quarkus.registry.MultiAgentRegistry> multiAgentRegistry = mock(Instance.class);
+        when(multiAgentRegistry.isUnsatisfied()).thenReturn(true);
+        setField(routes, "multiAgentRegistry", multiAgentRegistry);
         mockExecutor = mock(Executor.class);
         mockCallContextFactory = mock(Instance.class);
         mockRoutingContext = mock(RoutingContext.class);
@@ -154,16 +162,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         SendMessageResponse realResponse = new SendMessageResponse("1", responseTask);
-        when(mockJsonRpcHandler.onMessageSend(any(SendMessageRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onMessageSend(any(SendMessageRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onMessageSend(any(SendMessageRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onMessageSend(any(SendMessageRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SEND_MESSAGE_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -201,16 +209,16 @@ public class A2AServerRoutesTest {
 
         @SuppressWarnings("unchecked")
         Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
-        when(mockJsonRpcHandler.onMessageSendStream(any(SendStreamingMessageRequest.class),
+        when(mockHandlerInstance.onMessageSendStream(any(SendStreamingMessageRequest.class),
                 any(ServerCallContext.class))).thenReturn(mockPublisher);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onMessageSendStream(any(SendStreamingMessageRequest.class),
+        verify(mockHandlerInstance).onMessageSendStream(any(SendStreamingMessageRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -239,16 +247,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -276,16 +284,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_CANCELED))
                 .build();
         CancelTaskResponse realResponse = new CancelTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onCancelTask(any(CancelTaskRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onCancelTask(any(CancelTaskRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onCancelTask(any(CancelTaskRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onCancelTask(any(CancelTaskRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(CANCEL_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -308,16 +316,16 @@ public class A2AServerRoutesTest {
 
         @SuppressWarnings("unchecked")
         Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
-        when(mockJsonRpcHandler.onSubscribeToTask(any(SubscribeToTaskRequest.class),
+        when(mockHandlerInstance.onSubscribeToTask(any(SubscribeToTaskRequest.class),
                 any(ServerCallContext.class))).thenReturn(mockPublisher);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onSubscribeToTask(any(SubscribeToTaskRequest.class),
+        verify(mockHandlerInstance).onSubscribeToTask(any(SubscribeToTaskRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -353,16 +361,16 @@ public class A2AServerRoutesTest {
                 .build();
 
         CreateTaskPushNotificationConfigResponse realResponse = new CreateTaskPushNotificationConfigResponse("1", responseConfig);
-        when(mockJsonRpcHandler.setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
+        when(mockHandlerInstance.setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
+        verify(mockHandlerInstance).setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -392,16 +400,16 @@ public class A2AServerRoutesTest {
                 .url("https://example.com/callback")
                 .build();
         GetTaskPushNotificationConfigResponse realResponse = new GetTaskPushNotificationConfigResponse("1", responseConfig);
-        when(mockJsonRpcHandler.getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
+        when(mockHandlerInstance.getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
+        verify(mockHandlerInstance).getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -432,16 +440,16 @@ public class A2AServerRoutesTest {
                 .url("https://example.com/callback")
                 .build();
         ListTaskPushNotificationConfigsResponse realResponse = new ListTaskPushNotificationConfigsResponse("1", new ListTaskPushNotificationConfigsResult(singletonList(config)));
-        when(mockJsonRpcHandler.listPushNotificationConfigs(any(ListTaskPushNotificationConfigsRequest.class),
+        when(mockHandlerInstance.listPushNotificationConfigs(any(ListTaskPushNotificationConfigsRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).listPushNotificationConfigs(any(ListTaskPushNotificationConfigsRequest.class),
+        verify(mockHandlerInstance).listPushNotificationConfigs(any(ListTaskPushNotificationConfigsRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -466,16 +474,16 @@ public class A2AServerRoutesTest {
 
         // Create a real response with id
         DeleteTaskPushNotificationConfigResponse realResponse = new DeleteTaskPushNotificationConfigResponse("1");
-        when(mockJsonRpcHandler.deletePushNotificationConfig(any(DeleteTaskPushNotificationConfigRequest.class),
+        when(mockHandlerInstance.deletePushNotificationConfig(any(DeleteTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).deletePushNotificationConfig(any(DeleteTaskPushNotificationConfigRequest.class),
+        verify(mockHandlerInstance).deletePushNotificationConfig(any(DeleteTaskPushNotificationConfigRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -502,17 +510,17 @@ public class A2AServerRoutesTest {
                 .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .build();
         GetExtendedAgentCardResponse realResponse = new GetExtendedAgentCardResponse(1, agentCard);
-        when(mockJsonRpcHandler.onGetExtendedCardRequest(
+        when(mockHandlerInstance.onGetExtendedCardRequest(
                 any(GetExtendedAgentCardRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetExtendedCardRequest(
+        verify(mockHandlerInstance).onGetExtendedCardRequest(
                 any(GetExtendedAgentCardRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -542,16 +550,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("test/titi", capturedContext.getState().get(TENANT_KEY));
@@ -579,16 +587,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("", capturedContext.getState().get(TENANT_KEY));
@@ -616,16 +624,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("tenant1", capturedContext.getState().get(TENANT_KEY));
@@ -653,16 +661,16 @@ public class A2AServerRoutesTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+        when(mockHandlerInstance.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        verify(mockHandlerInstance).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("tenant1/api/v1", capturedContext.getState().get(TENANT_KEY));
@@ -700,16 +708,16 @@ public class A2AServerRoutesTest {
 
         @SuppressWarnings("unchecked")
         Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
-        when(mockJsonRpcHandler.onMessageSendStream(any(SendStreamingMessageRequest.class),
+        when(mockHandlerInstance.onMessageSendStream(any(SendStreamingMessageRequest.class),
                 any(ServerCallContext.class))).thenReturn(mockPublisher);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
-        verify(mockJsonRpcHandler).onMessageSendStream(any(SendStreamingMessageRequest.class),
+        verify(mockHandlerInstance).onMessageSendStream(any(SendStreamingMessageRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
@@ -723,7 +731,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(invalidJson);
 
         // Act
-        routes.invokeJSONRPCHandler(invalidJson, mockRoutingContext);
+        routes.invokeJSONRPCHandler(invalidJson, mockRoutingContext, mockHandlerInstance);
 
         // Assert
         verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
@@ -742,7 +750,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
 
         // Assert
         verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);

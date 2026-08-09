@@ -171,7 +171,10 @@ import org.jspecify.annotations.Nullable;
 public class A2AServerRoutes {
 
     @Inject
-    JSONRPCHandler jsonRpcHandler;
+    Instance<JSONRPCHandler> jsonRpcHandler;
+    
+    @Inject
+    Instance<org.a2aproject.sdk.server.apps.quarkus.registry.MultiAgentRegistry> multiAgentRegistry;
 
     @Inject
     AgentCardCacheMetadata cacheMetadata;
@@ -201,16 +204,31 @@ public class A2AServerRoutes {
      * @param router the Vert.x Web Router instance to configure
      */
     void setupRoutes(@Observes Router router) {
-        // Main JSON-RPC endpoint: POST /
-        // BodyHandler is per-route (not global) to avoid interfering with gRPC routes
-        // ordered=false: delegation via Vert.x WebClient can share the same event loop context as the outer request; ordered=true would serialize them, causing a 30s deadlock.
-        router.post("/")
+        if (!multiAgentRegistry.isUnsatisfied()) {
+            // Multi-agent mode
+            Map<String, JSONRPCHandler> agents = multiAgentRegistry.get().getAgents();
+            for (Map.Entry<String, JSONRPCHandler> entry : agents.entrySet()) {
+                String agentId = entry.getKey();
+                String pathPrefix = "/" + agentId;
+                registerAgentRoutes(router, pathPrefix, entry.getValue());
+            }
+        } else if (!jsonRpcHandler.isUnsatisfied()) {
+            // Single-agent mode (default)
+            registerAgentRoutes(router, "", jsonRpcHandler.get());
+        }
+    }
+
+    private void registerAgentRoutes(Router router, String pathPrefix, JSONRPCHandler handler) {
+        String rpcPath = pathPrefix.isEmpty() ? "/" : pathPrefix;
+        String cardPath = pathPrefix + "/.well-known/agent-card.json";
+        
+        router.post(rpcPath)
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 try {
                     vertxSecurityHelper.runInRequestContextDeferred(ctx, () -> {
-                        invokeJSONRPCHandler(ctx.body().asString(), ctx);
+                        invokeJSONRPCHandler(ctx.body().asString(), ctx, handler);
                     });
                 } catch (UnauthorizedException | ForbiddenException e) {
                     vertxSecurityHelper.handleAuthError(ctx, e);
@@ -219,12 +237,11 @@ public class A2AServerRoutes {
                 }
             }, false);
 
-        // Agent card endpoint: GET /.well-known/agent-card.json
-        router.get("/.well-known/agent-card.json")
+        router.get(cardPath)
             .produces(APPLICATION_JSON)
             .handler(ctx -> {
                 try {
-                    String agentCard = getAgentCard(ctx);
+                    String agentCard = getAgentCard(ctx, handler);
                     ctx.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -308,7 +325,7 @@ public class A2AServerRoutes {
      * @throws A2AError if request processing fails
      */
     @Authenticated
-    public void invokeJSONRPCHandler(String body, RoutingContext rc) {
+    public void invokeJSONRPCHandler(String body, RoutingContext rc, JSONRPCHandler handler) {
         boolean streaming = false;
         ServerCallContext context = createCallContext(rc);
         A2AResponse<?> nonStreamingResponse = null;
@@ -318,10 +335,10 @@ public class A2AServerRoutes {
             A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body, extractTenant(rc));
             context.getState().put(METHOD_NAME_KEY, request.getMethod());
             if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
-                nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
+                nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context, handler);
             } else {
                 streaming = true;
-                streamingResponse = processStreamingRequest(request, context);
+                streamingResponse = processStreamingRequest(request, context, handler);
             }
         } catch (A2AError e) {
             error = new A2AErrorResponse(e);
@@ -406,10 +423,10 @@ public class A2AServerRoutes {
      * @throws JsonProcessingException if serialization fails
      * @see JSONRPCHandler#getAgentCard()
      */
-    public String getAgentCard(RoutingContext rc) throws JsonProcessingException {
+    public String getAgentCard(RoutingContext rc, JSONRPCHandler handler) throws JsonProcessingException {
         // Add caching headers per A2A specification section 8.6
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
-        return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
+        return JsonUtil.toJson(handler.getAgentCard());
     }
 
     /**
@@ -435,33 +452,33 @@ public class A2AServerRoutes {
      * @param context the server call context
      * @return the JSON-RPC response
      */
-    private A2AResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
+    private A2AResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request, ServerCallContext context, JSONRPCHandler handler) {
         if (request instanceof GetTaskRequest req) {
-            return jsonRpcHandler.onGetTask(req, context);
+            return handler.onGetTask(req, context);
         }
         if (request instanceof CancelTaskRequest req) {
-            return jsonRpcHandler.onCancelTask(req, context);
+            return handler.onCancelTask(req, context);
         }
         if (request instanceof ListTasksRequest req) {
-            return jsonRpcHandler.onListTasks(req, context);
+            return handler.onListTasks(req, context);
         }
         if (request instanceof CreateTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.setPushNotificationConfig(req, context);
+            return handler.setPushNotificationConfig(req, context);
         }
         if (request instanceof GetTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.getPushNotificationConfig(req, context);
+            return handler.getPushNotificationConfig(req, context);
         }
         if (request instanceof SendMessageRequest req) {
-            return jsonRpcHandler.onMessageSend(req, context);
+            return handler.onMessageSend(req, context);
         }
         if (request instanceof ListTaskPushNotificationConfigsRequest req) {
-            return jsonRpcHandler.listPushNotificationConfigs(req, context);
+            return handler.listPushNotificationConfigs(req, context);
         }
         if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.deletePushNotificationConfig(req, context);
+            return handler.deletePushNotificationConfig(req, context);
         }
         if (request instanceof GetExtendedAgentCardRequest req) {
-            return jsonRpcHandler.onGetExtendedCardRequest(req, context);
+            return handler.onGetExtendedCardRequest(req, context);
         }
         return generateErrorResponse(request, new UnsupportedOperationError());
     }
@@ -483,20 +500,20 @@ public class A2AServerRoutes {
      * @return a Multi stream of JSON-RPC responses
      */
     private Multi<? extends A2AResponse<?>> processStreamingRequest(
-            A2ARequest<?> request, ServerCallContext context) throws A2AError {
+            A2ARequest<?> request, ServerCallContext context, JSONRPCHandler handler) throws A2AError {
         if (request instanceof SendStreamingMessageRequest req) {
-            jsonRpcHandler.authorizeTaskAccess(req.getParams().message().taskId(), context,
+            handler.authorizeTaskAccess(req.getParams().message().taskId(), context,
                     TaskOperation.MESSAGE_SEND_STREAM);
         } else if (request instanceof SubscribeToTaskRequest req) {
-            jsonRpcHandler.authorizeTaskAccess(req.getParams().id(), context,
+            handler.authorizeTaskAccess(req.getParams().id(), context,
                     TaskOperation.SUBSCRIBE_TO_TASK);
         }
         try {
             Flow.Publisher<? extends A2AResponse<?>> publisher;
             if (request instanceof SendStreamingMessageRequest req) {
-                publisher = jsonRpcHandler.onMessageSendStream(req, context);
+                publisher = handler.onMessageSendStream(req, context);
             } else if (request instanceof SubscribeToTaskRequest req) {
-                publisher = jsonRpcHandler.onSubscribeToTask(req, context);
+                publisher = handler.onSubscribeToTask(req, context);
             } else {
                 return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
             }
