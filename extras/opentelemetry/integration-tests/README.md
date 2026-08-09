@@ -2,75 +2,42 @@
 
 ## Overview
 
-This module provides **Quarkus-based integration tests** for OpenTelemetry tracing in the A2A Java SDK, similar to the approach used in the [Quarkus OpenTelemetry quickstart](https://github.com/quarkusio/quarkus/tree/main/integration-tests/opentelemetry-quickstart).
+This module provides **Quarkus-based integration tests** for OpenTelemetry tracing in the A2A Java SDK.
 
-Unlike the previous mock-based tests, these are **real integration tests** that:
-- Start an actual Quarkus application
-- Expose a REST API with A2A agent endpoints
-- Make real HTTP requests
-- Validate that OpenTelemetry spans are created correctly
+The tests start a real Quarkus application, make HTTP requests via the A2A client SDK, and validate that the `OpenTelemetryRequestHandlerDecorator` (from the `opentelemetry-server` module) creates spans with the expected attributes.
 
 ## Architecture
 
-### Components
+### Application Components
 
-1. **SimpleAgent** - A basic A2A agent implementation for testing
-   - Implements all RequestHandler methods
-   - Stores tasks in memory
-   - Provides simple echo responses for messages
+- **SimpleAgentExecutor** — A basic `AgentExecutor` that echoes back the user's message and completes the task immediately.
+- **TestAgentCardProducer** — CDI producer for the test agent's `AgentCard` (JSON-RPC interface on port 8081, streaming enabled).
+- **A2ATestRoutes** — Vert.x routes exposing test utility endpoints for task/queue manipulation (`/test/task/*`, `/test/queue/*`) and span inspection (`/export`, `/reset`, `/hello`). Also contains the `InMemorySpanExporterProducer` that captures spans in memory for assertion.
+- **TestUtilsBean** — CDI bean wrapping `TaskStore` and `QueueManager` for direct test manipulation (save/get/delete tasks, create queues, enqueue events).
 
-2. **AgentResource** - JAX-RS REST resource
-   - Exposes HTTP endpoints (`/a2a/tasks`, `/a2a/messages`, etc.)
-   - Delegates to the RequestHandler
-   - Creates ServerCallContext for each request
+### Test Classes
 
-3. **InstrumentedRequestHandler** - CDI Alternative
-   - Wraps SimpleAgent with OpenTelemetry decorator
-   - Delegates to the OpenTelemetry decorator for span creation
-   - Ensures spans are created for each operation
+- **OpenTelemetryTest** (`@QuarkusTest`) — Smoke test: hits the `/hello` endpoint and verifies a span is created.
+- **OpenTelemetryA2ATest** (`@QuarkusTest`) — JVM-mode tests for A2A protocol operations (getTask, listTasks, cancelTask) verifying server-side spans, span attributes (`gen_ai.agent.a2a.operation.name`, `gen_ai.agent.a2a.task_id`), and span metadata (kind, status, parent).
+- **OpenTelemetryA2AIT** (`@QuarkusIntegrationTest`) — Same tests running in native/integration mode.
+- **OpenTelemetryA2ABaseTest** — Abstract base class containing the shared test logic. Uses the A2A `Client` SDK to make JSON-RPC calls and `java.net.HttpClient` to interact with the test utility endpoints.
+- **BaseTest** — Provides a `getSpans()` helper that fetches captured spans from the `/export` endpoint via REST Assured.
 
-4. **OpenTelemetryProducer** - CDI bean producer
-   - Creates the Tracer from Quarkus OpenTelemetry
-   - Produces the OpenTelemetryRequestHandlerDecorator (CDI decorator)
-   - Integrates with Quarkus OpenTelemetry extension
+### Span Capture Flow
 
-## Test Strategy
-
-### Functional Tests (`OpenTelemetryIntegrationTest`)
-- Use `@QuarkusTest` annotation
-- Make real HTTP requests using REST Assured
-- Verify HTTP responses are correct
-- Ensure the application behaves correctly end-to-end
-
-### Tracing Tests (`OpenTelemetryTracingTest`)
-- Use `InMemorySpanExporter` to capture spans
-- Verify that HTTP requests create OpenTelemetry spans
-- Validate span names, kinds (CLIENT/SERVER), and status codes
-- Check that spans are properly ended
-
-## Current Status
-
-### ✅ Completed
-- Project structure and POM configuration
-- Quarkus dependencies and plugins (including opentelemetry-sdk-testing)
-- SimpleAgentExecutor following reference module pattern
-- TestAgentCardProducer with proper JSONRPC interface
-- InMemorySpanExporter producer for span validation
-- OpenTelemetryIntegrationTest using Client API
-- Tests compile and run (service loader issues resolved)
-
-### 🔨 In Progress / Known Issues
-
-1. **Test Execution Timeouts**
-   - Tests are timing out during message send operations
-   - Error: "Timeout waiting for consumption to complete for task test-task-1"
-   - Likely a configuration issue between client (non-streaming) and server (streaming capable)
-   - Need to investigate JSONRPC transport configuration
-
-2. **Span Validation**
-   - InMemorySpanExporter is configured but needs verification
-   - Some tests are not finding expected spans
-   - May need to configure span processor to route to InMemorySpanExporter
+```
+A2A Client SDK call (e.g., getTask)
+    ↓
+Quarkus HTTP server
+    ↓
+OpenTelemetryRequestHandlerDecorator creates SERVER span
+    ↓
+RequestHandler processes request
+    ↓
+InMemorySpanExporter captures completed span
+    ↓
+Test calls GET /export → asserts on span attributes
+```
 
 ## Running the Tests
 
@@ -82,79 +49,44 @@ mvn clean install -DskipTests
 
 ### Run Integration Tests
 ```bash
-# From the integration-tests directory
-mvn clean verify
-
-# Or from the root
+# From the root
 mvn verify -pl extras/opentelemetry/integration-tests -am
+
+# Or from the integration-tests directory
+mvn clean verify
 ```
 
-### Run Specific Test
+### Run a Specific Test
 ```bash
-mvn test -Dtest=OpenTelemetryIntegrationTest
+mvn test -pl extras/opentelemetry/integration-tests -Dtest=OpenTelemetryA2ATest
+mvn test -pl extras/opentelemetry/integration-tests -Dtest=OpenTelemetryTest
 ```
 
 ## Configuration
 
-### Application Properties
-- `src/main/resources/application.properties` - Runtime configuration
-- `src/test/resources/application.properties` - Test-specific configuration
-
-Key settings:
+### `src/main/resources/application.properties`
 ```properties
-# OpenTelemetry
+quarkus.http.port=8081
+
 quarkus.otel.sdk.disabled=false
 quarkus.otel.traces.enabled=true
-quarkus.otel.service.name=a2a-opentelemetry-integration-test
+quarkus.otel.metrics.enabled=false
+quarkus.otel.logs.enabled=false
+quarkus.otel.instrument.vertx-http=false
 
-# Test mode: use in-memory exporter
-quarkus.otel.traces.exporter=none
+quarkus.otel.bsp.schedule.delay=0
+quarkus.otel.bsp.export.timeout=5s
+
+quarkus.otel.service.name=a2a-opentelemetry-integration-test
+quarkus.otel.propagators=tracecontext
 ```
 
-### beans.xml
-Located at `src/main/resources/META-INF/beans.xml`:
-- Enables CDI bean discovery
-- Configures alternatives (InstrumentedRequestHandler)
-
-## Next Steps
-
-To complete this integration test module:
-
-1. **Resolve CDI ambiguity**
-   - Add `@Named` or custom qualifier to SimpleAgent
-   - Or exclude DefaultRequestHandler from test classpath
-   - Or use `@Alternative` more effectively
-
-2. **Configure span exporter**
-   - Properly wire InMemorySpanExporter into Quarkus OpenTelemetry
-   - May need custom OTel SDK configuration
-
-3. **Add more test scenarios**
-   - Test error handling and error spans
-   - Test streaming operations
-   - Test context propagation across services
-   - Test span attributes and metadata
-
-4. **Performance testing** (optional)
-   - Measure overhead of OpenTelemetry instrumentation
-   - Verify spans don't impact performance significantly
-
-## Comparison with Quarkus Quickstart
-
-This implementation follows the same patterns as the Quarkus OpenTelemetry quickstart:
-- ✅ Uses `@QuarkusTest` for integration tests
-- ✅ Uses REST Assured for HTTP testing
-- ✅ Integrates with Quarkus OpenTelemetry extension
-- ✅ Uses in-memory span exporter for validation
-- ✅ Tests actual HTTP requests, not mocks
-
-Unlike the quickstart which is a standalone app, this module:
-- Tests A2A SDK-specific functionality
-- Validates OpenTelemetry CDI decorator integration
-- Focuses on A2A protocol operations (tasks, messages, etc.)
+Key choices:
+- **Vert.x HTTP instrumentation disabled** (`instrument.vertx-http=false`) to avoid Quarkus HTTP spans polluting assertions — only the A2A decorator spans are captured.
+- **Batch span processor delay set to 0** (`bsp.schedule.delay=0`) so spans are exported immediately for test assertions.
+- **Metrics and logs disabled** to keep the test focused on tracing.
 
 ## References
 
 - [Quarkus OpenTelemetry Guide](https://quarkus.io/guides/opentelemetry)
-- [Quarkus OpenTelemetry Quickstart](https://github.com/quarkusio/quarkus/tree/main/integration-tests/opentelemetry-quickstart)
 - [OpenTelemetry Java Documentation](https://opentelemetry.io/docs/languages/java/)

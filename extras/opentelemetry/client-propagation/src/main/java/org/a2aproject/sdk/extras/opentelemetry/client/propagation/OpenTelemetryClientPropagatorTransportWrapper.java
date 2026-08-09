@@ -4,19 +4,16 @@ import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportWrapper;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Tracer;
 
 /**
- * OpenTelemetry client transport wrapper that adds opentelemetry propagation to A2A client calls.
+ * OpenTelemetry client transport wrapper that injects W3C Trace Context headers into outbound A2A client requests.
  *
  * <p>This wrapper is automatically discovered via Java's ServiceLoader mechanism.
- * To enable tracing, add a {@link Tracer} instance to the transport configuration:
+ * To enable context propagation, add an {@link OpenTelemetry} instance to the transport configuration:
  * <pre>{@code
  * ClientTransportConfig config = new JSONRPCTransportConfig();
  * config.setParameters(Map.of(
- *     OpenTelemetryClientTransportFactory.OTEL_TRACER_KEY,
- *     openTelemetry.getTracer("my-service"),
- *     OpenTelemetryClientTransportFactory.OTEL_OPEN_TELEMETRY_KEY,
+ *     OpenTelemetryClientPropagatorTransportWrapper.OTEL_OPEN_TELEMETRY_KEY,
  *     openTelemetry
  * ));
  * }</pre>
@@ -24,10 +21,8 @@ import io.opentelemetry.api.trace.Tracer;
 public class OpenTelemetryClientPropagatorTransportWrapper implements ClientTransportWrapper {
 
     /**
-     * Configuration key for the OpenTelemetry Tracer instance.
-     * Value must be of type {@link Tracer}.
+     * Configuration key for the {@link OpenTelemetry} instance used for context propagation.
      */
-    public static final String OTEL_TRACER_KEY = "org.a2aproject.sdk.extras.opentelemetry.Tracer";
     public static final String OTEL_OPEN_TELEMETRY_KEY = "org.a2aproject.sdk.extras.opentelemetry.OpenTelemetry";
 
     @Override
@@ -36,7 +31,7 @@ public class OpenTelemetryClientPropagatorTransportWrapper implements ClientTran
         if (openTelemetryObj != null && openTelemetryObj instanceof OpenTelemetry openTelemetry) {
             return new OpenTelemetryClientPropagatorTransport(transport, openTelemetry);
         }
-        // No tracer configured, return unwrapped transport
+        // No OpenTelemetry configured, return unwrapped transport
         return transport;
     }
 

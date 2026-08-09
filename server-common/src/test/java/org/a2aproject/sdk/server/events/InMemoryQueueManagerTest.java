@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.server.events;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -238,5 +239,54 @@ public class InMemoryQueueManagerTest {
         // All ChildQueues should be distinct instances
         long distinctCount = results.stream().distinct().count();
         assertEquals(results.size(), distinctCount, "All ChildQueues should be distinct instances");
+    }
+
+    @Test
+    public void testHookOnSubscribeCalledOnCreateOrTap() {
+        TestStreamLifecycleHook.CaptureHook hook = TestStreamLifecycleHook.capturing();
+        InMemoryQueueManager hookedQueueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
+
+        hookedQueueManager.createOrTap("task-1");
+        assertEquals(1, hook.subscribedTaskIds().size());
+        assertEquals("task-1", hook.subscribedTaskIds().get(0));
+
+        hookedQueueManager.tap("task-1");
+        assertEquals(2, hook.subscribedTaskIds().size());
+    }
+
+    @Test
+    public void testHookOnUnsubscribeCalledOnChildClose() {
+        TestStreamLifecycleHook.CaptureHook hook = TestStreamLifecycleHook.capturing();
+        InMemoryQueueManager hookedQueueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
+
+        EventQueue child = hookedQueueManager.createOrTap("task-1");
+        child.close();
+
+        assertEquals(1, hook.unsubscribedTaskIds().size());
+        assertEquals("task-1", hook.unsubscribedTaskIds().get(0));
+    }
+
+    @Test
+    public void testStreamCloseHandleClosesAllChildrenViaQueueManager() {
+        TestStreamLifecycleHook.CaptureHook hook = TestStreamLifecycleHook.capturing();
+        InMemoryQueueManager hookedQueueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
+
+        EventQueue child1 = hookedQueueManager.createOrTap("task-1");
+        EventQueue child2 = hookedQueueManager.tap("task-1");
+
+        StreamCloseHandle handle = hook.lastHandle();
+        assertNotNull(handle);
+        assertEquals(2, handle.getActiveSubscriberCount());
+
+        handle.closeStreams();
+
+        assertTrue(child1.isClosed());
+        assertTrue(child2.isClosed());
+        assertEquals(0, handle.getActiveSubscriberCount());
+
+        // MainQueue should still exist and accept new subscriptions
+        EventQueue child3 = hookedQueueManager.tap("task-1");
+        assertNotNull(child3);
+        assertFalse(child3.isClosed());
     }
 }

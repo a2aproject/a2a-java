@@ -257,6 +257,16 @@ public class MainEventBusProcessor implements Runnable {
             LOGGER.debug("MainEventBusProcessor: Distributed {} to {} children for task {}",
                         eventToDistribute.getClass().getSimpleName(), childCount, taskId);
 
+            // Step 3b: Notify stream lifecycle hook after distribution (only if there were active subscribers)
+            TaskStreamLifecycleHook streamHook = mainQueue.getTaskStreamLifecycleHook();
+            if (streamHook != null && childCount > 0) {
+                try {
+                    streamHook.onEvent(taskId, eventToDistribute, mainQueue.getStreamCloseHandle());
+                } catch (Exception e) {
+                    LOGGER.error("Error in TaskStreamLifecycleHook.onEvent for task {}", taskId, e);
+                }
+            }
+
             LOGGER.debug("MainEventBusProcessor: Completed processing event for task {}", taskId);
 
         } finally {

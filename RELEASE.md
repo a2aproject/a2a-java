@@ -165,8 +165,9 @@ Artifacts should include:
 Create a new documentation version for the release:
 
 ```bash
-# Copy dev docs to the new version folder
-cp -r docs/content/dev docs/content/X.Y.Z.Final
+# Copy dev docs to the new version folder (use underscores instead of dots to
+# work around a Roq bug where dots in directory names break GitHub Pages serving)
+cp -r docs/content/dev docs/content/X_Y_Z_Final
 
 # Create a new version data file
 cp docs/data/versions/dev.yml docs/data/versions/X.Y.Z.Final.yml
@@ -174,7 +175,7 @@ cp docs/data/versions/dev.yml docs/data/versions/X.Y.Z.Final.yml
 
 Edit `docs/data/versions/X.Y.Z.Final.yml`:
 - Set `label` to `"X.Y.Z.Final"`
-- Set `path` to `"X.Y.Z.Final"`
+- Set `path` to `"X_Y_Z_Final"` (underscores, matching the content directory name)
 - Set `sortOrder` to the next number (higher than the previous release)
 - Set `defaultVersion` to `true`
 - Set `devVersion` to `false`
@@ -194,10 +195,10 @@ For major and minor releases (X.Y.0.Final), generate aggregated Javadoc. Skip th
 mvn javadoc:aggregate -Psite-javadoc
 
 # Copy to the release version directory (overwrites the placeholder)
-cp -r docs/public/dev/apidocs docs/public/X.Y.Z.Final/apidocs
+cp -r docs/public/dev/apidocs docs/public/X_Y_Z_Final/apidocs
 
 # Commit the generated Javadoc
-git add docs/public/X.Y.Z.Final/apidocs
+git add docs/public/X_Y_Z_Final/apidocs
 git commit -m "docs: add Javadoc for X.Y.Z.Final"
 ```
 
