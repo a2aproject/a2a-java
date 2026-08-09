@@ -1146,4 +1146,79 @@ public class DefaultRequestHandlerTest {
         assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
             "Protocol version should be stored when push config is provided via onMessageSendStream");
     }
+
+    @Test
+    void testAsyncAgentWithKeepAlive_Blocking_WaitsForCompletion() throws Exception {
+        // Arrange: Agent uses keepAlive and completes asynchronously
+        CountDownLatch agentBackgroundThreadStarted = new CountDownLatch(1);
+        CountDownLatch agentRelease = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            // Signal that we are going to run asynchronously
+            emitter.keepAlive();
+            emitter.startWork();
+
+            // Simulate RxJava / async background thread
+            internalExecutor.execute(() -> {
+                agentBackgroundThreadStarted.countDown();
+                try {
+                    agentRelease.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                emitter.complete();
+            });
+            // execute() returns immediately!
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-async-1")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("start async task"))
+            .build();
+
+        // Blocking call (returnImmediately = false)
+        MessageSendParams initialParams = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(false)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
+
+        // Use a background thread to call onMessageSend since it should block
+        AtomicReference<EventKind> resultRef = new AtomicReference<>();
+        CountDownLatch callComplete = new CountDownLatch(1);
+
+        internalExecutor.execute(() -> {
+            try {
+                EventKind result = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
+                resultRef.set(result);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                callComplete.countDown();
+            }
+        });
+
+        // Wait for the background thread to start
+        assertTrue(agentBackgroundThreadStarted.await(5, TimeUnit.SECONDS));
+
+        // The requestHandler should be blocked, so callComplete should NOT have counted down
+        assertFalse(callComplete.await(1, TimeUnit.SECONDS), "Client call should block while async agent runs");
+
+        // Release the agent so it can emit completion
+        agentRelease.countDown();
+
+        // Now the client call should complete
+        assertTrue(callComplete.await(5, TimeUnit.SECONDS), "Client call should complete after agent finishes");
+
+        EventKind result = resultRef.get();
+        assertNotNull(result);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        // Since it's a blocking non-streaming call, the final state should be returned
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state(), "Task should be in COMPLETED state");
+    }
 }

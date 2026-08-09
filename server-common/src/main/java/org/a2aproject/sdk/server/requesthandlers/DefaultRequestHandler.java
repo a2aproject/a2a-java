@@ -637,7 +637,8 @@ public class DefaultRequestHandler implements RequestHandler {
 
                 try {
                     // Step 1: Wait for agent to finish (with configurable timeout)
-                    if (agentFuture != null) {
+                    // Note: We evaluate isAgentAsync dynamically because the agent sets it inside its run()
+                    if (agentFuture != null && !(producerRunnable.getEmitter() != null && producerRunnable.getEmitter().isAsync())) {
                         try {
                             agentFuture.get(agentCompletionTimeoutSeconds, SECONDS);
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent completed for task {}", taskId.get());
@@ -646,13 +647,22 @@ public class DefaultRequestHandler implements RequestHandler {
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent still running for task {} after {}s timeout",
                                 taskId.get(), agentCompletionTimeoutSeconds);
                         }
+                    } else if (producerRunnable.getEmitter() != null && producerRunnable.getEmitter().isAsync()) {
+                        LOGGER.debug("DefaultRequestHandler: Step 1 - Agent is async, skipping agentFuture wait for task {}", taskId.get());
                     }
 
                     // Step 2: Close the queue to signal consumption can complete
                     // For fire-and-forget tasks, there's no final event, so we need to close the queue
                     // This allows EventConsumer.consumeAll() to exit
-                    queue.close(false, false);  // graceful close, don't notify parent yet
-                    LOGGER.debug("DefaultRequestHandler: Step 2 - Closed queue for task {} to allow consumption completion", taskId.get());
+                    // If the agent is async, it promises to emit a final event, so we don't close the queue here
+                    // Re-evaluate isAsync because the agent might have set it during Step 1
+                    boolean isFinallyAsync = producerRunnable.getEmitter() != null && producerRunnable.getEmitter().isAsync();
+                    if (!isFinallyAsync) {
+                        queue.close(false, false);  // graceful close, don't notify parent yet
+                        LOGGER.debug("DefaultRequestHandler: Step 2 - Closed queue for task {} to allow consumption completion", taskId.get());
+                    } else {
+                        LOGGER.debug("DefaultRequestHandler: Step 2 - Agent is async, keeping queue open to await final event for task {}", taskId.get());
+                    }
 
                     // Step 3: Wait for consumption to complete (now that queue is closed)
                     if (etai.consumptionFuture() != null) {
@@ -1043,6 +1053,7 @@ public class DefaultRequestHandler implements RequestHandler {
             public void run() {
                 LOGGER.debug("Agent execution starting for task {}", taskId);
                 AgentEmitter emitter = new AgentEmitter(requestContext, queue);
+                setEmitter(emitter);
                 try {
                     agentExecutor.execute(requestContext, emitter);
                 } catch (A2AError e) {
@@ -1092,7 +1103,12 @@ public class DefaultRequestHandler implements RequestHandler {
                     // Queue lifecycle is managed by EventConsumer.consumeAll()
                     // which closes the queue on final events.
                     logThreadStats("AGENT COMPLETE END");
-                    runnable.invokeDoneCallbacks();
+                    AgentEmitter emitter = runnable.getEmitter();
+                    if (emitter == null || !emitter.isAsync()) {
+                        runnable.invokeDoneCallbacks();
+                    } else {
+                        LOGGER.debug("Agent is marked as async, keeping queue open for task {}", taskId);
+                    }
                 });
         runningAgents.put(taskId, cf);
         LOGGER.debug("Registered agent for task {}, runningAgents.size() after: {}", taskId, runningAgents.size());

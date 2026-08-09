@@ -102,6 +102,7 @@ public class AgentEmitter {
     private final String taskId;
     private final String contextId;
     private final AtomicBoolean terminalStateReached = new AtomicBoolean(false);
+    private final AtomicBoolean isAsync = new AtomicBoolean(false);
 
     /**
      * Creates a new AgentEmitter for the given request context and event queue.
@@ -113,6 +114,25 @@ public class AgentEmitter {
         this.eventQueue = eventQueue;
         this.taskId = context.getTaskId();
         this.contextId = context.getContextId();
+    }
+
+    /**
+     * Marks this agent execution as asynchronous, preventing premature queue closure
+     * before a terminal event is explicitly emitted.
+     *
+     * @since 1.0.0
+     */
+    public void keepAlive() {
+        this.isAsync.set(true);
+    }
+
+    /**
+     * Returns whether this emitter has been marked for asynchronous execution.
+     *
+     * @return true if keepAlive() has been called
+     */
+    public boolean isAsync() {
+        return isAsync.get();
     }
 
     /**

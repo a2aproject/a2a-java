@@ -5,9 +5,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
 
 public abstract class EnhancedRunnable implements Runnable {
     private volatile @Nullable Throwable error;
+    private volatile @Nullable AgentEmitter emitter;
     private final List<DoneCallback> doneCallbacks = new CopyOnWriteArrayList<>();
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -17,6 +19,14 @@ public abstract class EnhancedRunnable implements Runnable {
 
     public void setError(Throwable error) {
         this.error = error;
+    }
+
+    public @Nullable AgentEmitter getEmitter() {
+        return emitter;
+    }
+
+    public void setEmitter(AgentEmitter emitter) {
+        this.emitter = emitter;
     }
 
     public void addDoneCallback(DoneCallback doneCallback) {
