@@ -362,7 +362,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
 
         assertProblemDetail(response, 400,
-                "INVALID_REQUEST",
+                "UNSUPPORTED_OPERATION",
                 "Streaming is not supported by the agent");
     }
 
