@@ -220,6 +220,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                        StreamObserver<org.a2aproject.sdk.grpc.Task> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             TaskQueryParams params = FromProto.taskQueryParams(request);
             Task task = getRequestHandler().onGetTask(params, context);
             if (task != null) {
@@ -242,6 +244,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                          StreamObserver<org.a2aproject.sdk.grpc.ListTasksResponse> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             org.a2aproject.sdk.spec.ListTasksParams params = FromProto.listTasksParams(request);
             ListTasksResult result = getRequestHandler().onListTasks(params, context);
             responseObserver.onNext(ToProto.listTasksResult(result));
@@ -260,6 +264,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                           StreamObserver<org.a2aproject.sdk.grpc.Task> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             CancelTaskParams params = FromProto.cancelTaskParams(request);
             Task task = getRequestHandler().onCancelTask(params, context);
             if (task != null) {
@@ -287,6 +293,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             TaskPushNotificationConfig config = FromProto.createTaskPushNotificationConfig(request);
             TaskPushNotificationConfig responseConfig = getRequestHandler().onCreateTaskPushNotificationConfig(config, context);
             responseObserver.onNext(ToProto.taskPushNotificationConfig(responseConfig));
@@ -310,6 +318,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             GetTaskPushNotificationConfigParams params = FromProto.getTaskPushNotificationConfigParams(request);
             TaskPushNotificationConfig config = getRequestHandler().onGetTaskPushNotificationConfig(params, context);
             responseObserver.onNext(ToProto.taskPushNotificationConfig(config));
@@ -333,6 +343,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             ListTaskPushNotificationConfigsParams params = FromProto.listTaskPushNotificationConfigsParams(request);
             ListTaskPushNotificationConfigsResult result = getRequestHandler().onListTaskPushNotificationConfigs(params, context);
             org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse response = ToProto.listTaskPushNotificationConfigsResponse(result);
@@ -420,6 +432,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         try {
             ServerCallContext context = createCallContext(responseObserver);
             installForkedContextWrapper(context);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             TaskIdParams params = FromProto.taskIdParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onSubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
@@ -568,6 +582,9 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 handleError(responseObserver, new UnsupportedOperationError());
                 return;
             }
+            ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             AgentCard extendedAgentCard = getExtendedAgentCard();
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
@@ -591,6 +608,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             DeleteTaskPushNotificationConfigParams params = FromProto.deleteTaskPushNotificationConfigParams(request);
             getRequestHandler().onDeleteTaskPushNotificationConfig(params, context);
             // void response
