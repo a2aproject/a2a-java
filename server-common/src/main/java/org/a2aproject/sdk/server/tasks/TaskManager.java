@@ -19,6 +19,7 @@ import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.jspecify.annotations.Nullable;
@@ -69,6 +70,13 @@ public class TaskManager {
     boolean saveTaskEvent(Task task, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
         checkIdsAndUpdateIfNecessary(task.id(), task.contextId());
+        // Defensive state-machine check: a task that already reached a terminal state must
+        // not be overwritten by a task snapshot carrying a different state (BUG-43).
+        Task current = getTask();
+        if (current != null && current.status() != null && current.status().state() != null
+                && task.status() != null && task.status().state() != null) {
+            validateStateTransition(current.status().state(), task.status().state(), task.id());
+        }
         Task savedTask = saveTask(task, isReplicated);
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);
@@ -85,6 +93,12 @@ public class TaskManager {
         checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
         Task task = ensureTask(event.taskId(), event.contextId());
 
+        // State-machine validation: reject transitions that would overwrite a terminal
+        // state with a different state (BUG-43). Re-arriving events carrying the same
+        // final state remain allowed (idempotent replays / replication).
+        TaskState currentState = task.status() != null ? task.status().state() : null;
+        TaskState newState = event.status() != null ? event.status().state() : null;
+        validateStateTransition(currentState, newState, event.taskId());
 
         Task.Builder builder = Task.builder(task)
                 .status(event.status());
@@ -230,6 +244,36 @@ public class TaskManager {
             saveTask(task, false);  // Local operation, not replicated
         }
         return task;
+    }
+
+    /**
+     * Validates a task state transition before it is persisted (BUG-43).
+     * <p>
+     * A terminal (final) state must not be overwritten by a <em>different</em> state:
+     * once a task is {@code COMPLETED}/{@code FAILED}/{@code CANCELED}/{@code REJECTED}
+     * it stays in that state. Events re-arriving with the <em>same</em> final state are
+     * allowed, so replicated replays and idempotent retries keep working.
+     * <p>
+     * Transitions from any non-terminal state to any state are permitted (e.g.
+     * SUBMITTED → WORKING → COMPLETED/FAILED/CANCELED, interrupted-state resume flows),
+     * matching the transitions the A2A spec and the reference agents exercise.
+     *
+     * @param currentState the task's current state, or {@code null} if unknown
+     * @param newState     the state requested by the event, or {@code null} if unknown
+     * @param taskId       the task identifier, used in the error message
+     * @throws A2AServerException if the transition would overwrite a terminal state
+     */
+    private static void validateStateTransition(@Nullable TaskState currentState, @Nullable TaskState newState,
+            String taskId) throws A2AServerException {
+        if (currentState == null || newState == null) {
+            return;
+        }
+        if (currentState.isFinal() && currentState != newState) {
+            throw new A2AServerException(
+                    "Task " + taskId + " is already in terminal state " + currentState
+                            + " and cannot transition to " + newState,
+                    new InternalError("Task " + taskId + " is already in terminal state " + currentState));
+        }
     }
 
     private Task createTask(String taskId, String contextId) {

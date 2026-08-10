@@ -739,4 +739,123 @@ public class TaskManagerTest {
         assertEquals("task message", ((TextPart) updated.history().get(1).parts().get(0)).text());
         assertEquals("update message", ((TextPart) updated.history().get(2).parts().get(0)).text());
     }
+
+    @Test
+    public void testRejectStatusUpdateOverwritingTerminalState() throws A2AServerException {
+        // Seed a COMPLETED task
+        Task completedTask = Task.builder()
+                .id("task-terminal")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        taskStore.save(completedTask, false);
+        TaskManager tm = new TaskManager("task-terminal", "ctx-1", taskStore, null);
+
+        // A status update to a different state after the terminal state must be rejected (BUG-43)
+        TaskStatusUpdateEvent workingEvent = TaskStatusUpdateEvent.builder()
+                .taskId("task-terminal")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build();
+        assertThrows(A2AServerException.class, () -> tm.saveTaskEvent(workingEvent, false));
+
+        // The persisted task must remain in its terminal state
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-terminal").status().state());
+    }
+
+    @Test
+    public void testRejectStatusUpdateToDifferentTerminalState() throws A2AServerException {
+        Task completedTask = Task.builder()
+                .id("task-terminal-2")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        taskStore.save(completedTask, false);
+        TaskManager tm = new TaskManager("task-terminal-2", "ctx-1", taskStore, null);
+
+        // COMPLETED must not be overwritten by FAILED either
+        TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
+                .taskId("task-terminal-2")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_FAILED))
+                .build();
+        assertThrows(A2AServerException.class, () -> tm.saveTaskEvent(failedEvent, false));
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-terminal-2").status().state());
+    }
+
+    @Test
+    public void testSameTerminalStateReplayAllowed() throws A2AServerException {
+        Task completedTask = Task.builder()
+                .id("task-replay")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        taskStore.save(completedTask, false);
+        TaskManager tm = new TaskManager("task-replay", "ctx-1", taskStore, null);
+
+        // Idempotent replay of the same final state must remain allowed (replication/replay)
+        TaskStatusUpdateEvent completedAgain = TaskStatusUpdateEvent.builder()
+                .taskId("task-replay")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        tm.saveTaskEvent(completedAgain, false);
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-replay").status().state());
+    }
+
+    @Test
+    public void testRejectTaskEventOverwritingTerminalState() throws A2AServerException {
+        Task completedTask = Task.builder()
+                .id("task-terminal-3")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        taskStore.save(completedTask, false);
+        TaskManager tm = new TaskManager("task-terminal-3", "ctx-1", taskStore, null);
+
+        // A full Task snapshot carrying a different (non-terminal) state must be rejected
+        Task submittedSnapshot = Task.builder()
+                .id("task-terminal-3")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                .build();
+        assertThrows(A2AServerException.class, () -> tm.saveTaskEvent(submittedSnapshot, false));
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-terminal-3").status().state());
+    }
+
+    @Test
+    public void testNormalStateFlowAllowed() throws A2AServerException {
+        // SUBMITTED -> WORKING -> COMPLETED must keep working (BUG-43 must not break normal flows)
+        TaskManager tm = new TaskManager("task-flow", "ctx-1", taskStore, null);
+
+        tm.saveTaskEvent(TaskStatusUpdateEvent.builder()
+                .taskId("task-flow").contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED)).build(), false);
+        tm.saveTaskEvent(TaskStatusUpdateEvent.builder()
+                .taskId("task-flow").contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING)).build(), false);
+        tm.saveTaskEvent(TaskStatusUpdateEvent.builder()
+                .taskId("task-flow").contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build(), false);
+
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-flow").status().state());
+    }
+
+    @Test
+    public void testInterruptedStateResumeFlowAllowed() throws A2AServerException {
+        // INPUT_REQUIRED -> WORKING -> COMPLETED (resume flow) must keep working
+        TaskManager tm = new TaskManager("task-interrupted", "ctx-1", taskStore, null);
+
+        tm.saveTaskEvent(TaskStatusUpdateEvent.builder()
+                .taskId("task-interrupted").contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED)).build(), false);
+        tm.saveTaskEvent(TaskStatusUpdateEvent.builder()
+                .taskId("task-interrupted").contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING)).build(), false);
+        tm.saveTaskEvent(TaskStatusUpdateEvent.builder()
+                .taskId("task-interrupted").contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build(), false);
+
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-interrupted").status().state());
+    }
 }

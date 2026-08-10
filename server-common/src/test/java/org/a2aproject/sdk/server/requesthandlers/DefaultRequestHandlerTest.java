@@ -13,10 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -36,6 +40,7 @@ import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.InvalidParamsError;
@@ -46,6 +51,7 @@ import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
@@ -1149,6 +1155,7 @@ public class DefaultRequestHandlerTest {
     }
 
     @Test
+
     void testOnGetTaskHistoryLengthLimitsHistory() throws Exception {
         Task task = taskWithHistory("task-hl-limit");
         taskStore.save(task, false);
@@ -1185,5 +1192,72 @@ public class DefaultRequestHandlerTest {
                                 .parts(new TextPart("three")).build()))
                 .artifacts(List.of())
                 .build();
+
+void testConcurrentCancelsAreSerialized() throws Exception {
+        // BUG-44 regression: two concurrent cancels of the same task must serialize on a
+        // per-task lock so the second one observes the CANCELED terminal state and fails
+        // with TaskNotCancelableError instead of both acting on the pre-transition state.
+        Task workingTask = Task.builder()
+                .id("task-cancel-lock")
+                .contextId("ctx-cancel")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .history(List.of())
+                .artifacts(List.of())
+                .build();
+        taskStore.save(workingTask, false);
+
+        CountDownLatch cancelEntered = new CountDownLatch(1);
+        CountDownLatch releaseCancel = new CountDownLatch(1);
+
+        agentExecutorCancel = (context, emitter) -> {
+            cancelEntered.countDown();
+            try {
+                releaseCancel.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            emitter.cancel();
+        };
+
+        ExecutorService cancelExec = Executors.newFixedThreadPool(2);
+        try {
+            CountDownLatch firstDone = new CountDownLatch(1);
+            Future<Task> first = cancelExec.submit(() -> {
+                try {
+                    Task result = requestHandler.onCancelTask(
+                            new CancelTaskParams("task-cancel-lock"), NULL_CONTEXT);
+                    firstDone.countDown();
+                    return result;
+                } catch (A2AError e) {
+                    firstDone.countDown();
+                    throw e;
+                }
+            });
+
+            // Wait until the first cancel is inside agentExecutor.cancel() (holding the per-task lock)
+            assertTrue(cancelEntered.await(5, TimeUnit.SECONDS),
+                    "First cancel should enter agentExecutor.cancel()");
+
+            // The second cancel must block on the per-task lock while the first is in progress
+            Future<Task> second = cancelExec.submit(() -> requestHandler.onCancelTask(
+                    new CancelTaskParams("task-cancel-lock"), NULL_CONTEXT));
+            assertThrows(TimeoutException.class, () -> second.get(300, TimeUnit.MILLISECONDS),
+                    "Second cancel should not complete while the first holds the per-task lock");
+
+            // Release the first cancel so it can enqueue CANCELED and finish
+            releaseCancel.countDown();
+            assertTrue(firstDone.await(10, TimeUnit.SECONDS), "First cancel should complete");
+            assertEquals(TaskState.TASK_STATE_CANCELED, first.get().status().state());
+
+            // The second cancel now observes the terminal state and is rejected
+            ExecutionException ex = assertThrows(ExecutionException.class, second::get);
+            assertInstanceOf(TaskNotCancelableError.class, ex.getCause(),
+                    "Second cancel should fail with TaskNotCancelableError");
+        } finally {
+            releaseCancel.countDown();
+            cancelExec.shutdownNow();
+        }
+>>>>>>> 9fcf9f46
+(fix: enforce task state-machine transitions and serialize cancels)
     }
 }
