@@ -420,7 +420,12 @@ public class DefaultRequestHandler implements RequestHandler {
      * @return the task with limited history, or the original task if no limiting needed
      */
     private static Task limitTaskHistory(Task task, @Nullable Integer historyLength) {
-        if (task.history() == null || historyLength == null || historyLength >= task.history().size()) {
+        // A negative historyLength is invalid (TaskQueryParams rejects it at construction, but
+        // guard defensively here to avoid IndexOutOfBoundsException in subList below). Consistent
+        // with the Python/JS SDKs, a negative value leaves the history untouched; 0 means an
+        // empty history, and N >= history size means no limiting is needed.
+        if (task.history() == null || historyLength == null || historyLength < 0
+                || historyLength >= task.history().size()) {
             return task;
         }
         // Keep only the most recent historyLength messages

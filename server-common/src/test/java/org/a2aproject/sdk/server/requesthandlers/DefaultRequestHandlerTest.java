@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 
@@ -1145,5 +1148,59 @@ public class DefaultRequestHandlerTest {
         // Assert
         assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
             "Protocol version should be stored when push config is provided via onMessageSendStream");
+    }
+
+    @Test
+    void testOnGetTaskHistoryLengthLimitsHistory() throws Exception {
+        Task task = taskWithHistory("task-hl-limit");
+        taskStore.save(task, false);
+
+        Task result = requestHandler.onGetTask(new TaskQueryParams("task-hl-limit", 2), NULL_CONTEXT);
+
+        assertEquals(2, result.history().size());
+        assertEquals("msg-2", result.history().get(0).messageId());
+        assertEquals("msg-3", result.history().get(1).messageId());
+    }
+
+    @Test
+    void testOnGetTaskHistoryLengthZeroReturnsEmptyHistory() throws Exception {
+        Task task = taskWithHistory("task-hl-zero");
+        taskStore.save(task, false);
+
+        Task result = requestHandler.onGetTask(new TaskQueryParams("task-hl-zero", 0), NULL_CONTEXT);
+
+        assertNotNull(result.history());
+        assertTrue(result.history().isEmpty());
+    }
+
+    @Test
+    void testLimitTaskHistoryNegativeHistoryLengthReturnsTaskUnchanged() throws Exception {
+        Task task = taskWithHistory("task-hl-negative");
+
+        Method method = DefaultRequestHandler.class.getDeclaredMethod(
+                "limitTaskHistory", Task.class, Integer.class);
+        method.setAccessible(true);
+        Task result = (Task) method.invoke(null, task, -1);
+
+        // A negative historyLength must not throw IndexOutOfBoundsException and must leave
+        // the history untouched (aligned with the Python/JS SDK semantics).
+        assertSame(task, result);
+        assertEquals(task.history(), result.history());
+    }
+
+    private Task taskWithHistory(String id) {
+        return Task.builder()
+                .id(id)
+                .contextId("ctx-history")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .history(List.of(
+                        Message.builder().messageId("msg-1").role(Message.Role.ROLE_USER)
+                                .parts(new TextPart("one")).build(),
+                        Message.builder().messageId("msg-2").role(Message.Role.ROLE_AGENT)
+                                .parts(new TextPart("two")).build(),
+                        Message.builder().messageId("msg-3").role(Message.Role.ROLE_AGENT)
+                                .parts(new TextPart("three")).build()))
+                .artifacts(List.of())
+                .build();
     }
 }
