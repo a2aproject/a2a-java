@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Message;
@@ -197,8 +198,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
             postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
         }
         if (pushInfo.authentication() != null && pushInfo.authentication().credentials() != null) {
-            postBuilder.addHeader("Authorization",
-                    pushInfo.authentication().scheme() + " " + pushInfo.authentication().credentials());
+            postBuilder.addHeader("Authorization", buildAuthorizationHeader(pushInfo.authentication()));
         }
 
         try {
@@ -212,5 +212,28 @@ public class BasePushNotificationSender implements PushNotificationSender {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Builds the Authorization header value for a push notification config.
+     *
+     * <p>The {@code scheme} and {@code credentials} are client-controlled values that are
+     * concatenated directly into the header. Rejecting CR/LF characters here prevents
+     * HTTP header injection (CWE-113). The {@link A2AHttpClient} SPI is pluggable, so we
+     * cannot rely on every implementation (or the underlying HTTP client) to validate
+     * header values.</p>
+     *
+     * @param authentication the push notification authentication info (scheme non-null,
+     *                       credentials non-null per the caller's check)
+     * @return the assembled {@code "scheme credentials"} header value
+     * @throws IllegalArgumentException if the assembled value contains CR or LF
+     */
+    private static String buildAuthorizationHeader(AuthenticationInfo authentication) {
+        String value = authentication.scheme() + " " + authentication.credentials();
+        if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0) {
+            throw new IllegalArgumentException(
+                    "Push notification Authorization header must not contain CR/LF characters");
+        }
+        return value;
     }
 }

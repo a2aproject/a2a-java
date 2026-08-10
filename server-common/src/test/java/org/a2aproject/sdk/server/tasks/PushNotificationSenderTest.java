@@ -516,4 +516,64 @@ public class PushNotificationSenderTest {
 
         assertTrue(testHttpClient.rawBodies.isEmpty());
     }
+
+    @Test
+    public void testSendNotificationWithAuthHeader() throws InterruptedException {
+        String taskId = "task_send_auth";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg-auth")
+                .taskId(taskId)
+                .authentication(new org.a2aproject.sdk.spec.AuthenticationInfo("Bearer", "token123"))
+                .build();
+        configStore.setInfo(config);
+
+        testHttpClient.latch = new CountDownLatch(1);
+        sender.sendNotification(taskData, null);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals("Bearer token123", sentHeaders.get("Authorization"));
+    }
+
+    @Test
+    public void testSendNotificationRejectsCrlfInCredentials() throws InterruptedException {
+        String taskId = "task_send_crlf";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        // CRLF in client-controlled credentials must not be injected into the Authorization
+        // header (BUG-34). The notification is dropped instead of sending an injected header.
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg-crlf")
+                .taskId(taskId)
+                .authentication(new org.a2aproject.sdk.spec.AuthenticationInfo("Bearer", "token\r\nX-Injected: 1"))
+                .build();
+        configStore.setInfo(config);
+
+        sender.sendNotification(taskData, null);
+
+        // The header is never constructed with the injected value - no HTTP call is made
+        assertTrue(testHttpClient.events.isEmpty(), "Notification with CRLF credentials must not be dispatched");
+        assertTrue(testHttpClient.headers.isEmpty(), "No headers should have been sent");
+    }
+
+    @Test
+    public void testSendNotificationRejectsCrlfInScheme() throws InterruptedException {
+        String taskId = "task_send_crlf_scheme";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg-crlf-scheme")
+                .taskId(taskId)
+                .authentication(new org.a2aproject.sdk.spec.AuthenticationInfo("Bearer\nX-Injected: 1", "token"))
+                .build();
+        configStore.setInfo(config);
+
+        sender.sendNotification(taskData, null);
+
+        assertTrue(testHttpClient.events.isEmpty(), "Notification with CRLF scheme must not be dispatched");
+        assertTrue(testHttpClient.headers.isEmpty(), "No headers should have been sent");
+    }
 }
