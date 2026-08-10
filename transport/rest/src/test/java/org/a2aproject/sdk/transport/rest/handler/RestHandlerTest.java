@@ -23,6 +23,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
+import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentExtension;
@@ -31,6 +32,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.Mockito;
 
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
 public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
@@ -1094,5 +1096,34 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals("type.googleapis.com/google.rpc.ErrorInfo", detail.get("@type").getAsString(), "@type field mismatch");
         Assertions.assertEquals(expectedReason, detail.get("reason").getAsString(), "reason field mismatch");
         Assertions.assertEquals("a2a-protocol.org", detail.get("domain").getAsString(), "domain field mismatch");
+    }
+
+    @Test
+    public void testSendMessageSanitizesInternalError() {
+        // BUG-12/46: a non-A2AError exception must not leak its message to the client
+        RequestHandler mocked = Mockito.mock(RequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked).onMessageSend(Mockito.any(), Mockito.any());
+
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), mocked, internalExecutor);
+        String requestBody = """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{"text": "hello"}],
+                    "metadata": {}
+                  }
+                }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
+
+        JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
+        JsonObject error = body.getAsJsonObject("error");
+        Assertions.assertEquals(500, error.get("code").getAsInt());
+        Assertions.assertEquals("Internal error", error.get("message").getAsString());
+        Assertions.assertFalse(error.get("message").getAsString().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
     }
 }

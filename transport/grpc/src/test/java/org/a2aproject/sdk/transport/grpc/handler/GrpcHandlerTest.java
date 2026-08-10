@@ -652,6 +652,30 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testOnMessageInternalErrorIsSanitized() throws Exception {
+        // BUG-12/46: a non-A2AError exception must not leak its message to the client
+        DefaultRequestHandler mocked = Mockito.mock(DefaultRequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked).onMessageSend(Mockito.any(MessageSendParams.class), Mockito.any(ServerCallContext.class));
+        GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, mocked, internalExecutor);
+
+        org.a2aproject.sdk.grpc.SendMessageRequest request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder()
+                .setMessage(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<org.a2aproject.sdk.grpc.SendMessageResponse> responseObserver = StreamRecorder.create();
+        handler.sendMessage(request, responseObserver);
+        responseObserver.awaitCompletion(5, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(responseObserver.getError());
+        Assertions.assertInstanceOf(StatusRuntimeException.class, responseObserver.getError());
+        StatusRuntimeException sre = (StatusRuntimeException) responseObserver.getError();
+        Assertions.assertEquals(Status.Code.INTERNAL, sre.getStatus().getCode());
+        Assertions.assertEquals("Internal error", sre.getStatus().getDescription());
+        Assertions.assertFalse(sre.getStatus().getDescription().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
+    }
+
+    @Test
     public void testListPushNotificationConfig() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);

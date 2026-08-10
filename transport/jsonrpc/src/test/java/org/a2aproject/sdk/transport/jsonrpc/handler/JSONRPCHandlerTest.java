@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.transport.jsonrpc.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -1187,6 +1188,25 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageResponse response = handler.onMessageSend(request, callContext);
 
         assertInstanceOf(InternalError.class, response.getError());
+    }
+
+    @Test
+    public void testOnMessageSendSanitizesUnexpectedException() {
+        // BUG-12/46: a non-A2AError exception must not leak its message to the client
+        DefaultRequestHandler mocked = Mockito.mock(DefaultRequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked)
+                .onMessageSend(Mockito.any(MessageSendParams.class), Mockito.any(ServerCallContext.class));
+
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, mocked, internalExecutor);
+
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(MESSAGE, defaultConfiguration(), null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        assertInstanceOf(InternalError.class, response.getError());
+        assertEquals("Internal error", response.getError().getMessage());
+        assertFalse(response.getError().getMessage().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
     }
 
     @Test

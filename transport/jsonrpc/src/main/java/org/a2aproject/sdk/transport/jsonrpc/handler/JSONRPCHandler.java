@@ -5,6 +5,8 @@ import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
@@ -133,6 +135,8 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class JSONRPCHandler {
 
+    private static final Logger LOGGER = Logger.getLogger(JSONRPCHandler.class.getName());
+
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
     // final, is not proxyable in all runtimes
@@ -237,7 +241,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new SendMessageResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new SendMessageResponse(request.getId(), new InternalError(t.getMessage()));
+            return new SendMessageResponse(request.getId(), internalError(t));
         }
     }
 
@@ -297,7 +301,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(throwable.getMessage())));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
         }
     }
 
@@ -336,7 +340,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new CancelTaskResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new CancelTaskResponse(request.getId(), new InternalError(t.getMessage()));
+            return new CancelTaskResponse(request.getId(), internalError(t));
         }
     }
 
@@ -393,7 +397,7 @@ public class JSONRPCHandler {
             // Other A2AError types - wrap inline as part of the stream
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(throwable.getMessage())));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
         }
     }
 
@@ -434,7 +438,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetTaskPushNotificationConfigResponse(request.getId(), internalError(t));
         }
     }
 
@@ -476,7 +480,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new CreateTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new CreateTaskPushNotificationConfigResponse(request.getId(), internalError(t));
         }
     }
 
@@ -511,7 +515,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new GetTaskResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetTaskResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetTaskResponse(request.getId(), internalError(t));
         }
     }
 
@@ -558,7 +562,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new ListTasksResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new ListTasksResponse(request.getId(), new InternalError(t.getMessage()));
+            return new ListTasksResponse(request.getId(), internalError(t));
         }
     }
 
@@ -599,7 +603,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new ListTaskPushNotificationConfigsResponse(request.getId(), new InternalError(t.getMessage()));
+            return new ListTaskPushNotificationConfigsResponse(request.getId(), internalError(t));
         }
     }
 
@@ -640,7 +644,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new DeleteTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new DeleteTaskPushNotificationConfigResponse(request.getId(), internalError(t));
         }
     }
 
@@ -682,7 +686,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new GetExtendedAgentCardResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetExtendedAgentCardResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetExtendedAgentCardResponse(request.getId(), internalError(t));
         }
     }
 
@@ -729,8 +733,7 @@ public class JSONRPCHandler {
                             } else {
                                 tube.send(
                                         new SendStreamingMessageResponse(
-                                                requestId, new
-                                                InternalError(throwable.getMessage())));
+                                                requestId, internalError(throwable)));
                             }
                             onComplete();
                         }
@@ -746,5 +749,21 @@ public class JSONRPCHandler {
 
     public void authorizeTaskAccess(String requestedTaskId, ServerCallContext context, TaskOperation operation) {
         requestHandler.authorizeTaskAccess(requestedTaskId, context, operation);
+    }
+
+    /**
+     * Builds a client-safe {@link InternalError} for an unexpected exception (BUG-12/46).
+     * <p>
+     * The original exception (class, message, stack trace) is logged server-side but the
+     * client receives only a generic message: leaking internal exception messages can
+     * expose file paths, library names, and other implementation details that aid server
+     * fingerprinting (CWE-209).
+     *
+     * @param t the unexpected exception
+     * @return a sanitized internal error with a generic message
+     */
+    private static InternalError internalError(Throwable t) {
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
+        return new InternalError("Internal error");
     }
 }
