@@ -1075,7 +1075,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testVersionNotSupportedErrorOnGetTask() throws Exception {
-        // Regression test for BUG-33: getTask previously skipped A2A protocol version
+        // Regression test: getTask previously skipped A2A protocol version
         // and extension validation, unlike sendMessage/sendStreamingMessage.
         AgentCard agentCard = AgentCard.builder()
                 .name("test-card")
