@@ -388,7 +388,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void sendStreamingMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                                      StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new UnsupportedOperationError());
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
@@ -413,7 +414,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new UnsupportedOperationError());
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
