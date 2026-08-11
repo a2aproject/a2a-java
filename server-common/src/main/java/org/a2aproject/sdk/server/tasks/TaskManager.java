@@ -71,7 +71,7 @@ public class TaskManager {
             throws A2AServerException {
         checkIdsAndUpdateIfNecessary(task.id(), task.contextId());
         // Defensive state-machine check: a task that already reached a terminal state must
-        // not be overwritten by a task snapshot carrying a different state (BUG-43).
+        // not be overwritten by a task snapshot carrying a different state.
         Task current = getTask();
         if (current != null && current.status() != null && current.status().state() != null
                 && task.status() != null && task.status().state() != null) {
@@ -94,7 +94,7 @@ public class TaskManager {
         Task task = ensureTask(event.taskId(), event.contextId());
 
         // State-machine validation: reject transitions that would overwrite a terminal
-        // state with a different state (BUG-43). Re-arriving events carrying the same
+        // state with a different state. Re-arriving events carrying the same
         // final state remain allowed (idempotent replays / replication).
         TaskState currentState = task.status() != null ? task.status().state() : null;
         TaskState newState = event.status() != null ? event.status().state() : null;
@@ -247,7 +247,7 @@ public class TaskManager {
     }
 
     /**
-     * Validates a task state transition before it is persisted (BUG-43).
+     * Validates a task state transition before it is persisted.
      * <p>
      * A terminal (final) state must not be overwritten by a <em>different</em> state:
      * once a task is {@code COMPLETED}/{@code FAILED}/{@code CANCELED}/{@code REJECTED}

@@ -1155,7 +1155,6 @@ public class DefaultRequestHandlerTest {
     }
 
     @Test
-
     void testOnGetTaskHistoryLengthLimitsHistory() throws Exception {
         Task task = taskWithHistory("task-hl-limit");
         taskStore.save(task, false);
@@ -1195,6 +1194,11 @@ public class DefaultRequestHandlerTest {
 
 void testConcurrentCancelsAreSerialized() throws Exception {
         // BUG-44 regression: two concurrent cancels of the same task must serialize on a
+    }
+
+    void testConcurrentCancelsAreSerialized() throws Exception {
+        // Regression: two concurrent cancels of the same task must serialize on a
+ (chore: remove internal tracking ids from comments)
         // per-task lock so the second one observes the CANCELED terminal state and fails
         // with TaskNotCancelableError instead of both acting on the pre-transition state.
         Task workingTask = Task.builder()
@@ -1257,7 +1261,5 @@ void testConcurrentCancelsAreSerialized() throws Exception {
             releaseCancel.countDown();
             cancelExec.shutdownNow();
         }
->>>>>>> 9fcf9f46
-(fix: enforce task state-machine transitions and serialize cancels)
     }
 }

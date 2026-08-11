@@ -751,7 +751,7 @@ public class TaskManagerTest {
         taskStore.save(completedTask, false);
         TaskManager tm = new TaskManager("task-terminal", "ctx-1", taskStore, null);
 
-        // A status update to a different state after the terminal state must be rejected (BUG-43)
+        // A status update to a different state after the terminal state must be rejected
         TaskStatusUpdateEvent workingEvent = TaskStatusUpdateEvent.builder()
                 .taskId("task-terminal")
                 .contextId("ctx-1")
@@ -825,7 +825,7 @@ public class TaskManagerTest {
 
     @Test
     public void testNormalStateFlowAllowed() throws A2AServerException {
-        // SUBMITTED -> WORKING -> COMPLETED must keep working (BUG-43 must not break normal flows)
+        // SUBMITTED -> WORKING -> COMPLETED must keep working
         TaskManager tm = new TaskManager("task-flow", "ctx-1", taskStore, null);
 
         tm.saveTaskEvent(TaskStatusUpdateEvent.builder()

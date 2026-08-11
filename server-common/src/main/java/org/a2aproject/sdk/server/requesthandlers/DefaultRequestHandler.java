@@ -263,7 +263,7 @@ public class DefaultRequestHandler implements RequestHandler {
      * The cancel path reads the task, checks it is not already in a terminal state, and
      * then invokes the agent executor to enqueue the CANCELED event. Without a lock, two
      * concurrent cancels (or a cancel racing a concurrent completion) could both observe
-     * the pre-transition state and both act on it (BUG-44). Entries are retained for the
+     * the pre-transition state and both act on it. Entries are retained for the
      * lifetime of the JVM; the registry is bounded by the number of distinct tasks that
      * have ever been canceled, in the same way the in-memory task store is unbounded.
      */
@@ -479,7 +479,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
         // Serialize check-then-act per task so two concurrent cancels (or a cancel racing
-        // a concurrent completion) cannot both act on the pre-transition state (BUG-44).
+        // a concurrent completion) cannot both act on the pre-transition state.
         Object cancelLock = cancelLocks.computeIfAbsent(params.id(), k -> new Object());
         synchronized (cancelLock) {
             return doCancelTask(params, context);
