@@ -6,6 +6,8 @@ import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -169,6 +171,8 @@ import org.jspecify.annotations.Nullable;
  */
 @Singleton
 public class A2AServerRoutes {
+
+    private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
 
     @Inject
     JSONRPCHandler jsonRpcHandler;
@@ -337,7 +341,8 @@ public class A2AServerRoutes {
         } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
-            error = new A2AErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Failed to process request", t);
+            error = new A2AErrorResponse(new InternalError("Internal error"));
         } finally {
             if (error != null) {
                 rc.response()
