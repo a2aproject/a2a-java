@@ -692,7 +692,7 @@ public class RestHandler {
     }
 
     /**
-     * Builds a client-safe {@link InternalError} for an unexpected exception (BUG-12/46).
+     * Builds a client-safe {@link InternalError} for an unexpected exception.
      * <p>
      * The original exception (class, message, stack trace) is logged server-side but the
      * client receives only a generic message: leaking internal exception messages can

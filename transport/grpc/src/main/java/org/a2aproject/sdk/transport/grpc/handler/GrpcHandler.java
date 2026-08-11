@@ -823,8 +823,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     private <V> void handleInternalError(StreamObserver<V> responseObserver, Throwable t) {
-        // Log the full exception server-side but send only a generic message to the client
-        // (BUG-12/46): leaking internal exception messages can expose file paths, library
+        // Log the full exception server-side but send only a generic message to the client:
+        // leaking internal exception messages can expose file paths, library
         // names, and other implementation details that aid server fingerprinting (CWE-209).
         LOGGER.log(Level.SEVERE, "Internal error while processing gRPC request", t);
         handleError(responseObserver, new InternalError("Internal error"));

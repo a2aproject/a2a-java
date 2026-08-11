@@ -1192,7 +1192,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageSendSanitizesUnexpectedException() {
-        // BUG-12/46: a non-A2AError exception must not leak its message to the client
+        // A non-A2AError exception must not leak its message to the client
         DefaultRequestHandler mocked = Mockito.mock(DefaultRequestHandler.class);
         Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
                 .when(mocked)

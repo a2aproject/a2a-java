@@ -1100,7 +1100,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageSanitizesInternalError() {
-        // BUG-12/46: a non-A2AError exception must not leak its message to the client
+        // A non-A2AError exception must not leak its message to the client
         RequestHandler mocked = Mockito.mock(RequestHandler.class);
         Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
                 .when(mocked).onMessageSend(Mockito.any(), Mockito.any());
