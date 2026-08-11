@@ -214,6 +214,29 @@ public class EventConsumerTest {
     }
 
     @Test
+    public void testConsumeMessageEvents() throws Exception {
+        Message message = fromJson(MESSAGE_PAYLOAD, Message.class);
+        Message message2 = Message.builder(message).build();
+
+        List<Event> events = List.of(message, message2);
+
+        for (Event event : events) {
+            eventQueue.enqueueEvent(event);
+        }
+
+        Flow.Publisher<EventQueueItem> publisher = eventConsumer.consumeAll();
+        final List<Event> receivedEvents = new ArrayList<>();
+        final AtomicReference<Throwable> error = new AtomicReference<>();
+
+        publisher.subscribe(getSubscriber(receivedEvents, error));
+
+        assertNull(error.get());
+        // The stream is closed after the first Message
+        assertEquals(1, receivedEvents.size());
+        assertSame(message, receivedEvents.get(0));
+    }
+
+    @Test
     public void testBufferFlushDelayMsDefaultsTo150() {
         String original = System.getProperty("a2a.eventconsumer.bufferFlushDelayMs");
         try {

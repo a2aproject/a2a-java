@@ -245,13 +245,6 @@ public class EventConsumer {
                                 LOGGER.debug("Received A2AError event, treating as final event");
                                 isFinalEvent = true;
                             }
-                            // NOTE: A plain Message event is intentionally NOT stream-terminating.
-                            // Per the A2A protocol the stream MUST terminate only when the task reaches
-                            // a terminal state (completed, failed, canceled, rejected); an intermediate
-                            // message emitted before the agent finishes (or a message-only response that
-                            // still has follow-up events) must not close the stream early. The stream is
-                            // closed by a final status update/task, a QueueClosedEvent, an A2AError, or
-                            // the agent-completed grace period when no final event arrives.
 
                             // Only send event if it's not a QueueClosedEvent
                             // QueueClosedEvent is an internal coordination event used for replication
