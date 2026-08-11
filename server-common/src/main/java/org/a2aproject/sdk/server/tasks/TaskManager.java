@@ -182,13 +182,28 @@ public class TaskManager {
 
             // Only create status update if we have contextId
             if (errorContextId != null) {
-                LOGGER.debug("A2AError event detected, transitioning task {} to FAILED", taskId);
-                TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
-                        .taskId(taskId)
-                        .contextId(errorContextId)
-                        .status(new TaskStatus(TASK_STATE_FAILED))
-                        .build();
-                isFinal = saveTaskEvent(failedEvent, isReplicated, taskSnapshot);
+                // If the task is already in a terminal state, skip the state
+                // update entirely: the synthesized FAILED event would be rejected
+                // by the state-machine guard (terminal -> FAILED is a terminal-to-
+                // different-terminal transition), and the resulting exception would
+                // surface to clients as a misleading internal error. The A2AError
+                // itself still signals finality to clients.
+                Task existingTask = getTask();
+                TaskState currentState = existingTask != null && existingTask.status() != null
+                        ? existingTask.status().state() : null;
+                if (currentState != null && currentState.isFinal()) {
+                    LOGGER.debug("A2AError event for task {} already in terminal state {} - skipping state update",
+                            taskId, currentState);
+                    isFinal = true;
+                } else {
+                    LOGGER.debug("A2AError event detected, transitioning task {} to FAILED", taskId);
+                    TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
+                            .taskId(taskId)
+                            .contextId(errorContextId)
+                            .status(new TaskStatus(TASK_STATE_FAILED))
+                            .build();
+                    isFinal = saveTaskEvent(failedEvent, isReplicated, taskSnapshot);
+                }
             } else {
                 // Can't update status without contextId, but error is still terminal
                 LOGGER.debug("A2AError event for task {} without contextId - skipping state update", taskId);

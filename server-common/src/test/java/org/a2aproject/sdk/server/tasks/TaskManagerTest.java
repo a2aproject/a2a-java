@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.spec.A2AServerException;
+import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
@@ -857,5 +858,41 @@ public class TaskManagerTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build(), false);
 
         assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-interrupted").status().state());
+    }
+
+    @Test
+    public void testA2AErrorOnTerminalTaskSkipsStateUpdate() throws A2AServerException {
+        // Seed a COMPLETED task
+        Task completedTask = Task.builder()
+                .id("task-a2aerror-terminal")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        taskStore.save(completedTask, false);
+        TaskManager tm = new TaskManager("task-a2aerror-terminal", "ctx-1", taskStore, null);
+
+        // An A2AError for an already-terminal task must not attempt the FAILED
+        // transition (which the state machine rejects); process() returns true
+        // (final) without throwing and the terminal state is preserved.
+        A2AError error = new A2AError(-32603, "agent failed", null);
+        assertTrue(tm.process(error, false));
+
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStore.get("task-a2aerror-terminal").status().state());
+    }
+
+    @Test
+    public void testA2AErrorOnNonTerminalTaskTransitionsToFailed() throws A2AServerException {
+        Task workingTask = Task.builder()
+                .id("task-a2aerror-working")
+                .contextId("ctx-1")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build();
+        taskStore.save(workingTask, false);
+        TaskManager tm = new TaskManager("task-a2aerror-working", "ctx-1", taskStore, null);
+
+        A2AError error = new A2AError(-32603, "agent failed", null);
+        assertTrue(tm.process(error, false));
+
+        assertEquals(TaskState.TASK_STATE_FAILED, taskStore.get("task-a2aerror-working").status().state());
     }
 }
