@@ -61,7 +61,6 @@ import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -1047,7 +1046,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         });
 
         assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
+        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
             fail("Expected a response containing an error");
@@ -1094,7 +1093,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         });
 
         assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
+        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
             fail("Expected a response containing an error");

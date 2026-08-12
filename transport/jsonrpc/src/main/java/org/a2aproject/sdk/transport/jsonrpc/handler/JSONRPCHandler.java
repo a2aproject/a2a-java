@@ -46,7 +46,6 @@ import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
@@ -283,7 +282,7 @@ public class JSONRPCHandler {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
-                            new InvalidRequestError("Streaming is not supported by the agent")));
+                            new UnsupportedOperationError(null, "Streaming is not supported by the agent", null)));
         }
 
         try {
@@ -380,7 +379,7 @@ public class JSONRPCHandler {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
-                            new InvalidRequestError("Streaming is not supported by the agent")));
+                            new UnsupportedOperationError(null, "Streaming is not supported by the agent", null)));
         }
         requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {

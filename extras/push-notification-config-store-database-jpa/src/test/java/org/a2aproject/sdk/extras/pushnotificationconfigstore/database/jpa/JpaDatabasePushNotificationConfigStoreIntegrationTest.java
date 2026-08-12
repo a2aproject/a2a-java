@@ -28,6 +28,7 @@ import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Message;
@@ -580,5 +581,30 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
                 throw new RuntimeException("Interrupted while creating test samples", e);
             }
         }
+    }
+
+    @Test
+    @Transactional
+    public void testPushConfigLimitEnforced() {
+        String taskId = "task_limit_" + System.currentTimeMillis();
+        int limit = org.a2aproject.sdk.server.tasks.PushNotificationConfigStore.DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
+
+        // Register configs up to the limit.
+        for (int i = 0; i < limit; i++) {
+            TaskPushNotificationConfig config = createSamplePushConfig(
+                    "http://limit" + i + ".com/callback", "limit-cfg" + i, "token" + i);
+            pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
+        }
+
+        // The (limit+1)-th distinct config must be rejected.
+        TaskPushNotificationConfig extra = createSamplePushConfig(
+                "http://extra.com/callback", "limit-extra", "token-extra");
+        assertThrows(InvalidParamsError.class, () ->
+                pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(extra).taskId(taskId).build()));
+
+        // Re-registering an existing config ID at the limit is still allowed.
+        TaskPushNotificationConfig existing = createSamplePushConfig(
+                "http://limit0.com/callback-updated", "limit-cfg0", "token-updated");
+        pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(existing).taskId(taskId).build());
     }
 }

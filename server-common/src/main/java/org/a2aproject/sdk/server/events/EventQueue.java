@@ -532,9 +532,17 @@ public abstract class EventQueue implements AutoCloseable {
             // Submit to MainEventBus for centralized persistence + distribution
             // MainEventBus is guaranteed non-null by constructor requirement
             // Note: Replication now happens in MainEventBusProcessor AFTER persistence
-
-            // Submit event to MainEventBus with our taskId
-            mainEventBus.submit(taskId, this, item);
+            try {
+                // Submit event to MainEventBus with our taskId
+                mainEventBus.submit(taskId, this, item);
+            } catch (RuntimeException e) {
+                // The event never reached MainEventBusProcessor, so it will never call
+                // releaseSemaphore() (see MainEventBusProcessor.processEvent finally block).
+                // Release the permit here to avoid leaking it and eventually blocking
+                // all event processing for this task.
+                semaphore.release();
+                throw e;
+            }
         }
 
         /**
@@ -766,12 +774,16 @@ public abstract class EventQueue implements AutoCloseable {
 
     static class ChildQueue extends EventQueue {
         private final MainQueue parent;
-        private final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
+        private final BlockingQueue<EventQueueItem> queue;
         private volatile boolean immediateClose = false;
         private volatile boolean awaitingFinalEvent = false;
 
         public ChildQueue(MainQueue parent) {
             this.parent = parent;
+            // Bound the child queue with the same capacity as its parent so that a slow
+            // subscriber cannot grow the deque unboundedly. internalEnqueueItem() detects
+            // a full queue and closes the child immediately (see offer() below).
+            this.queue = new LinkedBlockingDeque<>(parent.getQueueSize());
         }
 
         @Override

@@ -1,5 +1,5 @@
 ---
-name: release
+name: release-a2a
 description: Guide maintainers through the multi-step release process — version bump, CI verification, tagging, Maven Central deployment, SNAPSHOT bump, and versioned documentation.
 compatibility: Requires gh CLI, mvn, and git
 allowed-tools: Bash(gh:*) Bash(mvn:*) Bash(git:*) Bash(./update-version.sh:*) Read Edit Write Glob Grep
@@ -21,22 +21,41 @@ Guide the full release lifecycle. Proceed autonomously through mechanical steps 
    - **Skip** for micro/patch releases (X.Y.Z where Z > 0)
    - **Ask** for pre-releases (Alpha/Beta/CR)
    - **Yes** for major/minor Final releases (X.Y.0.Final)
+6. **Detect git remotes.** Run `git remote -v` and identify:
+   - **Upstream remote**: the remote whose URL contains `a2aproject/a2a-java` (this is the canonical repo — it may be called `upstream`, `origin`, or anything else).
+   - **Fork remote**: a different remote owned by the current user (typically `origin`). Extract the fork owner from its URL (e.g., `kabir` from `github.com:kabir/a2a-java.git`).
+
+   Throughout this skill, `<upstream>` refers to the detected upstream remote name and `<fork>` refers to the fork remote name. All PRs are created from the fork, and tags/main are pushed to/pulled from upstream.
 
 ## Phase 1: Pre-Release Verification
 
-1. Verify clean working tree:
+1. Verify `gh` CLI is installed and authenticated:
+   ```bash
+   gh auth status
+   ```
+   If not installed or not logged in, stop and ask the user to run `gh auth login`.
+
+2. Verify clean working tree:
    ```bash
    git status
    ```
-   If there are uncommitted changes or we're not on `main`, stop and ask.
+   If there are uncommitted changes, stop and ask.
 
-2. Check latest CI status on main:
+3. Verify we are on `main` and in sync with upstream. Fetch first to ensure the remote ref is current:
    ```bash
-   gh run list --branch main --limit 5
+   git fetch <upstream> main
+   git log --oneline HEAD..<upstream>/main
+   git log --oneline <upstream>/main..HEAD
+   ```
+   If local main is behind or ahead of `<upstream>/main`, stop and ask the user.
+
+4. Check latest CI status on main:
+   ```bash
+   gh run list --repo a2aproject/a2a-java --branch main --limit 5
    ```
    If CI is failing, alert the user and stop.
 
-3. Confirm the current SNAPSHOT version in `pom.xml` matches expectations.
+5. Confirm the current SNAPSHOT version in `pom.xml` matches expectations.
 
 ## Phase 2: Version Bump & Release PR
 
@@ -56,24 +75,24 @@ Guide the full release lifecycle. Proceed autonomously through mechanical steps 
    ```
    If the build fails, stop and report.
 
-4. Create the release PR:
+4. Create the release PR (pushed from fork):
    ```bash
    git checkout -b release/<version>
    git add -A
    git commit -m "chore: release <version>"
-   git push origin release/<version>
-   gh pr create --title "chore: release <version>" --body "Release <version>"
+   git push <fork> release/<version>
+   gh pr create --repo a2aproject/a2a-java --head <fork-owner>:release/<version> --base main --title "chore: release <version>" --body "Release <version>"
    ```
 
 5. Wait for CI:
    ```bash
-   gh pr checks --watch
+   gh pr checks <pr-number> --repo a2aproject/a2a-java --watch
    ```
-   If there are flaky failures, rerun with `gh run rerun <run-id> --failed` and watch again.
+   If there are flaky failures, rerun with `gh run rerun <run-id> --repo a2aproject/a2a-java --failed` and watch again.
 
 6. **Ask the user for confirmation before merging.** Then merge:
    ```bash
-   gh pr merge --squash
+   gh pr merge <pr-number> --repo a2aproject/a2a-java --squash
    ```
 
 ## Phase 3: Tag & Deploy
@@ -81,7 +100,7 @@ Guide the full release lifecycle. Proceed autonomously through mechanical steps 
 1. Update local main:
    ```bash
    git checkout main
-   git pull origin main
+   git pull <upstream> main
    ```
 
 2. Create annotated tag:
@@ -93,18 +112,29 @@ Guide the full release lifecycle. Proceed autonomously through mechanical steps 
 
 4. Push the tag:
    ```bash
-   git push origin v<version>
+   git push <upstream> v<version>
    ```
    This triggers `release-to-maven-central.yml` and `create-github-release.yml`.
 
-## Phase 4: Documentation (conditional)
+## Phase 4: Documentation, SNAPSHOT Bump & Post-Release PR
+
+This phase combines documentation (when applicable) and the SNAPSHOT version bump into a single PR to avoid redundant CI waits.
+
+### Step 1: Update local main
+
+```bash
+git checkout main
+git pull <upstream> main
+```
+
+### Step 2: Documentation (conditional)
 
 Documentation is created before the SNAPSHOT bump so that Javadoc generation uses release version strings.
 
 **Decision rules:**
-- **Skip entirely** for micro/patch releases
+- **Skip** for micro/patch releases (X.Y.Z where Z > 0)
 - **Ask the user** for pre-releases (Alpha/Beta/CR)
-- **Always do** for major/minor Final releases
+- **Always do** for major/minor Final releases (X.Y.0.Final)
 
 When applicable:
 
@@ -131,67 +161,53 @@ When applicable:
 
 5. For pre-releases superseding a prior pre-release in the same X.Y.Z series: remove the old pre-release's content folder (`docs/content/<old-version_underscored>`), version yml (`docs/data/versions/<old-version>.yml`), and apidocs folder (`docs/public/<old-version_underscored>/apidocs/`).
 
-6. Generate Javadoc:
+6. Generate Javadoc. The `site-javadoc` profile outputs to `docs/public/dev/apidocs/`:
    ```bash
    mvn javadoc:aggregate -Psite-javadoc
-   mkdir -p docs/public/<version_underscored>/apidocs
-   cp -r target/reports/apidocs/* docs/public/<version_underscored>/apidocs/
+   cp -r docs/public/dev/apidocs docs/public/<version_underscored>/apidocs
    ```
    If the `site-javadoc` profile doesn't exist, note it and skip.
 
 7. Add Javadoc menu entry to the version yml if not already present.
 
-8. Create and merge a docs PR:
-   ```bash
-   git checkout -b docs/release-<version>
-   git add -A
-   git commit -m "docs: <version> release"
-   git push origin docs/release-<version>
-   gh pr create --title "docs: <version> release" --body "Versioned documentation for <version>"
-   gh pr checks --watch
-   ```
-   If there are flaky failures, rerun with `gh run rerun <run-id> --failed` and watch again.
-   Once CI passes, merge:
-   ```bash
-   gh pr merge --squash
-   ```
+### Step 3: Bump to next SNAPSHOT
 
-## Phase 5: Bump to Next SNAPSHOT
+```bash
+./update-version.sh <release-version> <next-SNAPSHOT>
+```
 
-1. Update local main:
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
+### Step 4: Create and merge the post-release PR
 
-2. Bump to next SNAPSHOT:
-   ```bash
-   ./update-version.sh <release-version> <next-SNAPSHOT>
-   ```
+Use the branch name and PR title/body based on what the PR contains:
+- **With docs**: branch `chore/post-release-<version>`, title `"chore: <version> docs and bump to <next-SNAPSHOT>"`, body `"Versioned documentation for <version> and bump to <next-SNAPSHOT>"`
+- **Without docs**: branch `chore/bump-to-<next-SNAPSHOT>`, title `"chore: bump version to <next-SNAPSHOT>"`, body `"Bump version to <next-SNAPSHOT>"`
 
-3. Create the SNAPSHOT PR:
-   ```bash
-   git checkout -b chore/bump-to-<next-SNAPSHOT>
-   git add -A
-   git commit -m "chore: bump version to <next-SNAPSHOT>"
-   git push origin chore/bump-to-<next-SNAPSHOT>
-   gh pr create --title "chore: bump version to <next-SNAPSHOT>" --body "Bump version to <next-SNAPSHOT>"
-   gh pr checks --watch
-   ```
-   If there are flaky failures, rerun with `gh run rerun <run-id> --failed` and watch again.
+```bash
+git checkout -b <branch-name>
+git add -A
+git commit -m "<commit-message>"
+git push <fork> <branch-name>
+gh pr create --repo a2aproject/a2a-java --head <fork-owner>:<branch-name> --base main --title "<title>" --body "<body>"
+gh pr checks <pr-number> --repo a2aproject/a2a-java --watch
+```
+If there are flaky failures, rerun with `gh run rerun <run-id> --repo a2aproject/a2a-java --failed` and watch again.
 
-4. Check that the Maven Central deployment workflow completed successfully:
-   ```bash
-   gh run list --workflow=release-to-maven-central.yml --limit 5
-   ```
-   If the release workflow failed, stop and guide troubleshooting (check logs — common causes: expired tokens, javadoc issues). May need to delete the tag and retag.
+### Step 5: Verify Maven Central deployment
 
-5. Merge the SNAPSHOT PR once everything is green:
-   ```bash
-   gh pr merge --squash
-   ```
+Check that the Maven Central deployment workflow completed successfully:
+```bash
+gh run list --repo a2aproject/a2a-java --workflow=release-to-maven-central.yml --limit 5
+```
+If the release workflow failed, stop and guide troubleshooting (check logs — common causes: expired tokens, javadoc issues). May need to delete the tag and retag.
 
-## Phase 6: Verify Deployment
+### Step 6: Merge
+
+Once CI and Maven Central deployment are both green:
+```bash
+gh pr merge <pr-number> --repo a2aproject/a2a-java --squash
+```
+
+## Phase 5: Verify Deployment
 
 Print the following URLs for the maintainer to check:
 

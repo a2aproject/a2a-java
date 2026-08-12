@@ -373,7 +373,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *
      * <p><b>Error Handling:</b>
      * <ul>
-     *   <li>Streaming not enabled → {@link org.a2aproject.sdk.spec.InvalidRequestError}</li>
+     *   <li>Streaming not enabled → {@link org.a2aproject.sdk.spec.UnsupportedOperationError}</li>
      *   <li>Other {@link A2AError} → mapped to appropriate gRPC status code</li>
      *   <li>{@link SecurityException} → {@code UNAUTHENTICATED} or {@code PERMISSION_DENIED}</li>
      *   <li>{@link Throwable} → {@code INTERNAL} error</li>
@@ -386,7 +386,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void sendStreamingMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                                      StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new InvalidRequestError());
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
@@ -409,7 +410,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new InvalidRequestError());
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 

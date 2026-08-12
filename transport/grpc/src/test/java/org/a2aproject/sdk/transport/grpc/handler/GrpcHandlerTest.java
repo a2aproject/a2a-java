@@ -625,7 +625,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
-        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
     @Test
@@ -639,7 +639,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.subscribeToTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
-        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
     @Test

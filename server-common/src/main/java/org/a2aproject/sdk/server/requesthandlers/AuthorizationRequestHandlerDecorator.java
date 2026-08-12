@@ -173,6 +173,25 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
         }
     }
 
+    /**
+     * List-scoped read check for {@code onListTasks}.
+     * <p>
+     * {@code LIST_TASKS} has no single task ID, so the provider is invoked with an
+     * empty-string sentinel representing the whole list scope (a {@code null} task ID
+     * would break providers that key lookups on the task ID, e.g.
+     * {@code ConcurrentHashMap}-backed stores). Denying the check rejects the call
+     * outright; otherwise per-task {@code checkRead} filtering is applied by the
+     * {@code TaskStore} during {@code list()}.
+     */
+    private static final String LIST_TASKS_SCOPE_ID = "";
+
+    private void enforceListRead(ServerCallContext context) throws A2AError {
+        if (authorizationProvider != null
+                && !authorizationProvider.checkRead(context, LIST_TASKS_SCOPE_ID, TaskOperation.LIST_TASKS)) {
+            throw new TaskNotFoundError();
+        }
+    }
+
     @Override
     public Task onGetTask(TaskQueryParams params, ServerCallContext context) throws A2AError {
         enforceRead(context, params.id(), TaskOperation.GET_TASK);
@@ -181,6 +200,8 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
 
     @Override
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
+        // List-scoped read check; per-task filtering is additionally applied by the TaskStore.
+        enforceListRead(context);
         return delegate.onListTasks(params, context);
     }
 

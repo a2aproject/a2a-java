@@ -420,7 +420,9 @@ public class DefaultRequestHandler implements RequestHandler {
      * @return the task with limited history, or the original task if no limiting needed
      */
     private static Task limitTaskHistory(Task task, @Nullable Integer historyLength) {
-        if (task.history() == null || historyLength == null || historyLength >= task.history().size()) {
+        // Negative values leave history untouched (defensive guard against IndexOutOfBoundsException)
+        if (task.history() == null || historyLength == null || historyLength < 0
+                || historyLength >= task.history().size()) {
             return task;
         }
         // Keep only the most recent historyLength messages

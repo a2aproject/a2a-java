@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -23,6 +24,7 @@ import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Artifact;
+import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -35,6 +37,9 @@ import org.a2aproject.sdk.spec.TextPart;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class PushNotificationSenderTest {
 
@@ -515,5 +520,72 @@ public class PushNotificationSenderTest {
         formatterSender.sendNotification(taskData, taskData);
 
         assertTrue(testHttpClient.rawBodies.isEmpty());
+    }
+
+    @Test
+    public void testSendNotificationRejectsCrlfInToken() {
+        String taskId = "task_send_crlf_token";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId, "http://notify.me/here", "cfg-crlf-token",
+                "token\r\nX-Injected: 1");
+        configStore.setInfo(config);
+
+        // No latch needed: sendNotification() calls dispatchResult.get(), which blocks until
+        // all CompletableFuture dispatches complete, including the CRLF rejection path.
+        sender.sendNotification(taskData, null);
+
+        assertTrue(testHttpClient.events.isEmpty(), "Notification with CRLF token must not be dispatched");
+        assertTrue(testHttpClient.headers.isEmpty(), "No headers should have been sent");
+        assertTrue(testHttpClient.rawBodies.isEmpty(), "No body should have been sent");
+    }
+
+    @Test
+    public void testSendNotificationWithAuthHeader() throws InterruptedException {
+        String taskId = "task_send_auth";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg-auth")
+                .taskId(taskId)
+                .authentication(new AuthenticationInfo("Bearer", "token123"))
+                .build();
+        configStore.setInfo(config);
+
+        testHttpClient.latch = new CountDownLatch(1);
+        sender.sendNotification(taskData, null);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+        assertEquals(1, testHttpClient.events.size());
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals("Bearer token123", sentHeaders.get("Authorization"));
+    }
+
+    static Stream<Arguments> crlfAuthVectors() {
+        return Stream.of(
+                Arguments.of("CRLF in credentials", "Bearer", "token\r\nX-Injected: 1"),
+                Arguments.of("LF in scheme", "Bearer\nX-Injected: 1", "token"),
+                Arguments.of("bare CR in credentials", "Bearer", "token\rX-Injected: 1"),
+                Arguments.of("bare CR in scheme", "Bearer\rX-Injected: 1", "token"));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("crlfAuthVectors")
+    public void testSendNotificationRejectsCrlfInAuthFields(String description, String scheme, String credentials) {
+        String taskId = "task_send_crlf_auth";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg-crlf")
+                .taskId(taskId)
+                .authentication(new AuthenticationInfo(scheme, credentials))
+                .build();
+        configStore.setInfo(config);
+
+        sender.sendNotification(taskData, null);
+
+        assertTrue(testHttpClient.events.isEmpty(), "Notification with " + description + " must not be dispatched");
+        assertTrue(testHttpClient.headers.isEmpty(), "No headers should have been sent");
+        assertTrue(testHttpClient.rawBodies.isEmpty(), "No body should have been sent");
     }
 }
