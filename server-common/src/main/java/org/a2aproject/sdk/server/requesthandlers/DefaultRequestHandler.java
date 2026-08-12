@@ -482,7 +482,16 @@ public class DefaultRequestHandler implements RequestHandler {
         // a concurrent completion) cannot both act on the pre-transition state.
         Object cancelLock = cancelLocks.computeIfAbsent(params.id(), k -> new Object());
         synchronized (cancelLock) {
-            return doCancelTask(params, context);
+            try {
+                return doCancelTask(params, context);
+            } finally {
+                // After doCancelTask returns (successfully or via TaskNotCancelableError),
+                // the task is in a terminal state, so no future cancel can succeed — the
+                // state-machine guard rejects it even without the lock. Drop the entry to
+                // avoid unbounded growth of the map. The 2-arg remove keeps a concurrently
+                // created newer lock entry (for a future, already-terminal task) intact.
+                cancelLocks.remove(params.id(), cancelLock);
+            }
         }
     }
 

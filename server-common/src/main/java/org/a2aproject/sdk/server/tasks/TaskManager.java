@@ -182,27 +182,21 @@ public class TaskManager {
 
             // Only create status update if we have contextId
             if (errorContextId != null) {
-                // If the task is already in a terminal state, skip the state
-                // update entirely: the synthesized FAILED event would be rejected
-                // by the state-machine guard (terminal -> FAILED is a terminal-to-
-                // different-terminal transition), and the resulting exception would
-                // surface to clients as a misleading internal error. The A2AError
-                // itself still signals finality to clients.
-                Task existingTask = getTask();
-                TaskState currentState = existingTask != null && existingTask.status() != null
-                        ? existingTask.status().state() : null;
-                if (currentState != null && currentState.isFinal()) {
-                    LOGGER.debug("A2AError event for task {} already in terminal state {} - skipping state update",
-                            taskId, currentState);
-                    isFinal = true;
-                } else {
-                    LOGGER.debug("A2AError event detected, transitioning task {} to FAILED", taskId);
-                    TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
-                            .taskId(taskId)
-                            .contextId(errorContextId)
-                            .status(new TaskStatus(TASK_STATE_FAILED))
-                            .build();
+                LOGGER.debug("A2AError event detected, transitioning task {} to FAILED", taskId);
+                TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId(errorContextId)
+                        .status(new TaskStatus(TASK_STATE_FAILED))
+                        .build();
+                try {
                     isFinal = saveTaskEvent(failedEvent, isReplicated, taskSnapshot);
+                } catch (A2AServerException e) {
+                    // Task already in a terminal state: the state-machine guard in
+                    // validateStateTransition rejected the synthesized FAILED event
+                    // (terminal -> FAILED). No state update is needed — the A2AError
+                    // itself still signals finality to clients.
+                    LOGGER.debug("A2AError for task {} already in terminal state - skipping state update", taskId);
+                    isFinal = true;
                 }
             } else {
                 // Can't update status without contextId, but error is still terminal
