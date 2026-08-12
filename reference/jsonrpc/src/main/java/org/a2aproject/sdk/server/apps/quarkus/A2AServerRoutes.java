@@ -6,8 +6,6 @@ import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -81,6 +79,8 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Quarkus routing configuration for JSON-RPC A2A protocol requests.
@@ -341,7 +341,7 @@ public class A2AServerRoutes {
         } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             error = new A2AErrorResponse(new InternalError("Internal error"));
         } finally {
             if (error != null) {

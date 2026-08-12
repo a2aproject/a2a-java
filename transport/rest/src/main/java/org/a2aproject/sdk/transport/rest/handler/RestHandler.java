@@ -671,7 +671,8 @@ public class RestHandler {
             String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
             return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
-            return createErrorResponse(new InternalError("Failed to serialize response: " + e.getMessage()));
+            log.log(Level.SEVERE, "Failed to serialize response", e);
+            return createErrorResponse(new InternalError("Internal error"));
         }
     }
 

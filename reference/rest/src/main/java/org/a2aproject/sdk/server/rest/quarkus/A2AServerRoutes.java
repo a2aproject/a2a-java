@@ -7,8 +7,6 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.HEADERS_
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +54,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
@@ -310,7 +310,7 @@ public class A2AServerRoutes {
         try {
             response = jsonRestHandler.sendMessage(context, extractTenant(rc), body);
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
@@ -429,7 +429,7 @@ public class A2AServerRoutes {
         } catch (IllegalArgumentException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
@@ -464,7 +464,7 @@ public class A2AServerRoutes {
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
@@ -499,7 +499,7 @@ public class A2AServerRoutes {
             if (t instanceof A2AError error) {
                 response = jsonRestHandler.createErrorResponse(error);
             } else {
-                LOG.error("Failed to process request", t);
+                LOG.error("Internal error while processing request", t);
                 response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
             }
         } finally {
@@ -610,7 +610,7 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
@@ -642,7 +642,7 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
@@ -688,7 +688,7 @@ public class A2AServerRoutes {
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
@@ -722,7 +722,7 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            LOG.error("Failed to process request", t);
+            LOG.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
