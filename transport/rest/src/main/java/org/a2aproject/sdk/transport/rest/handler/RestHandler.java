@@ -293,7 +293,7 @@ public class RestHandler {
     public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
         try {
             if (!agentCard.capabilities().streaming()) {
-                return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
+                return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
             A2AVersionValidator.validateProtocolVersion(agentCard, context);
             A2AExtensions.validateRequiredExtensions(agentCard, context);
@@ -425,7 +425,7 @@ public class RestHandler {
     public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
         try {
             if (!agentCard.capabilities().streaming()) {
-                return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
+                return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
             TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             try {
