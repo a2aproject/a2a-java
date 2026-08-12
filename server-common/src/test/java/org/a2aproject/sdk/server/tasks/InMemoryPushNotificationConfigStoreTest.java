@@ -5,6 +5,7 @@ import static org.a2aproject.sdk.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -17,6 +18,7 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Task;
@@ -657,6 +659,57 @@ class InMemoryPushNotificationConfigStoreTest {
 
         assertEquals(7, totalCollected, "Should collect all 7 configs across all pages");
         assertEquals(3, pageCount, "Should have exactly 3 pages (3+3+1)");
+    }
+
+    @Test
+    public void testSetInfoAtLimitExactlyAllowed() {
+        String taskId = "task_limit_exact";
+        for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
+    }
+
+    @Test
+    public void testSetInfoRejectsExceedingPerTaskLimit() {
+        String taskId = "task_limit_exceed";
+        for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        // The (MAX+1)-th distinct config for the same task must be rejected
+        TaskPushNotificationConfig overflow = createSamplePushConfig(taskId,
+                "http://url-overflow.com/callback", "cfg-overflow", null);
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(overflow));
+
+        // The store is unchanged
+        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
+        assertTrue(result.configs().stream().noneMatch(c -> "cfg-overflow".equals(c.id())));
+    }
+
+    @Test
+    public void testSetInfoUpdateExistingConfigAtLimitAllowed() {
+        String taskId = "task_limit_update";
+        for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        // Updating an existing config at the limit must still be allowed
+        TaskPushNotificationConfig updated = createSamplePushConfig(taskId,
+                "http://url-updated.com/callback", "cfg0", "new-token");
+        TaskPushNotificationConfig result = configStore.setInfo(updated);
+
+        assertEquals("cfg0", result.id());
+        ListTaskPushNotificationConfigsResult configs = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, configs.configs().size());
+        assertEquals("http://url-updated.com/callback",
+                configs.configs().stream().filter(c -> "cfg0".equals(c.id())).findFirst().orElseThrow().url());
     }
 
 }

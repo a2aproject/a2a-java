@@ -65,6 +65,15 @@ a2a.request-context.populate-referred-tasks=true
 
 When enabled, task IDs referenced in incoming messages are looked up in the `TaskStore` and made available to the `AgentExecutor` via `RequestContext.getRelatedTasks()`. This is useful for multi-task conversations where the agent needs access to state from related tasks. Enabled by default; set to `false` to avoid extra `TaskStore` lookups when not needed.
 
+### Push Notification Config Store
+
+```properties
+# Maximum push notification configs per task (default: 100)
+a2a.push-notification-config.max-per-task=100
+```
+
+Limits the number of distinct push notification configurations a single task may register. Each config consumes memory and can trigger an outbound HTTP request on every task event. Re-registering an existing config ID (updating it) does not count against the limit. Both `InMemoryPushNotificationConfigStore` and `JpaDatabasePushNotificationConfigStore` enforce this limit, throwing `InvalidParamsError` when exceeded.
+
 ### Tuning Guidelines
 
 - **Streaming Performance**: The executor handles streaming subscriptions. Too few threads can cause timeouts under concurrent load.
