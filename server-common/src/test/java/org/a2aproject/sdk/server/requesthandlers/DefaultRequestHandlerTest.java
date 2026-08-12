@@ -1191,14 +1191,11 @@ public class DefaultRequestHandlerTest {
                                 .parts(new TextPart("three")).build()))
                 .artifacts(List.of())
                 .build();
-
-void testConcurrentCancelsAreSerialized() throws Exception {
-        // BUG-44 regression: two concurrent cancels of the same task must serialize on a
     }
 
+    @Test
     void testConcurrentCancelsAreSerialized() throws Exception {
         // Regression: two concurrent cancels of the same task must serialize on a
- (chore: remove internal tracking ids from comments)
         // per-task lock so the second one observes the CANCELED terminal state and fails
         // with TaskNotCancelableError instead of both acting on the pre-transition state.
         Task workingTask = Task.builder()
