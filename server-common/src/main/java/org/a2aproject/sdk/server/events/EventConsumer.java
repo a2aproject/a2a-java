@@ -228,9 +228,9 @@ public class EventConsumer {
                             boolean isFinalEvent = false;
                             if (event instanceof TaskStatusUpdateEvent tue && tue.isFinal()) {
                                 isFinalEvent = true;
-                            } else if (event instanceof Message) {
-                                // Per A2A spec §3.1.2 (Send Streaming Message): a Message is the
-                                // complete response — the stream must close after delivering it.
+                            } else if (event instanceof Message && lastSeenTaskState == null) {
+                                // A stateless Message is the complete response. Messages emitted
+                                // after a task has started are intermediate task stream events.
                                 isFinalEvent = true;
                             } else if (event instanceof Task task) {
                                 isFinalEvent = isStreamTerminatingTask(task);

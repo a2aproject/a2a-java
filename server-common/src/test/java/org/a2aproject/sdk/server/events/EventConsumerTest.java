@@ -237,6 +237,41 @@ public class EventConsumerTest {
     }
 
     @Test
+    public void testConsumeTaskMessageBeforeInputRequired() throws Exception {
+        Task workingTask = Task.builder()
+                .id(TASK_ID)
+                .contextId("session-xyz")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build();
+        Message message = fromJson(MESSAGE_PAYLOAD, Message.class);
+        TaskStatusUpdateEvent inputRequiredEvent = TaskStatusUpdateEvent.builder()
+                .taskId(TASK_ID)
+                .contextId("session-xyz")
+                .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
+                .build();
+        TaskStatusUpdateEvent completedEvent = TaskStatusUpdateEvent.builder()
+                .taskId(TASK_ID)
+                .contextId("session-xyz")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        List<Event> events = List.of(workingTask, message, inputRequiredEvent, completedEvent);
+
+        for (Event event : events) {
+            eventQueue.enqueueEvent(event);
+        }
+
+        List<Event> receivedEvents = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        eventConsumer.consumeAll().subscribe(getSubscriber(receivedEvents, error));
+
+        assertNull(error.get());
+        assertEquals(events.size(), receivedEvents.size());
+        for (int i = 0; i < events.size(); i++) {
+            assertSame(events.get(i), receivedEvents.get(i));
+        }
+    }
+
+    @Test
     public void testBufferFlushDelayMsDefaultsTo150() {
         String original = System.getProperty("a2a.eventconsumer.bufferFlushDelayMs");
         try {
