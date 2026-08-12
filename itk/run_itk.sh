@@ -50,12 +50,15 @@ if git symbolic-ref -q HEAD > /dev/null; then
 fi
 cd ..
 
-# 2. Build itk_service container image from root of a2a-itk
-CONTAINER_BUILD_ARGS=""
-if [ "$CONTAINER_RT" = "podman" ]; then
-  CONTAINER_BUILD_ARGS="--format docker"
+# 2. Build itk_service container image from root of a2a-itk (skipped in CI
+# where the workflow builds via docker/build-push-action for GHA caching).
+if [ "${ITK_SKIP_BUILD:-0}" != "1" ]; then
+  CONTAINER_BUILD_ARGS=""
+  if [ "$CONTAINER_RT" = "podman" ]; then
+    CONTAINER_BUILD_ARGS="--format docker"
+  fi
+  $CONTAINER_RT build $CONTAINER_BUILD_ARGS -t itk_service a2a-itk
 fi
-$CONTAINER_RT build $CONTAINER_BUILD_ARGS -t itk_service a2a-itk
 
 # 3. Start container service with a single mount: the a2a-java repo
 A2A_JAVA_ROOT=$(cd .. && pwd)
@@ -73,12 +76,22 @@ if [ "${ITK_LOG_LEVEL^^}" = "DEBUG" ]; then
   DOCKER_MOUNT_LOGS="-v $(pwd)/logs:/app/logs"
 fi
 
+mkdir -p "$HOME/.cache/a2a-itk-launcher"
+
 $CONTAINER_RT run -d --name itk-service \
   -v "$A2A_JAVA_ROOT:/app/agents/repo" \
+  -v "$HOME/.cache/a2a-itk-launcher:/root/.cache/a2a-itk" \
   $DOCKER_MOUNT_LOGS \
   -e ITK_LOG_LEVEL="$ITK_LOG_LEVEL" \
+  -e ITK_ENTRYPOINT="${ITK_ENTRYPOINT:-itk_service_v2.py}" \
+  -e ITK_READINESS_TIMEOUT="${ITK_READINESS_TIMEOUT:-180}" \
+  -e ITK_MAX_WORKERS="${ITK_MAX_WORKERS:-2}" \
   -p 8000:8000 \
   itk_service
+
+# Launcher's peer checkouts under /root/.cache/a2a-itk are host-owned; trust
+# every path so container-side git accepts them.
+$CONTAINER_RT exec itk-service git config --system --add safe.directory '*'
 
 # 4. Verify service is up and send post request
 MAX_RETRIES=30
