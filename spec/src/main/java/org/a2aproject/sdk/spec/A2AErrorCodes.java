@@ -26,7 +26,7 @@ public enum A2AErrorCodes {
     PUSH_NOTIFICATION_NOT_SUPPORTED(-32003, "UNIMPLEMENTED", 400),
 
     /** Error code indicating the requested operation is not supported (-32004). */
-    UNSUPPORTED_OPERATION(-32004, "UNIMPLEMENTED", 400),
+    UNSUPPORTED_OPERATION(-32004, "FAILED_PRECONDITION", 400),
 
     /** Error code indicating the content type is not supported (-32005). */
     CONTENT_TYPE_NOT_SUPPORTED(-32005, "INVALID_ARGUMENT", 415),

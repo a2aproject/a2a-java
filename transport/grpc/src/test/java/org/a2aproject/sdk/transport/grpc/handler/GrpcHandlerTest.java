@@ -161,7 +161,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         handler.cancelTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
 
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -218,7 +218,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.fail(new UnsupportedOperationError());
         };
         StreamRecorder<SendMessageResponse> streamRecorder = sendMessageRequest(handler);
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -286,7 +286,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = getTaskPushNotificationConfigRequest(handler,
                 AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -301,7 +301,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler,
                 AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -625,7 +625,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -639,7 +639,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.subscribeToTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -735,7 +735,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         StreamRecorder<ListTaskPushNotificationConfigsResponse> streamRecorder = StreamRecorder.create();
         handler.listTaskPushNotificationConfigs(request, streamRecorder);
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Test
@@ -806,7 +806,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         StreamRecorder<Empty> streamRecorder = StreamRecorder.create();
         handler.deleteTaskPushNotificationConfig(request, streamRecorder);
-        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
     }
 
     @Disabled

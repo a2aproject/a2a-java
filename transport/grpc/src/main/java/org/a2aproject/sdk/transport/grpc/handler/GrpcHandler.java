@@ -119,7 +119,7 @@ import org.jspecify.annotations.Nullable;
  *   <li>{@link org.a2aproject.sdk.spec.MethodNotFoundError} → {@link Status#NOT_FOUND}</li>
  *   <li>{@link org.a2aproject.sdk.spec.TaskNotFoundError} → {@link Status#NOT_FOUND}</li>
  *   <li>{@link org.a2aproject.sdk.spec.InternalError} → {@link Status#INTERNAL}</li>
- *   <li>{@link org.a2aproject.sdk.spec.UnsupportedOperationError} → {@link Status#UNIMPLEMENTED}</li>
+ *   <li>{@link org.a2aproject.sdk.spec.UnsupportedOperationError} → {@link Status#FAILED_PRECONDITION}</li>
  *   <li>{@link SecurityException} → {@link Status#UNAUTHENTICATED} or {@link Status#PERMISSION_DENIED}</li>
  * </ul>
  *
@@ -746,7 +746,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *   <li>{@link TaskNotFoundError} → {@code NOT_FOUND}</li>
      *   <li>{@link TaskNotCancelableError} → {@code FAILED_PRECONDITION}</li>
      *   <li>{@link PushNotificationNotSupportedError} → {@code UNIMPLEMENTED}</li>
-     *   <li>{@link UnsupportedOperationError} → {@code UNIMPLEMENTED}</li>
+     *   <li>{@link UnsupportedOperationError} → {@code FAILED_PRECONDITION}</li>
      *   <li>{@link JSONParseError} → {@code INTERNAL}</li>
      *   <li>{@link ContentTypeNotSupportedError} → {@code INVALID_ARGUMENT}</li>
      *   <li>{@link InvalidAgentResponseError} → {@code INTERNAL}</li>

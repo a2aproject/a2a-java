@@ -109,7 +109,7 @@ public class GrpcErrorMapperTest {
     public void testUnsupportedOperationErrorUnmarshalling() {
         String errorMessage = "Operation not supported";
         StatusRuntimeException grpcException = createA2AStatusException(
-                Status.Code.UNIMPLEMENTED.value(), errorMessage, "UNSUPPORTED_OPERATION");
+                Status.Code.FAILED_PRECONDITION.value(), errorMessage, "UNSUPPORTED_OPERATION");
 
         A2AClientException result = GrpcErrorMapper.mapGrpcError(grpcException);
 
