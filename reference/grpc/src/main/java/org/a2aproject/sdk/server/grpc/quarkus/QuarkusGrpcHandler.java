@@ -1,17 +1,26 @@
 package org.a2aproject.sdk.server.grpc.quarkus;
 
+import static java.util.Locale.ROOT;
+
 import java.util.concurrent.Executor;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.grpc.quarkus.registry.GrpcAgent;
+import org.a2aproject.sdk.server.grpc.quarkus.registry.MultiAgentRegistry;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.InvalidRequestError;
+import org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys;
 import org.a2aproject.sdk.transport.grpc.handler.CallContextFactory;
 import org.a2aproject.sdk.transport.grpc.handler.GrpcHandler;
+import io.grpc.Context;
+import io.grpc.Metadata;
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.grpc.RegisterInterceptor;
 import io.quarkus.security.Authenticated;
@@ -74,10 +83,14 @@ import org.jspecify.annotations.Nullable;
 @Blocking
 public class QuarkusGrpcHandler extends GrpcHandler {
 
-    private final AgentCard agentCard;
-    private final AgentCard extendedAgentCard;
-    private final RequestHandler requestHandler;
+    private static final Metadata.Key<String> AGENT_ID_KEY =
+            Metadata.Key.of(A2AHeaders.X_A2A_AGENT_ID.toLowerCase(ROOT), Metadata.ASCII_STRING_MARSHALLER);
+
+    private final Instance<AgentCard> agentCardInstance;
+    private final Instance<AgentCard> extendedAgentCardInstance;
+    private final Instance<RequestHandler> requestHandlerInstance;
     private final Instance<CallContextFactory> callContextFactoryInstance;
+    private final Instance<MultiAgentRegistry> multiAgentRegistryInstance;
     private final Executor executor;
 
     /**
@@ -99,42 +112,80 @@ public class QuarkusGrpcHandler extends GrpcHandler {
      *   <li>{@code callContextFactoryInstance} - Custom context factory (can be unsatisfied)</li>
      * </ul>
      *
-     * @param agentCard the public agent card (qualified with {@code @PublicAgentCard})
+     * @param agentCard the public agent card instance (qualified with {@code @PublicAgentCard}); may be
+     *     unresolvable when every agent is served through a {@link MultiAgentRegistry}
      * @param extendedAgentCard the extended agent card instance (qualified with {@code @ExtendedAgentCard})
-     * @param requestHandler the request handler for protocol operations
+     * @param requestHandler the request handler instance for protocol operations; may be unresolvable
+     *     when every agent is served through a {@link MultiAgentRegistry}
      * @param callContextFactoryInstance the call context factory instance (optional)
+     * @param multiAgentRegistryInstance the multi-agent registry instance (optional)
      * @param executor the executor for async operations (qualified with {@code @Internal})
      */
     @Inject
-    public QuarkusGrpcHandler(@PublicAgentCard AgentCard agentCard,
+    public QuarkusGrpcHandler(@PublicAgentCard Instance<AgentCard> agentCard,
                               @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-                              RequestHandler requestHandler,
+                              Instance<RequestHandler> requestHandler,
                               Instance<CallContextFactory> callContextFactoryInstance,
+                              Instance<MultiAgentRegistry> multiAgentRegistryInstance,
                               @Internal Executor executor) {
-        this.agentCard = agentCard;
-        if (extendedAgentCard != null && extendedAgentCard.isResolvable()) {
-            this.extendedAgentCard = extendedAgentCard.get();
-        } else {
-            this.extendedAgentCard = null;
-        }
-        this.requestHandler = requestHandler;
+        this.agentCardInstance = agentCard;
+        this.extendedAgentCardInstance = extendedAgentCard;
+        this.requestHandlerInstance = requestHandler;
         this.callContextFactoryInstance = callContextFactoryInstance;
+        this.multiAgentRegistryInstance = multiAgentRegistryInstance;
         this.executor = executor;
     }
 
     @Override
     protected RequestHandler getRequestHandler() {
-        return requestHandler;
+        return resolveAgent().requestHandler();
     }
 
     @Override
     protected AgentCard getAgentCard() {
-        return agentCard;
+        return resolveAgent().agentCard();
     }
 
     @Override
     protected AgentCard getExtendedAgentCard() {
-        return extendedAgentCard;
+        return resolveAgent().extendedAgentCard();
+    }
+
+    /**
+     * Resolves which agent should serve the current call.
+     *
+     * <p>If a {@link MultiAgentRegistry} bean is present, the agent is selected using the
+     * {@code X-A2A-Agent-Id} gRPC metadata header sent with the call. If the header is absent,
+     * or names an agent not present in the registry, falls back to the default single-agent
+     * {@code @PublicAgentCard} / {@link RequestHandler} beans, if configured.
+     *
+     * @return the resolved agent's card and request handler
+     * @throws InvalidRequestError if no agent could be resolved for this call
+     */
+    private GrpcAgent resolveAgent() {
+        if (multiAgentRegistryInstance.isResolvable()) {
+            String agentId = currentAgentId();
+            GrpcAgent agent = agentId != null ? multiAgentRegistryInstance.get().getAgents().get(agentId) : null;
+            if (agent != null) {
+                return agent;
+            }
+        }
+        if (agentCardInstance.isResolvable() && requestHandlerInstance.isResolvable()) {
+            AgentCard extendedAgentCard = extendedAgentCardInstance.isResolvable() ? extendedAgentCardInstance.get() : null;
+            return new GrpcAgent(agentCardInstance.get(), extendedAgentCard, requestHandlerInstance.get());
+        }
+        throw new InvalidRequestError("No agent configured for this request");
+    }
+
+    /**
+     * Extracts the {@code X-A2A-Agent-Id} header from the current gRPC call's metadata, as
+     * captured by {@link org.a2aproject.sdk.server.grpc.quarkus.A2AExtensionsInterceptor}.
+     *
+     * @return the requested agent ID, or null if not present
+     */
+    private @Nullable String currentAgentId() {
+        Metadata metadata = GrpcContextKeys.METADATA_KEY.get(Context.current());
+        return metadata != null ? metadata.get(AGENT_ID_KEY) : null;
     }
 
     @Override

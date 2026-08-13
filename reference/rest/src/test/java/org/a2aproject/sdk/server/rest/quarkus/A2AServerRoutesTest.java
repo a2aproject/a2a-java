@@ -28,6 +28,7 @@ import java.util.concurrent.Executor;
 import jakarta.enterprise.inject.Instance;
 
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.rest.quarkus.registry.MultiAgentRegistry;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
@@ -71,8 +72,16 @@ public class A2AServerRoutesTest {
         mockParams = MultiMap.caseInsensitiveMultiMap();
         mockRequestBody = mock(RequestBody.class);
 
+        Instance<RestHandler> mockJsonRestHandlerInstance = mock(Instance.class);
+        when(mockJsonRestHandlerInstance.isResolvable()).thenReturn(true);
+        when(mockJsonRestHandlerInstance.get()).thenReturn(mockRestHandler);
+
+        Instance<MultiAgentRegistry> mockMultiAgentRegistry = mock(Instance.class);
+        when(mockMultiAgentRegistry.isResolvable()).thenReturn(false);
+
         // Inject mocks via reflection since we can't use @InjectMocks
-        setField(routes, "jsonRestHandler", mockRestHandler);
+        setField(routes, "jsonRestHandler", mockJsonRestHandlerInstance);
+        setField(routes, "multiAgentRegistry", mockMultiAgentRegistry);
         setField(routes, "executor", mockExecutor);
         setField(routes, "callContextFactory", mockCallContextFactory);
 
@@ -104,7 +113,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.sendMessage("{}", mockRoutingContext);
+        routes.sendMessage("{}", mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).sendMessage(contextCaptor.capture(), anyString(), eq("{}"));
@@ -126,7 +135,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.sendMessageStreaming("{}", mockRoutingContext);
+        routes.sendMessageStreaming("{}", mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).sendStreamingMessage(contextCaptor.capture(), anyString(), eq("{}"));
@@ -148,7 +157,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.getTask(mockRoutingContext);
+        routes.getTask(mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).getTask(contextCaptor.capture(), anyString(), eq("task123"), any());
@@ -170,7 +179,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.cancelTask("{\"id\":\"task123\"}", mockRoutingContext);
+        routes.cancelTask("{\"id\":\"task123\"}", mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).cancelTask(contextCaptor.capture(), anyString(), eq("{\"id\":\"task123\"}"), eq("task123"));
@@ -203,7 +212,7 @@ public class A2AServerRoutesTest {
                 .thenReturn(mockHttpResponse);
 
         // Act
-        routes.cancelTask(requestBody, mockRoutingContext);
+        routes.cancelTask(requestBody, mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task456"));
@@ -232,7 +241,7 @@ public class A2AServerRoutesTest {
                 .thenReturn(mockHttpResponse);
 
         // Act
-        routes.cancelTask(requestBody, mockRoutingContext);
+        routes.cancelTask(requestBody, mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task789"));
@@ -257,7 +266,7 @@ public class A2AServerRoutesTest {
                 .thenReturn(mockHttpResponse);
 
         // Act
-        routes.cancelTask(requestBody, mockRoutingContext);
+        routes.cancelTask(requestBody, mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task999"));
@@ -280,7 +289,7 @@ public class A2AServerRoutesTest {
                 .thenReturn(mockHttpResponse);
 
         // Act
-        routes.cancelTask(null, mockRoutingContext);
+        routes.cancelTask(null, mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task111"));
@@ -317,7 +326,7 @@ public class A2AServerRoutesTest {
                 .thenReturn(mockHttpResponse);
 
         // Act
-        routes.cancelTask(requestBody, mockRoutingContext);
+        routes.cancelTask(requestBody, mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task222"));
@@ -340,7 +349,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.subscribeToTask(mockRoutingContext);
+        routes.subscribeToTask(mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).subscribeToTask(contextCaptor.capture(), anyString(), eq("task123"));
@@ -362,7 +371,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.createTaskPushNotificationConfiguration("{}", mockRoutingContext);
+        routes.createTaskPushNotificationConfiguration("{}", mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).createTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("{}"), eq("task123"));
@@ -385,7 +394,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.getTaskPushNotificationConfiguration(mockRoutingContext);
+        routes.getTaskPushNotificationConfiguration(mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).getTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("task123"),
@@ -409,7 +418,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.listTaskPushNotificationConfigurations(mockRoutingContext);
+        routes.listTaskPushNotificationConfigurations(mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).listTaskPushNotificationConfigurations(contextCaptor.capture(), anyString(), eq("task123"), anyInt(), anyString());
@@ -432,7 +441,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.deleteTaskPushNotificationConfiguration(mockRoutingContext);
+        routes.deleteTaskPushNotificationConfiguration(mockRoutingContext, mockRestHandler);
 
         // Assert
         verify(mockRestHandler).deleteTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("task123"),
@@ -453,7 +462,7 @@ public class A2AServerRoutesTest {
         when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
 
         // Act
-        routes.sendMessage("{}", mockRoutingContext);
+        routes.sendMessage("{}", mockRoutingContext, mockRestHandler);
 
         // Assert: createErrorResponse called with ContentTypeNotSupportedError, sendMessage NOT called
         verify(mockRestHandler).createErrorResponse(any(ContentTypeNotSupportedError.class));
@@ -471,7 +480,7 @@ public class A2AServerRoutesTest {
         when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
 
         // Act
-        routes.sendMessageStreaming("{}", mockRoutingContext);
+        routes.sendMessageStreaming("{}", mockRoutingContext, mockRestHandler);
 
         // Assert: createErrorResponse called with ContentTypeNotSupportedError, sendStreamingMessage NOT called
         verify(mockRestHandler).createErrorResponse(any(ContentTypeNotSupportedError.class));
@@ -490,7 +499,7 @@ public class A2AServerRoutesTest {
                 .thenReturn(mockErrorResponse);
 
         // Act
-        routes.sendMessage("{}", mockRoutingContext);
+        routes.sendMessage("{}", mockRoutingContext, mockRestHandler);
 
         // Assert: sendMessage was called and error response forwarded
         verify(mockRestHandler).sendMessage(any(ServerCallContext.class), anyString(), eq("{}"));

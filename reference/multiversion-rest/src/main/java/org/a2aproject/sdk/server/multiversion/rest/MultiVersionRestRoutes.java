@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -21,6 +22,7 @@ import org.a2aproject.sdk.compat03.server.rest.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -35,6 +37,9 @@ public class MultiVersionRestRoutes {
     A2AServerRoutes_v0_3 v03Routes;
 
     @Inject
+    Instance<RestHandler> jsonRestHandler;
+
+    @Inject
     VertxSecurityHelper vertxSecurityHelper;
 
     void setupRoutes(@Observes @Priority(5) Router router) {
@@ -44,7 +49,7 @@ public class MultiVersionRestRoutes {
             .handler(BodyHandler.create())
             .blockingHandler(versionDispatch(false,
                 MultiVersionRestRoutes::bridgeTenant,
-                (body, ctx) -> v10Routes.sendMessage(body, ctx),
+                (body, ctx) -> v10Routes.sendMessage(body, ctx, jsonRestHandler.get()),
                 (body, ctx) -> v03Routes.sendMessage(body, ctx)), false);
 
         // POST /v1/message:stream (deferred CDI context destruction)
@@ -53,7 +58,7 @@ public class MultiVersionRestRoutes {
             .handler(BodyHandler.create())
             .blockingHandler(versionDispatch(true,
                 MultiVersionRestRoutes::bridgeTenant,
-                (body, ctx) -> v10Routes.sendMessageStreaming(body, ctx),
+                (body, ctx) -> v10Routes.sendMessageStreaming(body, ctx, jsonRestHandler.get()),
                 (body, ctx) -> v03Routes.sendMessageStreaming(body, ctx)), false);
 
         // GET /v1/tasks/{taskId}
@@ -61,7 +66,7 @@ public class MultiVersionRestRoutes {
             .order(-1)
             .blockingHandler(versionDispatchNoBody(false,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                ctx -> v10Routes.getTask(ctx),
+                ctx -> v10Routes.getTask(ctx, jsonRestHandler.get()),
                 ctx -> v03Routes.getTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}:cancel
@@ -70,7 +75,7 @@ public class MultiVersionRestRoutes {
             .handler(BodyHandler.create())
             .blockingHandler(versionDispatch(false,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                (body, ctx) -> v10Routes.cancelTask(body, ctx),
+                (body, ctx) -> v10Routes.cancelTask(body, ctx, jsonRestHandler.get()),
                 (body, ctx) -> v03Routes.cancelTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}:subscribe (deferred CDI context destruction)
@@ -78,7 +83,7 @@ public class MultiVersionRestRoutes {
             .order(-1)
             .blockingHandler(versionDispatchNoBody(true,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                ctx -> v10Routes.subscribeToTask(ctx),
+                ctx -> v10Routes.subscribeToTask(ctx, jsonRestHandler.get()),
                 ctx -> v03Routes.resubscribeTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}/pushNotificationConfigs
@@ -87,7 +92,7 @@ public class MultiVersionRestRoutes {
             .handler(BodyHandler.create())
             .blockingHandler(versionDispatch(false,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                (body, ctx) -> v10Routes.createTaskPushNotificationConfiguration(body, ctx),
+                (body, ctx) -> v10Routes.createTaskPushNotificationConfiguration(body, ctx, jsonRestHandler.get()),
                 (body, ctx) -> v03Routes.setTaskPushNotificationConfiguration(body, ctx)), false);
 
         // GET /v1/tasks/{taskId}/pushNotificationConfigs/{configId}
@@ -95,7 +100,7 @@ public class MultiVersionRestRoutes {
             .order(-1)
             .blockingHandler(versionDispatchNoBody(false,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                ctx -> v10Routes.getTaskPushNotificationConfiguration(ctx),
+                ctx -> v10Routes.getTaskPushNotificationConfiguration(ctx, jsonRestHandler.get()),
                 ctx -> v03Routes.getTaskPushNotificationConfiguration(ctx)), false);
 
         // GET /v1/tasks/{taskId}/pushNotificationConfigs
@@ -103,7 +108,7 @@ public class MultiVersionRestRoutes {
             .order(-1)
             .blockingHandler(versionDispatchNoBody(false,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                ctx -> v10Routes.listTaskPushNotificationConfigurations(ctx),
+                ctx -> v10Routes.listTaskPushNotificationConfigurations(ctx, jsonRestHandler.get()),
                 ctx -> v03Routes.listTaskPushNotificationConfigurations(ctx)), false);
 
         // DELETE /v1/tasks/{taskId}/pushNotificationConfigs/{configId}
@@ -111,7 +116,7 @@ public class MultiVersionRestRoutes {
             .order(-1)
             .blockingHandler(versionDispatchNoBody(false,
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
-                ctx -> v10Routes.deleteTaskPushNotificationConfiguration(ctx),
+                ctx -> v10Routes.deleteTaskPushNotificationConfiguration(ctx, jsonRestHandler.get()),
                 ctx -> v03Routes.deleteTaskPushNotificationConfiguration(ctx)), false);
 
         // GET /v1/card — v0.3 only (v1.0 uses /{tenant}/extendedAgentCard)

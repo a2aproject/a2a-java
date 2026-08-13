@@ -16,6 +16,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.a2aproject.sdk.server.util.sse.SseFormatter;
 
@@ -31,6 +32,7 @@ import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.rest.quarkus.registry.MultiAgentRegistry;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
@@ -131,7 +133,10 @@ public class A2AServerRoutes {
     private static final String STATUS_TIMESTAMP_AFTER = "statusTimestampAfter";
 
     @Inject
-    RestHandler jsonRestHandler;
+    Instance<RestHandler> jsonRestHandler;
+
+    @Inject
+    Instance<MultiAgentRegistry> multiAgentRegistry;
 
     // Hook so testing can wait until the SSE subscriber is attached.
     // Without this we get intermittent failures
@@ -157,6 +162,30 @@ public class A2AServerRoutes {
      * @param router the Vert.x router to configure
      */
     void setupRouter(@Observes @Priority(10) Router router) {
+        if (multiAgentRegistry.isResolvable()) {
+            // Multi-agent mode
+            Map<String, RestHandler> agents = multiAgentRegistry.get().getAgents();
+            for (Map.Entry<String, RestHandler> entry : agents.entrySet()) {
+                String agentId = entry.getKey();
+                String pathPrefix = "/" + agentId;
+                registerAgentRoutes(router, pathPrefix, entry.getValue());
+            }
+        } else if (jsonRestHandler.isResolvable()) {
+            // Single-agent mode (default)
+            registerAgentRoutes(router, "", jsonRestHandler.get());
+        }
+    }
+
+    /**
+     * Builds a route regex anchored at the start of the path, with {@code pathPrefix}
+     * (e.g. an agent ID segment) matched as a literal prefix before {@code regexTail}.
+     * An empty {@code pathPrefix} is a no-op, preserving the original single-agent patterns.
+     */
+    private static String prefixedRegex(String pathPrefix, String regexTail) {
+        return "^" + Pattern.quote(pathPrefix) + regexTail;
+    }
+
+    private void registerAgentRoutes(Router router, String pathPrefix, RestHandler handler) {
         // Don't add a global BodyHandler - it interferes with gRPC routes
         // Instead, BodyHandler is added per-route below
 
@@ -167,86 +196,86 @@ public class A2AServerRoutes {
         // request. ordered=true would serialize them, causing a 30s deadlock.
 
         // POST /{tenant}/message:send - Non-streaming message send
-        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:send$")
+        router.postWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)message:send$"))
             .handler(BodyHandler.create())
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
-                sendMessage(body, ctx);
+                sendMessage(body, ctx, handler);
             }), false);
 
         // POST /{tenant}/message:stream - Streaming message with SSE
-        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:stream$")
+        router.postWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)message:stream$"))
             .handler(BodyHandler.create())
             .blockingHandler(authenticatedStreaming(ctx -> {
                 String body = extractBody(ctx);
-                sendMessageStreaming(body, ctx);
+                sendMessageStreaming(body, ctx, handler);
             }), false);
 
         // Task Routes
 
         // GET /{tenant}/tasks - List tasks with query params
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\??")
+        router.getWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\??"))
             .order(0)
-            .blockingHandler(authenticated(this::listTasks), false);
+            .blockingHandler(authenticated(ctx -> listTasks(ctx, handler)), false);
 
         // GET /{tenant}/tasks/{taskId} - Get specific task
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$")
+        router.getWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$"))
             .order(1)
-            .blockingHandler(authenticated(this::getTask), false);
+            .blockingHandler(authenticated(ctx -> getTask(ctx, handler)), false);
 
         // POST /{tenant}/tasks/{taskId}:cancel - Cancel task
-        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$")
+        router.postWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$"))
             .order(1)
             .handler(BodyHandler.create())
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
-                cancelTask(body, ctx);
+                cancelTask(body, ctx, handler);
             }), false);
 
         // POST /{tenant}/tasks/{taskId}:subscribe - Subscribe to task updates (SSE)
-        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$")
+        router.postWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$"))
             .order(1)
-            .blockingHandler(authenticatedStreaming(this::subscribeToTask), false);
+            .blockingHandler(authenticatedStreaming(ctx -> subscribeToTask(ctx, handler)), false);
 
         // Push Notification Routes
 
         // POST /{tenant}/tasks/{taskId}/pushNotificationConfigs
-        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$")
+        router.postWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$"))
             .order(1)
             .handler(BodyHandler.create())
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
-                createTaskPushNotificationConfiguration(body, ctx);
+                createTaskPushNotificationConfiguration(body, ctx, handler);
             }), false);
 
         // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)")
+        router.getWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)"))
             .order(2)
-            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration), false);
+            .blockingHandler(authenticated(ctx -> getTaskPushNotificationConfiguration(ctx, handler)), false);
 
         // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$")
+        router.getWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$"))
             .order(3)
-            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations), false);
+            .blockingHandler(authenticated(ctx -> listTaskPushNotificationConfigurations(ctx, handler)), false);
 
         // DELETE /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
-        router.deleteWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)")
+        router.deleteWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)"))
             .order(1)
-            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration), false);
+            .blockingHandler(authenticated(ctx -> deleteTaskPushNotificationConfiguration(ctx, handler)), false);
 
         // Discovery Routes
 
         // GET /.well-known/agent-card.json - Public agent card (no auth required)
-        router.get("/.well-known/agent-card.json")
+        router.get(pathPrefix + "/.well-known/agent-card.json")
             .order(1)
             .produces(APPLICATION_JSON)
-            .handler(this::getAgentCard);
+            .handler(ctx -> getAgentCard(ctx, handler));
 
         // GET /{tenant}/extendedAgentCard - Extended agent card (auth required)
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
+        router.getWithRegex(prefixedRegex(pathPrefix, "\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$"))
             .order(1)
             .produces(APPLICATION_JSON)
-            .blockingHandler(authenticated(this::getExtendedAgentCard), false);
+            .blockingHandler(authenticated(ctx -> getExtendedAgentCard(ctx, handler)), false);
     }
 
     private Handler<RoutingContext> authenticated(Consumer<RoutingContext> action) {
@@ -297,16 +326,16 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context
      */
     @Authenticated
-    public void sendMessage(String body, RoutingContext rc) {
-        if(!validateContentType(rc)) {
+    public void sendMessage(String body, RoutingContext rc, RestHandler handler) {
+        if(!validateContentType(rc, handler)) {
             return;
         }
         ServerCallContext context = createCallContext(rc, SEND_MESSAGE_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.sendMessage(context, extractTenant(rc), body);
+            response = handler.sendMessage(context, extractTenant(rc), body);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -333,15 +362,15 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context
      */
     @Authenticated
-    public void sendMessageStreaming(String body, RoutingContext rc) {
-        if(!validateContentType(rc)) {
+    public void sendMessageStreaming(String body, RoutingContext rc, RestHandler handler) {
+        if(!validateContentType(rc, handler)) {
             return;
         }
         ServerCallContext context = createCallContext(rc, SEND_STREAMING_MESSAGE_METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(context, extractTenant(rc), body);
+            HTTPRestResponse response = handler.sendStreamingMessage(context, extractTenant(rc), body);
             if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                 streamingResponse = hTTPRestStreamingResponse;
             } else {
@@ -386,7 +415,7 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context
      */
     @Authenticated
-    public void listTasks(RoutingContext rc) {
+    public void listTasks(RoutingContext rc, RestHandler handler) {
         ServerCallContext context = createCallContext(rc, LIST_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
@@ -417,14 +446,14 @@ public class A2AServerRoutes {
             if (includeArtifactsStr != null && !includeArtifactsStr.isEmpty()) {
                 includeArtifacts = Boolean.valueOf(includeArtifactsStr);
             }
-            response = jsonRestHandler.listTasks(context, extractTenant(rc), contextId, statusStr, pageSize, pageToken,
+            response = handler.listTasks(context, extractTenant(rc), contextId, statusStr, pageSize, pageToken,
                     historyLength, statusTimestampAfter, includeArtifacts);
         } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
+            response = handler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+            response = handler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -441,24 +470,24 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
     @Authenticated
-    public void getTask(RoutingContext rc) {
+    public void getTask(RoutingContext rc, RestHandler handler) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, GET_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
                 Integer historyLength = null;
                 if (rc.request().params().contains(HISTORY_LENGTH_PARAM)) {
                     historyLength = Integer.valueOf(rc.request().params().get(HISTORY_LENGTH_PARAM));
                 }
-                response = jsonRestHandler.getTask(context, extractTenant(rc), taskId, historyLength);
+                response = handler.getTask(context, extractTenant(rc), taskId, historyLength);
             }
         } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
+            response = handler.createErrorResponse(new InvalidParamsError("bad historyLength"));
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -475,8 +504,8 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
     @Authenticated
-    public void cancelTask(String body, RoutingContext rc) {
-        if (!validateContentTypeForOptionalBody(rc, body)) {
+    public void cancelTask(String body, RoutingContext rc, RestHandler handler) {
+        if (!validateContentTypeForOptionalBody(rc, body, handler)) {
             return;
         }
         String taskId = rc.pathParam("taskId");
@@ -484,15 +513,15 @@ public class A2AServerRoutes {
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.cancelTask(context, extractTenant(rc), body, taskId);
+                response = handler.cancelTask(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
             if (t instanceof A2AError error) {
-                response = jsonRestHandler.createErrorResponse(error);
+                response = handler.createErrorResponse(error);
             } else {
-                response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+                response = handler.createErrorResponse(new InternalError(t.getMessage()));
             }
         } finally {
             sendResponse(rc, response);
@@ -541,16 +570,16 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
     @Authenticated
-    public void subscribeToTask(RoutingContext rc) {
+    public void subscribeToTask(RoutingContext rc, RestHandler handler) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SUBSCRIBE_TO_TASK_METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                error = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+                error = handler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                HTTPRestResponse response = jsonRestHandler.subscribeToTask(context, extractTenant(rc), taskId);
+                HTTPRestResponse response = handler.subscribeToTask(context, extractTenant(rc), taskId);
                 if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                     streamingResponse = hTTPRestStreamingResponse;
                 } else {
@@ -588,8 +617,8 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
     @Authenticated
-    public void createTaskPushNotificationConfiguration(String body, RoutingContext rc) {
-        if(!validateContentType(rc)) {
+    public void createTaskPushNotificationConfiguration(String body, RoutingContext rc, RestHandler handler) {
+        if(!validateContentType(rc, handler)) {
             return;
         }
         String taskId = rc.pathParam("taskId");
@@ -597,12 +626,12 @@ public class A2AServerRoutes {
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
+                response = handler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -619,21 +648,21 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId and configId extracted from path)
      */
     @Authenticated
-    public void getTaskPushNotificationConfiguration(RoutingContext rc) {
+    public void getTaskPushNotificationConfiguration(RoutingContext rc, RestHandler handler) {
         String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
         ServerCallContext context = createCallContext(rc, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else if (configId == null || configId.isEmpty()) { 
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad configuration id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else if (configId == null || configId.isEmpty()) {
+                response = handler.createErrorResponse(new InvalidParamsError("bad configuration id"));
             }else {
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
+                response = handler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -657,13 +686,13 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
     @Authenticated
-    public void listTaskPushNotificationConfigurations(RoutingContext rc) {
+    public void listTaskPushNotificationConfigurations(RoutingContext rc, RestHandler handler) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
                  int pageSize = 0;
                 if (rc.request().params().contains(PAGE_SIZE_PARAM)) {
@@ -673,12 +702,12 @@ public class A2AServerRoutes {
                 if (rc.request().params().contains(PAGE_TOKEN_PARAM)) {
                     pageToken = Utils.defaultIfNull(rc.request().params().get(PAGE_TOKEN_PARAM), "");
                 }
-                response = jsonRestHandler.listTaskPushNotificationConfigurations(context, extractTenant(rc), taskId, pageSize, pageToken);
+                response = handler.listTaskPushNotificationConfigurations(context, extractTenant(rc), taskId, pageSize, pageToken);
             }
         } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
+            response = handler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -697,21 +726,21 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context (taskId and configId extracted from path)
      */
     @Authenticated
-    public void deleteTaskPushNotificationConfiguration(RoutingContext rc) {
+    public void deleteTaskPushNotificationConfiguration(RoutingContext rc, RestHandler handler) {
         String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
         ServerCallContext context = createCallContext(rc, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else if (configId == null || configId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad config id"));
+                response = handler.createErrorResponse(new InvalidParamsError("bad config id"));
             } else {
-                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
+                response = handler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            response = handler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
             sendResponse(rc, response);
         }
@@ -760,10 +789,10 @@ public class A2AServerRoutes {
      * @param rc the routing context
      * @return true if the content type is application/json - false otherwise.
      */
-    private boolean validateContentType(RoutingContext rc) {
+    private boolean validateContentType(RoutingContext rc, RestHandler handler) {
         String contentType = rc.request().getHeader(CONTENT_TYPE);
         if (contentType == null || !contentType.trim().startsWith(APPLICATION_JSON)) {
-            sendResponse(rc, jsonRestHandler.createErrorResponse(new ContentTypeNotSupportedError(null, null, null)));
+            sendResponse(rc, handler.createErrorResponse(new ContentTypeNotSupportedError(null, null, null)));
             return false;
         }
         return true;
@@ -778,14 +807,14 @@ public class A2AServerRoutes {
      * @param body the request body (may be null or empty)
      * @return true if validation passes, false if Content-Type error should be returned
      */
-    private boolean validateContentTypeForOptionalBody(RoutingContext rc, @Nullable String body) {
+    private boolean validateContentTypeForOptionalBody(RoutingContext rc, @Nullable String body, RestHandler handler) {
         // If body is null or empty, Content-Type is not required
         if (body == null || body.isBlank()) {
             return true;
         }
 
         // Body has content - validate Content-Type
-        return validateContentType(rc);
+        return validateContentType(rc, handler);
     }
 
     /**
@@ -810,8 +839,8 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context
      */
     @PermitAll
-    public void getAgentCard(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.getAgentCard();
+    public void getAgentCard(RoutingContext rc, RestHandler handler) {
+        HTTPRestResponse response = handler.getAgentCard();
         sendResponse(rc, response);
     }
 
@@ -828,8 +857,8 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context
      */
     @Authenticated
-    public void getExtendedAgentCard(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD), extractTenant(rc));
+    public void getExtendedAgentCard(RoutingContext rc, RestHandler handler) {
+        HTTPRestResponse response = handler.getExtendedAgentCard(createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD), extractTenant(rc));
         sendResponse(rc, response);
     }
 
@@ -844,8 +873,8 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context
      */
-    public void methodNotFoundMessage(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.createErrorResponse(new MethodNotFoundError());
+    public void methodNotFoundMessage(RoutingContext rc, RestHandler handler) {
+        HTTPRestResponse response = handler.createErrorResponse(new MethodNotFoundError());
         sendResponse(rc, response);
     }
 
