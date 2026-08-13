@@ -328,6 +328,7 @@ public class A2AServerRoutes {
      *
      * @param body the JSON request body
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void sendMessage(String body, RoutingContext rc, RestHandler handler) {
@@ -365,6 +366,7 @@ public class A2AServerRoutes {
      *
      * @param body the JSON request body
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void sendMessageStreaming(String body, RoutingContext rc, RestHandler handler) {
@@ -418,6 +420,7 @@ public class A2AServerRoutes {
      * </ul>
      *
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void listTasks(RoutingContext rc, RestHandler handler) {
@@ -474,6 +477,7 @@ public class A2AServerRoutes {
      * <p><b>URL Pattern:</b> {@code /tasks/{taskId}?historyLength=10}
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void getTask(RoutingContext rc, RestHandler handler) {
@@ -509,6 +513,7 @@ public class A2AServerRoutes {
      * <p><b>URL Pattern:</b> {@code /tasks/{taskId}:cancel}
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void cancelTask(String body, RoutingContext rc, RestHandler handler) {
@@ -576,6 +581,7 @@ public class A2AServerRoutes {
      * </ul>
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void subscribeToTask(RoutingContext rc, RestHandler handler) {
@@ -623,6 +629,7 @@ public class A2AServerRoutes {
      *
      * @param body the JSON request body with notification configuration
      * @param rc the Vert.x routing context (taskId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void createTaskPushNotificationConfiguration(String body, RoutingContext rc, RestHandler handler) {
@@ -655,6 +662,7 @@ public class A2AServerRoutes {
      * <p><b>URL Pattern:</b> {@code /tasks/{taskId}/pushNotificationConfigs/{configId}}
      *
      * @param rc the Vert.x routing context (taskId and configId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void getTaskPushNotificationConfiguration(RoutingContext rc, RestHandler handler) {
@@ -694,6 +702,7 @@ public class A2AServerRoutes {
      * </ul>
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void listTaskPushNotificationConfigurations(RoutingContext rc, RestHandler handler) {
@@ -735,6 +744,7 @@ public class A2AServerRoutes {
      * <p><b>Response:</b> HTTP 204 No Content on success
      *
      * @param rc the Vert.x routing context (taskId and configId extracted from path)
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void deleteTaskPushNotificationConfiguration(RoutingContext rc, RestHandler handler) {
@@ -849,6 +859,7 @@ public class A2AServerRoutes {
      * </ul>
      *
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      */
     @PermitAll
     public void getAgentCard(RoutingContext rc, RestHandler handler) {
@@ -867,6 +878,7 @@ public class A2AServerRoutes {
      * <p><b>Authentication:</b> Required (inherits {@code @Authenticated} from class)
      *
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      */
     @Authenticated
     public void getExtendedAgentCard(RoutingContext rc, RestHandler handler) {
@@ -884,6 +896,7 @@ public class A2AServerRoutes {
      * instead of generic 404 HTML pages.
      *
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      */
     public void methodNotFoundMessage(RoutingContext rc, RestHandler handler) {
         HTTPRestResponse response = handler.createErrorResponse(new MethodNotFoundError());

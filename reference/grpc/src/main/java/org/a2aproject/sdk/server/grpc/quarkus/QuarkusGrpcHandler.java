@@ -152,14 +152,9 @@ public class QuarkusGrpcHandler extends GrpcHandler {
     }
 
     /**
-     * Resolves which agent should serve the current call.
+     * Resolves the agent for the current call: by {@code X-A2A-Agent-Id} header via
+     * {@link MultiAgentRegistry} if present, else the default single-agent beans.
      *
-     * <p>If a {@link MultiAgentRegistry} bean is present, the agent is selected using the
-     * {@code X-A2A-Agent-Id} gRPC metadata header sent with the call. If the header is absent,
-     * or names an agent not present in the registry, falls back to the default single-agent
-     * {@code @PublicAgentCard} / {@link RequestHandler} beans, if configured.
-     *
-     * @return the resolved agent's card and request handler
      * @throws InvalidRequestError if no agent could be resolved for this call
      */
     private GrpcAgent resolveAgent() {
@@ -177,12 +172,7 @@ public class QuarkusGrpcHandler extends GrpcHandler {
         throw new InvalidRequestError("No agent configured for this request");
     }
 
-    /**
-     * Extracts the {@code X-A2A-Agent-Id} header from the current gRPC call's metadata, as
-     * captured by {@link org.a2aproject.sdk.server.grpc.quarkus.A2AExtensionsInterceptor}.
-     *
-     * @return the requested agent ID, or null if not present
-     */
+    /** @return the {@code X-A2A-Agent-Id} header from the current call's metadata, or null */
     private @Nullable String currentAgentId() {
         Metadata metadata = GrpcContextKeys.METADATA_KEY.get(Context.current());
         return metadata != null ? metadata.get(AGENT_ID_KEY) : null;

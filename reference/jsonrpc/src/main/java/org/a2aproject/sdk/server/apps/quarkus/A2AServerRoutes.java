@@ -332,6 +332,7 @@ public class A2AServerRoutes {
      *
      * @param body the raw JSON-RPC request body
      * @param rc the Vert.x routing context containing HTTP request/response
+     * @param handler the handler for the agent this request is addressed to
      * @throws A2AError if request processing fails
      */
     @Authenticated
@@ -430,6 +431,7 @@ public class A2AServerRoutes {
      * }</pre>
      *
      * @param rc the Vert.x routing context
+     * @param handler the handler for the agent this request is addressed to
      * @return the agent card as a JSON string
      * @throws JsonProcessingException if serialization fails
      * @see JSONRPCHandler#getAgentCard()

@@ -6,7 +6,7 @@ import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 /**
  * Registry for supporting multiple agents in a single Quarkus application.
  * If a CDI bean implements this interface, the server will register routes for each
- * agent in the registry under /<agent-id>/ and /<agent-id>/.well-known/agent-card.json.
+ * agent in the registry under {@code /<agent-id>/} and {@code /<agent-id>/.well-known/agent-card.json}.
  */
 public interface MultiAgentRegistry {
     /**

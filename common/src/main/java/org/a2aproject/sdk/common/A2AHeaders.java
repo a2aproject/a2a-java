@@ -23,9 +23,8 @@ public final class A2AHeaders {
     public static final String X_A2A_NOTIFICATION_TOKEN = "X-A2A-Notification-Token";
 
     /**
-     * gRPC metadata header name identifying the target agent ID in a multi-agent deployment.
-     * Used by transports without per-path routing (e.g. gRPC) to select which agent should
-     * handle the call.
+     * Metadata header identifying the target agent ID for transports without per-path
+     * routing (e.g. gRPC).
      */
     public static final String X_A2A_AGENT_ID = "X-A2A-Agent-Id";
 
