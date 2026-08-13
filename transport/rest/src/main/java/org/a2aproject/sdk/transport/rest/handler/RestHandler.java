@@ -228,8 +228,7 @@ public class RestHandler {
      */
     public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
         try {
-            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
-            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
+            validateVersionAndExtensions(context);
             org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
@@ -296,8 +295,7 @@ public class RestHandler {
             if (!resolveAgentCard().capabilities().streaming()) {
                 return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
-            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
-            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
+            validateVersionAndExtensions(context);
             org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
@@ -342,6 +340,7 @@ public class RestHandler {
     @SuppressWarnings("unchecked")
     public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, String taskId) {
         try {
+            validateVersionAndExtensions(context);
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
@@ -373,6 +372,7 @@ public class RestHandler {
             if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
+            validateVersionAndExtensions(context);
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
             parseRequestBody(body, builder);
 
@@ -428,6 +428,7 @@ public class RestHandler {
             if (!resolveAgentCard().capabilities().streaming()) {
                 return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
+            validateVersionAndExtensions(context);
             TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             try {
                 requestHandler.authorizeTaskAccess(params.id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
@@ -454,6 +455,7 @@ public class RestHandler {
      */
     public HTTPRestResponse getTask(ServerCallContext context, String tenant, String taskId, @Nullable Integer historyLength) {
         try {
+            validateVersionAndExtensions(context);
             TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
@@ -515,6 +517,7 @@ public class RestHandler {
             @Nullable Integer historyLength, @Nullable String statusTimestampAfter,
             @Nullable Boolean includeArtifacts) {
         try {
+            validateVersionAndExtensions(context);
             // Build params
             ListTasksParams.Builder paramsBuilder = ListTasksParams.builder();
             if (contextId != null) {
@@ -585,6 +588,7 @@ public class RestHandler {
             if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
+            validateVersionAndExtensions(context);
             GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId, tenant);
             TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
@@ -610,6 +614,7 @@ public class RestHandler {
             if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
+            validateVersionAndExtensions(context);
             ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, pageSize, pageToken, tenant);
             ListTaskPushNotificationConfigsResult result = requestHandler.onListTaskPushNotificationConfigs(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(result)));
@@ -634,6 +639,7 @@ public class RestHandler {
             if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
+            validateVersionAndExtensions(context);
             DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(taskId, configId, tenant);
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
             return new HTTPRestResponse(204, APPLICATION_JSON, "");
@@ -642,6 +648,21 @@ public class RestHandler {
         } catch (Throwable throwable) {
             return createErrorResponse(internalError(throwable));
         }
+    }
+
+    /**
+     * Validates the requested protocol version and extensions against the agent card.
+     *
+     * <p>Section 3.6.2 of the specification requires this on every request, so every operation
+     * calls it before reaching the request handler.
+     *
+     * @param context the server call context carrying the requested version and extensions
+     * @throws A2AError if the requested version or a required extension is not supported
+     */
+    private void validateVersionAndExtensions(ServerCallContext context) throws A2AError {
+        AgentCard agentCard = resolveAgentCard();
+        A2AVersionValidator.validateProtocolVersion(agentCard, context);
+        A2AExtensions.validateRequiredExtensions(agentCard, context);
     }
 
     private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder) throws A2AError {
@@ -821,6 +842,7 @@ public class RestHandler {
             if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
+            validateVersionAndExtensions(context);
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extendedAgentCard.get()));
         } catch (A2AError e) {
             return createErrorResponse(e);

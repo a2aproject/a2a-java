@@ -12,14 +12,15 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import jakarta.enterprise.inject.Instance;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import jakarta.enterprise.inject.Instance;
-
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.TestInstances;
+import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
@@ -1134,5 +1135,195 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals("Internal error", error.get("message").getAsString());
         Assertions.assertFalse(error.get("message").getAsString().contains("sensitive"),
                 "Internal exception message must not be leaked to the client");
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetTask() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.getTask(incompatibleVersionContext(), "", MINIMAL_TASK.id(), null));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnListTasks() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.listTasks(incompatibleVersionContext(), "",
+                MINIMAL_TASK.contextId(), null, null, null, null, null, null));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnCancelTask() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        // Without this the executor emits nothing, and a cancel that reaches the request handler
+        // waits forever for a final event rather than failing the assertion.
+        agentExecutorCancel = (context, agentEmitter) -> agentEmitter.cancel();
+
+        assertVersionRejected(handler.cancelTask(incompatibleVersionContext(), "", "{}", MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnCreateTaskPushNotificationConfiguration() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        String requestBody = """
+            {
+              "id": "config-1",
+              "taskId": "%s",
+              "url": "http://example.com"
+            }""".formatted(MINIMAL_TASK.id());
+
+        assertVersionRejected(handler.createTaskPushNotificationConfiguration(
+                incompatibleVersionContext(), "", requestBody, MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetTaskPushNotificationConfiguration() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.getTaskPushNotificationConfiguration(
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnListTaskPushNotificationConfigurations() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.listTaskPushNotificationConfigurations(
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), 10, ""));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnDeleteTaskPushNotificationConfiguration() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.deleteTaskPushNotificationConfiguration(
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetExtendedAgentCard() {
+        AgentCard card = versionTestCard();
+        AgentCard extended = AgentCard.builder(card).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(card), extendedInstance,
+                createCacheMetadata(card), requestHandler, internalExecutor);
+
+        assertVersionRejected(handler.getExtendedAgentCard(incompatibleVersionContext(), ""));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSubscribeToTask() throws Exception {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        RestHandler.HTTPRestResponse response =
+                handler.subscribeToTask(incompatibleVersionContext(), "", MINIMAL_TASK.id());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
+        assertVersionRejectedInStream((RestHandler.HTTPRestStreamingResponse) response);
+    }
+
+    /**
+     * A card whose sole interface speaks protocol version 1.0, with every capability enabled so
+     * that each operation reaches the version check instead of stopping at a capability guard.
+     */
+    private static AgentCard versionTestCard() {
+        return AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extendedAgentCard(true)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+    }
+
+    private RestHandler versionTestHandler() {
+        AgentCard card = versionTestCard();
+        return new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
+    }
+
+    /**
+     * A context requesting version 2.0, whose major differs from the card built by
+     * {@link #versionTestCard()} and is therefore incompatible under section 3.6.2.
+     */
+    private static ServerCallContext incompatibleVersionContext() {
+        return new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "2.0");
+    }
+
+    /**
+     * Asserts that an operation answered with the problem detail carried by a version refusal,
+     * rather than with a success status or an unrelated error.
+     *
+     * @param response the response an operation returned
+     */
+    private static void assertVersionRejected(RestHandler.HTTPRestResponse response) {
+        assertProblemDetail(response, 400, "VERSION_NOT_SUPPORTED",
+                "Protocol version '2.0' is not supported. Supported versions: [1.0]");
+    }
+
+    /**
+     * Asserts the same refusal for a streaming operation, which answers 200 and embeds the error
+     * as an event rather than surfacing it in the status line.
+     *
+     * @param response the streaming response under test
+     * @throws InterruptedException if the wait for termination is interrupted
+     */
+    private static void assertVersionRejectedInStream(RestHandler.HTTPRestStreamingResponse response)
+            throws InterruptedException {
+        AtomicBoolean errorFound = new AtomicBoolean(false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        response.getPublisher().subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(String item) {
+                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                if (!body.has("error")) {
+                    return;
+                }
+                JsonObject error = body.getAsJsonObject("error");
+                var details = error.has("details") ? error.getAsJsonArray("details") : null;
+                if (details != null && !details.isEmpty()
+                        && "VERSION_NOT_SUPPORTED".equals(details.get(0).getAsJsonObject().get("reason").getAsString())
+                        && error.get("message").getAsString().contains("2.0")) {
+                    errorFound.set(true);
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected the stream to terminate within timeout");
+        Assertions.assertTrue(errorFound.get(), "Expected a VERSION_NOT_SUPPORTED event in the stream");
     }
 }
