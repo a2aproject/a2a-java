@@ -1,8 +1,8 @@
 package org.a2aproject.sdk.server.agentexecution;
 
-import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
 
 /**
  * Core business logic interface for implementing A2A agent functionality.
@@ -136,7 +136,7 @@ public interface AgentExecutor {
      * <p>
      * <b>Error Handling:</b>
      * <ul>
-     *   <li>Throw {@link org.a2aproject.sdk.spec.TaskNotCancelableError} if your agent does not support
+     *   <li>Throw {@link TaskNotCancelableError} if your agent does not support
      *       cancellation at all (e.g., fire-and-forget agents)</li>
      *   <li>Throw {@link A2AError} if cancellation is supported but failed to execute
      *       (e.g., unable to interrupt running operation)</li>
@@ -145,10 +145,10 @@ public interface AgentExecutor {
      *
      * @param context the request context for the task being canceled
      * @param emitter the agent emitter for sending the cancellation event
-     * @throws org.a2aproject.sdk.spec.TaskNotCancelableError if this agent does not support cancellation
+     * @throws TaskNotCancelableError if this agent does not support cancellation
      * @throws A2AError if cancellation is supported but failed to execute
      */
     default void cancel(RequestContext context, AgentEmitter emitter) throws A2AError {
-        throw new org.a2aproject.sdk.spec.TaskNotCancelableError("Agent execution is not cancelable.");
+        throw new TaskNotCancelableError("Agent execution is not cancelable.");
     }
 }
