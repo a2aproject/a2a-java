@@ -64,6 +64,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.apps.quarkus.registry.MultiAgentRegistry;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
@@ -170,11 +171,15 @@ import org.jspecify.annotations.Nullable;
 @Singleton
 public class A2AServerRoutes {
 
+    // RoutingContext key holding the agent path prefix (e.g. "/agentId") registered for this
+    // route, so extractTenant() can strip it before computing the tenant from the remaining path.
+    private static final String AGENT_PATH_PREFIX_CTX_KEY = "a2aAgentPathPrefix";
+
     @Inject
     Instance<JSONRPCHandler> jsonRpcHandler;
-    
+
     @Inject
-    Instance<org.a2aproject.sdk.server.apps.quarkus.registry.MultiAgentRegistry> multiAgentRegistry;
+    Instance<MultiAgentRegistry> multiAgentRegistry;
 
     @Inject
     AgentCardCacheMetadata cacheMetadata;
@@ -204,7 +209,7 @@ public class A2AServerRoutes {
      * @param router the Vert.x Web Router instance to configure
      */
     void setupRoutes(@Observes Router router) {
-        if (!multiAgentRegistry.isUnsatisfied()) {
+        if (multiAgentRegistry.isResolvable()) {
             // Multi-agent mode
             Map<String, JSONRPCHandler> agents = multiAgentRegistry.get().getAgents();
             for (Map.Entry<String, JSONRPCHandler> entry : agents.entrySet()) {
@@ -212,7 +217,7 @@ public class A2AServerRoutes {
                 String pathPrefix = "/" + agentId;
                 registerAgentRoutes(router, pathPrefix, entry.getValue());
             }
-        } else if (!jsonRpcHandler.isUnsatisfied()) {
+        } else if (jsonRpcHandler.isResolvable()) {
             // Single-agent mode (default)
             registerAgentRoutes(router, "", jsonRpcHandler.get());
         }
@@ -221,12 +226,13 @@ public class A2AServerRoutes {
     private void registerAgentRoutes(Router router, String pathPrefix, JSONRPCHandler handler) {
         String rpcPath = pathPrefix.isEmpty() ? "/" : pathPrefix;
         String cardPath = pathPrefix + "/.well-known/agent-card.json";
-        
+
         router.post(rpcPath)
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 try {
+                    ctx.put(AGENT_PATH_PREFIX_CTX_KEY, pathPrefix);
                     vertxSecurityHelper.runInRequestContextDeferred(ctx, () -> {
                         invokeJSONRPCHandler(ctx.body().asString(), ctx, handler);
                     });
@@ -626,6 +632,10 @@ public class A2AServerRoutes {
         String tenantPath = rc.normalizedPath();
         if (tenantPath == null || tenantPath.isBlank()) {
             return "";
+        }
+        String agentPathPrefix = rc.get(AGENT_PATH_PREFIX_CTX_KEY);
+        if (agentPathPrefix != null && !agentPathPrefix.isEmpty() && tenantPath.startsWith(agentPathPrefix)) {
+            tenantPath = tenantPath.substring(agentPathPrefix.length());
         }
         if (tenantPath.startsWith("/")) {
             tenantPath = tenantPath.substring(1);

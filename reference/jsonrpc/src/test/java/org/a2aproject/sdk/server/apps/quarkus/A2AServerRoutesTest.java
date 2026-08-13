@@ -49,6 +49,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConf
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.apps.quarkus.registry.MultiAgentRegistry;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -90,11 +91,11 @@ public class A2AServerRoutesTest {
         routes = new A2AServerRoutes();
         mockJsonRpcHandler = mock(Instance.class);
         mockHandlerInstance = mock(JSONRPCHandler.class);
-        when(mockHandlerInstance.isUnsatisfied()).thenReturn(false);
-        when(mockHandlerInstance.get()).thenReturn(mockHandlerInstance);
-        
-        Instance<org.a2aproject.sdk.server.apps.quarkus.registry.MultiAgentRegistry> multiAgentRegistry = mock(Instance.class);
-        when(multiAgentRegistry.isUnsatisfied()).thenReturn(true);
+        when(mockJsonRpcHandler.isResolvable()).thenReturn(true);
+        when(mockJsonRpcHandler.get()).thenReturn(mockHandlerInstance);
+
+        Instance<MultiAgentRegistry> multiAgentRegistry = mock(Instance.class);
+        when(multiAgentRegistry.isResolvable()).thenReturn(false);
         setField(routes, "multiAgentRegistry", multiAgentRegistry);
         mockExecutor = mock(Executor.class);
         mockCallContextFactory = mock(Instance.class);
@@ -722,6 +723,45 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("myTenant/api", capturedContext.getState().get(TENANT_KEY));
+    }
+
+    @Test
+    public void testTenantExtraction_AgentPathPrefixStripped() {
+        // Arrange - simulate a multi-agent route: POST /myagent, where "myagent" is the
+        // agent ID (from the registered path prefix), not a tenant.
+        when(mockRoutingContext.normalizedPath()).thenReturn("/myagent");
+        when(mockRoutingContext.get("a2aAgentPathPrefix")).thenReturn("/myagent");
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTask",
+             "params": {
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "historyLength": 10
+             }
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        Task responseTask = Task.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                .build();
+        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
+        when(mockHandlerInstance.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+                .thenReturn(realResponse);
+
+        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext, mockHandlerInstance);
+
+        // Assert - the agent path prefix must not leak into the tenant
+        verify(mockHandlerInstance).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        ServerCallContext capturedContext = contextCaptor.getValue();
+        assertNotNull(capturedContext);
+        assertEquals("", capturedContext.getState().get(TENANT_KEY));
     }
 
     @Test

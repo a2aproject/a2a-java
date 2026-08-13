@@ -3,6 +3,7 @@ package org.a2aproject.sdk.server.multiversion.jsonrpc;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -15,6 +16,7 @@ import org.a2aproject.sdk.server.common.quarkus.VersionRouter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -27,6 +29,9 @@ public class MultiVersionJSONRPCRoutes {
 
     @Inject
     A2AServerRoutes_v0_3 v03Routes;
+
+    @Inject
+    Instance<JSONRPCHandler> jsonRpcHandler;
 
     @Inject
     VertxSecurityHelper vertxSecurityHelper;
@@ -46,7 +51,7 @@ public class MultiVersionJSONRPCRoutes {
                         String body = ctx.body().asString();
 
                         if (VersionRouter.isV10(version)) {
-                            v10Routes.invokeJSONRPCHandler(body, ctx);
+                            v10Routes.invokeJSONRPCHandler(body, ctx, jsonRpcHandler.get());
                         } else if (VersionRouter.isV03(version)) {
                             v03Routes.invokeJSONRPCHandler(body, ctx);
                         } else {
