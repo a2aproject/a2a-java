@@ -56,6 +56,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
@@ -126,6 +128,8 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_K
  */
 @Singleton
 public class A2AServerRoutes {
+
+    private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
 
     private static final String HISTORY_LENGTH_PARAM = "historyLength";
     private static final String PAGE_SIZE_PARAM = "pageSize";
@@ -335,7 +339,8 @@ public class A2AServerRoutes {
         try {
             response = handler.sendMessage(context, extractTenant(rc), body);
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -453,7 +458,8 @@ public class A2AServerRoutes {
         } catch (IllegalArgumentException e) {
             response = handler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -487,7 +493,8 @@ public class A2AServerRoutes {
         } catch (NumberFormatException e) {
             response = handler.createErrorResponse(new InvalidParamsError("bad historyLength"));
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -521,7 +528,8 @@ public class A2AServerRoutes {
             if (t instanceof A2AError error) {
                 response = handler.createErrorResponse(error);
             } else {
-                response = handler.createErrorResponse(new InternalError(t.getMessage()));
+                LOG.error("Internal error while processing request", t);
+                response = handler.createErrorResponse(new InternalError("Internal error"));
             }
         } finally {
             sendResponse(rc, response);
@@ -631,7 +639,8 @@ public class A2AServerRoutes {
                 response = handler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -662,7 +671,8 @@ public class A2AServerRoutes {
                 response = handler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -707,7 +717,8 @@ public class A2AServerRoutes {
         } catch (NumberFormatException e) {
             response = handler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -740,7 +751,8 @@ public class A2AServerRoutes {
                 response = handler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            response = handler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = handler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }

@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -508,8 +509,8 @@ public class JsonUtil {
      * This adapter handles polymorphic deserialization, creating the
      * appropriate subclass instance (TextPart, FilePart, or DataPart) based on available fields.
      * <p>
-     * The adapter uses a two-pass approach: first reads the JSON as a tree to inspect the "kind"
-     * field, then deserializes to the appropriate concrete type.
+     * The adapter reads the JSON as a tree so that the content key can be inspected before
+     * deserializing to the appropriate concrete type.
      *
      * @see Part
      * @see TextPart
@@ -599,35 +600,59 @@ public class JsonUtil {
             Map<String, Object> metadata = JsonUtil.readMetadata(jsonObject);
             Set<String> keys = jsonObject.keySet();
 
-            // Find the oneOf discriminator, skipping null/empty values to tolerate formats
-            // where multiple content keys may be present with only one populated
-            // (e.g., proto serialization with alwaysPrintFieldsWithNoPresence).
-            // Unknown extra fields are ignored.
-            String discriminator = keys.stream()
-                    .filter(VALID_KEYS::contains)
-                    .filter(key -> {
-                        com.google.gson.JsonElement el = jsonObject.get(key);
-                        return el != null && !el.isJsonNull();
-                    })
-                    .findFirst()
+            // A producer that emits every content key, leaving the unset ones as "", would otherwise
+            // have its payload discarded by whichever empty placeholder came first on the wire.
+            // The fallback keeps a deliberately empty TextPart decodable.
+            List<String> populatedKeys = contentKeys(jsonObject)
+                    .filter(key -> !isEmptyString(jsonObject.get(key)))
+                    .toList();
+            if (populatedKeys.size() > 1) {
+                throw new JsonSyntaxException(
+                        format("Part is a oneOf: expected exactly one populated content key, but found: %s", populatedKeys));
+            }
+            String discriminator = populatedKeys.stream().findFirst()
+                    .or(() -> contentKeys(jsonObject).findFirst())
                     .orElseThrow(() -> new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, keys)));
 
             return switch (discriminator) {
-                case TEXT -> new TextPart(jsonObject.get(TEXT).getAsString(), metadata);
+                case TEXT -> new TextPart(requireString(jsonObject, TEXT), metadata);
                 case RAW -> new FilePart(new FileWithBytes(
                         stringOrEmpty(jsonObject, MEDIA_TYPE),
                         stringOrEmpty(jsonObject, FILENAME),
-                        jsonObject.get(RAW).getAsString()), metadata);
+                        requireString(jsonObject, RAW)), metadata);
                 case URL -> new FilePart(new FileWithUri(
                         stringOrEmpty(jsonObject, MEDIA_TYPE),
                         stringOrEmpty(jsonObject, FILENAME),
-                        jsonObject.get(URL).getAsString()), metadata);
+                        requireString(jsonObject, URL)), metadata);
                 case DATA -> {
                     Object data = delegateGson.fromJson(jsonObject.get(DATA), Object.class);
                     yield new DataPart(data, metadata);
                 }
                 default -> throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
             };
+        }
+
+        /** Returns the content keys carrying a non-null value, in document order. */
+        private Stream<String> contentKeys(com.google.gson.JsonObject obj) {
+            return obj.keySet().stream()
+                    .filter(VALID_KEYS::contains)
+                    .filter(key -> {
+                        JsonElement el = obj.get(key);
+                        return el != null && !el.isJsonNull();
+                    });
+        }
+
+        private boolean isEmptyString(@Nullable JsonElement el) {
+            return el != null && el.isJsonPrimitive() && el.getAsJsonPrimitive().isString() && el.getAsString().isEmpty();
+        }
+
+        /** Guards {@code getAsString()}, which throws an unchecked UnsupportedOperationException on an object or array. */
+        private String requireString(com.google.gson.JsonObject obj, String key) {
+            JsonElement el = obj.get(key);
+            if (el == null || !el.isJsonPrimitive()) {
+                throw new JsonSyntaxException(format("Part '%s' must be a JSON string", key));
+            }
+            return el.getAsString();
         }
 
         /** Returns the string value of the field, or an empty string if absent or null. */

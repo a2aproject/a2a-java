@@ -187,6 +187,29 @@ class AuthorizationRequestHandlerDecoratorTest {
         }
 
         @Test
+        void onListTasks_denied() throws A2AError {
+            ListTasksParams params = new ListTasksParams();
+            when(authorizationProvider.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(false);
+
+            assertThrows(TaskNotFoundError.class, () -> decorator.onListTasks(params, context));
+            verifyNoInteractions(delegate);
+        }
+
+        @Test
+        void onListTasks_allowed() throws A2AError {
+            ListTasksParams params = new ListTasksParams();
+            ListTasksResult expected = new ListTasksResult(Collections.emptyList(), 0, 0, null);
+            when(authorizationProvider.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(delegate.onListTasks(params, context)).thenReturn(expected);
+
+            ListTasksResult result = decorator.onListTasks(params, context);
+
+            assertEquals(expected, result);
+            verify(authorizationProvider).checkRead(context, "", TaskOperation.LIST_TASKS);
+            verify(delegate).onListTasks(params, context);
+        }
+
+        @Test
         void authorizeTaskAccess_allowed() throws A2AError {
             when(authorizationProvider.checkRead(context, "task-1", TaskOperation.SUBSCRIBE_TO_TASK)).thenReturn(true);
 
