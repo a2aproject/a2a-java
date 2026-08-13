@@ -370,7 +370,12 @@ class ReplicatedQueueManagerTest {
                         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                                 .taskId(taskId)  // Use same taskId as queue
                                 .contextId("test-context")
-                                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                                // Use a non-terminal state: a COMPLETED event processed mid-stream
+                                // finalizes the task and closes the queue, so overlapping normal
+                                // enqueues no longer trigger replication and the count assertion
+                                // becomes timing-dependent (flaky). Replicated events are skipped by
+                                // the replication hook via isReplicated() regardless of state.
+                                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                                 .build();
                         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
                         queueManager.onReplicatedEvent(replicatedEvent);

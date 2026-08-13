@@ -9,9 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -110,9 +116,9 @@ public class EventQueueTest {
      */
     private void waitForEventProcessing(Runnable action) throws InterruptedException {
         CountDownLatch processingLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
             @Override
-            public void onEventProcessed(String taskId, org.a2aproject.sdk.spec.Event event) {
+            public void onEventProcessed(String taskId, Event event) {
                 processingLatch.countDown();
             }
 
@@ -701,5 +707,43 @@ public class EventQueueTest {
 
         assertFalse(onEventCalled.get(),
                 "onEvent should not be called when there are zero subscribers");
+    }
+
+    @Test
+    public void testChildQueueIsBoundedByParentQueueSize() throws Exception {
+        int customSize = 5;
+        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .queueSize(customSize)
+                .build();
+        EventQueue childQueue = mainQueue.tap();
+
+        Field queueField = EventQueue.ChildQueue.class.getDeclaredField("queue");
+        queueField.setAccessible(true);
+        BlockingQueue<?> childDeque = (BlockingQueue<?>) queueField.get(childQueue);
+
+        // The child queue must be bounded by the parent's configured capacity:
+        // an unbounded deque would let a slow subscriber grow memory without limit.
+        assertEquals(customSize, childDeque.remainingCapacity());
+    }
+
+    @Test
+    public void testSemaphorePermitReleasedWhenSubmitFails() {
+        MainEventBus failingBus = mock(MainEventBus.class);
+        doThrow(new RuntimeException("submit failed"))
+                .when(failingBus).submit(anyString(), any(), any());
+
+        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(failingBus)
+                .taskId(TASK_ID)
+                .queueSize(2)
+                .build();
+        assertEquals(0, mainQueue.size(), "No permits should be in use before enqueue");
+
+        assertThrows(RuntimeException.class,
+                () -> mainQueue.enqueueEvent(fromJson(MINIMAL_TASK, Task.class)));
+
+        // If the permit leaked, size() would be 1 (one permit held forever). It must be
+        // released when submit() fails because MainEventBusProcessor never saw the event
+        // and therefore never called releaseSemaphore().
+        assertEquals(0, mainQueue.size(), "Semaphore permit must be released on submit failure");
     }
 }
