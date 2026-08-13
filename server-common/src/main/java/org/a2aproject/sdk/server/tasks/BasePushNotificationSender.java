@@ -68,7 +68,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
     public BasePushNotificationSender(PushNotificationConfigStore configStore,
                                        Instance<PushNotificationPayloadFormatter> formatters,
                                        Instance<A2AHttpClient> httpClientInstance) {
-        if (!httpClientInstance.isUnsatisfied()) {
+        if (httpClientInstance.isResolvable()) {
             this.httpClient = httpClientInstance.get();
         } else {
             this.httpClient = A2AHttpClientFactory.create();
