@@ -119,6 +119,20 @@ public class GrpcErrorMapperTest {
     }
 
     @Test
+    public void testUnsupportedOperationErrorFallbackUsesFailedPrecondition() {
+        String errorMessage = "Operation not supported";
+        StatusRuntimeException grpcException = Status.FAILED_PRECONDITION
+                .withDescription(errorMessage)
+                .asRuntimeException();
+
+        A2AClientException result = GrpcErrorMapper.mapGrpcError(grpcException);
+
+        assertNotNull(result);
+        assertNotNull(result.getCause());
+        assertInstanceOf(UnsupportedOperationError.class, result.getCause());
+    }
+
+    @Test
     public void testInvalidParamsErrorUnmarshalling() {
         String errorMessage = "Invalid parameters provided";
         StatusRuntimeException grpcException = createA2AStatusException(

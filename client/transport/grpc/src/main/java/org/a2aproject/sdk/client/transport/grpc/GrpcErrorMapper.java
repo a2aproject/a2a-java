@@ -74,7 +74,8 @@ public class GrpcErrorMapper {
         String desc = message != null ? message : e.getMessage() == null ? "" : e.getMessage();
         return switch (code) {
             case NOT_FOUND -> new A2AClientException(errorPrefix + desc, new TaskNotFoundError());
-            case UNIMPLEMENTED -> new A2AClientException(errorPrefix + desc, new UnsupportedOperationError());
+            case UNIMPLEMENTED, FAILED_PRECONDITION ->
+                    new A2AClientException(errorPrefix + desc, new UnsupportedOperationError());
             case INVALID_ARGUMENT -> new A2AClientException(errorPrefix + desc, new InvalidParamsError());
             case INTERNAL -> new A2AClientException(errorPrefix + desc, new org.a2aproject.sdk.spec.InternalError(null, desc, null));
             case UNAUTHENTICATED -> new A2AClientException(errorPrefix + A2AErrorMessages.AUTHENTICATION_FAILED);
