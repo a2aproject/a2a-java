@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.AgentCardValidator;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -124,11 +126,12 @@ public class RestHandler {
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
     // final, is not proxyable in all runtimes
-    private AgentCard agentCard;
+    private Instance<AgentCard> agentCardInstance;
     private @Nullable Instance<AgentCard> extendedAgentCard;
     private AgentCardCacheMetadata cacheMetadata;
     private RequestHandler requestHandler;
     private Executor executor;
+    private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -144,23 +147,21 @@ public class RestHandler {
     /**
      * Creates a REST handler with full CDI injection support.
      *
-     * @param agentCard the public agent card containing agent capabilities
+     * @param agentCardInstance the public agent card instance containing agent capabilities
      * @param extendedAgentCard optional extended agent card instance
      * @param cacheMetadata the agent card caching metadata
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
     @Inject
-    public RestHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
+    public RestHandler(@PublicAgentCard Instance<AgentCard> agentCardInstance,
+            @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
             AgentCardCacheMetadata cacheMetadata, RequestHandler requestHandler, @Internal Executor executor) {
-        this.agentCard = agentCard;
+        this.agentCardInstance = agentCardInstance;
         this.extendedAgentCard = extendedAgentCard;
         this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
         this.executor = executor;
-
-        // Validate transport configuration
-        AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
     /**
@@ -173,7 +174,7 @@ public class RestHandler {
      */
     public RestHandler(AgentCard agentCard, AgentCardCacheMetadata cacheMetadata,
             RequestHandler requestHandler, Executor executor) {
-        this.agentCard = agentCard;
+        this.agentCardInstance = new FixedInstance<>(agentCard);
         this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
         this.executor = executor;
@@ -227,8 +228,8 @@ public class RestHandler {
      */
     public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
         try {
-            A2AVersionValidator.validateProtocolVersion(agentCard, context);
-            A2AExtensions.validateRequiredExtensions(agentCard, context);
+            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
             org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
@@ -292,11 +293,11 @@ public class RestHandler {
      */
     public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
         try {
-            if (!agentCard.capabilities().streaming()) {
+            if (!resolveAgentCard().capabilities().streaming()) {
                 return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
-            A2AVersionValidator.validateProtocolVersion(agentCard, context);
-            A2AExtensions.validateRequiredExtensions(agentCard, context);
+            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
             org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
@@ -369,7 +370,7 @@ public class RestHandler {
      */
     public HTTPRestResponse createTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String body, String taskId) {
         try {
-            if (!agentCard.capabilities().pushNotifications()) {
+            if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
@@ -424,7 +425,7 @@ public class RestHandler {
      */
     public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
         try {
-            if (!agentCard.capabilities().streaming()) {
+            if (!resolveAgentCard().capabilities().streaming()) {
                 return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
             TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
@@ -581,7 +582,7 @@ public class RestHandler {
      */
     public HTTPRestResponse getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
         try {
-            if (!agentCard.capabilities().pushNotifications()) {
+            if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
             GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId, tenant);
@@ -606,7 +607,7 @@ public class RestHandler {
      */
     public HTTPRestResponse listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, String taskId, int pageSize, String pageToken) {
         try {
-            if (!agentCard.capabilities().pushNotifications()) {
+            if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
             ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, pageSize, pageToken, tenant);
@@ -630,7 +631,7 @@ public class RestHandler {
      */
     public HTTPRestResponse deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
         try {
-            if (!agentCard.capabilities().pushNotifications()) {
+            if (!resolveAgentCard().capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
             DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(taskId, configId, tenant);
@@ -814,7 +815,7 @@ public class RestHandler {
      */
     public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, String tenant) {
         try {
-            if (!agentCard.capabilities().extendedAgentCard()) {
+            if (!resolveAgentCard().capabilities().extendedAgentCard()) {
                 throw new UnsupportedOperationError();
             }
             if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
@@ -863,9 +864,13 @@ public class RestHandler {
      * @see AgentCard
      * @see #getExtendedAgentCard(ServerCallContext, String)
      */
+    private AgentCard resolveAgentCard() {
+        return AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated);
+    }
+
     public HTTPRestResponse getAgentCard() {
         try {
-            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(agentCard),
+            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(resolveAgentCard()),
                     cacheMetadata.getHttpHeadersMap());
         } catch (Throwable t) {
             return createErrorResponse(500, internalError(t));

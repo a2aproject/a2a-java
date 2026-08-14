@@ -17,6 +17,10 @@
     <name>Java A2A SDK Tests Multi-Version gRPC</name>
     <description>Tests for multi-version v1.0/v0.3 gRPC deployment</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <!-- v1.0 gRPC reference server -->
         <dependency>

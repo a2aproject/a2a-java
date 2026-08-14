@@ -13,6 +13,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -690,6 +693,52 @@ class InMemoryPushNotificationConfigStoreTest {
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
         assertTrue(result.configs().stream().noneMatch(c -> "cfg-overflow".equals(c.id())));
+    }
+
+    @Test
+    public void testConcurrentSetInfoAtLimitOnlyOneSucceeds() throws InterruptedException {
+        String taskId = "task_concurrent_limit";
+        int limit = InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK;
+
+        // Fill to limit - 1, leaving exactly one slot open
+        for (int i = 0; i < limit - 1; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger errorCount = new AtomicInteger(0);
+
+        Runnable contestant = () -> {
+            try {
+                barrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            try {
+                configStore.setInfo(createSamplePushConfig(taskId,
+                        "http://concurrent.com/callback",
+                        "cfg-concurrent-" + Thread.currentThread().getId(), null));
+                successCount.incrementAndGet();
+            } catch (InvalidParamsError e) {
+                errorCount.incrementAndGet();
+            }
+        };
+
+        Thread t1 = new Thread(contestant);
+        Thread t2 = new Thread(contestant);
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        assertEquals(1, successCount.get(), "Exactly one thread should succeed");
+        assertEquals(1, errorCount.get(), "Exactly one thread should be rejected");
+
+        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(limit, result.configs().size(), "Store must be at exactly the limit after the race");
     }
 
     @Test

@@ -74,8 +74,8 @@ import org.jspecify.annotations.Nullable;
 @Blocking
 public class QuarkusGrpcHandler extends GrpcHandler {
 
-    private final AgentCard agentCard;
-    private final AgentCard extendedAgentCard;
+    private final Instance<AgentCard> agentCard;
+    private final @Nullable Instance<AgentCard> extendedAgentCard;
     private final RequestHandler requestHandler;
     private final Instance<CallContextFactory> callContextFactoryInstance;
     private final Executor executor;
@@ -106,17 +106,13 @@ public class QuarkusGrpcHandler extends GrpcHandler {
      * @param executor the executor for async operations (qualified with {@code @Internal})
      */
     @Inject
-    public QuarkusGrpcHandler(@PublicAgentCard AgentCard agentCard,
+    public QuarkusGrpcHandler(@PublicAgentCard Instance<AgentCard> agentCard,
                               @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
                               RequestHandler requestHandler,
                               Instance<CallContextFactory> callContextFactoryInstance,
                               @Internal Executor executor) {
         this.agentCard = agentCard;
-        if (extendedAgentCard != null && extendedAgentCard.isResolvable()) {
-            this.extendedAgentCard = extendedAgentCard.get();
-        } else {
-            this.extendedAgentCard = null;
-        }
+        this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
         this.callContextFactoryInstance = callContextFactoryInstance;
         this.executor = executor;
@@ -129,12 +125,15 @@ public class QuarkusGrpcHandler extends GrpcHandler {
 
     @Override
     protected AgentCard getAgentCard() {
-        return agentCard;
+        return agentCard.get();
     }
 
     @Override
     protected AgentCard getExtendedAgentCard() {
-        return extendedAgentCard;
+        if (extendedAgentCard != null && extendedAgentCard.isResolvable()) {
+            return extendedAgentCard.get();
+        }
+        return null;
     }
 
     @Override
