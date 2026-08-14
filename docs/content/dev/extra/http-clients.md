@@ -6,7 +6,7 @@ layout: page
 
 # HTTP Clients
 
-The A2A SDK uses an `A2AHttpClient` abstraction for all HTTP communication — fetching agent cards, making transport calls, and Server-Sent Events (SSE) streaming. By default, the SDK uses a JDK 11+ HttpClient implementation. These extras provide alternative implementations.
+The A2A SDK uses an `A2AHttpClient` abstraction for all HTTP communication — fetching agent cards, making transport calls, and Server-Sent Events (SSE) streaming. By default, the SDK uses a JDK 11+ HttpClient implementation. These extras provide alternative implementations or a CDI-based extension point for custom clients.
 
 ## Vert.x HTTP Client
 
@@ -53,7 +53,19 @@ For non-Quarkus environments, also add `vertx-web-client`:
 
 ### 2. Automatic Discovery (No Code Changes)
 
-The `VertxA2AHttpClientProvider` has **priority 100** (vs. 0 for the JDK client). The SDK's `A2AHttpClientFactory` uses `ServiceLoader` to discover and select the highest-priority provider available:
+The `VertxA2AHttpClientProvider` has **priority 100**. The SDK's `A2AHttpClientFactory` discovers all registered providers via `ServiceLoader`, sorts them by descending priority, and tries each in order, falling back to the next one on failure.
+
+To force a specific provider by name (useful in tests), use `A2AHttpClientFactory.create(String providerName)`:
+
+```java
+// Force the JDK client regardless of what else is on the classpath
+try (A2AHttpClient client = A2AHttpClientFactory.create("jdk")) {
+    // ...
+}
+```
+
+Available built-in provider names: `jdk`, `vertx`, `android`, `cdi`.
+
 
 ```java
 // No changes needed — A2A SDK automatically uses VertxA2AHttpClient
@@ -65,7 +77,7 @@ Client client = Client.builder(card)
     .build();
 ```
 
-If Vert.x classes are not on the classpath, the provider returns priority `-1` and the SDK falls back to the JDK HttpClient.
+If Vert.x classes are not on the classpath, the provider returns priority `-1` and the SDK falls back to the next available provider.
 
 ### Usage Examples
 
@@ -205,3 +217,52 @@ The `AndroidA2AHttpClientProvider` has **priority 110** and detects the Android 
 - **SSE streaming** via `getAsyncSSE()` and `postAsyncSSE()` — async operations run on a dedicated cached thread pool (`A2A-Android-Net`)
 - **Timeouts**: 15 s connection, 60 s read
 - **Response size limit**: 10 MB
+
+## CDI HTTP Client
+
+Allows providing a fully custom `A2AHttpClient` bean through the CDI container. When this module is on the classpath and a user-provided `A2AHttpClient` bean is registered, it is used in place of any other provider.
+
+### When to Use
+
+- Quarkus or Jakarta EE applications that need a custom HTTP client (specific TLS configuration, connection pooling, tracing, etc.)
+- When neither the JDK nor the Vert.x client meets your requirements out of the box
+
+### 1. Add Dependency
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-http-client-cdi</artifactId>
+</dependency>
+```
+
+### 2. Produce an A2AHttpClient Bean
+
+Declare a CDI producer in your application. The SDK will discover and use it automatically:
+
+```java
+@ApplicationScoped
+public class MyHttpClientProducer {
+
+    @Produces
+    @ApplicationScoped
+    public A2AHttpClient produce(MyConfig config) {
+        // return any A2AHttpClient implementation
+    }
+}
+```
+
+> **Scope requirement:** Use a normal scope such as `@ApplicationScoped`. A `@Dependent`-scoped producer will leak a new unmanaged instance on every `create()` call because the `Instance` used to obtain the bean is discarded immediately and CDI cannot destroy the dependent instance.
+
+### How It Works
+
+`CdiA2AHttpClientProvider` has **priority 200** — the highest of all built-in providers (Android: 110, Vert.x: 100, JDK: 0). The `A2AHttpClientFactory` iterates providers in descending priority order and falls back to the next one if a provider is unavailable:
+
+| Priority | Provider | Activates when |
+|----------|----------|----------------|
+| 200 | CDI | A CDI container is active and an `A2AHttpClient` bean is registered |
+| 110 | Android | Android runtime detected |
+| 100 | Vert.x | `vertx-web-client` is on the classpath |
+| 0 | JDK | Always (fallback) |
+
+If the CDI container is active but no `A2AHttpClient` bean is registered, this provider is skipped and the next available provider is used.

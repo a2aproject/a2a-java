@@ -30,7 +30,7 @@ Import the extras BOM to manage versions:
 
 ## [HTTP Clients](../extra/http-clients)
 
-Alternative `A2AHttpClient` implementations. The **Vert.x HTTP Client** (`a2a-java-sdk-http-client-vertx`) replaces the default JDK HttpClient with a reactive, non-blocking Vert.x WebClient — recommended for Quarkus, reactive frameworks, and high-throughput scenarios. An **Android HTTP Client** (`a2a-java-sdk-http-client-android`) is also available for mobile applications.
+Alternative `A2AHttpClient` implementations. The **Vert.x HTTP Client** (`a2a-java-sdk-http-client-vertx`) replaces the default JDK HttpClient with a reactive, non-blocking Vert.x WebClient — recommended for Quarkus, reactive frameworks, and high-throughput scenarios. An **Android HTTP Client** (`a2a-java-sdk-http-client-android`) is available for mobile applications. The **CDI HTTP Client** (`a2a-java-sdk-http-client-cdi`) lets you supply any custom `A2AHttpClient` bean via the CDI container, taking highest priority (200) over all built-in providers.
 
 ## [Storage & Persistence](../extra/storage)
 

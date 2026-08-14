@@ -60,6 +60,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <mapstruct-spi-protobuf.version>1.62.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.23.0</mockito-core.version>
+        <weld-se-core.version>5.1.7.Final</weld-se-core.version>
         <mockserver.version>6.1.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
@@ -347,6 +348,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se-core</artifactId>
+                <version>${weld-se-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.mock-server</groupId>
                 <artifactId>mockserver-netty</artifactId>
                 <version>${mockserver.version}</version>
@@ -584,6 +591,7 @@
         <module>extras/queue-manager-replicated</module>
         <module>extras/http-client-vertx</module>
         <module>extras/http-client-android</module>
+        <module>extras/http-client-cdi</module>
         <module>http-client</module>
         <module>jsonrpc-common</module>
         <module>integrations/microprofile-config</module>

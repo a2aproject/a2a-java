@@ -10,8 +10,9 @@ import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
  * Service provider for {@link VertxA2AHttpClient}.
  *
  * <p>
- * This provider has a higher priority (100) than the JDK implementation and will be
- * preferred when the Vert.x dependencies are available on the classpath.
+ * This provider has priority 100, placing it above the JDK implementation (0) but below
+ * the Android (110) and CDI (200) providers. It is preferred over JDK when the Vert.x
+ * dependencies are available on the classpath.
  *
  * <p>
  * If Vert.x classes are not available at runtime, this provider will check for their
@@ -20,8 +21,8 @@ import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
  */
 public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(VertxA2AHttpClientProvider.class.getName());
     private static final boolean VERTX_AVAILABLE = isVertxAvailable();
-    private static final Logger log = Logger.getLogger(VertxA2AHttpClientProvider.class.getName());
 
     private static boolean isVertxAvailable() {
         try {
@@ -29,7 +30,7 @@ public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
             Class.forName("io.vertx.ext.web.client.WebClient");
             return true;
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(VertxA2AHttpClientProvider.class.getName()).log(Level.FINE, "Vert.x classes are not available on the classpath. Falling back to other providers.", ex);
+            LOGGER.log(Level.FINE, "Vert.x classes are not available on the classpath. Falling back to other providers.", ex);
             return false;
         }
     }
