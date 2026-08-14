@@ -1344,6 +1344,28 @@ public class DefaultRequestHandlerTest {
     }
 
     @Test
+    void testInputRequired_Blocking_ReturnsQuickly() throws Exception {
+        agentExecutorExecute = (context, emitter) -> emitter.requiresInput();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(MESSAGE)
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(false)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
+
+        long start = System.nanoTime();
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertInstanceOf(Task.class, result);
+        assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED, ((Task) result).status().state());
+        assertTrue(elapsedMs < 1500,
+            "Blocking send should return quickly for INPUT_REQUIRED, not wait out the consumption timeout (took " + elapsedMs + "ms)");
+    }
+
+    @Test
     void testOnGetTaskHistoryLengthLimitsHistory() throws Exception {
         Task task = taskWithHistory("task-hl-limit");
         taskStore.save(task, false);

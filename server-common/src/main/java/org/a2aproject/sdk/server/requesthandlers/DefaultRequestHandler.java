@@ -685,7 +685,9 @@ public class DefaultRequestHandler implements RequestHandler {
                 // 5. Fetch current task state from TaskStore (includes all consumed & persisted events)
                 LOGGER.debug("DefaultRequestHandler: Entering blocking fire-and-forget handling for task {}", taskId.get());
 
-                boolean isAsync = isAgentAsync(producerRunnable);
+                boolean isInterruptedState = kind instanceof Task interruptedTask
+                        && interruptedTask.status().state().isInterrupted();
+                boolean isAsync = isAgentAsync(producerRunnable) && !isInterruptedState;
                 try {
                     // Step 1: Wait for the agent to finish, unless already handed off asynchronously.
                     if (agentFuture != null && !isAsync) {
@@ -702,7 +704,7 @@ public class DefaultRequestHandler implements RequestHandler {
                     // Step 2: Close the queue to signal consumption can complete (fire-and-forget
                     // tasks have no final event otherwise). Re-check isAsync since Step 1 may have
                     // changed it.
-                    isAsync = isAgentAsync(producerRunnable);
+                    isAsync = isAgentAsync(producerRunnable) && !isInterruptedState;
                     if (!isAsync) {
                         queue.close(false, false);  // graceful close, don't notify parent yet
                         LOGGER.debug("DefaultRequestHandler: Step 2 - Closed queue for task {} to allow consumption completion", taskId.get());
