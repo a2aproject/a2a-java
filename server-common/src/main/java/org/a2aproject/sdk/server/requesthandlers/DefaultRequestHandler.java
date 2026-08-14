@@ -196,6 +196,7 @@ public class DefaultRequestHandler implements RequestHandler {
     private static final String A2A_BLOCKING_AGENT_TIMEOUT_SECONDS = "a2a.blocking.agent.timeout.seconds";
     private static final String A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS = "a2a.blocking.consumption.timeout.seconds";
     private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS = "a2a.blocking.reconciliation.timeout.seconds";
+    private static final String A2A_ASYNC_AGENT_TIMEOUT_SECONDS = "a2a.async-agent.timeout.seconds";
     private static final String A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS = "a2a.request-context.populate-referred-tasks";
 
     @Inject
@@ -244,6 +245,18 @@ public class DefaultRequestHandler implements RequestHandler {
      * (e.g., MicroProfileConfigProvider in reference implementations).
      */
     int reconciliationTimeoutSeconds;
+
+    /**
+     * Timeout in seconds to wait for an async agent (one that returns from {@code execute()}
+     * without reaching a terminal {@link AgentEmitter} state) to eventually complete. Bounds
+     * otherwise-unbounded polling if the agent's background work crashes or hangs.
+     * <p>
+     * Property: {@code a2a.async-agent.timeout.seconds}<br>
+     * Default: 60 seconds<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath
+     * (e.g., MicroProfileConfigProvider in reference implementations).
+     */
+    int asyncAgentTimeoutSeconds;
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -308,6 +321,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
         reconciliationTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
+        asyncAgentTimeoutSeconds = Integer.parseInt(
+                configProvider.getValue(A2A_ASYNC_AGENT_TIMEOUT_SECONDS));
         if (authorizationProviderInstance != null && authorizationProviderInstance.isResolvable()) {
             authorizationProvider = authorizationProviderInstance.get();
         }
@@ -392,6 +407,7 @@ public class DefaultRequestHandler implements RequestHandler {
             handler.agentCompletionTimeoutSeconds = 5;
             handler.consumptionCompletionTimeoutSeconds = 2;
             handler.reconciliationTimeoutSeconds = 1;
+            handler.asyncAgentTimeoutSeconds = 60;
             handler.authorizationProvider = authorizationProvider;
             handler.requestContextBuilder =
                     () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
@@ -486,6 +502,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
         EventQueue queue = queueManager.createOrTap(task.id());
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
+        consumer.setAsyncAgentTimeoutSeconds(asyncAgentTimeoutSeconds);
 
         // Call agentExecutor.cancel() to enqueue the CANCELED event
         RequestContext cancelRequestContext = requestContextBuilder.get()
@@ -577,6 +594,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
         // Create consumer BEFORE starting agent - callback is registered inside registerAndExecuteAgentAsync
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
+        consumer.setAsyncAgentTimeoutSeconds(asyncAgentTimeoutSeconds);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue, consumer.createAgentRunnableDoneCallback());
 
@@ -635,10 +653,10 @@ public class DefaultRequestHandler implements RequestHandler {
                 // 5. Fetch current task state from TaskStore (includes all consumed & persisted events)
                 LOGGER.debug("DefaultRequestHandler: Entering blocking fire-and-forget handling for task {}", taskId.get());
 
+                boolean isAsync = isAgentAsync(producerRunnable);
                 try {
-                    // Step 1: Wait for agent to finish (with configurable timeout)
-                    // Note: We evaluate isAgentAsync dynamically because the agent sets it inside its run()
-                    if (agentFuture != null && !(producerRunnable.getEmitter() != null && producerRunnable.getEmitter().isAsync())) {
+                    // Step 1: Wait for the agent to finish, unless already handed off asynchronously.
+                    if (agentFuture != null && !isAsync) {
                         try {
                             agentFuture.get(agentCompletionTimeoutSeconds, SECONDS);
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent completed for task {}", taskId.get());
@@ -647,17 +665,13 @@ public class DefaultRequestHandler implements RequestHandler {
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent still running for task {} after {}s timeout",
                                 taskId.get(), agentCompletionTimeoutSeconds);
                         }
-                    } else if (producerRunnable.getEmitter() != null && producerRunnable.getEmitter().isAsync()) {
-                        LOGGER.debug("DefaultRequestHandler: Step 1 - Agent is async, skipping agentFuture wait for task {}", taskId.get());
                     }
 
-                    // Step 2: Close the queue to signal consumption can complete
-                    // For fire-and-forget tasks, there's no final event, so we need to close the queue
-                    // This allows EventConsumer.consumeAll() to exit
-                    // If the agent is async, it promises to emit a final event, so we don't close the queue here
-                    // Re-evaluate isAsync because the agent might have set it during Step 1
-                    boolean isFinallyAsync = producerRunnable.getEmitter() != null && producerRunnable.getEmitter().isAsync();
-                    if (!isFinallyAsync) {
+                    // Step 2: Close the queue to signal consumption can complete (fire-and-forget
+                    // tasks have no final event otherwise). Re-check isAsync since Step 1 may have
+                    // changed it.
+                    isAsync = isAgentAsync(producerRunnable);
+                    if (!isAsync) {
                         queue.close(false, false);  // graceful close, don't notify parent yet
                         LOGGER.debug("DefaultRequestHandler: Step 2 - Closed queue for task {} to allow consumption completion", taskId.get());
                     } else {
@@ -691,10 +705,16 @@ public class DefaultRequestHandler implements RequestHandler {
                     LOGGER.warn(msg, e.getCause());
                     throw new InternalError(msg);
                 } catch (TimeoutException e) {
-                    // Timeout from consumption future.get() - different from finalization timeout
-                    String msg = String.format("Timeout waiting for task %s consumption", taskId.get());
-                    LOGGER.warn(msg, e);
-                    throw new InternalError(msg);
+                    // For an async agent this is expected (its work legitimately hasn't finished);
+                    // EventConsumer's own fallback timeout still bounds it, so return the task's
+                    // current state instead of failing the call.
+                    if (!isAsync) {
+                        String msg = String.format("Timeout waiting for task %s consumption", taskId.get());
+                        LOGGER.warn(msg, e);
+                        throw new InternalError(msg);
+                    }
+                    LOGGER.debug("DefaultRequestHandler: Step 3 - Async agent for task {} still running after {}s, returning current state",
+                        taskId.get(), consumptionCompletionTimeoutSeconds);
                 }
 
                 // Step 5: Fetch the current task state from TaskStore
@@ -789,6 +809,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
         // Create consumer BEFORE starting agent - callback is registered inside registerAndExecuteAgentAsync
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
+        consumer.setAsyncAgentTimeoutSeconds(asyncAgentTimeoutSeconds);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue, consumer.createAgentRunnableDoneCallback());
 
@@ -992,6 +1013,7 @@ public class DefaultRequestHandler implements RequestHandler {
         // Instead of enqueuing and hoping EventConsumer polls it in time, we prepend it
         // directly to the Publisher stream, ensuring synchronous delivery to subscriber
         EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
+        consumer.setAsyncAgentTimeoutSeconds(asyncAgentTimeoutSeconds);
         Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
         LOGGER.debug("onSubscribeToTask - prepending initial task snapshot to stream, taskId: {}", params.id());
         return insertingProcessor(
@@ -1030,6 +1052,15 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private boolean shouldAddPushInfo(MessageSendParams params) {
         return pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null;
+    }
+
+    /**
+     * Returns whether the agent has handed execution off asynchronously: {@code execute()}
+     * returned without its {@link AgentEmitter} reaching a terminal state.
+     */
+    private static boolean isAgentAsync(EnhancedRunnable producerRunnable) {
+        AgentEmitter emitter = producerRunnable.getEmitter();
+        return emitter != null && !emitter.isTerminalStateReached();
     }
 
     /**
@@ -1103,12 +1134,7 @@ public class DefaultRequestHandler implements RequestHandler {
                     // Queue lifecycle is managed by EventConsumer.consumeAll()
                     // which closes the queue on final events.
                     logThreadStats("AGENT COMPLETE END");
-                    AgentEmitter emitter = runnable.getEmitter();
-                    if (emitter == null || !emitter.isAsync()) {
-                        runnable.invokeDoneCallbacks();
-                    } else {
-                        LOGGER.debug("Agent is marked as async, keeping queue open for task {}", taskId);
-                    }
+                    runnable.invokeDoneCallbacks();
                 });
         runningAgents.put(taskId, cf);
         LOGGER.debug("Registered agent for task {}, runningAgents.size() after: {}", taskId, runningAgents.size());

@@ -102,7 +102,6 @@ public class AgentEmitter {
     private final String taskId;
     private final String contextId;
     private final AtomicBoolean terminalStateReached = new AtomicBoolean(false);
-    private final AtomicBoolean isAsync = new AtomicBoolean(false);
 
     /**
      * Creates a new AgentEmitter for the given request context and event queue.
@@ -117,22 +116,16 @@ public class AgentEmitter {
     }
 
     /**
-     * Marks this agent execution as asynchronous, preventing premature queue closure
-     * before a terminal event is explicitly emitted.
+     * Returns whether a terminal status ({@link #complete}, {@link #fail}, {@link #cancel}, or
+     * {@link #reject}) has been reached.
+     * <p>
+     * If {@link org.a2aproject.sdk.server.agentexecution.AgentExecutor#execute} returns without
+     * this being true, the agent handed work off to another thread.
      *
-     * @since 1.0.0
+     * @return true if a terminal status has been reached
      */
-    public void keepAlive() {
-        this.isAsync.set(true);
-    }
-
-    /**
-     * Returns whether this emitter has been marked for asynchronous execution.
-     *
-     * @return true if keepAlive() has been called
-     */
-    public boolean isAsync() {
-        return isAsync.get();
+    public boolean isTerminalStateReached() {
+        return terminalStateReached.get();
     }
 
     /**
