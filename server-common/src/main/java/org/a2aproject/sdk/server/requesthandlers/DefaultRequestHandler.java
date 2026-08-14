@@ -257,6 +257,18 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private final ConcurrentMap<String, CompletableFuture<Void>> runningAgents = new ConcurrentHashMap<>();
 
+    /**
+     * Per-task lock registry serializing {@link #onCancelTask} check-then-act sequences.
+     * <p>
+     * The cancel path reads the task, checks it is not already in a terminal state, and
+     * then invokes the agent executor to enqueue the CANCELED event. Without a lock, two
+     * concurrent cancels (or a cancel racing a concurrent completion) could both observe
+     * the pre-transition state and both act on it. Entries are retained for the
+     * lifetime of the JVM; the registry is bounded by the number of distinct tasks that
+     * have ever been canceled, in the same way the in-memory task store is unbounded.
+     */
+    private final ConcurrentMap<String, Object> cancelLocks = new ConcurrentHashMap<>();
+
 
     private Executor executor;
     private Executor eventConsumerExecutor;
@@ -420,7 +432,9 @@ public class DefaultRequestHandler implements RequestHandler {
      * @return the task with limited history, or the original task if no limiting needed
      */
     private static Task limitTaskHistory(Task task, @Nullable Integer historyLength) {
-        if (task.history() == null || historyLength == null || historyLength >= task.history().size()) {
+        // Negative values leave history untouched (defensive guard against IndexOutOfBoundsException)
+        if (task.history() == null || historyLength == null || historyLength < 0
+                || historyLength >= task.history().size()) {
             return task;
         }
         // Keep only the most recent historyLength messages
@@ -464,6 +478,24 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
+        // Serialize check-then-act per task so two concurrent cancels (or a cancel racing
+        // a concurrent completion) cannot both act on the pre-transition state.
+        Object cancelLock = cancelLocks.computeIfAbsent(params.id(), k -> new Object());
+        synchronized (cancelLock) {
+            try {
+                return doCancelTask(params, context);
+            } finally {
+                // After doCancelTask returns (successfully or via TaskNotCancelableError),
+                // the task is in a terminal state, so no future cancel can succeed — the
+                // state-machine guard rejects it even without the lock. Drop the entry to
+                // avoid unbounded growth of the map. The 2-arg remove keeps a concurrently
+                // created newer lock entry (for a future, already-terminal task) intact.
+                cancelLocks.remove(params.id(), cancelLock);
+            }
+        }
+    }
+
+    private Task doCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();

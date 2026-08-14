@@ -237,7 +237,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -293,7 +293,7 @@ public class RestHandler {
     public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
         try {
             if (!agentCard.capabilities().streaming()) {
-                return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
+                return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
             A2AVersionValidator.validateProtocolVersion(agentCard, context);
             A2AExtensions.validateRequiredExtensions(agentCard, context);
@@ -311,7 +311,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError(throwable.getMessage())).toJson()));
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(internalError(throwable)).toJson()));
         }
     }
 
@@ -354,7 +354,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -386,7 +386,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -425,7 +425,7 @@ public class RestHandler {
     public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
         try {
             if (!agentCard.capabilities().streaming()) {
-                return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
+                return createErrorResponse(new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             }
             TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             try {
@@ -438,7 +438,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError(throwable.getMessage())).toJson()));
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(internalError(throwable)).toJson()));
         }
     }
 
@@ -464,7 +464,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -566,7 +566,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -590,7 +590,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -615,7 +615,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -639,7 +639,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -671,7 +671,8 @@ public class RestHandler {
             String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
             return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
-            return createErrorResponse(new InternalError("Failed to serialize response: " + e.getMessage()));
+            log.log(Level.SEVERE, "Failed to serialize response", e);
+            return createErrorResponse(new InternalError("Internal error"));
         }
     }
 
@@ -689,6 +690,22 @@ public class RestHandler {
     private HTTPRestResponse createErrorResponse(int statusCode, A2AError error) {
         String jsonBody = new HTTPRestErrorResponse(error).toJson();
         return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
+    }
+
+    /**
+     * Builds a client-safe {@link InternalError} for an unexpected exception.
+     * <p>
+     * The original exception (class, message, stack trace) is logged server-side but the
+     * client receives only a generic message: leaking internal exception messages can
+     * expose file paths, library names, and other implementation details that aid server
+     * fingerprinting (CWE-209).
+     *
+     * @param t the unexpected exception
+     * @return a sanitized internal error with a generic message
+     */
+    private static InternalError internalError(Throwable t) {
+        log.log(Level.SEVERE, "Internal error while processing request", t);
+        return new InternalError("Internal error");
     }
 
     private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind> publisher) {
@@ -744,7 +761,7 @@ public class RestHandler {
                         if (throwable instanceof A2AError jsonrpcError) {
                             tube.send(new HTTPRestErrorResponse(jsonrpcError).toJson());
                         } else {
-                            tube.send(new HTTPRestErrorResponse(new InternalError(throwable.getMessage())).toJson());
+                            tube.send(new HTTPRestErrorResponse(internalError(throwable)).toJson());
                         }
                         onComplete();
                     }
@@ -807,7 +824,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
-            return createErrorResponse(500, new InternalError(t.getMessage()));
+            return createErrorResponse(500, internalError(t));
         }
     }
 
@@ -851,7 +868,7 @@ public class RestHandler {
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(agentCard),
                     cacheMetadata.getHttpHeadersMap());
         } catch (Throwable t) {
-            return createErrorResponse(500, new InternalError(t.getMessage()));
+            return createErrorResponse(500, internalError(t));
         }
     }
 

@@ -98,7 +98,7 @@ mvn quarkus:dev
 
 - [update-a2a-proto](.agents/skills/update-a2a-proto/SKILL.md) — Update the gRPC proto file `a2a.proto` from upstream and regenerate Java sources
 - [fix-tck-issue](.agents/skills/fix-tck-issue/SKILL.md) — Analyze and fix A2A TCK compatibility issues across transports
-- [release](.agents/skills/release/SKILL.md) — Guide the full release process: version bump, CI, tagging, Maven Central deploy, docs, SNAPSHOT bump
+- [release-a2a](.agents/skills/release-a2a/SKILL.md) — Guide the full release process: version bump, CI, tagging, Maven Central deploy, docs, SNAPSHOT bump
 
 ### Commands
 
