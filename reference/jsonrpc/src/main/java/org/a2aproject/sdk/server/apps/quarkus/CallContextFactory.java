@@ -52,7 +52,6 @@ import io.vertx.ext.web.RoutingContext;
  * }</pre>
  *
  * @see ServerCallContext
- * @see A2AServerRoutes#createCallContext(RoutingContext)
  */
 public interface CallContextFactory {
     /**

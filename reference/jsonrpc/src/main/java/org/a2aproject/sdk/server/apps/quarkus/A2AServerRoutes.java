@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.server.apps.quarkus;
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static io.vertx.core.http.HttpMethod.POST;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
@@ -15,6 +16,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -69,6 +71,7 @@ import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
+import org.a2aproject.sdk.server.common.quarkus.VersionRouter;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.server.util.sse.SseFormatter;
@@ -158,12 +161,20 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * <h2>Multi-Tenancy Support</h2>
- * <p>Tenant identification is extracted from the request path:
+ * <p>Tenant identification is extracted from the URL path via the {@code (?<tenant>...)} named
+ * capture group in the route regex pattern, consistent with the REST transport:
  * <ul>
  *   <li>{@code POST /} → empty tenant</li>
  *   <li>{@code POST /tenant1} → tenant "tenant1"</li>
  *   <li>{@code POST /tenant1/} → tenant "tenant1" (trailing slash stripped)</li>
+ *   <li>{@code POST /org/team} → tenant "org/team"</li>
  * </ul>
+ *
+ * <h2>Route Priority</h2>
+ * <p>The JSON-RPC route is registered as a catch-all regex ({@code ^/(?<tenant>.*)$}) with a high
+ * Vert.x {@link io.vertx.ext.web.Route#order(int) order} value ({@link #CATCH_ALL_ROUTE_ORDER}).
+ * This ensures that more specific routes (e.g. REST transport endpoints, test utilities) are
+ * always evaluated first, regardless of CDI observer ordering.
  *
  * @see JSONRPCHandler
  * @see CallContextFactory
@@ -173,6 +184,13 @@ import org.slf4j.LoggerFactory;
 public class A2AServerRoutes {
 
     private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
+
+    /**
+     * Vert.x route order for the JSON-RPC catch-all regex. Must be higher than all
+     * REST transport route orders (which range from 0 to 3) so that specific REST
+     * routes are evaluated first when both transports share the same HTTP port.
+     */
+    public static final int CATCH_ALL_ROUTE_ORDER = VersionRouter.JSONRPC_CATCH_ALL_ROUTE_ORDER;
 
     @Inject
     JSONRPCHandler jsonRpcHandler;
@@ -204,11 +222,16 @@ public class A2AServerRoutes {
      *
      * @param router the Vert.x Web Router instance to configure
      */
-    void setupRoutes(@Observes Router router) {
-        // Main JSON-RPC endpoint: POST /
-        // BodyHandler is per-route (not global) to avoid interfering with gRPC routes
+    void setupRoutes(@Observes @Priority(20) Router router) {
+        // Main JSON-RPC endpoint: wildcard POST to support tenant routing via URL path.
+        // The named capture group (?<tenant>...) exposes the path-based tenant via rc.pathParam("tenant").
+        // CATCH_ALL_ROUTE_ORDER ensures this route is evaluated AFTER more specific routes
+        // (e.g. REST transport) when both transports share the same HTTP port.
+        // BodyHandler is per-route (not global) to avoid interfering with gRPC routes.
         // ordered=false: delegation via Vert.x WebClient can share the same event loop context as the outer request; ordered=true would serialize them, causing a 30s deadlock.
-        router.post("/")
+        router.routeWithRegex("^/(?<tenant>.*)$")
+            .method(POST)
+            .order(CATCH_ALL_ROUTE_ORDER)
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
@@ -314,12 +337,13 @@ public class A2AServerRoutes {
     @Authenticated
     public void invokeJSONRPCHandler(String body, RoutingContext rc) {
         boolean streaming = false;
-        ServerCallContext context = createCallContext(rc);
+        String urlTenant = extractTenant(rc);
+        ServerCallContext context = createCallContext(rc, urlTenant);
         A2AResponse<?> nonStreamingResponse = null;
         Multi<? extends A2AResponse<?>> streamingResponse = null;
         A2AErrorResponse error = null;
         try {
-            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body, extractTenant(rc));
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body, urlTenant);
             context.getState().put(METHOD_NAME_KEY, request.getMethod());
             if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
                 nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
@@ -557,10 +581,11 @@ public class A2AServerRoutes {
      * {@link CallContextFactory#build(RoutingContext)} for custom context creation.
      *
      * @param rc the Vert.x routing context
+     * @param urlTenant the tenant identifier extracted from the URL path
      * @return the server call context
      * @see CallContextFactory
      */
-    private ServerCallContext createCallContext(RoutingContext rc) {
+    private ServerCallContext createCallContext(RoutingContext rc, String urlTenant) {
         if (callContextFactory.isUnsatisfied()) {
             User user;
             if (rc.user() == null) {
@@ -578,7 +603,7 @@ public class A2AServerRoutes {
             Set<String> headerNames = rc.request().headers().names();
             headerNames.forEach(name -> headers.put(name, rc.request().getHeader(name)));
             state.put(HEADERS_KEY, headers);
-            state.put(TENANT_KEY, extractTenant(rc));
+            state.put(TENANT_KEY, urlTenant);
             state.put(TRANSPORT_KEY, TransportProtocol.JSONRPC);
 
             // Extract requested protocol version from A2A-Version header
@@ -598,8 +623,8 @@ public class A2AServerRoutes {
     /**
      * Extracts the tenant identifier from the request path.
      *
-     * <p>The tenant is determined by the normalized path, with leading and trailing
-     * slashes stripped:
+     * <p>The tenant is captured by the named group {@code (?<tenant>...)} in the route regex,
+     * so it never includes the leading {@code /}. A trailing {@code /} is stripped for consistency:
      * <ul>
      *   <li>{@code /} → empty tenant</li>
      *   <li>{@code /tenant1} → "tenant1"</li>
@@ -611,15 +636,12 @@ public class A2AServerRoutes {
      * @return the tenant identifier, or empty string if no tenant in path
      */
     private String extractTenant(RoutingContext rc) {
-        String tenantPath = rc.normalizedPath();
+        String tenantPath = rc.pathParam("tenant");
         if (tenantPath == null || tenantPath.isBlank()) {
             return "";
         }
-        if (tenantPath.startsWith("/")) {
-            tenantPath = tenantPath.substring(1);
-        }
-        if(tenantPath.endsWith("/")) {
-            tenantPath = tenantPath.substring(0, tenantPath.length() -1);
+        if (tenantPath.endsWith("/")) {
+            tenantPath = tenantPath.substring(0, tenantPath.length() - 1);
         }
         return tenantPath;
     }

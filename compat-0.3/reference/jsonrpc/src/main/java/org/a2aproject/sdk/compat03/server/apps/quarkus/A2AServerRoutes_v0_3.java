@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.compat03.server.apps.quarkus;
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static io.vertx.core.http.HttpMethod.POST;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys_v0_3.HEADERS_KEY;
 import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys_v0_3.METHOD_NAME_KEY;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -58,6 +60,7 @@ import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3
 import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.common.quarkus.VersionRouter;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
@@ -83,9 +86,10 @@ public class A2AServerRoutes_v0_3 {
     @Inject
     VertxSecurityHelper vertxSecurityHelper;
 
-    void setupRoutes(@Observes Router router) {
-        // Main JSON-RPC endpoint: POST /
-        router.post("/")
+    void setupRoutes(@Observes @Priority(30) Router router) {
+        router.routeWithRegex("^/.*$")
+            .method(POST)
+            .order(VersionRouter.JSONRPC_CATCH_ALL_ROUTE_ORDER)
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {

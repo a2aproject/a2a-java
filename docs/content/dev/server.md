@@ -158,7 +158,11 @@ See [Configuration](configuration) for all config properties and tuning.
 
 See [Task Authorization](authorization) for per-user access control.
 
-## 6. Stream Lifecycle Hook (Optional)
+## 6. Multi-Tenancy (Optional)
+
+See [Multi-Tenancy](multi-tenancy) for path-based tenant routing — an SDK extension that lets a single server handle multiple tenants via URL prefix (e.g. `POST /acme/message:send`).
+
+## 7. Stream Lifecycle Hook (Optional)
 
 The `TaskStreamLifecycleHook` lets you observe and control streaming connections for a task. You are notified when clients subscribe, unsubscribe, or when events are distributed, and you can close all active streams on demand via the `StreamCloseHandle`.
 

@@ -8,6 +8,13 @@ public final class VersionRouter {
     public static final String VERSION_1_0 = "1.0";
     public static final String VERSION_0_3 = "0.3";
 
+    /**
+     * Vert.x route order for any JSON-RPC catch-all regex route.
+     * Must be higher than all REST transport route orders (0–3) so that specific REST
+     * routes are evaluated first when both transports share the same HTTP port.
+     */
+    public static final int JSONRPC_CATCH_ALL_ROUTE_ORDER = 100;
+
     private VersionRouter() {
     }
 

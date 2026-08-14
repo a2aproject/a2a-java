@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Produces;
@@ -48,7 +49,7 @@ public class A2ATestRoutes {
     @Inject
     Tracer tracer;
 
-    void setupRoutes(@Observes Router router) {
+    void setupRoutes(@Observes @Priority(1) Router router) {
         router.post("/test/task")
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())

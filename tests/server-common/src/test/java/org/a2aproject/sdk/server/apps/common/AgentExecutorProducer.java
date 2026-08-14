@@ -114,6 +114,15 @@ public class AgentExecutorProducer {
                     return;
                 }
 
+                // Tenant inspection test: emits the tenant seen by the executor as an artifact
+                if (input.startsWith("tenant-echo:")) {
+                    String tenant = context.getTenant();
+                    agentEmitter.startWork();
+                    agentEmitter.addArtifact(List.of(new TextPart(tenant != null ? tenant : "")));
+                    agentEmitter.complete();
+                    return;
+                }
+
                 if ("task-not-supported-123".equals(taskId)) {
                     throw new UnsupportedOperationError();
                 }

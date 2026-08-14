@@ -7,6 +7,7 @@ import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -43,7 +44,7 @@ public class A2ATestRoutes {
         A2AServerRoutes_v0_3.setStreamingMultiSseSupportSubscribedRunnable(callback);
     }
 
-    void setupRoutes(@Observes Router router) {
+    void setupRoutes(@Observes @Priority(1) Router router) {
         router.post("/test/task")
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())

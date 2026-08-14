@@ -1,13 +1,18 @@
 package org.a2aproject.sdk.grpc.utils;
 
 import static org.a2aproject.sdk.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
+import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -23,10 +28,17 @@ import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2ARequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.Message;
@@ -538,6 +550,300 @@ public class JSONRPCUtilsTest {
             "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
         assertFalse(json.contains("\\u003e"),
             "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
+    }
+
+    // --- Tenant fallback injection tests ---
+
+    @Test
+    public void testTenantFallback_SendMessage_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "SendMessage",
+              "id": "1",
+              "params": {
+                "message": {
+                  "messageId": "msg-1",
+                  "contextId": "ctx-1",
+                  "role": "ROLE_USER",
+                  "parts": [{"text": "hi"}]
+                }
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "my-org");
+
+        assertInstanceOf(SendMessageRequest.class, parsed);
+        assertEquals("my-org", ((SendMessageRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantMismatch_urlAndBodyDiffer_throwsInvalidParams() {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "SendMessage",
+              "id": "2",
+              "params": {
+                "tenant": "body-tenant",
+                "message": {
+                  "messageId": "msg-2",
+                  "contextId": "ctx-2",
+                  "role": "ROLE_USER",
+                  "parts": [{"text": "hi"}]
+                }
+              }
+            }
+            """;
+
+        assertThrows(InvalidParamsJsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(request, "path-tenant"));
+    }
+
+    @Test
+    public void testTenantMatch_urlAndBodySame_succeeds() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "SendMessage",
+              "id": "2b",
+              "params": {
+                "tenant": "acme",
+                "message": {
+                  "messageId": "msg-2b",
+                  "contextId": "ctx-2b",
+                  "role": "ROLE_USER",
+                  "parts": [{"text": "hi"}]
+                }
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(SendMessageRequest.class, parsed);
+        assertEquals("acme", ((SendMessageRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_SendMessage_blankBodyTenantUsesPathTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "SendMessage",
+              "id": "3",
+              "params": {
+                "tenant": "",
+                "message": {
+                  "messageId": "msg-3",
+                  "contextId": "ctx-3",
+                  "role": "ROLE_USER",
+                  "parts": [{"text": "hi"}]
+                }
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "path-tenant");
+
+        assertInstanceOf(SendMessageRequest.class, parsed);
+        assertEquals("path-tenant", ((SendMessageRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_SendMessage_noPathTenantAndNoBodyTenant_tenantIsNull() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "SendMessage",
+              "id": "4",
+              "params": {
+                "message": {
+                  "messageId": "msg-4",
+                  "contextId": "ctx-4",
+                  "role": "ROLE_USER",
+                  "parts": [{"text": "hi"}]
+                }
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, null);
+
+        assertInstanceOf(SendMessageRequest.class, parsed);
+        assertNull(((SendMessageRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_GetTask_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "GetTask",
+              "id": "5",
+              "params": {
+                "id": "task-abc"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(GetTaskRequest.class, parsed);
+        assertEquals("acme", ((GetTaskRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_CancelTask_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "CancelTask",
+              "id": "6",
+              "params": {
+                "id": "task-abc"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(CancelTaskRequest.class, parsed);
+        assertEquals("acme", ((CancelTaskRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_ListTasks_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "7",
+              "params": {}
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(ListTasksRequest.class, parsed);
+        assertEquals("acme", ((ListTasksRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_SubscribeToTask_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "SubscribeToTask",
+              "id": "8",
+              "params": {
+                "id": "task-abc"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(SubscribeToTaskRequest.class, parsed);
+        assertEquals("acme", ((SubscribeToTaskRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_GetTaskPushNotificationConfig_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "GetTaskPushNotificationConfig",
+              "id": "9",
+              "params": {
+                "taskId": "task-abc",
+                "id": "cfg-1"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(GetTaskPushNotificationConfigRequest.class, parsed);
+        assertEquals("acme", ((GetTaskPushNotificationConfigRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantMismatch_GetTask_urlAndBodyDiffer_throwsInvalidParams() {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "GetTask",
+              "id": "gt-mismatch",
+              "params": {
+                "id": "task-xyz",
+                "tenant": "body-tenant"
+              }
+            }
+            """;
+
+        assertThrows(InvalidParamsJsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(request, "path-tenant"));
+    }
+
+    @Test
+    public void testTenantFallback_SetTaskPushNotificationConfig_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "CreateTaskPushNotificationConfig",
+              "id": "10",
+              "params": {
+                "id": "cfg-1",
+                "url": "https://example.com/hook"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(CreateTaskPushNotificationConfigRequest.class, parsed);
+        assertEquals("acme", ((CreateTaskPushNotificationConfigRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_DeleteTaskPushNotificationConfig_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "DeleteTaskPushNotificationConfig",
+              "id": "11",
+              "params": {
+                "taskId": "task-abc",
+                "id": "cfg-1"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(DeleteTaskPushNotificationConfigRequest.class, parsed);
+        assertEquals("acme", ((DeleteTaskPushNotificationConfigRequest) parsed).getParams().tenant());
+    }
+
+    @Test
+    public void testTenantFallback_ListTaskPushNotificationConfigs_usesPathTenantWhenBodyOmitsTenant() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTaskPushNotificationConfigs",
+              "id": "12",
+              "params": {
+                "taskId": "task-abc"
+              }
+            }
+            """;
+
+        A2ARequest<?> parsed = JSONRPCUtils.parseRequestBody(request, "acme");
+
+        assertInstanceOf(ListTaskPushNotificationConfigsRequest.class, parsed);
+        assertEquals("acme", ((ListTaskPushNotificationConfigsRequest) parsed).getParams().tenant());
     }
 
 }

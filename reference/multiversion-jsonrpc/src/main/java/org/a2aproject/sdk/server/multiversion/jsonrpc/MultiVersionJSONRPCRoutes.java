@@ -1,7 +1,9 @@
 package org.a2aproject.sdk.server.multiversion.jsonrpc;
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static io.vertx.core.http.HttpMethod.POST;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -10,6 +12,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.a2aproject.sdk.compat03.server.apps.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
+import static org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.CATCH_ALL_ROUTE_ORDER;
+
 import org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes;
 import org.a2aproject.sdk.server.common.quarkus.VersionRouter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
@@ -31,9 +35,10 @@ public class MultiVersionJSONRPCRoutes {
     @Inject
     VertxSecurityHelper vertxSecurityHelper;
 
-    void setupRoutes(@Observes Router router) {
-        router.post("/")
-            .order(-1)
+    void setupRoutes(@Observes @Priority(10) Router router) {
+        router.routeWithRegex("^/(?<tenant>.*)$")
+            .method(POST)
+            .order(CATCH_ALL_ROUTE_ORDER)
             .consumes("application/json")
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {

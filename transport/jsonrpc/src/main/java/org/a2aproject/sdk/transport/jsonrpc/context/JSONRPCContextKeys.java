@@ -31,7 +31,14 @@ public final class JSONRPCContextKeys {
     public static final String METHOD_NAME_KEY = "method";
 
     /**
-     * Context key for storing the tenant identifier extracted from the normalized path.
+     * Context key for storing the tenant identifier extracted from the URL path.
+     *
+     * <p><b>Note:</b> This key stores the URL path tenant (e.g. {@code "acme"} for
+     * {@code POST /acme}). When the effective tenant comes solely from the JSON-RPC
+     * {@code params} body (i.e. the URL path is {@code /} but {@code params.tenant} is
+     * non-blank), this key will be an empty string. Use
+     * {@link org.a2aproject.sdk.server.agentexecution.RequestContext#getTenant()} as the
+     * authoritative source for the effective tenant in handler and executor code.
      */
     public static final String TENANT_KEY = "tenant";
 
