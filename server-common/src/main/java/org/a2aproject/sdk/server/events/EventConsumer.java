@@ -58,7 +58,35 @@ public class EventConsumer {
     // the write callback, causing onComplete to fire before the HTTP response.write()
     // callback confirms the data was sent.  This sleep ensures the write callback fires
     // first, so response.end() is only called after the data is safely in flight.
-    private static final int BUFFER_FLUSH_DELAY_MS = 150;
+    //
+    // The delay only applies once per stream, when the final event is sent. It is
+    // configurable via the system property {@value #BUFFER_FLUSH_DELAY_MS_PROPERTY}
+    // (milliseconds, default 150, minimum 0) so operators can trade flush reliability
+    // against stream-termination latency for their transport.
+    private static final int DEFAULT_BUFFER_FLUSH_DELAY_MS = 150;
+    private static final String BUFFER_FLUSH_DELAY_MS_PROPERTY = "a2a.eventconsumer.bufferFlushDelayMs";
+
+    /**
+     * Returns the configured buffer-flush delay in milliseconds.
+     *
+     * <p>Reads the {@value #BUFFER_FLUSH_DELAY_MS_PROPERTY} system property; absent or
+     * non-numeric values fall back to the default, negative values are clamped to 0.</p>
+     *
+     * @return the delay in milliseconds (never negative)
+     */
+    static int bufferFlushDelayMs() {
+        String configured = System.getProperty(BUFFER_FLUSH_DELAY_MS_PROPERTY);
+        if (configured == null) {
+            return DEFAULT_BUFFER_FLUSH_DELAY_MS;
+        }
+        try {
+            return Math.max(0, Integer.parseInt(configured.trim()));
+        } catch (NumberFormatException e) {
+            LOGGER.warn("Invalid {} value '{}', falling back to default {}",
+                    BUFFER_FLUSH_DELAY_MS_PROPERTY, configured, DEFAULT_BUFFER_FLUSH_DELAY_MS);
+            return DEFAULT_BUFFER_FLUSH_DELAY_MS;
+        }
+    }
 
     public EventConsumer(EventQueue queue, Executor executor) {
         this.queue = queue;
@@ -238,6 +266,8 @@ public class EventConsumer {
                             if (event instanceof TaskStatusUpdateEvent tue && tue.isFinal()) {
                                 isFinalEvent = true;
                             } else if (event instanceof Message) {
+                                // Per A2A spec §3.1.2 (Send Streaming Message): a Message is the
+                                // complete response — the stream must close after delivering it.
                                 isFinalEvent = true;
                             } else if (event instanceof Task task) {
                                 isFinalEvent = isStreamTerminatingTask(task);
@@ -272,10 +302,13 @@ public class EventConsumer {
                                 // of the write callback, causing response.end() to race with a pending
                                 // response.write().  This delay ensures the write callback runs first.
                                 if (isFinalSent) {
-                                    try {
-                                        Thread.sleep(BUFFER_FLUSH_DELAY_MS);
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
+                                    int flushDelayMs = bufferFlushDelayMs();
+                                    if (flushDelayMs > 0) {
+                                        try {
+                                            Thread.sleep(flushDelayMs);
+                                        } catch (InterruptedException e) {
+                                            Thread.currentThread().interrupt();
+                                        }
                                     }
                                 }
                                 break;

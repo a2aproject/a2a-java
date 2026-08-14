@@ -79,6 +79,8 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Quarkus routing configuration for JSON-RPC A2A protocol requests.
@@ -169,6 +171,8 @@ import org.jspecify.annotations.Nullable;
  */
 @Singleton
 public class A2AServerRoutes {
+
+    private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
 
     @Inject
     JSONRPCHandler jsonRpcHandler;
@@ -337,7 +341,8 @@ public class A2AServerRoutes {
         } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
-            error = new A2AErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            error = new A2AErrorResponse(new InternalError("Internal error"));
         } finally {
             if (error != null) {
                 rc.response()

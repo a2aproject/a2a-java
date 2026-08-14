@@ -1,0 +1,17 @@
+name: Roq Site Check
+
+on:
+  pull_request:
+    paths:
+      - docs/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generate Roq Site
+        uses: quarkiverse/quarkus-roq@v1.1
+        with:
+          site-directory: ./docs/
+          github-pages: 'false'

@@ -2,6 +2,7 @@ package org.a2aproject.sdk.spec;
 
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Authentication information for agent authentication and push notification endpoints.
@@ -21,7 +22,7 @@ import org.a2aproject.sdk.util.Assert;
  * @see SecurityScheme for security scheme definitions
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AuthenticationInfo(String scheme, String credentials) {
+public record AuthenticationInfo(String scheme, @Nullable String credentials) {
 
     /**
      * Compact constructor that validates required fields.

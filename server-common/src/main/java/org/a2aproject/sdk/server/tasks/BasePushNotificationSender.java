@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Message;
@@ -194,11 +195,27 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost();
         if (token != null && !token.isBlank()) {
+            try {
+                rejectCrlf(token, X_A2A_NOTIFICATION_TOKEN);
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+                return false;
+            }
             postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
         }
-        if (pushInfo.authentication() != null && pushInfo.authentication().credentials() != null) {
-            postBuilder.addHeader("Authorization",
-                    pushInfo.authentication().scheme() + " " + pushInfo.authentication().credentials());
+        AuthenticationInfo authentication = pushInfo.authentication();
+        if (authentication != null) {
+            String credentials = authentication.credentials();
+            if (credentials != null) {
+                String authorizationHeader;
+                try {
+                    authorizationHeader = buildAuthorizationHeader(authentication.scheme(), credentials);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+                    return false;
+                }
+                postBuilder.addHeader("Authorization", authorizationHeader);
+            }
         }
 
         try {
@@ -212,5 +229,40 @@ public class BasePushNotificationSender implements PushNotificationSender {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Builds the Authorization header value for a push notification config.
+     *
+     * <p>The {@code scheme} and {@code credentials} are client-controlled values that are
+     * concatenated directly into the header. Rejecting CR/LF characters here prevents
+     * HTTP header injection (CWE-113). The {@link A2AHttpClient} SPI is pluggable, so we
+     * cannot rely on every implementation (or the underlying HTTP client) to validate
+     * header values.</p>
+     *
+     * @param scheme the authentication scheme
+     * @param credentials the authentication credentials
+     * @return the assembled {@code "scheme credentials"} header value
+     * @throws IllegalArgumentException if either field contains CR or LF
+     */
+    private static String buildAuthorizationHeader(String scheme, String credentials) {
+        rejectCrlf(scheme, "Authorization scheme");
+        rejectCrlf(credentials, "Authorization credentials");
+        return scheme + " " + credentials;
+    }
+
+    /**
+     * Throws {@link IllegalArgumentException} if {@code value} contains CR or LF.
+     *
+     * <p>Prevents HTTP header injection (CWE-113) for client-controlled header values.</p>
+     *
+     * @param value non-null string to validate
+     * @param label human-readable description of the field, used in the exception message
+     */
+    private static void rejectCrlf(String value, String label) {
+        if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0) {
+            throw new IllegalArgumentException(
+                    label + " must not contain CR/LF characters");
+        }
     }
 }

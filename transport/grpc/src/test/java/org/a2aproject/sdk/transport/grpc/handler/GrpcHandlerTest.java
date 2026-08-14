@@ -625,7 +625,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
-        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
     @Test
@@ -639,7 +639,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.subscribeToTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
-        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
     @Test
@@ -649,6 +649,30 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, mocked, internalExecutor);
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
         assertGrpcError(streamRecorder, Status.Code.INTERNAL);
+    }
+
+    @Test
+    public void testOnMessageInternalErrorIsSanitized() throws Exception {
+        // A non-A2AError exception must not leak its message to the client
+        DefaultRequestHandler mocked = Mockito.mock(DefaultRequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked).onMessageSend(Mockito.any(MessageSendParams.class), Mockito.any(ServerCallContext.class));
+        GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, mocked, internalExecutor);
+
+        org.a2aproject.sdk.grpc.SendMessageRequest request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder()
+                .setMessage(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<org.a2aproject.sdk.grpc.SendMessageResponse> responseObserver = StreamRecorder.create();
+        handler.sendMessage(request, responseObserver);
+        responseObserver.awaitCompletion(5, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(responseObserver.getError());
+        Assertions.assertInstanceOf(StatusRuntimeException.class, responseObserver.getError());
+        StatusRuntimeException sre = (StatusRuntimeException) responseObserver.getError();
+        Assertions.assertEquals(Status.Code.INTERNAL, sre.getStatus().getCode());
+        Assertions.assertEquals("Internal error", sre.getStatus().getDescription());
+        Assertions.assertFalse(sre.getStatus().getDescription().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
     }
 
     @Test
@@ -1068,6 +1092,52 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.sendStreamingMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetTask() throws Exception {
+        // Regression test: getTask previously skipped A2A protocol version
+        // and extension validation, unlike sendMessage/sendStreamingMessage.
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        // Create handler that provides incompatible version 2.0 in the context
+        GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> streamObserver) {
+                        return new ServerCallContext(
+                                UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", streamObserver),
+                                new HashSet<>(),
+                                "2.0" // Incompatible version
+                        );
+                    }
+                };
+            }
+        };
+
+        GetTaskRequest request = GetTaskRequest.newBuilder()
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .build();
+        StreamRecorder<Task> streamRecorder = StreamRecorder.create();
+        handler.getTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
 
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);

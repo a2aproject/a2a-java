@@ -76,7 +76,7 @@ mvn clean install
 
 ### Documentation Site
 
-The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1.1.0.Final/`, `docs/content/dev/`).
+The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-roq/dev/index.html) (a Quarkus-based static site generator). Content is organized into versioned folders under `docs/content/<version>/` (e.g. `docs/content/1_1_0_Final/`, `docs/content/dev/`). Version directory names use underscores instead of dots to work around a Roq bug where dots in path components break GitHub Pages serving.
 
 **Editing rules:**
 - Only edit pages under `docs/content/dev/` — released version folders are frozen snapshots and must not be modified
@@ -98,7 +98,7 @@ mvn quarkus:dev
 
 - [update-a2a-proto](.agents/skills/update-a2a-proto/SKILL.md) — Update the gRPC proto file `a2a.proto` from upstream and regenerate Java sources
 - [fix-tck-issue](.agents/skills/fix-tck-issue/SKILL.md) — Analyze and fix A2A TCK compatibility issues across transports
-- [release](.agents/skills/release/SKILL.md) — Guide the full release process: version bump, CI, tagging, Maven Central deploy, docs, SNAPSHOT bump
+- [release-a2a](.agents/skills/release-a2a/SKILL.md) — Guide the full release process: version bump, CI, tagging, Maven Central deploy, docs, SNAPSHOT bump
 
 ### Commands
 

@@ -239,6 +239,50 @@ public class EventConsumerTest {
     }
 
     @Test
+    public void testBufferFlushDelayMsDefaultsTo150() {
+        String original = System.getProperty("a2a.eventconsumer.bufferFlushDelayMs");
+        try {
+            System.clearProperty("a2a.eventconsumer.bufferFlushDelayMs");
+            assertEquals(150, EventConsumer.bufferFlushDelayMs());
+        } finally {
+            restoreProperty("a2a.eventconsumer.bufferFlushDelayMs", original);
+        }
+    }
+
+    @Test
+    public void testBufferFlushDelayMsReadsConfiguredValue() {
+        String original = System.getProperty("a2a.eventconsumer.bufferFlushDelayMs");
+        try {
+            System.setProperty("a2a.eventconsumer.bufferFlushDelayMs", "20");
+            assertEquals(20, EventConsumer.bufferFlushDelayMs());
+        } finally {
+            restoreProperty("a2a.eventconsumer.bufferFlushDelayMs", original);
+        }
+    }
+
+    @Test
+    public void testBufferFlushDelayMsRejectsInvalidValues() {
+        String original = System.getProperty("a2a.eventconsumer.bufferFlushDelayMs");
+        try {
+            System.setProperty("a2a.eventconsumer.bufferFlushDelayMs", "not-a-number");
+            assertEquals(150, EventConsumer.bufferFlushDelayMs());
+            // Negative values are clamped to 0 (disabled)
+            System.setProperty("a2a.eventconsumer.bufferFlushDelayMs", "-5");
+            assertEquals(0, EventConsumer.bufferFlushDelayMs());
+        } finally {
+            restoreProperty("a2a.eventconsumer.bufferFlushDelayMs", original);
+        }
+    }
+
+    private static void restoreProperty(String key, String original) {
+        if (original == null) {
+            System.clearProperty(key);
+        } else {
+            System.setProperty(key, original);
+        }
+    }
+
+    @Test
     public void testConsumeTaskInputRequired() {
         // Per A2A Protocol Specification 3.1.6 (SubscribeToTask):
         // "The stream MUST terminate when the task reaches a terminal state
