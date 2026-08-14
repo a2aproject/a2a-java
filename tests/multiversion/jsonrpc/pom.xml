@@ -17,6 +17,10 @@
     <name>Java A2A SDK Tests Multi-Version JSON-RPC</name>
     <description>Tests for multi-version v1.0/v0.3 JSON-RPC deployment</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <!-- Production multiversion module (provides MultiVersionJSONRPCRoutes) -->
         <dependency>
