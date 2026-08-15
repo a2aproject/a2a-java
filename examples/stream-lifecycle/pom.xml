@@ -15,6 +15,10 @@
     <packaging>pom</packaging>
 
     <name>Java SDK A2A Examples: Stream Lifecycle</name>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
     <description>Example demonstrating TaskStreamLifecycleHook for managing streaming connections</description>
 
     <dependencyManagement>
