@@ -5,8 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import jakarta.enterprise.inject.Instance;
 
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -26,9 +31,50 @@ public class AgentCardValidator {
     public static final String SKIP_REST_PROPERTY = "org.a2aproject.sdk.transport.rest.skipValidation";
 
     /**
+     * Resolves an {@link AgentCard} from the given {@link Instance} and validates its transport
+     * configuration exactly once using the default {@link #validateTransportConfiguration} check.
+     * The {@code transportValidated} guard is reset on failure so validation can be retried on
+     * the next call.
+     *
+     * @param agentCardInstance the CDI instance holding the agent card
+     * @param transportValidated atomic guard ensuring validation runs once
+     * @return the resolved agent card
+     */
+    public static AgentCard resolveAndValidateOnce(Instance<AgentCard> agentCardInstance,
+            AtomicBoolean transportValidated) {
+        return resolveAndValidateOnce(agentCardInstance::get, transportValidated,
+                AgentCardValidator::validateTransportConfiguration);
+    }
+
+    /**
+     * Obtains an {@link AgentCard} from the given supplier and applies the provided validator
+     * exactly once. The {@code transportValidated} guard is reset on failure so validation can
+     * be retried on the next call.
+     *
+     * @param agentCardSupplier supplier that produces the agent card
+     * @param transportValidated atomic guard ensuring validation runs once
+     * @param validator validation logic to apply on first access
+     * @return the resolved agent card
+     */
+    public static AgentCard resolveAndValidateOnce(Supplier<AgentCard> agentCardSupplier,
+            AtomicBoolean transportValidated,
+            Consumer<AgentCard> validator) {
+        AgentCard card = agentCardSupplier.get();
+        if (transportValidated.compareAndSet(false, true)) {
+            try {
+                validator.accept(card);
+            } catch (RuntimeException e) {
+                transportValidated.set(false);
+                throw e;
+            }
+        }
+        return card;
+    }
+
+    /**
      * Validates the transport configuration of an AgentCard against available transports found on the classpath.
      * Logs warnings for missing transports and errors for unsupported transports.
-     * 
+     *
      * @param agentCard the agent card to validate
      */
     public static void validateTransportConfiguration(AgentCard agentCard) {

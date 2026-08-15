@@ -3,9 +3,9 @@ package org.a2aproject.sdk.server.tasks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -34,8 +34,8 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
      */
     public static final int MAX_PUSH_CONFIGS_PER_TASK = PushNotificationConfigStore.DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
 
-    private final Map<String, List<TaskPushNotificationConfig>> pushNotificationInfos = Collections.synchronizedMap(new HashMap<>());
-    private final Map<String, String> protocolVersions = Collections.synchronizedMap(new HashMap<>());
+    private final ConcurrentHashMap<String, List<TaskPushNotificationConfig>> pushNotificationInfos = new ConcurrentHashMap<>();
+    private final Map<String, String> protocolVersions = new ConcurrentHashMap<>();
 
     @Inject
     @Nullable A2AConfigProvider configProvider;
@@ -47,28 +47,26 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
-        List<TaskPushNotificationConfig> notificationConfigList = pushNotificationInfos.getOrDefault(taskId, new ArrayList<>());
         TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder(notificationConfig);
         if (notificationConfig.id().isEmpty()) {
             builder.id(taskId);
         }
-        notificationConfig = builder.build();
-
-        // Enforce the per-task limit and remove any existing config with the same
-        // ID in a single pass. Re-registering/updating an already-registered config
-        // ID is allowed; only genuinely new configs count against the limit.
-        String configId = notificationConfig.id();
-        boolean isExistingConfig = notificationConfigList.removeIf(
-                existing -> existing.id() != null && existing.id().equals(configId));
+        TaskPushNotificationConfig config = builder.build();
+        String configId = config.id();
         int maxPerTask = PushNotificationConfigStore.maxPushConfigsPerTask(configProvider);
-        if (!isExistingConfig && notificationConfigList.size() >= maxPerTask) {
-            throw new InvalidParamsError("Too many push notification configs for task " + taskId
-                    + " (max " + maxPerTask + ")");
-        }
 
-        notificationConfigList.add(notificationConfig);
-        pushNotificationInfos.put(taskId, notificationConfigList);
-        return notificationConfig;
+        pushNotificationInfos.compute(taskId, (key, list) -> {
+            List<TaskPushNotificationConfig> mutable = list == null ? new ArrayList<>() : new ArrayList<>(list);
+            boolean isExistingConfig = mutable.removeIf(
+                    existing -> existing.id() != null && existing.id().equals(configId));
+            if (!isExistingConfig && mutable.size() >= maxPerTask) {
+                throw new InvalidParamsError("Too many push notification configs for task " + taskId
+                        + " (max " + maxPerTask + ")");
+            }
+            mutable.add(config);
+            return List.copyOf(mutable);
+        });
+        return config;
     }
 
     @Override
@@ -85,10 +83,9 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
             return new ListTaskPushNotificationConfigsResult(Collections.emptyList());
         }
         if (params.pageSize() <= 0) {
-            return new ListTaskPushNotificationConfigsResult(new ArrayList<>(configs), null);
+            return new ListTaskPushNotificationConfigsResult(configs, null);
         }
         if (params.pageToken() != null && !params.pageToken().isBlank()) {
-            //find first index
             int index = findFirstIndex(configs, params.pageToken());
             if (index < configs.size()) {
                 configs = configs.subList(index, configs.size());
@@ -102,16 +99,12 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     }
 
     private int findFirstIndex(List<TaskPushNotificationConfig> configs, String id) {
-        //find first index
-        Iterator<TaskPushNotificationConfig> iter = configs.iterator();
-        int index = 0;
-        while (iter.hasNext()) {
-            if (id.equals(iter.next().id())) {
-                return index;
+        for (int i = 0; i < configs.size(); i++) {
+            if (id.equals(configs.get(i).id())) {
+                return i;
             }
-            index++;
         }
-        return index;
+        return configs.size();
     }
 
     @Override
@@ -119,23 +112,13 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
         if (configId == null) {
             configId = taskId;
         }
-        List<TaskPushNotificationConfig> notificationConfigList = pushNotificationInfos.get(taskId);
-        if (notificationConfigList == null || notificationConfigList.isEmpty()) {
-            return;
-        }
-
-        Iterator<TaskPushNotificationConfig> notificationConfigIterator = notificationConfigList.iterator();
-        while (notificationConfigIterator.hasNext()) {
-            TaskPushNotificationConfig config = notificationConfigIterator.next();
-            if (configId.equals(config.id())) {
-                notificationConfigIterator.remove();
-                break;
-            }
-        }
-        protocolVersions.remove(taskId + ":" + configId);
-        if (notificationConfigList.isEmpty()) {
-            pushNotificationInfos.remove(taskId);
-        }
+        String deleteId = configId;
+        pushNotificationInfos.computeIfPresent(taskId, (key, list) -> {
+            List<TaskPushNotificationConfig> mutable = new ArrayList<>(list);
+            mutable.removeIf(config -> deleteId.equals(config.id()));
+            return mutable.isEmpty() ? null : List.copyOf(mutable);
+        });
+        protocolVersions.remove(taskId + ":" + deleteId);
     }
 
     @Override

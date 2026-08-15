@@ -17,6 +17,10 @@
     <name>Java A2A Compat 0.3 Server Tests Common</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - Compat 0.3 Server Tests Common</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
