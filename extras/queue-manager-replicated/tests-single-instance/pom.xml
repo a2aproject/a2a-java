@@ -13,6 +13,10 @@
     <artifactId>a2a-java-queue-manager-replicated-tests-single-instance</artifactId>
     <name>Java A2A Extras: Replicated Queue Manager Tests - Single Instance</name>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <!-- Project Modules -->
         <dependency>

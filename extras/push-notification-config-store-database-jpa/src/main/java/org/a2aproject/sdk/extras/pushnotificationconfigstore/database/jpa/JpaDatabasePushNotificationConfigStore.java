@@ -7,12 +7,15 @@ import java.util.List;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
+import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
@@ -33,6 +36,9 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
     @PersistenceContext(unitName = "a2a-java")
     EntityManager em;
+
+    @Inject
+    A2AConfigProvider config;
 
     @Transactional
     @Override
@@ -66,6 +72,17 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
                 LOGGER.debug("Updated existing PushNotificationConfig for Task '{}' with ID: {}",
                         taskId, notificationConfig.id());
             } else {
+                // Enforce the per-task limit (configurable via
+                // a2a.push-notification-config.max-per-task); only genuinely new
+                // configs count against it.
+                int maxPerTask = PushNotificationConfigStore.maxPushConfigsPerTask(config);
+                Long existingCount = em.createQuery(
+                        "SELECT COUNT(c) FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId",
+                        Long.class).setParameter("taskId", taskId).getSingleResult();
+                if (existingCount >= maxPerTask) {
+                    throw new InvalidParamsError("Too many push notification configs for task " + taskId
+                            + " (max " + maxPerTask + ")");
+                }
                 // Create new entity
                 JpaPushNotificationConfig jpaConfig = JpaPushNotificationConfig.createFromConfig(taskId, notificationConfig, resolvedVersion);
                 em.persist(jpaConfig);

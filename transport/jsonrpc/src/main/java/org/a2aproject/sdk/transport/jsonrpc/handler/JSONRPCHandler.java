@@ -5,13 +5,19 @@ import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
@@ -29,13 +35,13 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.AgentCardValidator;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
@@ -43,20 +49,16 @@ import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.CancelTaskParams;
-import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.EventKind;
+import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidRequestError;
-import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
-
-import mutiny.zero.ZeroPublisher;
-import org.a2aproject.sdk.server.auth.TaskOperation;
+import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -133,13 +135,16 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class JSONRPCHandler {
 
+    private static final Logger LOGGER = Logger.getLogger(JSONRPCHandler.class.getName());
+
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
     // final, is not proxyable in all runtimes
-    private AgentCard agentCard;
+    private Instance<AgentCard> agentCardInstance;
     private @Nullable Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
     private Executor executor;
+    private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -149,7 +154,7 @@ public class JSONRPCHandler {
     @SuppressWarnings("NullAway")
     protected JSONRPCHandler() {
         // For CDI proxy creation
-        this.agentCard = null;
+        this.agentCardInstance = null;
         this.extendedAgentCard = null;
         this.requestHandler = null;
         this.executor = null;
@@ -158,21 +163,19 @@ public class JSONRPCHandler {
     /**
      * Creates a JSON-RPC handler with full CDI injection support.
      *
-     * @param agentCard the public agent card containing agent capabilities
+     * @param agentCardInstance the public agent card instance containing agent capabilities
      * @param extendedAgentCard optional extended agent card instance
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
     @Inject
-    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
+    public JSONRPCHandler(@PublicAgentCard Instance<AgentCard> agentCardInstance,
+                          @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
                           RequestHandler requestHandler, @Internal Executor executor) {
-        this.agentCard = agentCard;
+        this.agentCardInstance = agentCardInstance;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
         this.executor = executor;
-
-        // Validate transport configuration
-        AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
     /**
@@ -183,7 +186,7 @@ public class JSONRPCHandler {
      * @param executor the executor for asynchronous operations
      */
     public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
-        this(agentCard, null, requestHandler, executor);
+        this(new FixedInstance<>(agentCard), null, requestHandler, executor);
     }
 
     /**
@@ -230,14 +233,14 @@ public class JSONRPCHandler {
      */
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
-            A2AVersionValidator.validateProtocolVersion(agentCard, context);
-            A2AExtensions.validateRequiredExtensions(agentCard, context);
+            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
             EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (A2AError e) {
             return new SendMessageResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new SendMessageResponse(request.getId(), new InternalError(t.getMessage()));
+            return new SendMessageResponse(request.getId(), internalError(t));
         }
     }
 
@@ -279,16 +282,16 @@ public class JSONRPCHandler {
      */
     public Flow.Publisher<SendStreamingMessageResponse> onMessageSendStream(
             SendStreamingMessageRequest request, ServerCallContext context) {
-        if (!agentCard.capabilities().streaming()) {
+        if (!resolveAgentCard().capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
-                            new InvalidRequestError("Streaming is not supported by the agent")));
+                            new UnsupportedOperationError(null, "Streaming is not supported by the agent", null)));
         }
 
         try {
-            A2AVersionValidator.validateProtocolVersion(agentCard, context);
-            A2AExtensions.validateRequiredExtensions(agentCard, context);
+            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onMessageSendStream(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
@@ -297,7 +300,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(throwable.getMessage())));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
         }
     }
 
@@ -336,7 +339,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new CancelTaskResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new CancelTaskResponse(request.getId(), new InternalError(t.getMessage()));
+            return new CancelTaskResponse(request.getId(), internalError(t));
         }
     }
 
@@ -376,11 +379,11 @@ public class JSONRPCHandler {
      */
     public Flow.Publisher<SendStreamingMessageResponse> onSubscribeToTask(
             SubscribeToTaskRequest request, ServerCallContext context) throws A2AError {
-        if (!agentCard.capabilities().streaming()) {
+        if (!resolveAgentCard().capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
-                            new InvalidRequestError("Streaming is not supported by the agent")));
+                            new UnsupportedOperationError(null, "Streaming is not supported by the agent", null)));
         }
         requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {
@@ -393,7 +396,7 @@ public class JSONRPCHandler {
             // Other A2AError types - wrap inline as part of the stream
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(throwable.getMessage())));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
         }
     }
 
@@ -423,7 +426,7 @@ public class JSONRPCHandler {
      */
     public GetTaskPushNotificationConfigResponse getPushNotificationConfig(
             GetTaskPushNotificationConfigRequest request, ServerCallContext context) {
-        if (!agentCard.capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             return new GetTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
@@ -434,7 +437,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetTaskPushNotificationConfigResponse(request.getId(), internalError(t));
         }
     }
 
@@ -465,7 +468,7 @@ public class JSONRPCHandler {
      */
     public CreateTaskPushNotificationConfigResponse setPushNotificationConfig(
             CreateTaskPushNotificationConfigRequest request, ServerCallContext context) {
-        if (!agentCard.capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
@@ -476,7 +479,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new CreateTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new CreateTaskPushNotificationConfigResponse(request.getId(), internalError(t));
         }
     }
 
@@ -511,7 +514,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new GetTaskResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetTaskResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetTaskResponse(request.getId(), internalError(t));
         }
     }
 
@@ -558,7 +561,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new ListTasksResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new ListTasksResponse(request.getId(), new InternalError(t.getMessage()));
+            return new ListTasksResponse(request.getId(), internalError(t));
         }
     }
 
@@ -588,7 +591,7 @@ public class JSONRPCHandler {
      */
     public ListTaskPushNotificationConfigsResponse listPushNotificationConfigs(
             ListTaskPushNotificationConfigsRequest request, ServerCallContext context) {
-        if ( !agentCard.capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
@@ -599,7 +602,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new ListTaskPushNotificationConfigsResponse(request.getId(), new InternalError(t.getMessage()));
+            return new ListTaskPushNotificationConfigsResponse(request.getId(), internalError(t));
         }
     }
 
@@ -630,7 +633,7 @@ public class JSONRPCHandler {
      */
     public DeleteTaskPushNotificationConfigResponse deletePushNotificationConfig(
             DeleteTaskPushNotificationConfigRequest request, ServerCallContext context) {
-        if ( !agentCard.capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
@@ -640,7 +643,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new DeleteTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new DeleteTaskPushNotificationConfigResponse(request.getId(), internalError(t));
         }
     }
 
@@ -670,7 +673,7 @@ public class JSONRPCHandler {
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
     public GetExtendedAgentCardResponse onGetExtendedCardRequest(
             GetExtendedAgentCardRequest request, ServerCallContext context) {
-        if (!agentCard.capabilities().extendedAgentCard()) {
+        if (!resolveAgentCard().capabilities().extendedAgentCard()) {
             return new GetExtendedAgentCardResponse(request.getId(), new UnsupportedOperationError());
         }
         if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
@@ -682,7 +685,7 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return new GetExtendedAgentCardResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetExtendedAgentCardResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetExtendedAgentCardResponse(request.getId(), internalError(t));
         }
     }
 
@@ -697,7 +700,11 @@ public class JSONRPCHandler {
      * @see AgentCard
      */
     public AgentCard getAgentCard() {
-        return agentCard;
+        return resolveAgentCard();
+    }
+
+    private AgentCard resolveAgentCard() {
+        return AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated);
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(
@@ -729,8 +736,7 @@ public class JSONRPCHandler {
                             } else {
                                 tube.send(
                                         new SendStreamingMessageResponse(
-                                                requestId, new
-                                                InternalError(throwable.getMessage())));
+                                                requestId, internalError(throwable)));
                             }
                             onComplete();
                         }
@@ -746,5 +752,21 @@ public class JSONRPCHandler {
 
     public void authorizeTaskAccess(String requestedTaskId, ServerCallContext context, TaskOperation operation) {
         requestHandler.authorizeTaskAccess(requestedTaskId, context, operation);
+    }
+
+    /**
+     * Builds a client-safe {@link InternalError} for an unexpected exception.
+     * <p>
+     * The original exception (class, message, stack trace) is logged server-side but the
+     * client receives only a generic message: leaking internal exception messages can
+     * expose file paths, library names, and other implementation details that aid server
+     * fingerprinting (CWE-209).
+     *
+     * @param t the unexpected exception
+     * @return a sanitized internal error with a generic message
+     */
+    private static InternalError internalError(Throwable t) {
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
+        return new InternalError("Internal error");
     }
 }

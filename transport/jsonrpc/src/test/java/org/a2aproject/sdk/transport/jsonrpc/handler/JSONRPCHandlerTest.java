@@ -1,6 +1,8 @@
 package org.a2aproject.sdk.transport.jsonrpc.handler;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -61,7 +63,6 @@ import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -79,8 +80,12 @@ import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.server.TestInstances;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+
+import jakarta.enterprise.inject.Instance;
+
 import mutiny.zero.ZeroPublisher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -1047,7 +1052,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         });
 
         assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
+        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
             fail("Expected a response containing an error");
@@ -1094,7 +1099,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         });
 
         assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
+        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
             fail("Expected a response containing an error");
@@ -1187,6 +1192,25 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageResponse response = handler.onMessageSend(request, callContext);
 
         assertInstanceOf(InternalError.class, response.getError());
+    }
+
+    @Test
+    public void testOnMessageSendSanitizesUnexpectedException() {
+        // A non-A2AError exception must not leak its message to the client
+        DefaultRequestHandler mocked = Mockito.mock(DefaultRequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked)
+                .onMessageSend(Mockito.any(MessageSendParams.class), Mockito.any(ServerCallContext.class));
+
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, mocked, internalExecutor);
+
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(MESSAGE, defaultConfiguration(), null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        assertInstanceOf(InternalError.class, response.getError());
+        assertEquals("Internal error", response.getError().getMessage());
+        assertFalse(response.getError().getMessage().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
     }
 
     @Test
@@ -2004,5 +2028,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(0, result.totalSize(), "totalSize should be 0");
         assertEquals(0, result.pageSize(), "pageSize should be 0");
         // nextPageToken can be null for empty results
+    }
+
+    @Test
+    void constructorDoesNotResolveAgentCardInstances() {
+        Instance<AgentCard> throwOnGet = TestInstances.throwOnGet();
+
+        assertDoesNotThrow(() -> new JSONRPCHandler(throwOnGet, null, requestHandler, internalExecutor));
     }
 }

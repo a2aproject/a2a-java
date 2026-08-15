@@ -70,16 +70,16 @@
     },
     {
       "name": "Nightly - HTTP_JSON - Send Message",
-      "sdks": ["current", "java_v10", "python_v10", "go_v10", "go_v03"],
-      "edges": ["0->1", "0->2", "0->3", "0->4", "1->0", "2->0", "3->0", "4->0"],
+      "sdks": ["current", "java_v10", "python_v10", "go_v10"],
+      "edges": ["0->1", "0->2", "0->3", "1->0", "2->0", "3->0"],
       "protocols": ["http_json"],
       "behavior": "send_message",
       "build_subtests": true
     },
     {
       "name": "Nightly - HTTP_JSON - Send Message (Streaming)",
-      "sdks": ["current", "java_v10", "python_v10", "go_v10", "go_v03"],
-      "edges": ["0->1", "0->2", "0->3", "0->4", "1->0", "2->0", "3->0", "4->0"],
+      "sdks": ["current", "java_v10", "python_v10", "go_v10"],
+      "edges": ["0->1", "0->2", "0->3", "1->0", "2->0", "3->0"],
       "protocols": ["http_json"],
       "streaming": true,
       "behavior": "send_message",
@@ -87,16 +87,16 @@
     },
     {
       "name": "Nightly - HTTP_JSON - Push Notification",
-      "sdks": ["current", "java_v10", "python_v10", "go_v10", "go_v03"],
-      "edges": ["0->1", "0->2", "0->3", "0->4", "1->0", "2->0", "3->0", "4->0"],
+      "sdks": ["current", "java_v10", "python_v10", "go_v10"],
+      "edges": ["0->1", "0->2", "0->3", "1->0", "2->0", "3->0"],
       "protocols": ["http_json"],
       "behavior": "push_notification",
       "build_subtests": true
     },
     {
       "name": "Nightly - HTTP_JSON - Resubscribe",
-      "sdks": ["current", "java_v10", "python_v10", "go_v10", "go_v03"],
-      "edges": ["0->1", "0->2", "0->3", "0->4", "1->0", "2->0", "3->0", "4->0"],
+      "sdks": ["current", "java_v10", "python_v10", "go_v10"],
+      "edges": ["0->1", "0->2", "0->3", "1->0", "2->0", "3->0"],
       "protocols": ["http_json"],
       "streaming": true,
       "behavior": "resubscribe",

@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.Vetoed;
@@ -158,7 +159,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     // Without this we get intermittent failures
     private static volatile @Nullable Runnable streamingSubscribedRunnable;
 
-    private final AtomicBoolean initialised = new AtomicBoolean(false);
+    private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
@@ -199,8 +200,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                            StreamObserver<org.a2aproject.sdk.grpc.SendMessageResponse> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
-            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
-            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             EventKind taskOrMessage = getRequestHandler().onMessageSend(params, context);
             org.a2aproject.sdk.grpc.SendMessageResponse response = ToProto.taskOrMessage(taskOrMessage);
@@ -280,7 +279,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void createTaskPushNotificationConfig(org.a2aproject.sdk.grpc.TaskPushNotificationConfig request,
                                                StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -303,7 +302,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void getTaskPushNotificationConfig(org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest request,
                                             StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -326,7 +325,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void listTaskPushNotificationConfigs(org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest request,
                                              StreamObserver<org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -375,7 +374,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *
      * <p><b>Error Handling:</b>
      * <ul>
-     *   <li>Streaming not enabled → {@link org.a2aproject.sdk.spec.InvalidRequestError}</li>
+     *   <li>Streaming not enabled → {@link org.a2aproject.sdk.spec.UnsupportedOperationError}</li>
      *   <li>Other {@link A2AError} → mapped to appropriate gRPC status code</li>
      *   <li>{@link SecurityException} → {@code UNAUTHENTICATED} or {@code PERMISSION_DENIED}</li>
      *   <li>{@link Throwable} → {@code INTERNAL} error</li>
@@ -387,16 +386,15 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void sendStreamingMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                                      StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new InvalidRequestError());
+        if (!resolveAgentCard().capabilities().streaming()) {
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
             installForkedContextWrapper(context);
-            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
-            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
@@ -412,8 +410,9 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new InvalidRequestError());
+        if (!resolveAgentCard().capabilities().streaming()) {
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
@@ -568,6 +567,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 handleError(responseObserver, new UnsupportedOperationError());
                 return;
             }
+            ServerCallContext context = createCallContext(responseObserver);
             AgentCard extendedAgentCard = getExtendedAgentCard();
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
@@ -584,7 +584,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void deleteTaskPushNotificationConfig(org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest request,
                                                StreamObserver<Empty> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -643,6 +643,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      */
     private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver) {
         CallContextFactory factory = getCallContextFactory();
+        ServerCallContext context;
         if (factory == null) {
             // Default implementation when no custom CallContextFactory is provided
             // This handles both CDI injection scenarios and test scenarios where callContextFactory is null
@@ -699,12 +700,16 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 requestedExtensions = A2AExtensions.getRequestedExtensions(List.of(extensionsHeader));
             }
 
-            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
+            context = new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             // TODO: CallContextFactory interface expects ServerCall + Metadata, but we only have StreamObserver
             // This is another manifestation of the architectural limitation mentioned above
-            return factory.create(responseObserver); // Fall back to basic create() method for now
+            context = factory.create(responseObserver); // Fall back to basic create() method for now
         }
+
+        A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+        A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
+        return context;
     }
 
     /**
@@ -822,17 +827,17 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     private <V> void handleInternalError(StreamObserver<V> responseObserver, Throwable t) {
-        handleError(responseObserver, new InternalError(t.getMessage()));
+        // Log the full exception server-side but send only a generic message to the client:
+        // leaking internal exception messages can expose file paths, library
+        // names, and other implementation details that aid server fingerprinting (CWE-209).
+        LOGGER.log(Level.SEVERE, "Internal error while processing gRPC request", t);
+        handleError(responseObserver, new InternalError("Internal error"));
     }
 
 
-    private AgentCard getAgentCardInternal() {
-        AgentCard agentCard = getAgentCard();
-        if (initialised.compareAndSet(false, true)) {
-            // Validate transport configuration with proper classloader context
-            validateTransportConfigurationWithCorrectClassLoader(agentCard);
-        }
-        return agentCard;
+    private AgentCard resolveAgentCard() {
+        return AgentCardValidator.resolveAndValidateOnce(
+                this::getAgentCard, transportValidated, this::validateTransportConfigurationWithCorrectClassLoader);
     }
 
     private void validateTransportConfigurationWithCorrectClassLoader(AgentCard agentCard) {
