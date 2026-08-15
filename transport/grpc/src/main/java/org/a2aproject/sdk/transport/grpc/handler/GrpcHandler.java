@@ -159,7 +159,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     // Without this we get intermittent failures
     private static volatile @Nullable Runnable streamingSubscribedRunnable;
 
-    private final AtomicBoolean initialised = new AtomicBoolean(false);
+    private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
@@ -279,7 +279,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void createTaskPushNotificationConfig(org.a2aproject.sdk.grpc.TaskPushNotificationConfig request,
                                                StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -302,7 +302,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void getTaskPushNotificationConfig(org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest request,
                                             StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -325,7 +325,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void listTaskPushNotificationConfigs(org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest request,
                                              StreamObserver<org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -386,7 +386,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void sendStreamingMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                                      StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().streaming()) {
+        if (!resolveAgentCard().capabilities().streaming()) {
             handleError(responseObserver,
                     new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
@@ -410,7 +410,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().streaming()) {
+        if (!resolveAgentCard().capabilities().streaming()) {
             handleError(responseObserver,
                     new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
@@ -584,7 +584,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void deleteTaskPushNotificationConfig(org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest request,
                                                StreamObserver<Empty> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -707,8 +707,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             context = factory.create(responseObserver); // Fall back to basic create() method for now
         }
 
-        A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
-        A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
+        A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+        A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
         return context;
     }
 
@@ -835,13 +835,9 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
 
-    private AgentCard getAgentCardInternal() {
-        AgentCard agentCard = getAgentCard();
-        if (initialised.compareAndSet(false, true)) {
-            // Validate transport configuration with proper classloader context
-            validateTransportConfigurationWithCorrectClassLoader(agentCard);
-        }
-        return agentCard;
+    private AgentCard resolveAgentCard() {
+        return AgentCardValidator.resolveAndValidateOnce(
+                this::getAgentCard, transportValidated, this::validateTransportConfigurationWithCorrectClassLoader);
     }
 
     private void validateTransportConfigurationWithCorrectClassLoader(AgentCard agentCard) {

@@ -15,6 +15,10 @@
     <packaging>pom</packaging>
     <name>Java A2A Extras: Replicated Queue Manager Tests - Multi Instance Parent</name>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <modules>
         <module>quarkus-common</module>
         <module>quarkus-app-1</module>

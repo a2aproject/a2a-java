@@ -16,6 +16,10 @@
     <name>A2A Java SDK - Cloud Deployment Example Server</name>
     <description>Example demonstrating A2A agent deployment in Kubernetes with database persistence and event replication</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <!-- Core A2A SDK with JSON-RPC transport. This pulls in the rest of the needed a2a-java dependencies -->
         <dependency>

@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.server;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -227,6 +230,44 @@ public class AgentCardValidatorTest {
         } finally {
             System.clearProperty(AgentCardValidator.SKIP_GRPC_PROPERTY);
         }
+    }
+
+    @Test
+    void resolveAndValidateOnceRetriesAfterFailure() {
+        AgentCard card = createTestAgentCardBuilder().build();
+        AtomicBoolean guard = new AtomicBoolean(false);
+        AtomicInteger validationCount = new AtomicInteger(0);
+
+        assertThrows(IllegalStateException.class, () ->
+                AgentCardValidator.resolveAndValidateOnce(
+                        () -> card, guard, c -> {
+                            validationCount.incrementAndGet();
+                            throw new IllegalStateException("transient failure");
+                        }));
+
+        assertFalse(guard.get(), "guard should be reset after failure");
+        assertEquals(1, validationCount.get());
+
+        AgentCard result = AgentCardValidator.resolveAndValidateOnce(
+                () -> card, guard, c -> validationCount.incrementAndGet());
+
+        assertTrue(guard.get(), "guard should be set after success");
+        assertEquals(2, validationCount.get());
+        assertEquals(card, result);
+    }
+
+    @Test
+    void resolveAndValidateOnceSkipsValidationOnSubsequentCalls() {
+        AgentCard card = createTestAgentCardBuilder().build();
+        AtomicBoolean guard = new AtomicBoolean(false);
+        AtomicInteger validationCount = new AtomicInteger(0);
+
+        AgentCardValidator.resolveAndValidateOnce(
+                () -> card, guard, c -> validationCount.incrementAndGet());
+        AgentCardValidator.resolveAndValidateOnce(
+                () -> card, guard, c -> validationCount.incrementAndGet());
+
+        assertEquals(1, validationCount.get(), "validation should run only once");
     }
 
     // A simple log handler for testing

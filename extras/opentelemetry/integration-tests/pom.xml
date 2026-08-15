@@ -15,6 +15,10 @@
     <name>A2A Java SDK :: Extras :: OpenTelemetry :: Integration Tests</name>
     <description>Quarkus-based integration tests for OpenTelemetry support in A2A Java SDK</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <!-- A2A SDK modules -->
         <dependency>
