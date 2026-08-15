@@ -7,8 +7,6 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
@@ -156,7 +154,7 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
             return CollectionCopies.unmodifiableShallowMap(map);
         }
         if (data instanceof List<?> list) {
-            return Collections.unmodifiableList(new ArrayList<>(list));
+            return CollectionCopies.unmodifiableShallowList(list);
         }
         return data;
     }

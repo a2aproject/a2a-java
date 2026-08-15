@@ -136,6 +136,24 @@ public final class CollectionCopies {
     }
 
     /**
+     * Creates an unmodifiable shallow defensive copy of a non-null list while preserving null elements.
+     * <p>
+     * This method is intended for JSON-like lists where null elements may be valid protocol data.
+     * It intentionally does not use {@link List#copyOf(java.util.Collection)}, because
+     * {@code List.copyOf} throws {@link NullPointerException} when the source list contains null elements.
+     * <p>
+     * The returned list cannot be structurally modified, but this method does not deep-copy
+     * mutable elements.
+     *
+     * @param list the source list, must not be {@code null}
+     * @param <E> the element type
+     * @return an unmodifiable shallow copy preserving null elements
+     */
+    public static <E> List<E> unmodifiableShallowList(List<E> list) {
+        return Collections.unmodifiableList(new ArrayList<>(list));
+    }
+
+    /**
      * Creates a mutable defensive copy of a nullable list.
      * <p>
      * This method is intended for builders that need mutable collection state.
