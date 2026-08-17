@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
+import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.spec.A2AError;
@@ -588,6 +590,57 @@ public class EventConsumerTest {
 
         // The poison pill should not be delivered to subscribers
         assertEquals(0, receivedEvents.size(), "QueueClosedEvent should be intercepted, not delivered");
+    }
+
+    @Test
+    public void testConsumeAllFailsAfterAsyncPendingTimeout() throws Exception {
+        // An agent that returned without reaching a terminal state (e.g. its background
+        // work hung or crashed) must not be polled forever - it should eventually fail.
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TASK_ID)
+                .mainEventBus(mainEventBus)
+                .build().tap();
+        EventConsumer consumer = new EventConsumer(queue, Runnable::run);
+        consumer.setAsyncAgentTimeoutSeconds(1); // ~1s instead of the 60s default
+
+        RequestContext context = new RequestContext.Builder().setTaskId(TASK_ID).setContextId("ctx-1").build();
+        AgentEmitter emitter = new AgentEmitter(context, queue);
+        EnhancedRunnable agentRunnable = new EnhancedRunnable() {
+            @Override
+            public void run() {
+            }
+        };
+        agentRunnable.setEmitter(emitter);
+        consumer.createAgentRunnableDoneCallback().done(agentRunnable);
+
+        Flow.Publisher<EventQueueItem> publisher = consumer.consumeAll();
+        final AtomicReference<Throwable> error = new AtomicReference<>();
+        final CountDownLatch completionLatch = new CountDownLatch(1);
+
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(EventQueueItem item) {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                error.set(throwable);
+                completionLatch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                completionLatch.countDown();
+            }
+        });
+
+        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for the fallback timeout to fire.");
+        assertNotNull(error.get(), "Expected the stream to fail once the async agent's fallback timeout elapsed");
     }
 
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {

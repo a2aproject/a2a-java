@@ -6,10 +6,12 @@ import java.util.concurrent.Flow;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AServerException;
 import org.a2aproject.sdk.spec.Event;
+import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import mutiny.zero.BackpressureStrategy;
 import mutiny.zero.TubeConfiguration;
 import mutiny.zero.ZeroPublisher;
@@ -27,6 +29,9 @@ public class EventConsumer {
     private volatile int pollTimeoutsAfterAgentCompleted = 0;
     private volatile @Nullable TaskState lastSeenTaskState = null;
     private volatile int pollTimeoutsWhileAwaitingFinal = 0;
+    // True once an agent returns without reaching a terminal state (handed work off elsewhere).
+    private volatile boolean asyncAgentPending = false;
+    private volatile int pollTimeoutsWhileAsyncPending = 0;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;
@@ -41,6 +46,12 @@ public class EventConsumer {
     private static final int MAX_AWAITING_FINAL_TIMEOUT_MS = 3000;
     private static final int MAX_POLL_TIMEOUTS_AWAITING_FINAL =
         (MAX_AWAITING_FINAL_TIMEOUT_MS + QUEUE_WAIT_MILLISECONDS - 1) / QUEUE_WAIT_MILLISECONDS;
+    // Bounds otherwise-unbounded polling if an async agent's background work never completes.
+    private static final int MAX_ASYNC_PENDING_TIMEOUT_MS = 60_000;
+    private static final int MAX_POLL_TIMEOUTS_ASYNC_PENDING =
+        (MAX_ASYNC_PENDING_TIMEOUT_MS + QUEUE_WAIT_MILLISECONDS - 1) / QUEUE_WAIT_MILLISECONDS;
+    // Not final so tests can shrink this below the 60s default instead of waiting for it.
+    int maxPollTimeoutsAsyncPending = MAX_POLL_TIMEOUTS_ASYNC_PENDING;
     // Delay between tube.send(finalEvent) and tube.complete() to allow the SSE transport
     // layer to flush the write before the stream-end signal arrives.  Mutiny's internal
     // demand management can call request(1) on the underlying publisher independently of
@@ -81,6 +92,16 @@ public class EventConsumer {
         this.queue = queue;
         this.executor = executor;
         LOGGER.debug("EventConsumer created with queue {}", System.identityHashCode(queue));
+    }
+
+    /**
+     * Configures how long to wait for an async agent to reach a terminal state before giving up.
+     *
+     * @param seconds the timeout in seconds
+     */
+    public void setAsyncAgentTimeoutSeconds(int seconds) {
+        this.maxPollTimeoutsAsyncPending =
+            (seconds * 1000 + QUEUE_WAIT_MILLISECONDS - 1) / QUEUE_WAIT_MILLISECONDS;
     }
 
     public Event consumeOne() throws A2AServerException, EventQueueClosedException {
@@ -199,12 +220,28 @@ public class EventConsumer {
                                     LOGGER.debug("Agent completed, awaiting final event (timeout {}/{}), continuing to poll (queue={})",
                                         pollTimeoutsWhileAwaitingFinal, MAX_POLL_TIMEOUTS_AWAITING_FINAL, System.identityHashCode(queue));
                                     pollTimeoutsAfterAgentCompleted = 0; // Reset counter while awaiting final
+                                } else if (asyncAgentPending && isInterruptedState) {
+                                    // Interrupted (non-terminal) state, not async hand-off - timeout doesn't apply.
+                                    pollTimeoutsWhileAsyncPending = 0;
+                                } else if (asyncAgentPending && queueSize == 0 && !awaitingFinal) {
+                                    pollTimeoutsWhileAsyncPending++;
+                                    if (pollTimeoutsWhileAsyncPending >= maxPollTimeoutsAsyncPending) {
+                                        LOGGER.warn("Async agent did not reach a terminal state within {}ms, closing queue (queue={})",
+                                            MAX_ASYNC_PENDING_TIMEOUT_MS, System.identityHashCode(queue));
+                                        queue.close();
+                                        completed = true;
+                                        tube.fail(new InternalError("Agent execution did not complete within the allotted time"));
+                                        return;
+                                    }
+                                } else if (asyncAgentPending && (queueSize > 0 || awaitingFinal)) {
+                                    pollTimeoutsWhileAsyncPending = 0;
                                 }
                                 continue;
                             }
                             // Event received - reset timeout counters
                             pollTimeoutsAfterAgentCompleted = 0;
                             pollTimeoutsWhileAwaitingFinal = 0;
+                            pollTimeoutsWhileAsyncPending = 0;
                             event = item.getEvent();
                             LOGGER.debug("EventConsumer received event: {} (queue={})",
                                 event.getClass().getSimpleName(), System.identityHashCode(queue));
@@ -327,8 +364,14 @@ public class EventConsumer {
                 error = agentRunnable.getError();
                 LOGGER.debug("EventConsumer: Set error field from agent callback");
             } else {
-                agentCompleted = true;
-                LOGGER.debug("EventConsumer: Agent completed successfully, set agentCompleted=true, will close queue after draining");
+                AgentEmitter emitter = agentRunnable.getEmitter();
+                if (emitter != null && !emitter.isTerminalStateReached()) {
+                    asyncAgentPending = true;
+                    LOGGER.debug("EventConsumer: Agent returned without reaching a terminal state, awaiting final event asynchronously");
+                } else {
+                    agentCompleted = true;
+                    LOGGER.debug("EventConsumer: Agent completed successfully, set agentCompleted=true, will close queue after draining");
+                }
             }
         };
     }

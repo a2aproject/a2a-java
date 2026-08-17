@@ -116,6 +116,19 @@ public class AgentEmitter {
     }
 
     /**
+     * Returns whether a terminal status ({@link #complete}, {@link #fail}, {@link #cancel}, or
+     * {@link #reject}) has been reached.
+     * <p>
+     * If {@link org.a2aproject.sdk.server.agentexecution.AgentExecutor#execute} returns without
+     * this being true, the agent handed work off to another thread.
+     *
+     * @return true if a terminal status has been reached
+     */
+    public boolean isTerminalStateReached() {
+        return terminalStateReached.get();
+    }
+
+    /**
      * Updates the task status to the given state with an optional message.
      *
      * @param taskState the new task state

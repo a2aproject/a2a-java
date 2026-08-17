@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,6 +170,7 @@ public class DefaultRequestHandlerTest {
         when(configProvider.getValue("a2a.blocking.agent.timeout.seconds")).thenReturn("30");
         when(configProvider.getValue("a2a.blocking.consumption.timeout.seconds")).thenReturn("5");
         when(configProvider.getValue("a2a.blocking.reconciliation.timeout.seconds")).thenReturn("7");
+        when(configProvider.getValue("a2a.async-agent.timeout.seconds")).thenReturn("90");
 
         DefaultRequestHandler handler = new DefaultRequestHandler();
         handler.configProvider = configProvider;
@@ -177,6 +179,7 @@ public class DefaultRequestHandlerTest {
         assertEquals(30, handler.agentCompletionTimeoutSeconds);
         assertEquals(5, handler.consumptionCompletionTimeoutSeconds);
         assertEquals(7, handler.reconciliationTimeoutSeconds);
+        assertEquals(90, handler.asyncAgentTimeoutSeconds);
     }
 
     /**
@@ -1152,6 +1155,214 @@ public class DefaultRequestHandlerTest {
         // Assert
         assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
             "Protocol version should be stored when push config is provided via onMessageSendStream");
+    }
+
+    @Test
+    void testAsyncAgent_Blocking_WaitsForCompletion() throws Exception {
+        // Arrange: agent hands off to a background thread and returns without reaching a
+        // terminal state; no opt-in call needed for this to be treated as async.
+        CountDownLatch agentBackgroundThreadStarted = new CountDownLatch(1);
+        CountDownLatch agentRelease = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+
+            // Simulate RxJava / async background thread
+            internalExecutor.execute(() -> {
+                agentBackgroundThreadStarted.countDown();
+                try {
+                    agentRelease.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                emitter.complete();
+            });
+            // execute() returns immediately!
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-async-1")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("start async task"))
+            .build();
+
+        // Blocking call (returnImmediately = false)
+        MessageSendParams initialParams = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(false)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
+
+        // Use a background thread to call onMessageSend since it should block
+        AtomicReference<EventKind> resultRef = new AtomicReference<>();
+        CountDownLatch callComplete = new CountDownLatch(1);
+
+        internalExecutor.execute(() -> {
+            try {
+                EventKind result = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
+                resultRef.set(result);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                callComplete.countDown();
+            }
+        });
+
+        // Wait for the background thread to start
+        assertTrue(agentBackgroundThreadStarted.await(5, TimeUnit.SECONDS));
+
+        // The requestHandler should be blocked, so callComplete should NOT have counted down
+        assertFalse(callComplete.await(1, TimeUnit.SECONDS), "Client call should block while async agent runs");
+
+        // Release the agent so it can emit completion
+        agentRelease.countDown();
+
+        // Now the client call should complete
+        assertTrue(callComplete.await(5, TimeUnit.SECONDS), "Client call should complete after agent finishes");
+
+        EventKind result = resultRef.get();
+        assertNotNull(result);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        // Since it's a blocking non-streaming call, the final state should be returned
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state(), "Task should be in COMPLETED state");
+    }
+
+    @Test
+    void testAsyncAgent_Blocking_DirectCall_ReturnsCompletedState() throws Exception {
+        // Mimics real-world code like RxJava's Single.subscribeOn(Schedulers.io()): execute()
+        // returns almost immediately, completion happens shortly after on another thread -
+        // comfortably inside the test fixture's 2s consumptionCompletionTimeoutSeconds.
+        CountDownLatch agentBackgroundThreadStarted = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+            internalExecutor.execute(() -> {
+                agentBackgroundThreadStarted.countDown();
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                emitter.complete();
+            });
+            // execute() returns immediately, well before the background thread finishes
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-async-repro-1")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("start async task"))
+            .build();
+
+        MessageSendParams initialParams = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(false)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
+
+        EventKind result = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
+
+        assertTrue(agentBackgroundThreadStarted.await(5, TimeUnit.SECONDS));
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state(),
+            "Task should reflect the background thread's completion, not close early");
+    }
+
+    @Test
+    void testAsyncAgent_Streaming_DeliversFinalEventAfterBackgroundCompletion() throws Exception {
+        // Arrange: same async hand-off pattern, but over the streaming (SSE) path -
+        // the stream must stay open until the background thread completes the task.
+        CountDownLatch agentBackgroundThreadStarted = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+            internalExecutor.execute(() -> {
+                agentBackgroundThreadStarted.countDown();
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                emitter.complete();
+            });
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-async-stream-1")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("start async streaming task"))
+            .build();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(true)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
+
+        Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(params, contextWithVersion("1.0"));
+
+        List<StreamingEventKind> received = new ArrayList<>();
+        CountDownLatch streamDone = new CountDownLatch(1);
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(StreamingEventKind item) {
+                received.add(item);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                streamDone.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                streamDone.countDown();
+            }
+        });
+
+        assertTrue(agentBackgroundThreadStarted.await(5, TimeUnit.SECONDS));
+        assertTrue(streamDone.await(10, TimeUnit.SECONDS), "Stream should complete once the background thread finishes");
+
+        boolean sawCompleted = received.stream().anyMatch(e ->
+            (e instanceof Task t && t.status().state() == TaskState.TASK_STATE_COMPLETED)
+            || (e instanceof TaskStatusUpdateEvent u && u.status().state() == TaskState.TASK_STATE_COMPLETED));
+        assertTrue(sawCompleted, "Stream should deliver the COMPLETED event from the background thread, not close early");
+    }
+
+    @Test
+    void testInputRequired_Blocking_ReturnsQuickly() throws Exception {
+        agentExecutorExecute = (context, emitter) -> emitter.requiresInput();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(MESSAGE)
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(false)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
+
+        long start = System.nanoTime();
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertInstanceOf(Task.class, result);
+        assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED, ((Task) result).status().state());
+        assertTrue(elapsedMs < 1500,
+            "Blocking send should return quickly for INPUT_REQUIRED, not wait out the consumption timeout (took " + elapsedMs + "ms)");
     }
 
     @Test
