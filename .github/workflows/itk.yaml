@@ -47,7 +47,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=itk_service
 
       - name: Cache launcher peer-SDK checkouts + build outputs
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/a2a-itk-launcher
           key: itk-launcher-${{ runner.os }}-${{ github.sha }}
