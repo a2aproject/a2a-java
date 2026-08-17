@@ -1,12 +1,14 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
 import org.a2aproject.sdk.client.ClientBuilder;
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient;
 import org.a2aproject.sdk.client.transport.rest.RestTransport;
 import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
 import org.a2aproject.sdk.client.transport.spi.interceptors.auth.AuthInterceptor;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerWithAuthTest;
 import org.a2aproject.sdk.server.apps.common.AuthTestProfile;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -58,6 +60,7 @@ public class QuarkusA2ARestWithAuthAndroidTest extends AbstractA2AServerWithAuth
         saveTaskInTaskStore(MINIMAL_TASK);
 
         givenAuthenticated()
+                .header(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
                 .get("/tasks/" + MINIMAL_TASK.id())
                 .then()
                 .statusCode(200);

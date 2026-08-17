@@ -233,8 +233,7 @@ public class JSONRPCHandler {
      */
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
-            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
-            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
+            validateVersionAndExtensions(context);
             EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (A2AError e) {
@@ -290,8 +289,7 @@ public class JSONRPCHandler {
         }
 
         try {
-            A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
-            A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
+            validateVersionAndExtensions(context);
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onMessageSendStream(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
@@ -331,6 +329,7 @@ public class JSONRPCHandler {
      */
     public CancelTaskResponse onCancelTask(CancelTaskRequest request, ServerCallContext context) {
         try {
+            validateVersionAndExtensions(context);
             Task task = requestHandler.onCancelTask(request.getParams(), context);
             if (task != null) {
                 return new CancelTaskResponse(request.getId(), task);
@@ -387,6 +386,7 @@ public class JSONRPCHandler {
         }
         requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {
+            validateVersionAndExtensions(context);
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onSubscribeToTask(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
@@ -431,6 +431,7 @@ public class JSONRPCHandler {
                     new PushNotificationNotSupportedError());
         }
         try {
+            validateVersionAndExtensions(context);
             TaskPushNotificationConfig config =
                     requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), config);
@@ -473,6 +474,7 @@ public class JSONRPCHandler {
                     new PushNotificationNotSupportedError());
         }
         try {
+            validateVersionAndExtensions(context);
             TaskPushNotificationConfig config =
                     requestHandler.onCreateTaskPushNotificationConfig(request.getParams(), context);
             return new CreateTaskPushNotificationConfigResponse(request.getId(), config);
@@ -509,6 +511,7 @@ public class JSONRPCHandler {
      */
     public GetTaskResponse onGetTask(GetTaskRequest request, ServerCallContext context) {
         try {
+            validateVersionAndExtensions(context);
             Task task = requestHandler.onGetTask(request.getParams(), context);
             return new GetTaskResponse(request.getId(), task);
         } catch (A2AError e) {
@@ -556,6 +559,7 @@ public class JSONRPCHandler {
      */
     public ListTasksResponse onListTasks(ListTasksRequest request, ServerCallContext context) {
         try {
+            validateVersionAndExtensions(context);
             ListTasksResult result = requestHandler.onListTasks(request.getParams(), context);
             return new ListTasksResponse(request.getId(), result);
         } catch (A2AError e) {
@@ -596,6 +600,7 @@ public class JSONRPCHandler {
                     new PushNotificationNotSupportedError());
         }
         try {
+            validateVersionAndExtensions(context);
             ListTaskPushNotificationConfigsResult result =
                     requestHandler.onListTaskPushNotificationConfigs(request.getParams(), context);
             return new ListTaskPushNotificationConfigsResponse(request.getId(), result);
@@ -638,6 +643,7 @@ public class JSONRPCHandler {
                     new PushNotificationNotSupportedError());
         }
         try {
+            validateVersionAndExtensions(context);
             requestHandler.onDeleteTaskPushNotificationConfig(request.getParams(), context);
             return new DeleteTaskPushNotificationConfigResponse(request.getId());
         } catch (A2AError e) {
@@ -681,12 +687,28 @@ public class JSONRPCHandler {
                     new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
         }
         try {
+            validateVersionAndExtensions(context);
             return new GetExtendedAgentCardResponse(request.getId(), extendedAgentCard.get());
         } catch (A2AError e) {
             return new GetExtendedAgentCardResponse(request.getId(), e);
         } catch (Throwable t) {
             return new GetExtendedAgentCardResponse(request.getId(), internalError(t));
         }
+    }
+
+    /**
+     * Validates the requested protocol version and extensions against the agent card.
+     *
+     * <p>Section 3.6.2 of the specification requires this on every request, so every operation
+     * calls it before reaching the request handler.
+     *
+     * @param context the server call context carrying the requested version and extensions
+     * @throws A2AError if the requested version or a required extension is not supported
+     */
+    private void validateVersionAndExtensions(ServerCallContext context) throws A2AError {
+        AgentCard agentCard = resolveAgentCard();
+        A2AVersionValidator.validateProtocolVersion(agentCard, context);
+        A2AExtensions.validateRequiredExtensions(agentCard, context);
     }
 
     /**
