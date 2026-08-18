@@ -101,6 +101,7 @@ public class A2AServerRoutesTest {
         setField(routes, "jsonRpcHandler", mockJsonRpcHandler);
         setField(routes, "executor", mockExecutor);
         setField(routes, "callContextFactory", mockCallContextFactory);
+        setField(routes, "multitenancyEnabled", true);
 
         // Setup common mock behavior
         when(mockCallContextFactory.isUnsatisfied()).thenReturn(true);
@@ -521,42 +522,6 @@ public class A2AServerRoutesTest {
         verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
-    @Test
-    public void testTenantExtraction_MultiSegmentPath() {
-        // Arrange - simulate request to /org/team (multi-segment non-test path)
-        when(mockRoutingContext.pathParam("tenant")).thenReturn("org/team");
-        String jsonRpcRequest = """
-            {
-             "jsonrpc": "2.0",
-             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-             "method": "GetTask",
-             "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "historyLength": 10
-             }
-            }""";
-        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
-
-        Task responseTask = Task.builder()
-                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .contextId("context-1234")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
-        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
-                .thenReturn(realResponse);
-
-        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
-
-        // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
-
-        // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
-        ServerCallContext capturedContext = contextCaptor.getValue();
-        assertNotNull(capturedContext);
-        assertEquals("org/team", capturedContext.getState().get(TENANT_KEY));
-    }
 
     @Test
     public void testTenantExtraction_RootPath() {
@@ -667,91 +632,6 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("tenant1", capturedContext.getState().get(TENANT_KEY));
-    }
-
-    @Test
-    public void testTenantExtraction_ThreeSegmentPath() {
-        // Arrange - simulate request to /tenant1/api/v1
-        when(mockRoutingContext.pathParam("tenant")).thenReturn("tenant1/api/v1");
-        String jsonRpcRequest = """
-            {
-             "jsonrpc": "2.0",
-             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-             "method": "GetTask",
-             "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "historyLength": 10
-             }
-            }""";
-        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
-
-        Task responseTask = Task.builder()
-                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .contextId("context-1234")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
-        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
-                .thenReturn(realResponse);
-
-        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
-
-        // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
-
-        // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
-        ServerCallContext capturedContext = contextCaptor.getValue();
-        assertNotNull(capturedContext);
-        assertEquals("tenant1/api/v1", capturedContext.getState().get(TENANT_KEY));
-    }
-
-    @Test
-    public void testTenantExtraction_StreamingRequest() {
-        // Arrange - simulate streaming request to /myTenant/api
-        when(mockRoutingContext.pathParam("tenant")).thenReturn("myTenant/api");
-        String jsonRpcRequest = """
-            {
-             "jsonrpc": "2.0",
-             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-             "method": "SendStreamingMessage",
-             "params": {
-              "message": {
-               "messageId": "message-1234",
-               "contextId": "context-1234",
-               "role": "ROLE_USER",
-               "parts": [
-                {
-                 "text": "tell me a joke"
-                }
-               ],
-               "metadata": {}
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "returnImmediately": false
-              },
-              "metadata": {}
-             }
-            }""";
-        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
-
-        @SuppressWarnings("unchecked")
-        Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
-        when(mockJsonRpcHandler.onMessageSendStream(any(SendStreamingMessageRequest.class),
-                any(ServerCallContext.class))).thenReturn(mockPublisher);
-
-        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
-
-        // Act
-        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
-
-        // Assert
-        verify(mockJsonRpcHandler).onMessageSendStream(any(SendStreamingMessageRequest.class),
-                contextCaptor.capture());
-        ServerCallContext capturedContext = contextCaptor.getValue();
-        assertNotNull(capturedContext);
-        assertEquals("myTenant/api", capturedContext.getState().get(TENANT_KEY));
     }
 
     @Test

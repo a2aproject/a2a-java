@@ -35,7 +35,8 @@ The tenant is resolved from two sources, in priority order:
 | `POST /` | `""` (no tenant) |
 | `POST /acme` | `"acme"` |
 | `POST /acme/` | `"acme"` (trailing slash stripped) |
-| `POST /org/team` | `"org/team"` |
+
+> **Note:** Paths with more than one segment (e.g. `POST /org/team`) are **not** matched by the catch-all route and will not be dispatched to the JSON-RPC handler.
 
 ### REST Transport
 
@@ -46,9 +47,26 @@ For the REST transport, the tenant is always taken from the URL path. There is n
 | `POST /message:send` | `""` (no tenant) |
 | `POST /acme/message:send` | `"acme"` |
 | `GET /acme/tasks` | `"acme"` |
-| `GET /acme/tasks/{taskId}` | `"acme"` |
-| `POST /acme/tasks/{taskId}:cancel` | `"acme"` |
-| `POST /acme/tasks/{taskId}:subscribe` | `"acme"` |
+| `GET /acme/tasks/\{taskId}` | `"acme"` |
+| `POST /acme/tasks/\{taskId}:cancel` | `"acme"` |
+| `POST /acme/tasks/\{taskId}:subscribe` | `"acme"` |
+
+## Disabling Multi-Tenancy (JSON-RPC)
+
+When multi-tenancy is not needed, the JSON-RPC reference server can be switched to a simpler **single-tenant mode**. In this mode the catch-all regex route is replaced by a plain `POST /` route, which is the behaviour from before multi-tenancy was introduced.
+
+Set the following property in your `application.properties`:
+
+```properties
+quarkus.a2a.multitenancy.enabled=false
+```
+
+| Mode | Route registered | Tenant |
+|------|-----------------|--------|
+| `true` (default) | `POST /` or `POST /\{tenant}` (regex `^/(?<tenant>[^/]*)$`) | from path or body |
+| `false` | `POST /` only | from body field only |
+
+> **Note:** This property only applies to the **JSON-RPC** reference server (`a2a-java-sdk-reference-jsonrpc`). The REST transport always uses explicit per-operation routes and is not affected.
 
 ## Accessing the Tenant in Your Executor
 

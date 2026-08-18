@@ -66,10 +66,18 @@ public class QuarkusA2AJSONRPCTenantTest {
     }
 
     @Test
-    public void testPathTenant_multiSegment_usedWhenBodyOmitsTenant() {
-        // POST /org/team with no body tenant → executor sees "org/team" (from path)
-        String response = postWithoutBodyTenantTo("/org/team");
-        assertArtifactText(response, "org/team");
+    public void testPathTenant_multiSegment_notMatchedByRoute() {
+        // POST /org/team — multi-segment paths are not matched by the catch-all route
+        // (regex ^/(?<tenant>[^/]*)$ only allows a single path segment as tenant).
+        // The server returns 404 for such requests.
+        RestAssured.given()
+                .header(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(buildRequestNoTenant())
+                .when()
+                .post("/org/team")
+                .then()
+                .statusCode(404);
     }
 
     @Test

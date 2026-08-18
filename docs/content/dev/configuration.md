@@ -181,3 +181,19 @@ public class MyConfigProvider implements A2AConfigProvider {
 ```
 
 **Note:** The reference server implementations (Quarkus-based) automatically include the MicroProfile Config integration, so properties work out of the box in `application.properties`.
+
+## Reference Server Properties (Quarkus)
+
+The following properties are specific to the Quarkus-based reference server implementations and are read directly via MicroProfile `@ConfigProperty`. They are **not** part of the SDK's `a2a.*` configuration system.
+
+### JSON-RPC Transport
+
+```properties
+# Enable multi-tenancy URL routing for the JSON-RPC reference server (default: true)
+# When true:  a regex route ^/(?<tenant>[^/]*)$ is registered, so requests to /acme
+#             are dispatched with tenant="acme".
+# When false: only POST / is registered (single-tenant mode, original behaviour).
+quarkus.a2a.multitenancy.enabled=true
+```
+
+See the [Multi-Tenancy](/multi-tenancy) page for full details and examples.

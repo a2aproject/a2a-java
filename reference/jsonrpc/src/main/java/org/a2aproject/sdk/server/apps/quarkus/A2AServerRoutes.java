@@ -22,6 +22,8 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.google.gson.JsonSyntaxException;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.ForbiddenException;
@@ -183,6 +185,17 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class A2AServerRoutes {
 
+    /**
+     * When {@code false}, the JSON-RPC endpoint is registered as a plain
+     * {@code POST /} route (single-tenant mode, original behaviour).
+     * When {@code true} (the default), a regex catch-all route
+     * {@code ^/(?<tenant>.*)$} is used so that tenant paths such as
+     * {@code /acme} or {@code /org/team} are also accepted.
+     */
+    @Inject
+    @ConfigProperty(name = "quarkus.a2a.multitenancy.enabled", defaultValue = "true")
+    boolean multitenancyEnabled;
+
     private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
 
     /**
@@ -223,15 +236,21 @@ public class A2AServerRoutes {
      * @param router the Vert.x Web Router instance to configure
      */
     void setupRoutes(@Observes @Priority(20) Router router) {
-        // Main JSON-RPC endpoint: wildcard POST to support tenant routing via URL path.
-        // The named capture group (?<tenant>...) exposes the path-based tenant via rc.pathParam("tenant").
-        // CATCH_ALL_ROUTE_ORDER ensures this route is evaluated AFTER more specific routes
-        // (e.g. REST transport) when both transports share the same HTTP port.
+        // Main JSON-RPC endpoint.
         // BodyHandler is per-route (not global) to avoid interfering with gRPC routes.
         // ordered=false: delegation via Vert.x WebClient can share the same event loop context as the outer request; ordered=true would serialize them, causing a 30s deadlock.
-        router.routeWithRegex("^/(?<tenant>.*)$")
-            .method(POST)
-            .order(CATCH_ALL_ROUTE_ORDER)
+        //
+        // Multi-tenancy enabled (default): a regex catch-all matches every path so that tenant
+        // prefixes such as /acme or /org/team are forwarded to the handler. The named capture
+        // group (?<tenant>...) exposes the path-based tenant via rc.pathParam("tenant").
+        // CATCH_ALL_ROUTE_ORDER ensures this route is evaluated AFTER more specific routes
+        // (e.g. REST transport) when both transports share the same HTTP port.
+        //
+        // Multi-tenancy disabled: a plain POST / route is used instead (original behaviour).
+        var mainRoute = multitenancyEnabled
+                ? router.routeWithRegex("^/(?<tenant>[^/]*)$").order(CATCH_ALL_ROUTE_ORDER)
+                : router.route("/").method(POST);
+        mainRoute
             .consumes(APPLICATION_JSON)
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
@@ -629,7 +648,6 @@ public class A2AServerRoutes {
      *   <li>{@code /} → empty tenant</li>
      *   <li>{@code /tenant1} → "tenant1"</li>
      *   <li>{@code /tenant1/} → "tenant1"</li>
-     *   <li>{@code /org/team} → "org/team"</li>
      * </ul>
      *
      * @param rc the routing context
