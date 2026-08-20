@@ -1,0 +1,102 @@
+name: Cloud Deployment Example Test (Windows)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  test-cloud-deployment-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Kind
+        shell: pwsh
+        run: |
+          curl.exe -Lo kind.exe https://kind.sigs.k8s.io/dl/v0.31.0/kind-windows-amd64.exe
+          Move-Item kind.exe "$env:SystemRoot\System32\kind.exe"
+          kind version
+
+      - name: Build project
+        run: mvn -B clean install -DskipTests -f pom.xml
+
+      - name: Deploy with Kind
+        working-directory: examples/cloud-deployment/scripts
+        shell: pwsh
+        run: .\deploy.ps1
+
+      - name: Verify deployment
+        working-directory: examples/cloud-deployment/scripts
+        shell: pwsh
+        run: .\verify.ps1
+
+      - name: Verify agent card is accessible
+        shell: pwsh
+        run: |
+          Write-Host "Testing agent card endpoint at http://localhost:8080/.well-known/agent-card.json"
+          curl.exe -f http://localhost:8080/.well-known/agent-card.json
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Agent card not accessible" -ForegroundColor Red
+            exit 1
+          }
+
+      - name: Run test client
+        working-directory: examples/cloud-deployment/server
+        shell: pwsh
+        run: |
+          mvn test-compile exec:java `
+            -Dexec.mainClass="org.a2aproject.sdk.examples.cloud.A2ACloudExampleClient" `
+            -Dexec.classpathScope=test `
+            -Dagent.url=http://localhost:8080 `
+            -Dci.mode=true
+
+      - name: Show diagnostics on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "=== Agent Pod Status ==="
+          kubectl get pods -n a2a-demo -l app=a2a-agent -o wide
+
+          Write-Host ""
+          Write-Host "=== Recent Events ==="
+          kubectl get events -n a2a-demo --sort-by='.lastTimestamp' | Select-Object -Last 20
+
+          Write-Host ""
+          Write-Host "=== Agent Pod Logs ==="
+          $pods = (kubectl get pods -n a2a-demo -l app=a2a-agent `
+            -o jsonpath='{.items[*].metadata.name}') -split ' '
+          foreach ($pod in $pods) {
+            if ($pod) {
+              Write-Host "--- Logs for $pod ---"
+              kubectl logs -n a2a-demo $pod --tail=100
+            }
+          }
+
+          Write-Host ""
+          Write-Host "=== PostgreSQL Logs ==="
+          kubectl logs -n a2a-demo postgres-0 --tail=50
+
+          Write-Host ""
+          Write-Host "=== Kafka Logs ==="
+          kubectl logs -n kafka -l strimzi.io/cluster=a2a-kafka --tail=50
+
+      - name: Cleanup
+        if: always()
+        working-directory: examples/cloud-deployment/scripts
+        shell: pwsh
+        run: .\cleanup.ps1 -Force
