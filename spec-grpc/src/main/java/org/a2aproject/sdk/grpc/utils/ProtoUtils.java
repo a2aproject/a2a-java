@@ -229,6 +229,21 @@ public class ProtoUtils {
             return convert(() -> TaskIdParamsMapper.INSTANCE.fromProtoCancelTaskRequest(reqProto));
         }
 
+        /**
+         * Converts a protobuf {@link org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest} to a spec
+         * {@link GetExtendedAgentCardParams}.
+         * <p>
+         * Protobuf uses empty string as the default for unset string fields, so an empty tenant
+         * is normalized to {@code null} to match the spec convention.
+         *
+         * @param request the protobuf request
+         * @return the spec params, with an empty tenant normalized to {@code null}
+         */
+        public static GetExtendedAgentCardParams getExtendedAgentCardParams(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder request) {
+            String tenant = request.getTenant();
+            return new GetExtendedAgentCardParams(tenant.isBlank() ? null : tenant);
+        }
+
         public static MessageSendParams messageSendParams(org.a2aproject.sdk.grpc.SendMessageRequestOrBuilder request) {
             org.a2aproject.sdk.grpc.SendMessageRequest requestProto = request instanceof org.a2aproject.sdk.grpc.SendMessageRequest
                     ? (org.a2aproject.sdk.grpc.SendMessageRequest) request

@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -47,6 +48,7 @@ public record TaskPushNotificationConfig(String id, @Nullable String taskId, Str
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("url", url);
+        Utils.validateTenant(tenant);
     }
 
     /**

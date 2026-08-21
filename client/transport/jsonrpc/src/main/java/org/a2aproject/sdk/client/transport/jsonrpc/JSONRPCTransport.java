@@ -98,7 +98,7 @@ public class JSONRPCTransport implements ClientTransport {
                 agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SEND_MESSAGE_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, SEND_MESSAGE_METHOD);
             SendMessageResponse response = unmarshalResponse(httpResponseBody, SEND_MESSAGE_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
@@ -120,7 +120,7 @@ public class JSONRPCTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
 
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD);
+            A2AHttpClient.PostBuilder builder = createPostBuilder(agentInterface.url(), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD);
             ref.set(builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -144,7 +144,7 @@ public class JSONRPCTransport implements ClientTransport {
                 agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, GET_TASK_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, GET_TASK_METHOD);
             GetTaskResponse response = unmarshalResponse(httpResponseBody, GET_TASK_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
@@ -161,7 +161,7 @@ public class JSONRPCTransport implements ClientTransport {
                 agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, CANCEL_TASK_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, CANCEL_TASK_METHOD);
             CancelTaskResponse response = unmarshalResponse(httpResponseBody, CANCEL_TASK_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
@@ -177,7 +177,7 @@ public class JSONRPCTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_METHOD, ProtoUtils.ToProto.listTasksParams(request),
                 agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, LIST_TASK_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, LIST_TASK_METHOD);
             ListTasksResponse response = unmarshalResponse(httpResponseBody, LIST_TASK_METHOD);
             return response.getResult();
         } catch (IOException | InterruptedException | JsonProcessingException e) {
@@ -193,7 +193,7 @@ public class JSONRPCTransport implements ClientTransport {
                 ProtoUtils.ToProto.createTaskPushNotificationConfigRequest(request), agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             CreateTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
@@ -211,7 +211,7 @@ public class JSONRPCTransport implements ClientTransport {
                 ProtoUtils.ToProto.getTaskPushNotificationConfigRequest(request), agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             GetTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
@@ -230,7 +230,7 @@ public class JSONRPCTransport implements ClientTransport {
                 ProtoUtils.ToProto.listTaskPushNotificationConfigsRequest(request), agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             ListTaskPushNotificationConfigsResponse response = unmarshalResponse(httpResponseBody, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
@@ -248,7 +248,7 @@ public class JSONRPCTransport implements ClientTransport {
                 ProtoUtils.ToProto.deleteTaskPushNotificationConfigRequest(request), agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             DeleteTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             // Response validated (no error), but no result to return
         } catch (A2AClientException e) {
@@ -270,7 +270,7 @@ public class JSONRPCTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
 
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD);
+            A2AHttpClient.PostBuilder builder = createPostBuilder(agentInterface.url(), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD);
             ref.set(builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -294,7 +294,7 @@ public class JSONRPCTransport implements ClientTransport {
                     ProtoUtils.ToProto.extendedAgentCard(params), agentCard, context);
 
             try {
-                String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, params.tenant()), payloadAndHeaders, GET_EXTENDED_AGENT_CARD_METHOD);
+                String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, GET_EXTENDED_AGENT_CARD_METHOD);
                 GetExtendedAgentCardResponse response = unmarshalResponse(httpResponseBody, GET_EXTENDED_AGENT_CARD_METHOD);
                 return response.getResult();
             } catch (IOException | InterruptedException | JsonProcessingException e) {

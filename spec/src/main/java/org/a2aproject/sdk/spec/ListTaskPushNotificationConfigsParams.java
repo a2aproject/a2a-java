@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -29,6 +30,7 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
      */
     public ListTaskPushNotificationConfigsParams {
         Assert.checkNotNullParam("id", id);
+        Utils.validateTenant(tenant);
     }
 
     /**

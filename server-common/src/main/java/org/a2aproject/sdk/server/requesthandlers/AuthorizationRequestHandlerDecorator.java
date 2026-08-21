@@ -8,6 +8,7 @@ import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -70,11 +71,7 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
 
     @PostConstruct
     void init() {
-        if (authorizationProviderInstance != null) {
-            authorizationProvider = authorizationProviderInstance.isResolvable()
-                    ? authorizationProviderInstance.get()
-                    : null;
-        }
+        authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
     }
 
     private Flow.Publisher<StreamingEventKind> wrapPublisherForOwnership(

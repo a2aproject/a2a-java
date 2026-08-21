@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -36,6 +37,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
      */
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
+        Utils.validateTenant(tenant);
         metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 

@@ -48,6 +48,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.spec.util.Utils;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.StatusException;
@@ -84,6 +85,9 @@ public class GrpcTransport implements ClientTransport {
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
         this.agentCard = agentCard;
         this.interceptors = interceptors;
+        if (agentTenant != null && !agentTenant.isBlank()) {
+            Utils.validateTenant(agentTenant);
+        }
         this.agentTenant = agentTenant == null || agentTenant.isBlank() ? "" : agentTenant;
     }
 
@@ -352,11 +356,9 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
-        GetExtendedAgentCardRequest.Builder builder = GetExtendedAgentCardRequest.newBuilder();
-        if (params.tenant() != null) {
-            builder.setTenant(params.tenant());
-        }
-        GetExtendedAgentCardRequest request = builder.build();
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.newBuilder()
+                .setTenant(resolveTenant(params.tenant()))
+                .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD, request, agentCard, context);
 
         try {

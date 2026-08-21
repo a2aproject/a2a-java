@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -98,9 +99,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     @Inject
     public InMemoryTaskStore(@Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
-        this.authorizationProvider = authorizationProviderInstance.isResolvable()
-                ? authorizationProviderInstance.get()
-                : null;
+        this.authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
     }
 
     /**

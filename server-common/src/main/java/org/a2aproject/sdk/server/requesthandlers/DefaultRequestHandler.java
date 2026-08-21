@@ -41,12 +41,14 @@ import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
 import org.a2aproject.sdk.server.events.QueueManager;
+import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.ResultAggregator;
 import org.a2aproject.sdk.server.tasks.TaskManager;
 import org.a2aproject.sdk.server.tasks.TaskStore;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.util.async.EventConsumerExecutorProducer.EventConsumerExecutor;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.spec.A2AError;
@@ -208,7 +210,13 @@ public class DefaultRequestHandler implements RequestHandler {
     @SuppressWarnings("NullAway")
     @Nullable Instance<TaskAuthorizationProvider> authorizationProviderInstance;
 
+    @Inject
+    @Any
+    @SuppressWarnings("NullAway")
+    @Nullable Instance<AgentExecutorRouter> agentExecutorRouterInstance;
+
     private @Nullable TaskAuthorizationProvider authorizationProvider;
+    private @Nullable AgentExecutorRouter agentExecutorRouter;
 
     /**
      * Timeout in seconds to wait for agent execution to complete in blocking calls.
@@ -320,9 +328,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
         reconciliationTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
-        if (authorizationProviderInstance != null && authorizationProviderInstance.isResolvable()) {
-            authorizationProvider = authorizationProviderInstance.get();
-        }
+        authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
+        agentExecutorRouter = CdiUtils.getIfResolvable(agentExecutorRouterInstance);
         boolean populateReferredTasks = Boolean.parseBoolean(
                 configProvider.getValue(A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS));
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
@@ -343,6 +350,7 @@ public class DefaultRequestHandler implements RequestHandler {
         private Executor executor;
         private Executor eventConsumerExecutor;
         private @Nullable TaskAuthorizationProvider authorizationProvider;
+        private @Nullable AgentExecutorRouter agentExecutorRouter;
         private boolean populateReferredTasks;
 
         public Builder agentExecutor(AgentExecutor agentExecutor) {
@@ -385,6 +393,17 @@ public class DefaultRequestHandler implements RequestHandler {
             return this;
         }
 
+        /**
+         * Sets the optional {@link AgentExecutorRouter} for tenant-based executor resolution.
+         *
+         * @param agentExecutorRouter the router, may be {@code null}
+         * @return this builder for method chaining
+         */
+        public Builder agentExecutorRouter(@Nullable AgentExecutorRouter agentExecutorRouter) {
+            this.agentExecutorRouter = agentExecutorRouter;
+            return this;
+        }
+
         public Builder populateReferredTasks(boolean populateReferredTasks) {
             this.populateReferredTasks = populateReferredTasks;
             return this;
@@ -405,6 +424,7 @@ public class DefaultRequestHandler implements RequestHandler {
             handler.consumptionCompletionTimeoutSeconds = 2;
             handler.reconciliationTimeoutSeconds = 1;
             handler.authorizationProvider = authorizationProvider;
+            handler.agentExecutorRouter = agentExecutorRouter;
             handler.requestContextBuilder =
                     () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
             return handler;
@@ -523,15 +543,18 @@ public class DefaultRequestHandler implements RequestHandler {
         RequestContext cancelRequestContext = requestContextBuilder.get()
                 .setTaskId(task.id())
                 .setContextId(task.contextId())
+                .setTenant(params.tenant())
                 .setTask(task)
                 .setServerCallContext(context)
                 .build();
         AgentEmitter emitter = new AgentEmitter(cancelRequestContext, queue);
 
+        AgentExecutor resolvedExecutor = resolveAgentExecutor(cancelRequestContext.getTenant());
+
         // Call agentExecutor.cancel() with error handling
         // AgentExecutor is user-provided, so catch all exceptions
         try {
-            agentExecutor.cancel(cancelRequestContext, emitter);
+            resolvedExecutor.cancel(cancelRequestContext, emitter);
         } catch (TaskNotCancelableError e) {
             // Expected error - log and enqueue
             LOGGER.info("Task {} is not cancelable, agent threw: {}", task.id(), e.getMessage());
@@ -1070,13 +1093,14 @@ public class DefaultRequestHandler implements RequestHandler {
     private EnhancedRunnable registerAndExecuteAgentAsync(String taskId, RequestContext requestContext, EventQueue queue, EnhancedRunnable.DoneCallback doneCallback) {
         LOGGER.debug("Registering agent execution for task {}, runningAgents.size() before: {}", taskId, runningAgents.size());
         logThreadStats("AGENT START");
+        AgentExecutor resolvedExecutor = resolveAgentExecutor(requestContext.getTenant());
         EnhancedRunnable runnable = new EnhancedRunnable() {
             @Override
             public void run() {
                 LOGGER.debug("Agent execution starting for task {}", taskId);
                 AgentEmitter emitter = new AgentEmitter(requestContext, queue);
                 try {
-                    agentExecutor.execute(requestContext, emitter);
+                    resolvedExecutor.execute(requestContext, emitter);
                 } catch (A2AError e) {
                     // Log A2A errors at WARN level with full stack trace
                     // These are expected business errors but should be tracked
@@ -1188,6 +1212,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 .setParams(requestParams)
                 .setTaskId(requestParams.message().taskId())
                 .setContextId(task != null ? task.contextId() : requestParams.message().contextId())
+                .setTenant(requestParams.tenant())
                 .setTask(task)
                 .setServerCallContext(context)
                 .build();
@@ -1215,11 +1240,19 @@ public class DefaultRequestHandler implements RequestHandler {
                     .setParams(requestParams)
                     .setTask(task)
                     .setContextId(task.contextId())
+                    .setTenant(requestParams.tenant())
                     .setServerCallContext(context)
                     .build();
         }
 
         return new MessageSendSetup(taskManager, task, requestContext);
+    }
+
+    private AgentExecutor resolveAgentExecutor(@Nullable String tenant) {
+        if (agentExecutorRouter != null) {
+            return agentExecutorRouter.resolve(tenant);
+        }
+        return agentExecutor;
     }
 
     /**
