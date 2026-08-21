@@ -246,6 +246,12 @@ public class A2AServerRoutes {
             .produces(APPLICATION_JSON)
             .handler(this::getAgentCard);
 
+        // GET /.well-known/{tenant}/agent-card.json - Tenant-specific public agent card (no auth required)
+        router.getWithRegex("^\\/.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
+            .order(1)
+            .produces(APPLICATION_JSON)
+            .handler(this::getTenantAgentCard);
+
         // GET /{tenant}/extendedAgentCard - Extended agent card (auth required)
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
             .order(1)
@@ -824,6 +830,22 @@ public class A2AServerRoutes {
     @PermitAll
     public void getAgentCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getAgentCard();
+        sendResponse(rc, response);
+    }
+
+    /**
+     * Retrieves the public agent card for a specific tenant.
+     *
+     * <p>Maps {@code GET /.well-known/{tenant}/agent-card.json} to
+     * {@link RestHandler#getAgentCard(String)}.
+     *
+     * <p><b>Authentication:</b> {@code @PermitAll} - Public endpoint requiring no authentication
+     *
+     * @param rc the Vert.x routing context
+     */
+    @PermitAll
+    public void getTenantAgentCard(RoutingContext rc) {
+        HTTPRestResponse response = jsonRestHandler.getAgentCard(extractTenant(rc));
         sendResponse(rc, response);
     }
 

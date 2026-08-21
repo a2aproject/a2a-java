@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
@@ -39,6 +40,8 @@ import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.server.version.A2AVersionValidator;
@@ -68,6 +71,7 @@ import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.util.ErrorDetail;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -133,6 +137,8 @@ public class RestHandler {
     private Executor executor;
     private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
+    private @Nullable AgentCardRouter agentCardRouter;
+
     /**
      * No-args constructor for CDI proxy creation.
      * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
@@ -152,16 +158,19 @@ public class RestHandler {
      * @param cacheMetadata the agent card caching metadata
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
+     * @param agentCardRouterInstance optional agent card router instance for multitenancy
      */
     @Inject
     public RestHandler(@PublicAgentCard Instance<AgentCard> agentCardInstance,
             @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-            AgentCardCacheMetadata cacheMetadata, RequestHandler requestHandler, @Internal Executor executor) {
+            AgentCardCacheMetadata cacheMetadata, RequestHandler requestHandler, @Internal Executor executor,
+            @Any @Nullable Instance<AgentCardRouter> agentCardRouterInstance) {
         this.agentCardInstance = agentCardInstance;
         this.extendedAgentCard = extendedAgentCard;
         this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
         this.executor = executor;
+        this.agentCardRouter = CdiUtils.getIfResolvable(agentCardRouterInstance);
     }
 
     /**
@@ -828,21 +837,30 @@ public class RestHandler {
      * }</pre>
      *
      * @param context the server call context containing authentication and metadata
-     * @param tenant the tenant identifier
+     * @param tenant the tenant identifier, or {@code null} for the default tenant
      * @return the HTTP response containing the extended agent card
      * @throws ExtendedAgentCardNotConfiguredError if extended agent card is not available
      * @see #getAgentCard()
      * @see AgentCard
      */
-    public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, String tenant) {
+    public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, @Nullable String tenant) {
         try {
+            Utils.validateTenant(tenant);
             if (!resolveAgentCard().capabilities().extendedAgentCard()) {
                 throw new UnsupportedOperationError();
+            }
+            // Validate version before card lookup so version errors take precedence
+            validateVersionAndExtensions(context);
+            if (agentCardRouter != null) {
+                AgentCard card = agentCardRouter.resolveExtendedCard(tenant);
+                if (card == null) {
+                    throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
+                }
+                return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(card));
             }
             if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
-            validateVersionAndExtensions(context);
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extendedAgentCard.get()));
         } catch (A2AError e) {
             return createErrorResponse(e);
@@ -891,7 +909,29 @@ public class RestHandler {
     }
 
     public HTTPRestResponse getAgentCard() {
+        return getAgentCard(null);
+    }
+
+    /**
+     * Retrieves the public agent card, optionally for a specific tenant.
+     * <p>
+     * When a tenant is specified and an {@link AgentCardRouter} is available, the router
+     * resolves a tenant-specific public card. Falls back to the default public card
+     * if no tenant-specific card is configured.
+     *
+     * @param tenant the tenant identifier, may be {@code null}
+     * @return the HTTP response containing the agent card
+     */
+    public HTTPRestResponse getAgentCard(@Nullable String tenant) {
         try {
+            Utils.validateTenant(tenant);
+            if (agentCardRouter != null && tenant != null && !tenant.isBlank()) {
+                AgentCard card = agentCardRouter.resolvePublicCard(tenant);
+                if (card != null) {
+                    return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(card),
+                            cacheMetadata.getHttpHeadersMap());
+                }
+            }
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(resolveAgentCard()),
                     cacheMetadata.getHttpHeadersMap());
         } catch (Throwable t) {

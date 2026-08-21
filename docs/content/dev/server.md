@@ -223,6 +223,10 @@ public class CloseStreamsHook implements TaskStreamLifecycleHook {
 
 See the [`examples/stream-lifecycle`](https://github.com/a2aproject/a2a-java/tree/main/examples/stream-lifecycle) directory for a complete working example with server, client, and integration tests for all three transports.
 
+## Multi-Tenancy (Optional)
+
+Serve multiple tenants from a single server with per-tenant `AgentExecutor` and `AgentCard` beans. See [Multi-Tenancy](multi-tenancy) for setup and configuration.
+
 ## Observability (Optional)
 
 Add distributed tracing to your server with the [OpenTelemetry extras module](extra/opentelemetry). It decorates the request handler to create spans for every A2A protocol method, with automatic error tracking and optional request/response extraction.

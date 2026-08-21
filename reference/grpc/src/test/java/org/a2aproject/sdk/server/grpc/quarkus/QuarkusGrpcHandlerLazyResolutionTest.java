@@ -36,7 +36,8 @@ class QuarkusGrpcHandlerLazyResolutionTest {
                 throwOnGet,
                 null,
                 FixedInstance.empty(),
-                Runnable::run));
+                Runnable::run,
+                null));
     }
 
     @Test
@@ -63,7 +64,8 @@ class QuarkusGrpcHandlerLazyResolutionTest {
                 trackingInstance,
                 null,
                 FixedInstance.empty(),
-                Runnable::run);
+                Runnable::run,
+                null);
 
         assertFalse(resolved.get(), "should not resolve during construction");
         AgentCard result = handler.getExtendedAgentCard();
