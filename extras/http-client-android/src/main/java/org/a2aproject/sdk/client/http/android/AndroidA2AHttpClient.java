@@ -33,7 +33,13 @@ import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.jspecify.annotations.Nullable;
 
-/** Android-specific implementation of {@link A2AHttpClient} using {@link HttpURLConnection}. */
+/**
+ * Android-specific implementation of {@link A2AHttpClient} using {@link HttpURLConnection}.
+ *
+ * <p><b>Security Note:</b> This client does not follow HTTP redirects automatically
+ * to prevent credential leakage to third-party origins. Applications requiring redirect
+ * following must handle redirects manually.
+ */
 public class AndroidA2AHttpClient implements A2AHttpClient {
 
   private static final Executor NET_EXECUTOR = Executors.newCachedThreadPool(r -> {
@@ -97,6 +103,8 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
       connection.setRequestMethod(method);
       connection.setConnectTimeout(15000); // 15 seconds
       connection.setReadTimeout(60000);    // 60 seconds
+      // Security: Disable automatic redirect following to prevent credential leakage
+      connection.setInstanceFollowRedirects(false);
       for (Map.Entry<String, String> header : headers.entrySet()) {
         connection.setRequestProperty(header.getKey(), header.getValue());
       }

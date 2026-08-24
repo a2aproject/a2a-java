@@ -37,8 +37,12 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
  *   <li>HTTP/2 with automatic fallback to HTTP/1.1</li>
  *   <li>Synchronous GET, POST, and DELETE requests</li>
  *   <li>Asynchronous Server-Sent Events (SSE) streaming</li>
- *   <li>Automatic redirect following</li>
  * </ul>
+ *
+ * <p><b>Security Note:</b> The default client does not follow HTTP redirects
+ * automatically to prevent credential leakage to third-party origins. If redirect
+ * following is required, provide a custom {@link HttpClient} via the constructor
+ * {@link #JdkA2AHttpClient(HttpClient)}.
  *
  * <p><b>Provider Priority:</b> 0 (lowest - used as fallback)
  *
@@ -56,23 +60,30 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     private volatile @Nullable HttpClient noRedirectClient;
 
     /**
-     * Creates a new JDK-based HTTP client.
+     * Creates a new JDK-based HTTP client with secure defaults.
      *
      * <p>Configures the client with:
      * <ul>
      *   <li>HTTP/2 preferred (with HTTP/1.1 fallback)</li>
-     *   <li>Normal redirect following</li>
+     *   <li>No automatic redirect following (security hardening to prevent credential leakage)</li>
      * </ul>
+     *
+     * <p>If redirect following is required, use {@link #JdkA2AHttpClient(HttpClient)}
+     * with a custom {@link HttpClient} configured appropriately.
      */
     public JdkA2AHttpClient() {
         this(HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
+                .followRedirects(HttpClient.Redirect.NEVER)
                 .build());
     }
 
     /**
      * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}.
+     *
+     * <p>This constructor allows full control over the {@link HttpClient} configuration,
+     * including redirect policy. The caller is responsible for ensuring the client is
+     * configured securely.
      *
      * @param httpClient the JDK HTTP client to delegate requests to
      * @throws IllegalArgumentException if {@code httpClient} is {@code null}

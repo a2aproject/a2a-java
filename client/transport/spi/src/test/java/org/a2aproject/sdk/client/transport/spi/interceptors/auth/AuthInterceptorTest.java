@@ -80,11 +80,173 @@ public class AuthInterceptorTest {
                 "session-id",
                 APIKeySecurityScheme.TYPE,
                 "secret-api-key",
+                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "API Key authentication"),
+                "X-API-Key",
+                "secret-api-key"
+        );
+        testSecurityScheme(authTestCase);
+    }
+
+    @Test
+    public void testAPIKeySecurityScheme_SafeHeaderName_Authorization() {
+        AuthTestCase authTestCase = new AuthTestCase(
+                "http://agent.com/rpc",
+                "session-id",
+                APIKeySecurityScheme.TYPE,
+                "secret-api-key",
+                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "Authorization", "API Key authentication"),
+                "Authorization",
+                "secret-api-key"
+        );
+        testSecurityScheme(authTestCase);
+    }
+
+    @Test
+    public void testAPIKeySecurityScheme_SafeHeaderName_XAuthToken() {
+        AuthTestCase authTestCase = new AuthTestCase(
+                "http://agent.com/rpc",
+                "session-id",
+                APIKeySecurityScheme.TYPE,
+                "secret-api-key",
+                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-Auth-Token", "API Key authentication"),
+                "X-Auth-Token",
+                "secret-api-key"
+        );
+        testSecurityScheme(authTestCase);
+    }
+
+
+    @Test
+    public void testAPIKeySecurityScheme_CaseInsensitiveHeaderName() {
+        // Test that lowercase header names are accepted (case-insensitive comparison)
+        AuthTestCase authTestCase = new AuthTestCase(
+                "http://agent.com/rpc",
+                "session-id",
+                APIKeySecurityScheme.TYPE,
+                "secret-api-key",
                 new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "x-api-key", "API Key authentication"),
                 "x-api-key",
                 "secret-api-key"
         );
         testSecurityScheme(authTestCase);
+    }
+
+    @Test
+    public void testAPIKeySecurityScheme_CaseInsensitiveHeaderName_Authorization() {
+        // Test that lowercase "authorization" is accepted
+        AuthTestCase authTestCase = new AuthTestCase(
+                "http://agent.com/rpc",
+                "session-id",
+                APIKeySecurityScheme.TYPE,
+                "secret-api-key",
+                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "authorization", "API Key authentication"),
+                "authorization",
+                "secret-api-key"
+        );
+        testSecurityScheme(authTestCase);
+    }
+
+
+    @Test
+    public void testAPIKeySecurityScheme_UnsafeHeaderName_Rejected() {
+        String sessionId = "session-id";
+        String schemeName = APIKeySecurityScheme.TYPE;
+        String credential = "secret-api-key";
+
+        credentialStore.setCredential(sessionId, schemeName, credential);
+
+        // Use an unsafe header name that's not in the allowlist
+        SecurityScheme securityScheme = new APIKeySecurityScheme(
+            APIKeySecurityScheme.Location.HEADER,
+            "X-Malicious-Redirect-Header",
+            "Unsafe header"
+        );
+        AgentCard agentCard = createAgentCard(schemeName, securityScheme);
+
+        Map<String, Object> requestPayload = Map.of("test", "payload");
+        Map<String, String> headers = Map.of();
+        ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
+
+        PayloadAndHeaders result = authInterceptor.intercept(
+                "SendMessage",
+                requestPayload,
+                headers,
+                agentCard,
+                context
+        );
+
+        assertEquals(requestPayload, result.getPayload());
+        // Credential should NOT be injected for unsafe header name
+        assertNull(result.getHeaders().get("X-Malicious-Redirect-Header"));
+        assertEquals(0, result.getHeaders().size());
+    }
+
+    @Test
+    public void testAPIKeySecurityScheme_QueryLocation_NotInjectedInHeader() {
+        String sessionId = "session-id";
+        String schemeName = APIKeySecurityScheme.TYPE;
+        String credential = "secret-api-key";
+
+        credentialStore.setCredential(sessionId, schemeName, credential);
+
+        // API key in query parameter location should not be injected as header
+        SecurityScheme securityScheme = new APIKeySecurityScheme(
+            APIKeySecurityScheme.Location.QUERY,
+            "api_key",
+            "Query parameter API key"
+        );
+        AgentCard agentCard = createAgentCard(schemeName, securityScheme);
+
+        Map<String, Object> requestPayload = Map.of("test", "payload");
+        Map<String, String> headers = Map.of();
+        ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
+
+        PayloadAndHeaders result = authInterceptor.intercept(
+                "SendMessage",
+                requestPayload,
+                headers,
+                agentCard,
+                context
+        );
+
+        assertEquals(requestPayload, result.getPayload());
+        // Credential should NOT be injected as header for query location
+        assertNull(result.getHeaders().get("api_key"));
+        assertEquals(0, result.getHeaders().size());
+    }
+
+    @Test
+    public void testAPIKeySecurityScheme_CookieLocation_NotInjectedInHeader() {
+        String sessionId = "session-id";
+        String schemeName = APIKeySecurityScheme.TYPE;
+        String credential = "secret-api-key";
+
+        credentialStore.setCredential(sessionId, schemeName, credential);
+
+        // API key in cookie location should not be injected as header
+        SecurityScheme securityScheme = new APIKeySecurityScheme(
+            APIKeySecurityScheme.Location.COOKIE,
+            "session_token",
+            "Cookie-based API key"
+        );
+        AgentCard agentCard = createAgentCard(schemeName, securityScheme);
+
+        Map<String, Object> requestPayload = Map.of("test", "payload");
+        Map<String, String> headers = Map.of();
+        ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
+
+        PayloadAndHeaders result = authInterceptor.intercept(
+                "SendMessage",
+                requestPayload,
+                headers,
+                agentCard,
+                context
+        );
+
+        assertEquals(requestPayload, result.getPayload());
+        // Credential should NOT be injected as header for cookie location
+        assertNull(result.getHeaders().get("session_token"));
+        assertEquals(0, result.getHeaders().size());
     }
 
     @Test
@@ -238,9 +400,9 @@ public class AuthInterceptorTest {
         String schemeName = "missing";
         String sessionId = "session-id";
         String credential = "dummy-token";
-        
+
         credentialStore.setCredential(sessionId, schemeName, credential);
-        
+
         // Create agent card with security requirement but no scheme definition
         AgentCard agentCard = AgentCard.builder()
             .name("missing")
@@ -254,7 +416,7 @@ public class AuthInterceptorTest {
             .securityRequirements(List.of(SecurityRequirement.builder().scheme(schemeName, List.of()).build()))
             .securitySchemes(Map.of()) // no security schemes
             .build();
-            
+
         Map<String, Object> requestPayload = Map.of("foo", "bar");
         Map<String, String> headers = Map.of("fizz", "buzz");
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
@@ -276,7 +438,7 @@ public class AuthInterceptorTest {
         String schemeName = "apikey";
         SecurityScheme securityScheme = new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "API Key authentication");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
-        
+
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
@@ -307,7 +469,7 @@ public class AuthInterceptorTest {
             .skills(List.of())
             .securityRequirements(null) // no security info
             .build();
-            
+
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());

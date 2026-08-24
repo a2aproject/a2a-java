@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
@@ -28,6 +29,22 @@ public class AuthInterceptor extends ClientCallInterceptor {
     public static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private static final String BASIC = "Basic ";
+
+    /**
+     * Allowlist of header names that are safe for API key injection.
+     * This prevents credential leakage through malicious header names that could
+     * be forwarded to third-party origins during redirects or other scenarios.
+     * Only standard authentication-related headers are permitted.
+     * Header names are stored in lowercase for case-insensitive comparison.
+     */
+    private static final Set<String> SAFE_API_KEY_HEADER_NAMES = Set.of(
+        "authorization",
+        "x-api-key",
+        "api-key",
+        "x-auth-token",
+        "x-authentication"
+    );
+
     private final CredentialService credentialService;
 
     public AuthInterceptor(final CredentialService credentialService) {
@@ -66,8 +83,13 @@ public class AuthInterceptor extends ClientCallInterceptor {
                         updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
                         return new PayloadAndHeaders(payload, updatedHeaders);
                     } else if (securityScheme instanceof APIKeySecurityScheme apiKeySecurityScheme) {
-                        updatedHeaders.put(apiKeySecurityScheme.name(), credential);
-                        return new PayloadAndHeaders(payload, updatedHeaders);
+                        // Only inject API key if it's intended for header transport and the header name is safe
+                        if (apiKeySecurityScheme.location() == APIKeySecurityScheme.Location.HEADER
+                                && isSafeHeaderName(apiKeySecurityScheme.name())) {
+                            updatedHeaders.put(apiKeySecurityScheme.name(), credential);
+                            return new PayloadAndHeaders(payload, updatedHeaders);
+                        }
+                        // Skip credential injection for unsafe header names or non-header locations
                     }
                 }
             }
@@ -81,5 +103,18 @@ public class AuthInterceptor extends ClientCallInterceptor {
 
     private static String getBasicValue(String credential) {
         return BASIC + credential;
+    }
+
+    /**
+     * Validates that a header name is safe for API key injection.
+     * This prevents credential leakage by rejecting header names that could
+     * be exploited to forward credentials to unintended destinations.
+     * Header name comparison is case-insensitive per RFC 7230.
+     *
+     * @param headerName the header name to validate
+     * @return true if the header name is in the safe allowlist, false otherwise
+     */
+    private static boolean isSafeHeaderName(String headerName) {
+        return SAFE_API_KEY_HEADER_NAMES.contains(headerName.toLowerCase(Locale.ROOT));
     }
 }

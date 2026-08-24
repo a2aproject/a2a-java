@@ -85,6 +85,13 @@ import org.jspecify.annotations.Nullable;
  * Vert.x WebClient automatically negotiates HTTP/2 when supported by the server
  * via ALPN. No explicit configuration is required.
  *
+ * <h2>Security</h2>
+ * <p>
+ * The default client does not follow HTTP redirects automatically to prevent
+ * credential leakage to third-party origins. If redirect following is required,
+ * create a custom {@link WebClient} with the desired redirect policy and pass
+ * the underlying {@link Vertx} instance to {@link #VertxA2AHttpClient(Vertx)}.
+ *
  * <h2>Usage Examples</h2>
  *
  * <h3>Simple GET Request</h3>
@@ -143,8 +150,9 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      *
      * <p>
      * The client creates a new {@link Vertx} instance and {@link WebClient} configured
-     * with HTTP keep-alive and automatic redirect following. When {@link #close()} is called,
-     * both the WebClient and Vertx instance are closed.
+     * with HTTP keep-alive and no automatic redirect following (security hardening to
+     * prevent credential leakage). When {@link #close()} is called, both the WebClient
+     * and Vertx instance are closed.
      *
      * <p>
      * <strong>Important:</strong> Always call {@link #close()} when done with this client
@@ -155,7 +163,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     public VertxA2AHttpClient() {
         this.vertx = createVertx();
         WebClientOptions options = new WebClientOptions()
-                .setFollowRedirects(true)
+                .setFollowRedirects(false)
                 .setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
         this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
@@ -183,9 +191,10 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * Creates a new VertxA2AHttpClient using an externally managed Vert.x instance.
      *
      * <p>
-     * The client creates a {@link WebClient} using the provided {@link Vertx} instance.
-     * When {@link #close()} is called, only the WebClient is closed; the Vertx instance
-     * remains open and must be managed by the caller.
+     * The client creates a {@link WebClient} using the provided {@link Vertx} instance,
+     * configured with no automatic redirect following (security hardening to prevent
+     * credential leakage). When {@link #close()} is called, only the WebClient is closed;
+     * the Vertx instance remains open and must be managed by the caller.
      *
      * <p>
      * This constructor is useful in environments where Vert.x is already managed,
@@ -198,7 +207,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         this.vertx = Assert.checkNotNullParam("vertx", vertx);
         this.ownsVertx = false;
         WebClientOptions options = new WebClientOptions()
-                .setFollowRedirects(true)
+                .setFollowRedirects(false)
                 .setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
         this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));

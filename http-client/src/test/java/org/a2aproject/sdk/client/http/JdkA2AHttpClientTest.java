@@ -121,25 +121,53 @@ public class JdkA2AHttpClientTest {
     }
 
     @Test
-    public void testPostDefaultFollowsRedirect() throws Exception {
+    public void testDefaultClientDoesNotFollowRedirects() throws Exception {
         server = ClientAndServer.startClientAndServer(0);
-        int port = server.getLocalPort();
-        server.when(request().withMethod("POST").withPath("/redirect"))
+
+        server.when(request().withMethod("GET").withPath("/redirect"))
                 .respond(response()
-                        .withStatusCode(307)
-                        .withHeader("Location", "http://localhost:" + port + "/target"));
-        server.when(request().withPath("/target"))
+                        .withStatusCode(302)
+                        .withHeader("Location", "http://localhost:" + server.getLocalPort() + "/target"));
+
+        server.when(request().withMethod("GET").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
         JdkA2AHttpClient client = new JdkA2AHttpClient();
 
-        A2AHttpResponse response = client.createPost()
-                .url("http://localhost:" + port + "/redirect")
-                .body("{}")
-                .post();
+        A2AHttpResponse response = client.createGet()
+                .url("http://localhost:" + server.getLocalPort() + "/redirect")
+                .get();
 
-        assertEquals(200, response.status(),
-                "By default, redirects should be followed");
+        assertEquals(302, response.status());
+        assertFalse(response.success());
+        String expectedLocation = "http://localhost:" + server.getLocalPort() + "/target";
+        assertEquals(expectedLocation, response.headers().firstValue("Location"));
+    }
+
+    @Test
+    public void testCustomClientCanFollowRedirects() throws Exception {
+        server = ClientAndServer.startClientAndServer(0);
+
+        server.when(request().withMethod("GET").withPath("/redirect"))
+                .respond(response()
+                        .withStatusCode(302)
+                        .withHeader("Location", "http://localhost:" + server.getLocalPort() + "/target"));
+
+        server.when(request().withMethod("GET").withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        HttpClient customClient = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+
+        JdkA2AHttpClient client = new JdkA2AHttpClient(customClient);
+
+        A2AHttpResponse response = client.createGet()
+                .url("http://localhost:" + server.getLocalPort() + "/redirect")
+                .get();
+
+        assertEquals(200, response.status());
+        assertTrue(response.success());
         assertEquals("redirected", response.body());
     }
 
