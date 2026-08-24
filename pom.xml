@@ -72,7 +72,7 @@
         <logback.version>1.5.18</logback.version>
         <version.testcontainers>2.0.5</version.testcontainers>
         <error-prone.version>2.50.0</error-prone.version>
-        <nullaway.version>0.13.4</nullaway.version>
+        <nullaway.version>0.14.0</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
         <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -Xep:RequireExplicitNullMarking:WARN -XepOpt:NullAway:ExhaustiveOverride=true -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
 
