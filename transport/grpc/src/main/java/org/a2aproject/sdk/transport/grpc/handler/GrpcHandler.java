@@ -29,6 +29,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.A2AError;
@@ -62,6 +63,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys;
 import io.grpc.Context;
 import io.grpc.Metadata;
@@ -563,12 +565,22 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest request,
                            StreamObserver<org.a2aproject.sdk.grpc.AgentCard> responseObserver) {
         try {
-            if (!getAgentCard().capabilities().extendedAgentCard()) {
+            if (!resolveAgentCard().capabilities().extendedAgentCard()) {
                 handleError(responseObserver, new UnsupportedOperationError());
                 return;
             }
-            ServerCallContext context = createCallContext(responseObserver);
-            AgentCard extendedAgentCard = getExtendedAgentCard();
+            // Removing this 2A causes protocol version validation and required extensions validation to no longer run for gRPC getExtendedAgentCard requests.
+            //This violates Section 3.6.2 of the A2A spec which requires version checking on every request.
+            createCallContext(responseObserver);
+            String tenant = request.getTenant().isBlank() ? null : request.getTenant();
+            Utils.validateTenant(tenant);
+            AgentCardRouter router = getAgentCardRouter();
+            AgentCard extendedAgentCard;
+            if (router != null) {
+                extendedAgentCard = router.resolveExtendedCard(tenant);
+            } else {
+                extendedAgentCard = getExtendedAgentCard();
+            }
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
                 responseObserver.onCompleted();
@@ -916,6 +928,16 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * @return the executor
      */
     protected abstract Executor getExecutor();
+
+    /**
+     * Returns the optional agent card router for tenant-based resolution, or {@code null}.
+     * Subclasses may override to provide a router implementation.
+     *
+     * @return the agent card router, or {@code null} if multitenancy is not configured
+     */
+    protected @Nullable AgentCardRouter getAgentCardRouter() {
+        return null;
+    }
 
     /**
      * Attempts to extract the A2A-Version header from the current gRPC context.

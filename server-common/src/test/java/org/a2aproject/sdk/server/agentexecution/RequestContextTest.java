@@ -441,6 +441,7 @@ public class RequestContextTest {
         RequestContext context = new RequestContext.Builder()
                 .setParams(mockParams)
                 .setTaskId(builderTaskId)  // Forces message update
+                .setTenant(tenantId)
                 .build();
 
         // Verify the message was updated with builder's task ID

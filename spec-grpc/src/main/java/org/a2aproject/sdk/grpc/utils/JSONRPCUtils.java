@@ -11,6 +11,8 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -57,6 +59,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
+import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.InvalidAgentResponseError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
@@ -195,89 +198,84 @@ public class JSONRPCUtils {
         }
     }
 
+    private static void setTenantIfAbsent(Supplier<String> existingTenantGetter, Consumer<String> setter, @Nullable String tenantOverride) {
+        if (tenantOverride != null && !tenantOverride.isBlank() && existingTenantGetter.get().isBlank()) {
+            setter.accept(tenantOverride);
+        }
+    }
+
     private static A2ARequest<?> parseMethodRequest(String version, Object id, String method, JsonElement paramsNode, @Nullable String tenant) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
         switch (method) {
             case GET_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new GetTaskRequest(version, id, ProtoUtils.FromProto.taskQueryParams(builder));
             }
             case CANCEL_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.CancelTaskRequest.Builder builder = org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new CancelTaskRequest(version, id, ProtoUtils.FromProto.cancelTaskParams(builder));
             }
             case LIST_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.ListTasksRequest.Builder builder = org.a2aproject.sdk.grpc.ListTasksRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new CreateTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.createTaskPushNotificationConfig(builder));
             }
             case GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new GetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
             }
             case SEND_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new ListTaskPushNotificationConfigsRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
             case GET_EXTENDED_AGENT_CARD_METHOD -> {
-                return new GetExtendedAgentCardRequest(version, id);
+                if (paramsNode != null && !paramsNode.isJsonNull()) {
+                    org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.Builder builder = org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder();
+                    parseRequestBody(paramsNode, builder, id);
+                    setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
+                    return new GetExtendedAgentCardRequest(version, id, ProtoUtils.FromProto.getExtendedAgentCardParams(builder));
+                }
+                if (tenant != null && !tenant.isBlank()) {
+                    return new GetExtendedAgentCardRequest(version, id, new GetExtendedAgentCardParams(tenant));
+                }
+                return new GetExtendedAgentCardRequest(version, id, null);
             }
             case SEND_STREAMING_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case SUBSCRIBE_TO_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder builder = org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
-                    builder.setTenant(tenant);
-                }
+                setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SubscribeToTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             default ->

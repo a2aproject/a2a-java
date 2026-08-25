@@ -112,7 +112,6 @@
  * <ul>
  *   <li>{@code POST /} → empty tenant</li>
  *   <li>{@code POST /tenant1} → tenant "tenant1"</li>
- *   <li>{@code POST /org/team} → tenant "org/team"</li>
  * </ul>
  *
  * <h2>Customization</h2>

@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
@@ -43,6 +44,8 @@ import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.server.version.A2AVersionValidator;
@@ -59,6 +62,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -146,6 +150,8 @@ public class JSONRPCHandler {
     private Executor executor;
     private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
+    private @Nullable AgentCardRouter agentCardRouter;
+
     /**
      * No-args constructor for CDI proxy creation.
      * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
@@ -167,15 +173,18 @@ public class JSONRPCHandler {
      * @param extendedAgentCard optional extended agent card instance
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
+     * @param agentCardRouterInstance optional agent card router instance for multitenancy
      */
     @Inject
     public JSONRPCHandler(@PublicAgentCard Instance<AgentCard> agentCardInstance,
                           @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-                          RequestHandler requestHandler, @Internal Executor executor) {
+                          RequestHandler requestHandler, @Internal Executor executor,
+                          @Any @Nullable Instance<AgentCardRouter> agentCardRouterInstance) {
         this.agentCardInstance = agentCardInstance;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
         this.executor = executor;
+        this.agentCardRouter = CdiUtils.getIfResolvable(agentCardRouterInstance);
     }
 
     /**
@@ -186,7 +195,7 @@ public class JSONRPCHandler {
      * @param executor the executor for asynchronous operations
      */
     public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
-        this(new FixedInstance<>(agentCard), null, requestHandler, executor);
+        this(new FixedInstance<>(agentCard), null, requestHandler, executor, null);
     }
 
     /**
@@ -682,12 +691,21 @@ public class JSONRPCHandler {
         if (!resolveAgentCard().capabilities().extendedAgentCard()) {
             return new GetExtendedAgentCardResponse(request.getId(), new UnsupportedOperationError());
         }
-        if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
-            return new GetExtendedAgentCardResponse(request.getId(),
-                    new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
-        }
         try {
             validateVersionAndExtensions(context);
+            String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+            if (agentCardRouter != null) {
+                AgentCard card = agentCardRouter.resolveExtendedCard(tenant);
+                if (card == null) {
+                    return new GetExtendedAgentCardResponse(request.getId(),
+                            new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
+                }
+                return new GetExtendedAgentCardResponse(request.getId(), card);
+            }
+            if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
+                return new GetExtendedAgentCardResponse(request.getId(),
+                        new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
+            }
             return new GetExtendedAgentCardResponse(request.getId(), extendedAgentCard.get());
         } catch (A2AError e) {
             return new GetExtendedAgentCardResponse(request.getId(), e);
@@ -722,6 +740,27 @@ public class JSONRPCHandler {
      * @see AgentCard
      */
     public AgentCard getAgentCard() {
+        return getAgentCard(null);
+    }
+
+    /**
+     * Returns the public agent card, optionally for a specific tenant.
+     * <p>
+     * When a tenant is specified and an {@link AgentCardRouter} is available, the router
+     * resolves a tenant-specific public card. Falls back to the default public card
+     * if no tenant-specific card is configured.
+     *
+     * @param tenant the tenant identifier, may be {@code null}
+     * @return the public agent card
+     */
+    public AgentCard getAgentCard(@Nullable String tenant) {
+        Utils.validateTenant(tenant);
+        if (agentCardRouter != null && tenant != null && !tenant.isBlank()) {
+            AgentCard card = agentCardRouter.resolvePublicCard(tenant);
+            if (card != null) {
+                return card;
+            }
+        }
         return resolveAgentCard();
     }
 

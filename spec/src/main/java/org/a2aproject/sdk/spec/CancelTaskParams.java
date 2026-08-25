@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -28,6 +29,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
      */
     public CancelTaskParams {
         Assert.checkNotNullParam("id", id);
+        Utils.validateTenant(tenant);
         metadata = CollectionCopies.unmodifiableShallowMap(metadata);
     }
 

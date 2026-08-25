@@ -89,6 +89,11 @@
                 <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-extras-multitenancy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

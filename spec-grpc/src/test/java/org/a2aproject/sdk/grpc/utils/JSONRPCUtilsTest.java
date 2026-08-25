@@ -25,8 +25,10 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2ARequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.Message;
@@ -538,6 +540,60 @@ public class JSONRPCUtilsTest {
             "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
         assertFalse(json.contains("\\u003e"),
             "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
+    }
+
+    @Test
+    void parseGetExtendedAgentCardWithTenantParams() throws Exception {
+        String json = """
+                {"jsonrpc": "2.0", "id": "1", "method": "GetExtendedAgentCard", "params": {"tenant": "acme"}}
+                """;
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, null);
+        assertInstanceOf(GetExtendedAgentCardRequest.class, request);
+        GetExtendedAgentCardRequest extRequest = (GetExtendedAgentCardRequest) request;
+        assertNotNull(extRequest.getParams());
+        assertEquals("acme", extRequest.getParams().tenant());
+    }
+
+    @Test
+    void parseGetExtendedAgentCardWithNoParams() throws Exception {
+        String json = """
+                {"jsonrpc": "2.0", "id": "2", "method": "GetExtendedAgentCard"}
+                """;
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, null);
+        assertInstanceOf(GetExtendedAgentCardRequest.class, request);
+    }
+
+    @Test
+    void parseGetExtendedAgentCardWithNullParams() throws Exception {
+        String json = """
+                {"jsonrpc": "2.0", "id": "3", "method": "GetExtendedAgentCard", "params": null}
+                """;
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, null);
+        assertInstanceOf(GetExtendedAgentCardRequest.class, request);
+    }
+
+    @Test
+    void parseGetExtendedAgentCardWithUrlTenant() throws Exception {
+        String json = """
+                {"jsonrpc": "2.0", "id": "4", "method": "GetExtendedAgentCard"}
+                """;
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, "url-tenant");
+        assertInstanceOf(GetExtendedAgentCardRequest.class, request);
+        GetExtendedAgentCardRequest extRequest = (GetExtendedAgentCardRequest) request;
+        assertNotNull(extRequest.getParams());
+        assertEquals("url-tenant", extRequest.getParams().tenant());
+    }
+
+    @Test
+    void parseGetExtendedAgentCardBodyTenantTakesPrecedence() throws Exception {
+        String json = """
+                {"jsonrpc": "2.0", "id": "5", "method": "GetExtendedAgentCard", "params": {"tenant": "body-tenant"}}
+                """;
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, "url-tenant");
+        assertInstanceOf(GetExtendedAgentCardRequest.class, request);
+        GetExtendedAgentCardRequest extRequest = (GetExtendedAgentCardRequest) request;
+        assertNotNull(extRequest.getParams());
+        assertEquals("body-tenant", extRequest.getParams().tenant());
     }
 
 }

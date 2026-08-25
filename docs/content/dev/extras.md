@@ -40,6 +40,10 @@ JPA-backed replacements for the in-memory stores, providing database persistence
 
 Replaces the default `InMemoryQueueManager` with event replication across multiple A2A server instances via message brokers. Required for multi-instance deployments. The core module (`a2a-java-queue-manager-replicated-core`) pairs with a MicroProfile Reactive Messaging strategy (`a2a-java-queue-manager-replication-mp-reactive`) supporting Apache Kafka, Pulsar, or AMQP. You can also write your own `ReplicationStrategy`.
 
+## [Multi-Tenancy](../extra/multi-tenancy)
+
+Serve multiple tenants from a single A2A server with per-tenant `AgentExecutor` and `AgentCard` routing. The module (`a2a-java-extras-multitenancy`) provides a `@Tenant` CDI qualifier and automatic routing — requests are dispatched to tenant-specific beans based on the `tenant` field in the request payload, with fallback to the default beans for unknown tenants.
+
 ## [OpenTelemetry](../extra/opentelemetry)
 
 Distributed tracing, metrics, and context propagation for A2A servers and clients using OpenTelemetry. The server module (`a2a-java-sdk-opentelemetry-server`) adds automatic span creation for all protocol methods with context propagation across async boundaries. Client modules (`a2a-java-sdk-opentelemetry-client`, `a2a-java-sdk-opentelemetry-client-propagation`) instrument A2A client operations.
