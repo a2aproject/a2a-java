@@ -48,11 +48,13 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder(notificationConfig);
-        if (notificationConfig.id().isEmpty()) {
+        String requestedConfigId = notificationConfig.id();
+        boolean configIdIsMissing = requestedConfigId == null || requestedConfigId.isEmpty();
+        String configId = configIdIsMissing ? taskId : requestedConfigId;
+        if (configIdIsMissing) {
             builder.id(taskId);
         }
         TaskPushNotificationConfig config = builder.build();
-        String configId = config.id();
         int maxPerTask = PushNotificationConfigStore.maxPushConfigsPerTask(configProvider);
 
         pushNotificationInfos.compute(taskId, (key, list) -> {

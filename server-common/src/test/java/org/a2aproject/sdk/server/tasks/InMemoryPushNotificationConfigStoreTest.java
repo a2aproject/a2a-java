@@ -154,7 +154,6 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testSetInfoWithoutConfigId() {
         String taskId = "task1";
         TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
-                .id("") // No ID set
                 .url("http://initial.url/callback")
                 .taskId(taskId)
                 .build();
@@ -167,7 +166,6 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(taskId, configResult.configs().get(0).id());
 
         TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
-                .id("") // No ID set
                 .url("http://initial.url/callback_new")
                 .taskId(taskId)
                 .build();
