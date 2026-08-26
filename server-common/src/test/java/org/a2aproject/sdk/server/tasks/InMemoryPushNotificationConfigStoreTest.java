@@ -52,11 +52,13 @@ class InMemoryPushNotificationConfigStoreTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         configStore = new InMemoryPushNotificationConfigStore();
-        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient);
+        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient,
+                PushNotificationUrlValidator.ALLOW_ALL);
     }
 
     private void setupBasicMockHttpResponse() throws Exception {
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.followRedirects(false)).thenReturn(mockPostBuilder);
         when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.addHeader(CONTENT_TYPE, APPLICATION_JSON)).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
@@ -277,13 +279,7 @@ class InMemoryPushNotificationConfigStoreTest {
         TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(config);
 
-        // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.addHeader(any(String.class), any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.success()).thenReturn(true);
+        setupBasicMockHttpResponse();
 
         notificationSender.sendNotification(task, null);
 

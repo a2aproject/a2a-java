@@ -261,6 +261,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
   private static class AndroidPostBuilder extends AndroidBuilder<PostBuilder>
       implements PostBuilder {
     private String body = "";
+    private boolean followRedirects = true;
 
     @Override
     public PostBuilder body(String body) {
@@ -269,8 +270,15 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
     }
 
     @Override
+    public PostBuilder followRedirects(boolean follow) {
+      this.followRedirects = follow;
+      return self();
+    }
+
+    @Override
     public A2AHttpResponse post() throws IOException {
       HttpURLConnection connection = createConnection("POST", false);
+      connection.setInstanceFollowRedirects(followRedirects);
       connection.setDoOutput(true);
       try {
         try (OutputStream os = connection.getOutputStream()) {

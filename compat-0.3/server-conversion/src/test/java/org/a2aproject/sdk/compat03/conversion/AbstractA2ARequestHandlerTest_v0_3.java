@@ -31,6 +31,7 @@ import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
+import org.a2aproject.sdk.server.tasks.PushNotificationUrlValidator;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -129,7 +130,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
         // Create push notification components BEFORE MainEventBusProcessor
         httpClient = new TestHttpClient();
         PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
-        PushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient);
+        BasePushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient, PushNotificationUrlValidator.ALLOW_ALL);
 
         // Create MainEventBus and MainEventBusProcessor (production code path)
         mainEventBus = new MainEventBus();
@@ -144,6 +145,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
                         .taskStore(taskStore)
                         .queueManager(queueManager)
                         .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(true)
                         .mainEventBusProcessor(mainEventBusProcessor)
                         .executor(internalExecutor)
                         .eventConsumerExecutor(internalExecutor)

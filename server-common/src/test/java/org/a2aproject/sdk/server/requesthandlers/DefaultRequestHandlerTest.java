@@ -47,6 +47,7 @@ import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
@@ -142,6 +143,7 @@ public class DefaultRequestHandlerTest {
                 .taskStore(taskStore)
                 .queueManager(queueManager)
                 .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(true)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor)
                 .eventConsumerExecutor(internalExecutor)
@@ -1527,5 +1529,76 @@ public class DefaultRequestHandlerTest {
                 .agentExecutorRouter(router)
                 .authorizationRequired(false)
                 .build();
+    }
+
+    @Test
+    void testPushConfigNotStoredWhenPushNotificationsDisabled() throws Exception {
+        DefaultRequestHandler handlerNoPush = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(false)
+                .authorizationRequired(false)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .build();
+
+        agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+                .id("push-disabled-test")
+                .url("http://example.com/webhook")
+                .build();
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
+                .returnImmediately(true)
+                .acceptedOutputModes(List.of())
+                .taskPushNotificationConfig(pushConfig)
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(MESSAGE)
+                .configuration(config)
+                .build();
+
+        EventKind result = handlerNoPush.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        assertTrue(pushConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(task.id())).configs().isEmpty(),
+                "Push config should not be stored when pushNotificationsEnabled is false");
+    }
+
+    @Test
+    void testCreatePushNotificationConfigRejectedWhenPushNotificationsDisabled() throws Exception {
+        DefaultRequestHandler handlerNoPush = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(false)
+                .authorizationRequired(false)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .build();
+
+        agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+        EventKind result = handlerNoPush.onMessageSend(
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build(),
+                NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+                .id("cfg-disabled")
+                .taskId(task.id())
+                .url("http://example.com/webhook")
+                .build();
+
+        assertThrows(UnsupportedOperationError.class,
+                () -> handlerNoPush.onCreateTaskPushNotificationConfig(pushConfig, NULL_CONTEXT),
+                "CreateTaskPushNotificationConfig should throw UnsupportedOperationError when push is disabled");
     }
 }

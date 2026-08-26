@@ -53,6 +53,7 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
 public class JdkA2AHttpClient implements A2AHttpClient {
 
     private final HttpClient httpClient;
+    private volatile @Nullable HttpClient noRedirectClient;
 
     /**
      * Creates a new JDK-based HTTP client.
@@ -330,12 +331,36 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
     }
 
+    private HttpClient getNoRedirectClient() {
+        HttpClient local = noRedirectClient;
+        if (local == null) {
+            synchronized (this) {
+                local = noRedirectClient;
+                if (local == null) {
+                    local = HttpClient.newBuilder()
+                            .version(HttpClient.Version.HTTP_2)
+                            .followRedirects(HttpClient.Redirect.NEVER)
+                            .build();
+                    noRedirectClient = local;
+                }
+            }
+        }
+        return local;
+    }
+
     private class JdkPostBuilder extends JdkBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
         String body = "";
+        boolean followRedirects = true;
 
         @Override
         public PostBuilder body(String body) {
             this.body = body;
+            return self();
+        }
+
+        @Override
+        public PostBuilder followRedirects(boolean follow) {
+            this.followRedirects = follow;
             return self();
         }
 
@@ -348,12 +373,16 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return builder;
         }
 
+        private HttpClient resolveClient() {
+            return followRedirects ? httpClient : getNoRedirectClient();
+        }
+
         @Override
         public A2AHttpResponse post() throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(false)
                     .build();
             HttpResponse<String> response =
-                    httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+                    resolveClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,

@@ -44,6 +44,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private A2AHttpClient httpClient;
     private PushNotificationConfigStore configStore;
     private Map<String, PushNotificationPayloadFormatter> formattersByVersion;
+    private PushNotificationUrlValidator urlValidator;
 
 
     /**
@@ -53,43 +54,57 @@ public class BasePushNotificationSender implements PushNotificationSender {
      */
     @SuppressWarnings("NullAway")
     protected BasePushNotificationSender() {
-        // For CDI proxy creation
+        // For CDI proxy creation — all fields are overwritten by the @Inject constructor.
+        // urlValidator is intentionally non-null so that SSRF protection is active even
+        // if an instance is accidentally used before injection completes.
         this.httpClient = null;
         this.configStore = null;
         this.formattersByVersion = Map.of();
+        this.urlValidator = new DefaultPushNotificationUrlValidator();
     }
 
-    public BasePushNotificationSender(PushNotificationConfigStore configStore) {
+    public BasePushNotificationSender(PushNotificationConfigStore configStore,
+                                       PushNotificationUrlValidator urlValidator) {
         this.httpClient = A2AHttpClientFactory.create();
         this.configStore = configStore;
         this.formattersByVersion = Map.of();
+        this.urlValidator = urlValidator;
     }
 
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore,
-                                       Instance<PushNotificationPayloadFormatter> formatters) {
+                                       Instance<PushNotificationPayloadFormatter> formatters,
+                                       PushNotificationUrlValidator urlValidator) {
         this.httpClient = A2AHttpClientFactory.create();
         this.configStore = configStore;
-        this.formattersByVersion = new HashMap<>();
-        for (PushNotificationPayloadFormatter f : formatters) {
-            this.formattersByVersion.put(f.targetVersion(), f);
-        }
-    }
-
-    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient) {
-        this.configStore = configStore;
-        this.httpClient = httpClient;
-        this.formattersByVersion = Map.of();
+        this.formattersByVersion = toFormatterMap(formatters);
+        this.urlValidator = urlValidator;
     }
 
     public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
-                                       List<PushNotificationPayloadFormatter> formatters) {
+                                       PushNotificationUrlValidator urlValidator) {
         this.configStore = configStore;
         this.httpClient = httpClient;
-        this.formattersByVersion = new HashMap<>();
+        this.formattersByVersion = Map.of();
+        this.urlValidator = urlValidator;
+    }
+
+    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
+                                       List<PushNotificationPayloadFormatter> formatters,
+                                       PushNotificationUrlValidator urlValidator) {
+        this.configStore = configStore;
+        this.httpClient = httpClient;
+        this.formattersByVersion = toFormatterMap(formatters);
+        this.urlValidator = urlValidator;
+    }
+
+    private static Map<String, PushNotificationPayloadFormatter> toFormatterMap(
+            Iterable<PushNotificationPayloadFormatter> formatters) {
+        Map<String, PushNotificationPayloadFormatter> map = new HashMap<>();
         for (PushNotificationPayloadFormatter f : formatters) {
-            formattersByVersion.put(f.targetVersion(), f);
+            map.put(f.targetVersion(), f);
         }
+        return map;
     }
 
     @Override
@@ -164,6 +179,14 @@ public class BasePushNotificationSender implements PushNotificationSender {
                                           TaskPushNotificationConfig pushInfo,
                                           Map<String, String> versionsByConfigId) {
         String url = pushInfo.url();
+
+        try {
+            urlValidator.validate(url);
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+            return false;
+        }
+
         String token = pushInfo.token();
 
         String version = versionsByConfigId.get(pushInfo.id());
@@ -193,7 +216,8 @@ public class BasePushNotificationSender implements PushNotificationSender {
             }
         }
 
-        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost();
+        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
+                .followRedirects(false);
         if (token != null && !token.isBlank()) {
             try {
                 rejectCrlf(token, X_A2A_NOTIFICATION_TOKEN);

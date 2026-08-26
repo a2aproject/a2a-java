@@ -202,6 +202,7 @@ public class DefaultRequestHandler implements RequestHandler {
     private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS = "a2a.blocking.reconciliation.timeout.seconds";
     private static final String A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS = "a2a.request-context.populate-referred-tasks";
     private static final String A2A_AUTHORIZATION_REQUIRED = "a2a.authorization.required";
+    private static final String A2A_PUSH_NOTIFICATIONS_ENABLED = "a2a.push-notification.enabled";
 
     @Inject
     A2AConfigProvider configProvider;
@@ -224,6 +225,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private boolean authorizationRequired = true;
 
+    private boolean pushNotificationsEnabled;
 
     /**
      * Timeout in seconds to wait for agent execution to complete in blocking calls.
@@ -337,6 +339,9 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
         authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
         agentExecutorRouter = CdiUtils.getIfResolvable(agentExecutorRouterInstance);
+        pushNotificationsEnabled = Boolean.parseBoolean(
+                configProvider.getValue(A2A_PUSH_NOTIFICATIONS_ENABLED));
+
         boolean populateReferredTasks = Boolean.parseBoolean(
                 configProvider.getValue(A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS));
         this.authorizationRequired = Boolean.parseBoolean(
@@ -362,6 +367,7 @@ public class DefaultRequestHandler implements RequestHandler {
         private @Nullable AgentExecutorRouter agentExecutorRouter;
         private boolean authorizationRequired = true;
         private boolean populateReferredTasks;
+        private boolean pushNotificationsEnabled = true;
 
         public Builder agentExecutor(AgentExecutor agentExecutor) {
             this.agentExecutor = agentExecutor;
@@ -424,6 +430,18 @@ public class DefaultRequestHandler implements RequestHandler {
             return this;
         }
 
+        /**
+         * Sets whether push notifications are enabled via the agent card capabilities.
+         * When false, push notification configs embedded in sendMessage requests are ignored.
+         *
+         * @param pushNotificationsEnabled true if the agent supports push notifications
+         * @return this builder for chaining
+         */
+        public Builder pushNotificationsEnabled(boolean pushNotificationsEnabled) {
+            this.pushNotificationsEnabled = pushNotificationsEnabled;
+            return this;
+        }
+
         @SuppressWarnings("NullAway") // pushConfigStore is intentionally @Nullable
         public DefaultRequestHandler build() {
             Assert.checkNotNullParam("agentExecutor", agentExecutor);
@@ -441,6 +459,7 @@ public class DefaultRequestHandler implements RequestHandler {
             handler.authorizationProvider = authorizationProvider;
             handler.agentExecutorRouter = agentExecutorRouter;
             handler.authorizationRequired = authorizationRequired;
+            handler.pushNotificationsEnabled = pushNotificationsEnabled;
             handler.requestContextBuilder =
                     () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
             return handler;
@@ -1073,7 +1092,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
             TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
-        if (pushConfigStore == null) {
+        if (pushConfigStore == null || !pushNotificationsEnabled) {
             throw new UnsupportedOperationError();
         }
         if (params.taskId() == null) {
@@ -1199,7 +1218,10 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private boolean shouldAddPushInfo(MessageSendParams params) {
-        return pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null;
+        return pushNotificationsEnabled
+                && pushConfigStore != null
+                && params.configuration() != null
+                && params.configuration().taskPushNotificationConfig() != null;
     }
 
     /**
@@ -1329,6 +1351,7 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
+    @SuppressWarnings("NullAway") // shouldAddPushInfo guarantees pushConfigStore != null
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
         Task task = authorizeTaskAccess(params, context);
         MessageSendParams requestParams = task == null ? params : normalizeRequestParamsForTask(params, task);
@@ -1354,7 +1377,7 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
-            if (pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null) {
+            if (shouldAddPushInfo(params)) {
                 LOGGER.debug("Adding push info");
                 String version = context != null ? context.getRequestedProtocolVersion() : null;
                 pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())

@@ -98,6 +98,52 @@ public class JdkA2AHttpClientTest {
     }
 
     @Test
+    public void testPostFollowRedirectsFalseDoesNotFollowRedirect() throws Exception {
+        server = ClientAndServer.startClientAndServer(0);
+        int port = server.getLocalPort();
+        server.when(request().withMethod("POST").withPath("/redirect"))
+                .respond(response()
+                        .withStatusCode(302)
+                        .withHeader("Location", "http://localhost:" + port + "/target"));
+        server.when(request().withMethod("POST").withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        JdkA2AHttpClient client = new JdkA2AHttpClient();
+
+        A2AHttpResponse response = client.createPost()
+                .url("http://localhost:" + port + "/redirect")
+                .body("{}")
+                .followRedirects(false)
+                .post();
+
+        assertEquals(302, response.status(),
+                "With followRedirects(false), the 302 should be returned as-is");
+    }
+
+    @Test
+    public void testPostDefaultFollowsRedirect() throws Exception {
+        server = ClientAndServer.startClientAndServer(0);
+        int port = server.getLocalPort();
+        server.when(request().withMethod("POST").withPath("/redirect"))
+                .respond(response()
+                        .withStatusCode(307)
+                        .withHeader("Location", "http://localhost:" + port + "/target"));
+        server.when(request().withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        JdkA2AHttpClient client = new JdkA2AHttpClient();
+
+        A2AHttpResponse response = client.createPost()
+                .url("http://localhost:" + port + "/redirect")
+                .body("{}")
+                .post();
+
+        assertEquals(200, response.status(),
+                "By default, redirects should be followed");
+        assertEquals("redirected", response.body());
+    }
+
+    @Test
     public void testCancellationExceptionViaSubscriberOnErrorIsNotPropagated() throws Exception {
         AtomicReference<Throwable> capturedError = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean(false);
