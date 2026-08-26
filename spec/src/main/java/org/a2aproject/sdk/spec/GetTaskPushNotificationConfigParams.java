@@ -33,8 +33,6 @@ public record GetTaskPushNotificationConfigParams(String taskId, @Nullable Strin
         Utils.validateTenant(tenant);
     }
 
-    }
-
     /**
      * Convenience constructor for retrieving the configuration that uses the task ID as its default ID.
      *

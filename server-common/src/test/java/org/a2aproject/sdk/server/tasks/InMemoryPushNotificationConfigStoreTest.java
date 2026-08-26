@@ -151,9 +151,10 @@ class InMemoryPushNotificationConfigStoreTest {
     }
 
     @Test
-    public void testSetInfoWithoutConfigId() {
+    public void testSetInfoWithEmptyConfigId() {
         String taskId = "task1";
         TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
+                .id("")
                 .url("http://initial.url/callback")
                 .taskId(taskId)
                 .build();
@@ -166,6 +167,7 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(taskId, configResult.configs().get(0).id());
 
         TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
+                .id("")
                 .url("http://initial.url/callback_new")
                 .taskId(taskId)
                 .build();
@@ -176,6 +178,19 @@ class InMemoryPushNotificationConfigStoreTest {
         configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertEquals(1, configResult.configs().size(), "Should replace existing config with same ID rather than adding new one");
         assertEquals(updatedConfig.url(), configResult.configs().get(0).url());
+    }
+
+    @Test
+    public void testSetInfoWithNullConfigId() {
+        String taskId = "task_with_null_config_id";
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://initial.url/callback")
+                .taskId(taskId)
+                .build();
+
+        TaskPushNotificationConfig result = configStore.setInfo(config);
+
+        assertEquals(taskId, result.id(), "Config ID should default to taskId when null");
     }
 
     @Test
