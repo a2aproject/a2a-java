@@ -165,6 +165,24 @@ public class JpaPushNotificationConfigStoreTest {
 
     @Test
     @Transactional
+    public void testSetInfoWithNullConfigId() {
+        String taskId = "task_null_config_id";
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://null-id.url/callback")
+                .taskId(taskId)
+                .build();
+
+        TaskPushNotificationConfig result = configStore.setInfo(config);
+
+        assertEquals(taskId, result.id(), "A missing config ID should default to the task ID");
+        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(
+                new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(1, configResult.configs().size());
+        assertEquals(taskId, configResult.configs().get(0).id());
+    }
+
+    @Test
+    @Transactional
     public void testGetInfoExistingConfig() {
         String taskId = "task_get_exist";
         TaskPushNotificationConfig config = createSamplePushConfig("http://get.this/callback", "cfg1", null);

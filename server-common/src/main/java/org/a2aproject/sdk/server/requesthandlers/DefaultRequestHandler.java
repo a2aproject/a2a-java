@@ -1126,7 +1126,8 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new InternalError("No push notification config found");
         }
 
-        String configId = params.id();
+        String requestedConfigId = params.id();
+        String configId = requestedConfigId == null || requestedConfigId.isEmpty() ? params.taskId() : requestedConfigId;
         return getTaskPushNotificationConfig(listTaskPushNotificationConfigsResult, configId);
     }
 

@@ -50,10 +50,8 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
-        // Ensure config has an ID - default to taskId if not provided (mirroring InMemoryPushNotificationConfigStore behavior)
-        if (notificationConfig.id().isEmpty()) {
-            // This means the taskId and configId are same. This will not allow having multiple configs for a single Task.
-            // The configId is a required field in the spec and should not be empty
+        // Default missing config IDs to the task ID, matching the in-memory store.
+        if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
             notificationConfig = TaskPushNotificationConfig.builder(notificationConfig).id(taskId).build();
         }
 

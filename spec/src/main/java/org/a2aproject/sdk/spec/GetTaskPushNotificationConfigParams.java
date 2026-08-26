@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the returned configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record GetTaskPushNotificationConfigParams(String taskId, String id, @Nullable String tenant) {
+public record GetTaskPushNotificationConfigParams(String taskId, @Nullable String id, @Nullable String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -26,12 +26,22 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, @Nul
      * @param taskId the taskId parameter (see class-level JavaDoc)
      * @param id the id parameter (see class-level JavaDoc)
      * @param tenant the tenant parameter (see class-level JavaDoc)
-     * @throws IllegalArgumentException if taskId or tenant is null
+     * @throws IllegalArgumentException if taskId is null
      */
     public GetTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("taskId", taskId);
-        Assert.checkNotNullParam("id", id);
         Utils.validateTenant(tenant);
+    }
+
+    }
+
+    /**
+     * Convenience constructor for retrieving the configuration that uses the task ID as its default ID.
+     *
+     * @param taskId the task identifier (required)
+     */
+    public GetTaskPushNotificationConfigParams(String taskId) {
+        this(taskId, null, null);
     }
 
     /**
@@ -40,7 +50,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, @Nul
      * @param taskId the task identifier (required)
      * @param id optional configuration ID to retrieve
      */
-    public GetTaskPushNotificationConfigParams(String taskId, String id) {
+    public GetTaskPushNotificationConfigParams(String taskId, @Nullable String id) {
         this(taskId, id, null);
     }
 
@@ -84,7 +94,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, @Nul
          * @param id the configuration ID
          * @return this builder for method chaining
          */
-        public Builder id(String id) {
+        public Builder id(@Nullable String id) {
             this.id = id;
             return this;
         }
@@ -108,7 +118,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, @Nul
         public GetTaskPushNotificationConfigParams build() {
             return new GetTaskPushNotificationConfigParams(
                     Assert.checkNotNullParam("taskId", taskId),
-                    Assert.checkNotNullParam("id", id),
+                    id,
                     tenant);
         }
     }
