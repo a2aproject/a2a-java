@@ -170,6 +170,11 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-extras-multitenancy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-transport-grpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -592,6 +597,7 @@
         <module>extras/http-client-vertx</module>
         <module>extras/http-client-android</module>
         <module>extras/http-client-cdi</module>
+        <module>extras/multitenancy</module>
         <module>http-client</module>
         <module>jsonrpc-common</module>
         <module>integrations/microprofile-config</module>
@@ -622,6 +628,9 @@
         <!-- Multiversion reference modules (depend on both v1.0 and v0.3) -->
         <module>reference/multiversion-jsonrpc</module>
         <module>reference/multiversion-rest</module>
+
+        <!-- Multitenancy test module (Weld SE unit tests, no Quarkus) -->
+        <module>tests/multitenancy</module>
 
         <!-- Multi-version test modules -->
         <module>tests/multiversion/jsonrpc</module>

@@ -78,6 +78,7 @@ public class RequestContext {
     private final @Nullable MessageSendParams params;
     private final String taskId;
     private final String contextId;
+    private final @Nullable String tenant;
     private final @Nullable Task task;
     private final List<Task> relatedTasks;
     private final @Nullable ServerCallContext callContext;
@@ -92,6 +93,7 @@ public class RequestContext {
      * @param params the message send parameters (can be null for cancel operations)
      * @param taskId the task identifier (must not be null)
      * @param contextId the context identifier (must not be null)
+     * @param tenant the tenant identifier (can be null)
      * @param task the existing task state (null for new conversations)
      * @param relatedTasks other tasks in the same context (must not be null, can be empty)
      * @param callContext the server call context (can be null)
@@ -100,12 +102,14 @@ public class RequestContext {
             @Nullable MessageSendParams params,
             String taskId,
             String contextId,
+            @Nullable String tenant,
             @Nullable Task task,
             List<Task> relatedTasks,
             @Nullable ServerCallContext callContext) {
         this.params = params;
         this.taskId = taskId;
         this.contextId = contextId;
+        this.tenant = tenant;
         this.task = task;
         this.relatedTasks = relatedTasks;
         this.callContext = callContext;
@@ -228,10 +232,10 @@ public class RequestContext {
      * customer or organization the request belongs to.
      * </p>
      *
-     * @return the tenant identifier, or null if no params or tenant not set
+     * @return the tenant identifier, or null if not set
      */
     public @Nullable String getTenant() {
-        return params != null ? params.tenant() : null;
+        return tenant;
     }
 
     /**
@@ -323,6 +327,7 @@ public class RequestContext {
         private @Nullable MessageSendParams params;
         private @Nullable String taskId;
         private @Nullable String contextId;
+        private @Nullable String tenant;
         private @Nullable Task task;
         private @Nullable List<Task> relatedTasks;
         private @Nullable ServerCallContext serverCallContext;
@@ -339,6 +344,17 @@ public class RequestContext {
 
         public Builder setContextId(@Nullable String contextId) {
             this.contextId = contextId;
+            return this;
+        }
+
+        /**
+         * Sets the tenant identifier.
+         *
+         * @param tenant the tenant identifier, may be {@code null}
+         * @return this builder for method chaining
+         */
+        public Builder setTenant(@Nullable String tenant) {
+            this.tenant = tenant;
             return this;
         }
 
@@ -431,7 +447,7 @@ public class RequestContext {
 
             // 6. Call constructor with finalized values (IDs guaranteed non-null)
             return new RequestContext(finalParams, finalTaskId, finalContextId,
-                    task, finalRelatedTasks, serverCallContext);
+                    tenant, task, finalRelatedTasks, serverCallContext);
         }
     }
 

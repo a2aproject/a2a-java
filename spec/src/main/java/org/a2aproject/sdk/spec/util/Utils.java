@@ -41,6 +41,7 @@ import org.jspecify.annotations.Nullable;
 public class Utils {
 
     public static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
+    static final int MAX_TENANT_LENGTH = 256;
 
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
@@ -222,19 +223,25 @@ public class Utils {
     }
 
     /**
-     * Builds a base URL by combining a raw base URL string with an optional tenant path.
+     * Builds a base URL by combining a raw base URL string with an optional tenant identifier.
      *
      * <p>
-     * Normalizes trailing slashes on the base URL and validates/normalizes the tenant path.
+     * Normalizes trailing slashes on the base URL and validates the tenant (must be a simple
+     * identifier — no {@code /} or {@code ?}).
      *
      * @param baseUrl the base URL string, must not be null
-     * @param tenant the tenant path override, may be null for no tenant
+     * @param tenant the tenant identifier, may be null for no tenant
      * @return the complete base URL with tenant path appended
      * @throws IllegalArgumentException if tenant validation fails
      */
     public static String buildBaseUrl(String baseUrl, @Nullable String tenant) {
         checkNotNullParam("baseUrl", baseUrl);
-        return stripTrailingSlash(baseUrl) + extractTenant("", tenant);
+        String stripped = stripTrailingSlash(baseUrl);
+        String tenantPath = extractTenant("", tenant);
+        if (!tenantPath.isEmpty() && stripped.endsWith(tenantPath)) {
+            return stripped;
+        }
+        return stripped + tenantPath;
     }
 
     private static String stripTrailingSlash(String s) {
@@ -256,89 +263,94 @@ public class Utils {
     }
 
     /**
-     * Validates that a tenant path is safe and well-formed.
+     * Validates that a tenant identifier is safe and well-formed.
      * <p>
-     * This method performs security validation to prevent:
+     * A tenant must be a simple identifier — it must not contain URL path elements
+     * such as {@code /} or {@code ?}. Null and blank values are silently accepted
+     * (they mean "no tenant"). This method rejects:
      * <ul>
-     * <li>Path traversal attacks (e.g., {@code ../../admin})</li>
      * <li>Excessive length (max 256 characters)</li>
-     * <li>Invalid characters (only allows {@code /a-zA-Z0-9_-.})</li>
+     * <li>Invalid characters (only allows {@code a-zA-Z0-9_-.})</li>
      * </ul>
      *
-     * @param tenant the tenant path to validate
+     * @param tenant the tenant identifier to validate, may be {@code null}
      * @throws IllegalArgumentException if the tenant is invalid or unsafe
      */
-    private static void validateTenant(String tenant) {
-        if (tenant.isEmpty()) {
-            return; // Empty string is valid (no tenant)
+    public static void validateTenant(@Nullable String tenant) {
+        if (tenant == null || tenant.isBlank()) {
+            return;
         }
 
-        if (tenant.length() > 256) {
-            throw new IllegalArgumentException("Tenant path exceeds maximum length of 256 characters");
+        String stripped = normalizeTenant(tenant);
+        if (stripped.isEmpty()) {
+            return;
         }
 
-        if (tenant.contains("..")) {
-            throw new IllegalArgumentException("Tenant path contains invalid '..' sequence (path traversal attempt)");
+        if (stripped.length() > MAX_TENANT_LENGTH) {
+            throw new IllegalArgumentException("Tenant exceeds maximum length of " + MAX_TENANT_LENGTH + " characters");
         }
 
-        if (tenant.contains("//")) {
-            throw new IllegalArgumentException("Tenant path contains invalid '//' sequence");
-        }
-
-        if (!tenant.matches("^[/a-zA-Z0-9_.\\-]+$")) {
-            throw new IllegalArgumentException("Tenant path contains invalid characters. Only /a-zA-Z0-9_-. are allowed");
+        if (!stripped.matches("^[a-zA-Z0-9_.\\-]+$")) {
+            throw new IllegalArgumentException(
+                    "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed");
         }
     }
 
+    private static String normalizeTenant(String tenant) {
+        String stripped = tenant;
+        if (stripped.startsWith("/")) {
+            stripped = stripped.substring(1);
+        }
+        if (stripped.endsWith("/")) {
+            stripped = stripped.substring(0, stripped.length() - 1);
+        }
+        return stripped;
+    }
+
     /**
-     * Extracts and normalizes a tenant path, using the agent's default tenant if no override is provided.
+     * Extracts and normalizes a tenant identifier into a URL path segment, using the agent's
+     * default tenant if no override is provided.
      * <p>
-     * This method normalizes tenant paths by ensuring they:
-     * <ul>
-     * <li>Start with a forward slash ({@code /})</li>
-     * <li>Do not end with a forward slash (unless it's just {@code /})</li>
-     * <li>Are validated for security (no path traversal, length limits, valid characters)</li>
-     * </ul>
+     * Leading and trailing slashes are stripped before validation — the tenant must be a simple
+     * identifier (e.g. {@code "acme"}), not a path (e.g. {@code "org/team"}).
      * <p>
-     * If the provided {@code tenant} parameter is null or blank, the {@code agentTenant} is returned instead.
+     * If the provided {@code tenant} parameter is null or blank, the {@code agentTenant} is
+     * returned instead.
      *
      * @param agentTenant the default tenant from the agent card, may be null or blank
      * @param tenant the tenant override from the request, may be null or blank
-     * @return the normalized tenant path
+     * @return the tenant as a URL path segment (e.g. {@code "/acme"}), or empty string if no tenant
      * @throws IllegalArgumentException if the tenant is invalid or unsafe
      */
     private static String extractTenant(@Nullable String agentTenant, @Nullable String tenant) {
-        String tenantPath = tenant;
-        if (tenantPath == null || tenantPath.isBlank()) {
-            tenantPath = agentTenant;
+        String raw = tenant;
+        if (raw == null || raw.isBlank()) {
+            raw = agentTenant;
         }
-        if (tenantPath == null || tenantPath.isBlank()) {
+        if (raw == null || raw.isBlank()) {
             return "";
         }
 
-        // Normalize slashes
-        if (!tenantPath.startsWith("/")) {
-            tenantPath = '/' + tenantPath;
-        }
-        if (tenantPath.endsWith("/") && tenantPath.length() > 1) {
-            tenantPath = tenantPath.substring(0, tenantPath.length() - 1);
+        validateTenant(raw);
+
+        String stripped = normalizeTenant(raw);
+        if (stripped.isEmpty()) {
+            return "";
         }
 
-        // Validate for security
-        validateTenant(tenantPath);
-
-        return tenantPath;
+        return "/" + stripped;
     }
 
     /**
-     * Builds a base URL for A2A operations by combining the agent's URL with a tenant path.
+     * Builds a base URL for A2A operations by combining the agent's URL with a tenant identifier.
      * <p>
      * This method:
      * <ul>
      * <li>Uses the tenant from the {@link AgentInterface} as the default</li>
-     * <li>Allows overriding with a custom tenant path if provided</li>
+     * <li>Allows overriding with a custom tenant if provided</li>
      * <li>Normalizes trailing slashes on the base URL</li>
-     * <li>Validates and normalizes the tenant path</li>
+     * <li>Validates the tenant (must be a simple identifier — no {@code /} or {@code ?})</li>
+     * <li>Avoids doubling the tenant when the URL already ends with the tenant path</li>
      * </ul>
      * <p>
      * Example:
@@ -349,16 +361,26 @@ public class Utils {
      *
      * String url2 = Utils.buildBaseUrl(iface, "custom-tenant");
      * // Returns: "http://example.com/custom-tenant"
+     *
+     * // URL already contains the tenant — no doubling
+     * AgentInterface iface3 = new AgentInterface("http+json", "http://example.com/acme");
+     * String url3 = Utils.buildBaseUrl(iface3, "acme");
+     * // Returns: "http://example.com/acme"
      * }</pre>
      *
      * @param agentInterface the agent interface containing the base URL and default tenant, must not be null
-     * @param tenant the tenant override from the request, may be null to use the interface default
+     * @param tenant the tenant identifier override, may be null to use the interface default
      * @return the complete base URL with tenant path appended
      * @throws IllegalArgumentException if agentInterface is null or tenant validation fails
      */
     public static String buildBaseUrl(AgentInterface agentInterface, @Nullable String tenant) {
         checkNotNullParam("agentInterface", agentInterface);
 
-        return stripTrailingSlash(agentInterface.url()) + extractTenant(agentInterface.tenant(), tenant);
+        String baseUrl = stripTrailingSlash(agentInterface.url());
+        String tenantPath = extractTenant(agentInterface.tenant(), tenant);
+        if (!tenantPath.isEmpty() && baseUrl.endsWith(tenantPath)) {
+            return baseUrl;
+        }
+        return baseUrl + tenantPath;
     }
 }

@@ -9,7 +9,10 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Implementers provide a CDI bean ({@code @ApplicationScoped}) implementing this interface
  * to control which users can read, write, or create tasks. When no implementation is provided,
- * all operations are permitted.
+ * all operations are <b>denied by default</b> (fail-closed). To allow unauthenticated access
+ * without a provider (e.g., for single-user deployments or testing), set the
+ * {@code a2a.authorization.required} property to {@code false}, or call
+ * {@code DefaultRequestHandler.builder().authorizationRequired(false)} on the builder path.
  *
  * <h2>Providing an implementation</h2>
  * <p>
@@ -94,10 +97,6 @@ import org.jspecify.annotations.Nullable;
  *       and both call {@code recordOwnership}. Implementations must use atomic-insert patterns
  *       (e.g., {@code ConcurrentMap.putIfAbsent}, {@code INSERT ... ON CONFLICT DO NOTHING})
  *       so the first writer wins and the second is a harmless no-op.</li>
- *   <li><b>CDI injection requirement:</b> When task authorization is required, always obtain
- *       {@code RequestHandler} through CDI injection. Manual instantiation via
- *       {@code DefaultRequestHandler.builder().build()} bypasses the
- *       {@code AuthorizationRequestHandlerDecorator}.</li>
  * </ul>
  *
  * @see TaskOperation

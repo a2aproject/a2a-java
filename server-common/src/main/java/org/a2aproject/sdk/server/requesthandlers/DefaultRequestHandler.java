@@ -41,12 +41,14 @@ import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
 import org.a2aproject.sdk.server.events.QueueManager;
+import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.ResultAggregator;
 import org.a2aproject.sdk.server.tasks.TaskManager;
 import org.a2aproject.sdk.server.tasks.TaskStore;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.util.async.EventConsumerExecutorProducer.EventConsumerExecutor;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.spec.A2AError;
@@ -64,12 +66,14 @@ import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.NonNull;
@@ -197,6 +201,8 @@ public class DefaultRequestHandler implements RequestHandler {
     private static final String A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS = "a2a.blocking.consumption.timeout.seconds";
     private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS = "a2a.blocking.reconciliation.timeout.seconds";
     private static final String A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS = "a2a.request-context.populate-referred-tasks";
+    private static final String A2A_AUTHORIZATION_REQUIRED = "a2a.authorization.required";
+    private static final String A2A_PUSH_NOTIFICATIONS_ENABLED = "a2a.push-notification.enabled";
 
     @Inject
     A2AConfigProvider configProvider;
@@ -208,7 +214,18 @@ public class DefaultRequestHandler implements RequestHandler {
     @SuppressWarnings("NullAway")
     @Nullable Instance<TaskAuthorizationProvider> authorizationProviderInstance;
 
+    @Inject
+    @Any
+    @SuppressWarnings("NullAway")
+    @Nullable Instance<AgentExecutorRouter> agentExecutorRouterInstance;
+
     private @Nullable TaskAuthorizationProvider authorizationProvider;
+
+    private @Nullable AgentExecutorRouter agentExecutorRouter;
+
+    private boolean authorizationRequired = true;
+
+    private boolean pushNotificationsEnabled;
 
     /**
      * Timeout in seconds to wait for agent execution to complete in blocking calls.
@@ -320,11 +337,15 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
         reconciliationTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
-        if (authorizationProviderInstance != null && authorizationProviderInstance.isResolvable()) {
-            authorizationProvider = authorizationProviderInstance.get();
-        }
+        authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
+        agentExecutorRouter = CdiUtils.getIfResolvable(agentExecutorRouterInstance);
+        pushNotificationsEnabled = Boolean.parseBoolean(
+                configProvider.getValue(A2A_PUSH_NOTIFICATIONS_ENABLED));
+
         boolean populateReferredTasks = Boolean.parseBoolean(
                 configProvider.getValue(A2A_REQUEST_CONTEXT_POPULATE_REFERRED_TASKS));
+        this.authorizationRequired = Boolean.parseBoolean(
+                configProvider.getValue(A2A_AUTHORIZATION_REQUIRED));
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
     }
 
@@ -343,7 +364,10 @@ public class DefaultRequestHandler implements RequestHandler {
         private Executor executor;
         private Executor eventConsumerExecutor;
         private @Nullable TaskAuthorizationProvider authorizationProvider;
+        private @Nullable AgentExecutorRouter agentExecutorRouter;
+        private boolean authorizationRequired = true;
         private boolean populateReferredTasks;
+        private boolean pushNotificationsEnabled = true;
 
         public Builder agentExecutor(AgentExecutor agentExecutor) {
             this.agentExecutor = agentExecutor;
@@ -385,8 +409,36 @@ public class DefaultRequestHandler implements RequestHandler {
             return this;
         }
 
+        /**
+         * Sets the optional {@link AgentExecutorRouter} for tenant-based executor resolution.
+         *
+         * @param agentExecutorRouter the router, may be {@code null}
+         * @return this builder for method chaining
+         */
+        public Builder agentExecutorRouter(@Nullable AgentExecutorRouter agentExecutorRouter) {
+            this.agentExecutorRouter = agentExecutorRouter;
+            return this;
+        }
+
+        public Builder authorizationRequired(boolean authorizationRequired) {
+            this.authorizationRequired = authorizationRequired;
+            return this;
+        }
+
         public Builder populateReferredTasks(boolean populateReferredTasks) {
             this.populateReferredTasks = populateReferredTasks;
+            return this;
+        }
+
+        /**
+         * Sets whether push notifications are enabled via the agent card capabilities.
+         * When false, push notification configs embedded in sendMessage requests are ignored.
+         *
+         * @param pushNotificationsEnabled true if the agent supports push notifications
+         * @return this builder for chaining
+         */
+        public Builder pushNotificationsEnabled(boolean pushNotificationsEnabled) {
+            this.pushNotificationsEnabled = pushNotificationsEnabled;
             return this;
         }
 
@@ -405,6 +457,9 @@ public class DefaultRequestHandler implements RequestHandler {
             handler.consumptionCompletionTimeoutSeconds = 2;
             handler.reconciliationTimeoutSeconds = 1;
             handler.authorizationProvider = authorizationProvider;
+            handler.agentExecutorRouter = agentExecutorRouter;
+            handler.authorizationRequired = authorizationRequired;
+            handler.pushNotificationsEnabled = pushNotificationsEnabled;
             handler.requestContextBuilder =
                     () -> new SimpleRequestContextBuilder(taskStore, populateReferredTasks, authorizationProvider);
             return handler;
@@ -414,6 +469,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public Task onGetTask(TaskQueryParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onGetTask {}", params.id());
+        enforceRead(context, params.id(), TaskOperation.GET_TASK);
         Task task = taskStore.get(params.id());
         if (task == null) {
             LOGGER.debug("No task found for {}. Throwing TaskNotFoundError", params.id());
@@ -446,8 +502,79 @@ public class DefaultRequestHandler implements RequestHandler {
                 .build();
     }
 
+    private static final String LIST_TASKS_SCOPE_ID = "";
+
+    private void enforceRead(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError {
+        if (authorizationProvider == null) {
+            if (authorizationRequired) {
+                throw new TaskNotFoundError();
+            }
+            return;
+        }
+        if (!authorizationProvider.checkRead(context, taskId, operation)) {
+            throw new TaskNotFoundError();
+        }
+    }
+
+    private void enforceWrite(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError {
+        if (authorizationProvider == null) {
+            if (authorizationRequired) {
+                throw new TaskNotFoundError();
+            }
+            return;
+        }
+        if (!authorizationProvider.checkWrite(context, taskId, operation)) {
+            throw new TaskNotFoundError();
+        }
+    }
+
+    private void enforceCreate(ServerCallContext context, TaskOperation operation) throws A2AError {
+        if (authorizationProvider == null) {
+            if (authorizationRequired) {
+                throw new TaskNotFoundError();
+            }
+            return;
+        }
+        if (!authorizationProvider.checkCreate(context, operation)) {
+            throw new TaskNotFoundError();
+        }
+    }
+
+    private void enforceListRead(ServerCallContext context) throws A2AError {
+        if (authorizationProvider == null) {
+            if (authorizationRequired) {
+                throw new TaskNotFoundError();
+            }
+            return;
+        }
+        if (!authorizationProvider.checkRead(context, LIST_TASKS_SCOPE_ID, TaskOperation.LIST_TASKS)) {
+            throw new TaskNotFoundError();
+        }
+    }
+
+    private void recordOwnershipIfNeeded(ServerCallContext context, @Nullable String taskId,
+            TaskOperation operation) throws A2AError {
+        if (authorizationProvider != null && taskId != null && !authorizationProvider.isTaskRecorded(taskId)) {
+            authorizationProvider.recordOwnership(context, taskId, operation);
+        }
+    }
+
+    private @Nullable String extractTaskId(Object event) {
+        if (event instanceof Task task) {
+            return task.id();
+        } else if (event instanceof TaskStatusUpdateEvent e) {
+            return e.taskId();
+        } else if (event instanceof TaskArtifactUpdateEvent e) {
+            return e.taskId();
+        } else if (event instanceof Message m) {
+            return m.taskId();
+        }
+        return null;
+    }
+
     @Override
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
+        enforceListRead(context);
         LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, statusTimestampAfter={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.statusTimestampAfter());
 
@@ -472,12 +599,25 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         ListTasksResult result = taskStore.list(params, context);
+        // Post-filter per-task read authorization at the handler level.
+        // On the CDI path this is redundant (store already filters), but on the builder
+        // path the store may not have the provider, so the handler must be authoritative.
+        if (authorizationProvider != null) {
+            List<Task> filtered = result.tasks().stream()
+                    .filter(task -> TaskAuthorizationProvider.checkReadAccess(
+                            authorizationProvider, context, task.id(), TaskOperation.LIST_TASKS))
+                    .toList();
+            if (filtered.size() != result.tasks().size()) {
+                result = new ListTasksResult(filtered, filtered.size(), filtered.size(), result.nextPageToken());
+            }
+        }
         LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
         return result;
     }
 
     @Override
     public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
+        enforceWrite(context, params.id(), TaskOperation.CANCEL_TASK);
         // Serialize check-then-act per task so two concurrent cancels (or a cancel racing
         // a concurrent completion) cannot both act on the pre-transition state.
         Object cancelLock = cancelLocks.computeIfAbsent(params.id(), k -> new Object());
@@ -523,15 +663,18 @@ public class DefaultRequestHandler implements RequestHandler {
         RequestContext cancelRequestContext = requestContextBuilder.get()
                 .setTaskId(task.id())
                 .setContextId(task.contextId())
+                .setTenant(params.tenant())
                 .setTask(task)
                 .setServerCallContext(context)
                 .build();
         AgentEmitter emitter = new AgentEmitter(cancelRequestContext, queue);
 
+        AgentExecutor resolvedExecutor = resolveAgentExecutor(cancelRequestContext.getTenant());
+
         // Call agentExecutor.cancel() with error handling
         // AgentExecutor is user-provided, so catch all exceptions
         try {
-            agentExecutor.cancel(cancelRequestContext, emitter);
+            resolvedExecutor.cancel(cancelRequestContext, emitter);
         } catch (TaskNotCancelableError e) {
             // Expected error - log and enqueue
             LOGGER.info("Task {} is not cancelable, agent threw: {}", task.id(), e.getMessage());
@@ -574,6 +717,12 @@ public class DefaultRequestHandler implements RequestHandler {
     @SuppressWarnings("NullAway")
     public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onMessageSend - task: {}; context {}", params.message().taskId(), params.message().contextId());
+        String msgTaskId = params.message().taskId();
+        if (msgTaskId != null) {
+            enforceWrite(context, msgTaskId, TaskOperation.MESSAGE_SEND);
+        } else {
+            enforceCreate(context, TaskOperation.MESSAGE_SEND);
+        }
 
         // Build MessageSendSetup which creates RequestContext with real taskId (auto-generated if needed)
         MessageSendSetup mss = initMessageSend(params, context);
@@ -769,6 +918,8 @@ public class DefaultRequestHandler implements RequestHandler {
             kind = limitTaskHistory(task, historyLength);
         }
 
+        recordOwnershipIfNeeded(context, extractTaskId(kind), TaskOperation.MESSAGE_SEND);
+
         LOGGER.debug("Returning: {}", kind);
         return kind;
     }
@@ -779,6 +930,12 @@ public class DefaultRequestHandler implements RequestHandler {
             MessageSendParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}",
                 params.message().taskId(), params.message().contextId(), runningAgents.size());
+        String msgTaskId = params.message().taskId();
+        if (msgTaskId != null) {
+            enforceWrite(context, msgTaskId, TaskOperation.MESSAGE_SEND_STREAM);
+        } else {
+            enforceCreate(context, TaskOperation.MESSAGE_SEND_STREAM);
+        }
 
         // Build MessageSendSetup which creates RequestContext with real taskId (auto-generated if needed)
         MessageSendSetup mss = initMessageSend(params, context);
@@ -792,6 +949,11 @@ public class DefaultRequestHandler implements RequestHandler {
         // Create queue with real taskId (no tempId parameter needed)
         EventQueue queue = queueManager.createOrTap(queueTaskId);
         LOGGER.debug("Created/tapped queue for task {}: {}", taskId.get(), queue);
+
+        // Record ownership synchronously for new tasks before agent starts
+        if (mss.task() == null) {
+            recordOwnershipIfNeeded(context, queueTaskId, TaskOperation.MESSAGE_SEND_STREAM);
+        }
 
         // Store push notification config SYNCHRONOUSLY for new tasks before agent starts
         // This ensures config is available when MainEventBusProcessor sends push notifications
@@ -930,12 +1092,13 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
             TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
-        if (pushConfigStore == null) {
+        if (pushConfigStore == null || !pushNotificationsEnabled) {
             throw new UnsupportedOperationError();
         }
         if (params.taskId() == null) {
             throw new InvalidParamsError("taskId is required");
         }
+        enforceWrite(context, params.taskId(), TaskOperation.CREATE_TASK_PUSH_NOTIFICATION_CONFIG);
         Task task = taskStore.get(params.taskId());
         if (task == null) {
             throw new TaskNotFoundError();
@@ -952,6 +1115,7 @@ public class DefaultRequestHandler implements RequestHandler {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
+        enforceRead(context, params.taskId(), TaskOperation.GET_TASK_PUSH_NOTIFICATION_CONFIG);
         Task task = taskStore.get(params.taskId());
         if (task == null) {
             throw new TaskNotFoundError();
@@ -979,6 +1143,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public Flow.Publisher<StreamingEventKind> onSubscribeToTask(TaskIdParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onSubscribeToTask - taskId: {}", params.id());
+        enforceRead(context, params.id(), TaskOperation.SUBSCRIBE_TO_TASK);
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();
@@ -1028,6 +1193,7 @@ public class DefaultRequestHandler implements RequestHandler {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
+        enforceRead(context, params.id(), TaskOperation.LIST_TASK_PUSH_NOTIFICATION_CONFIGS);
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();
@@ -1037,10 +1203,11 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public void onDeleteTaskPushNotificationConfig(
-            DeleteTaskPushNotificationConfigParams params, ServerCallContext context) {
+            DeleteTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
+        enforceWrite(context, params.taskId(), TaskOperation.DELETE_TASK_PUSH_NOTIFICATION_CONFIG);
 
         Task task = taskStore.get(params.taskId());
         if (task == null) {
@@ -1051,7 +1218,10 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private boolean shouldAddPushInfo(MessageSendParams params) {
-        return pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null;
+        return pushNotificationsEnabled
+                && pushConfigStore != null
+                && params.configuration() != null
+                && params.configuration().taskPushNotificationConfig() != null;
     }
 
     /**
@@ -1070,13 +1240,14 @@ public class DefaultRequestHandler implements RequestHandler {
     private EnhancedRunnable registerAndExecuteAgentAsync(String taskId, RequestContext requestContext, EventQueue queue, EnhancedRunnable.DoneCallback doneCallback) {
         LOGGER.debug("Registering agent execution for task {}, runningAgents.size() before: {}", taskId, runningAgents.size());
         logThreadStats("AGENT START");
+        AgentExecutor resolvedExecutor = resolveAgentExecutor(requestContext.getTenant());
         EnhancedRunnable runnable = new EnhancedRunnable() {
             @Override
             public void run() {
                 LOGGER.debug("Agent execution starting for task {}", taskId);
                 AgentEmitter emitter = new AgentEmitter(requestContext, queue);
                 try {
-                    agentExecutor.execute(requestContext, emitter);
+                    resolvedExecutor.execute(requestContext, emitter);
                 } catch (A2AError e) {
                     // Log A2A errors at WARN level with full stack trace
                     // These are expected business errors but should be tracked
@@ -1180,6 +1351,7 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
+    @SuppressWarnings("NullAway") // shouldAddPushInfo guarantees pushConfigStore != null
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
         Task task = authorizeTaskAccess(params, context);
         MessageSendParams requestParams = task == null ? params : normalizeRequestParamsForTask(params, task);
@@ -1188,6 +1360,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 .setParams(requestParams)
                 .setTaskId(requestParams.message().taskId())
                 .setContextId(task != null ? task.contextId() : requestParams.message().contextId())
+                .setTenant(requestParams.tenant())
                 .setTask(task)
                 .setServerCallContext(context)
                 .build();
@@ -1204,7 +1377,7 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
-            if (pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null) {
+            if (shouldAddPushInfo(params)) {
                 LOGGER.debug("Adding push info");
                 String version = context != null ? context.getRequestedProtocolVersion() : null;
                 pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
@@ -1215,6 +1388,7 @@ public class DefaultRequestHandler implements RequestHandler {
                     .setParams(requestParams)
                     .setTask(task)
                     .setContextId(task.contextId())
+                    .setTenant(requestParams.tenant())
                     .setServerCallContext(context)
                     .build();
         }
@@ -1222,14 +1396,19 @@ public class DefaultRequestHandler implements RequestHandler {
         return new MessageSendSetup(taskManager, task, requestContext);
     }
 
-    /**
-     * The authorization is done by the AuthorizationRequestHandlerDecorator
-     */
+    private AgentExecutor resolveAgentExecutor(@Nullable String tenant) {
+        if (agentExecutorRouter != null) {
+            return agentExecutorRouter.resolve(tenant);
+        }
+        return agentExecutor;
+    }
+
     @Override
     public void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context, TaskOperation operation) throws A2AError {
         if (requestedTaskId == null) {
             return;
         }
+        enforceRead(context, requestedTaskId, operation);
         Task task = taskStore.get(requestedTaskId);
         if (task == null) {
             throw new TaskNotFoundError();

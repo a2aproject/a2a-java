@@ -7,6 +7,11 @@
 {#bundle /}
 {#search-script /}
 
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+
 {#if site.data.containsKey("analytics")}
 {#ga4 tag=site.data.getJsonObject('analytics').getString("ga4", "") /}
 {/if}

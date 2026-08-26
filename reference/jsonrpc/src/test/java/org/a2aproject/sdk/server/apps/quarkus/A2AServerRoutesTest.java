@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -521,8 +522,8 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testTenantExtraction_MultiSegmentPath() {
-        // Arrange - simulate request to /test/titi
+    public void testTenantExtraction_MultiSegmentPath_Rejected() {
+        // Arrange - multi-segment tenant paths (containing '/') are rejected
         when(mockRoutingContext.normalizedPath()).thenReturn("/test/titi");
         String jsonRpcRequest = """
             {
@@ -536,25 +537,13 @@ public class A2AServerRoutesTest {
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        Task responseTask = Task.builder()
-                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .contextId("context-1234")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
-        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
-                .thenReturn(realResponse);
-
-        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
-
         // Act
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
-        // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
-        ServerCallContext capturedContext = contextCaptor.getValue();
-        assertNotNull(capturedContext);
-        assertEquals("test/titi", capturedContext.getState().get(TENANT_KEY));
+        // Assert - handler is NOT called; an error response is returned
+        verify(mockJsonRpcHandler, never()).onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        verify(mockHttpResponse).end(anyString());
     }
 
     @Test
@@ -632,8 +621,8 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testTenantExtraction_ThreeSegmentPath() {
-        // Arrange - simulate request to /tenant1/api/v1
+    public void testTenantExtraction_ThreeSegmentPath_Rejected() {
+        // Arrange - three-segment tenant paths (containing '/') are rejected
         when(mockRoutingContext.normalizedPath()).thenReturn("/tenant1/api/v1");
         String jsonRpcRequest = """
             {
@@ -647,31 +636,19 @@ public class A2AServerRoutesTest {
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        Task responseTask = Task.builder()
-                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .contextId("context-1234")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
-        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
-        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
-                .thenReturn(realResponse);
-
-        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
-
         // Act
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
-        // Assert
-        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
-        ServerCallContext capturedContext = contextCaptor.getValue();
-        assertNotNull(capturedContext);
-        assertEquals("tenant1/api/v1", capturedContext.getState().get(TENANT_KEY));
+        // Assert - handler is NOT called; an error response is returned
+        verify(mockJsonRpcHandler, never()).onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        verify(mockHttpResponse).end(anyString());
     }
 
     @Test
     public void testTenantExtraction_StreamingRequest() {
-        // Arrange - simulate streaming request to /myTenant/api
-        when(mockRoutingContext.normalizedPath()).thenReturn("/myTenant/api");
+        // Arrange - simulate streaming request to /myTenant
+        when(mockRoutingContext.normalizedPath()).thenReturn("/myTenant");
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
@@ -713,7 +690,7 @@ public class A2AServerRoutesTest {
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
-        assertEquals("myTenant/api", capturedContext.getState().get(TENANT_KEY));
+        assertEquals("myTenant", capturedContext.getState().get(TENANT_KEY));
     }
 
     @Test

@@ -24,7 +24,9 @@ import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
+import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -454,6 +456,33 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void testPushNotificationConfigParseError_DoesNotLogSensitiveData() {
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        String requestBody = """
+            {
+              "id": "default-config-id",
+              "taskId": "%s",
+              "url": "https://webhook.example.com",
+              "token": "secret-token-12345",
+              "authentication": {
+                "scheme": "Bearer",
+                "credentials": "oauth-secret-67890"
+              },
+              "unknownField": "trigger-parse-error"
+            }""".formatted(MINIMAL_TASK.id());
+
+        // Request body with sensitive data and an unknown field to trigger parse error
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RestHandler.class.getName());
+        LogCaptureAssertions.assertSensitiveDataNotLogged(logger,
+                () -> Assertions.assertEquals(422,
+                        handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id())
+                                .getStatusCode()),
+                "secret-token-12345", "oauth-secret-67890");
     }
 
     @Test
@@ -1086,7 +1115,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Instance<AgentCard> throwOnGet = TestInstances.throwOnGet();
 
         Assertions.assertDoesNotThrow(() -> new RestHandler(throwOnGet, throwOnGet,
-                createCacheMetadata(), requestHandler, internalExecutor));
+                createCacheMetadata(), requestHandler, internalExecutor, null));
     }
 
     private static void assertProblemDetail(RestHandler.HTTPRestResponse response,
@@ -1216,9 +1245,59 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
 
         RestHandler handler = new RestHandler(new FixedInstance<>(card), extendedInstance,
-                createCacheMetadata(card), requestHandler, internalExecutor);
+                createCacheMetadata(card), requestHandler, internalExecutor, null);
 
         assertVersionRejected(handler.getExtendedAgentCard(incompatibleVersionContext(), ""));
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterKnownTenant() {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard tenantCard = AgentCard.builder(cardWithExtCapability).name("acme-card").build();
+        AgentCardRouter router = tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
+                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
+                new FixedInstance<>(router));
+
+        RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("acme-card"));
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterReturnsNull() {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCardRouter router = tenant -> null;
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
+                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
+                new FixedInstance<>(router));
+
+        RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
+
+        assertProblemDetail(response, 400,
+                "EXTENDED_AGENT_CARD_NOT_CONFIGURED", "Extended Card not configured");
+    }
+
+    @Test
+    public void testExtendedAgentCardWithoutRouter() {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard extended = AgentCard.builder(cardWithExtCapability).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), extendedInstance,
+                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor, null);
+
+        RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains("extended"));
     }
 
     @Test

@@ -156,7 +156,8 @@ public class PushNotificationSenderTest {
     public void setUp() {
         testHttpClient = new TestHttpClient();
         configStore = new InMemoryPushNotificationConfigStore();
-        sender = new BasePushNotificationSender(configStore, testHttpClient);
+        sender = new BasePushNotificationSender(configStore, testHttpClient,
+                PushNotificationUrlValidator.ALLOW_ALL);
     }
 
     private void testSendNotificationWithInvalidToken(String token, String testName) throws InterruptedException {
@@ -482,7 +483,7 @@ public class PushNotificationSenderTest {
         };
 
         BasePushNotificationSender formatterSender = new BasePushNotificationSender(
-                configStore, testHttpClient, List.of(formatter));
+                configStore, testHttpClient, List.of(formatter), PushNotificationUrlValidator.ALLOW_ALL);
         testHttpClient.latch = new CountDownLatch(1);
 
         formatterSender.sendNotification(taskData, taskData);
@@ -515,7 +516,7 @@ public class PushNotificationSenderTest {
         };
 
         BasePushNotificationSender formatterSender = new BasePushNotificationSender(
-                configStore, testHttpClient, List.of(formatter));
+                configStore, testHttpClient, List.of(formatter), PushNotificationUrlValidator.ALLOW_ALL);
 
         formatterSender.sendNotification(taskData, taskData);
 
@@ -588,4 +589,5 @@ public class PushNotificationSenderTest {
         assertTrue(testHttpClient.headers.isEmpty(), "No headers should have been sent");
         assertTrue(testHttpClient.rawBodies.isEmpty(), "No body should have been sent");
     }
+
 }

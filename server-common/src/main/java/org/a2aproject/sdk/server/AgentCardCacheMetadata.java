@@ -19,6 +19,7 @@ import jakarta.inject.Inject;
 import org.jspecify.annotations.Nullable;
 
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -92,12 +93,13 @@ public class AgentCardCacheMetadata {
         // 2. Direct constructor: agentCard and config already set
 
         if (agentCard == null && agentCardInstance != null) {
-            // CDI path - only initialize if AgentCard bean is available
-            if (agentCardInstance.isUnsatisfied() || configInstance.isUnsatisfied()) {
+            // CDI path — in multitenancy setups, multiple @PublicAgentCard beans may exist,
+            // making the injection point ambiguous; getIfResolvable returns null in that case.
+            this.agentCard = CdiUtils.getIfResolvable(agentCardInstance);
+            this.config = CdiUtils.getIfResolvable(configInstance);
+            if (this.agentCard == null || this.config == null) {
                 return;
             }
-            this.agentCard = agentCardInstance.get();
-            this.config = configInstance.get();
         }
 
         // At this point, agentCard and config should be set (either via CDI or constructor)

@@ -155,6 +155,27 @@ public interface A2AHttpClient {
         PostBuilder body(String body);
 
         /**
+         * Controls whether the HTTP client follows redirects for this request.
+         * When set to {@code false}, redirect responses (3xx) are returned as-is
+         * instead of being followed automatically.
+         *
+         * <p>Security-sensitive code (e.g. push notification delivery) should disable
+         * redirects to prevent SSRF bypass via open redirectors.
+         *
+         * <p><strong>Note for implementors:</strong> The default implementation is a no-op
+         * that silently ignores the {@code follow} argument. Third-party {@link A2AHttpClient}
+         * implementations MUST override this method to honour the setting; otherwise
+         * {@code followRedirects(false)} calls have no effect and redirects will still
+         * be followed, bypassing SSRF protection.
+         *
+         * @param follow {@code true} to follow redirects (default), {@code false} to disable
+         * @return this builder for chaining
+         */
+        default PostBuilder followRedirects(boolean follow) {
+            return this;
+        }
+
+        /**
          * Executes a synchronous POST request.
          *
          * @return the HTTP response

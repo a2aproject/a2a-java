@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -24,6 +25,7 @@ public record TaskIdParams(String id, @Nullable String tenant) {
      */
     public TaskIdParams  {
         Assert.checkNotNullParam("id", id);
+        Utils.validateTenant(tenant);
     }
 
     /**

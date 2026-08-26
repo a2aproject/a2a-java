@@ -42,6 +42,7 @@ import org.a2aproject.sdk.grpc.TaskStatus;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.events.EventConsumer;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
@@ -281,6 +282,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
@@ -296,6 +298,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
@@ -723,6 +726,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
@@ -798,6 +802,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()
@@ -809,9 +814,65 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
-    @Disabled
-    public void testOnGetExtendedAgentCard() throws Exception {
-        // TODO - getting the authenticated extended agent card isn't supported for gRPC right now
+    @Test
+    public void testExtendedAgentCardWithRouterKnownTenant() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(AbstractA2ARequestHandlerTest.CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard tenantCard = AgentCard.builder(cardWithExtCapability).name("acme-card").build();
+        AgentCardRouter router = tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
+
+        GrpcHandler handler = new TestGrpcHandler(cardWithExtCapability, requestHandler, internalExecutor) {
+            @Override
+            protected AgentCardRouter getAgentCardRouter() {
+                return router;
+            }
+        };
+
+        org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest request =
+                org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder().setTenant("acme").build();
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+        handler.getExtendedAgentCard(request, recorder);
+
+        Assertions.assertNull(recorder.getError());
+        assertEquals(1, recorder.getValues().size());
+        assertEquals("acme-card", recorder.getValues().get(0).getName());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterReturnsNull() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(AbstractA2ARequestHandlerTest.CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCardRouter router = tenant -> null;
+
+        GrpcHandler handler = new TestGrpcHandler(cardWithExtCapability, requestHandler, internalExecutor) {
+            @Override
+            protected AgentCardRouter getAgentCardRouter() {
+                return router;
+            }
+        };
+
+        org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest request =
+                org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder().setTenant("acme").build();
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+        handler.getExtendedAgentCard(request, recorder);
+
+        assertGrpcError(recorder, Status.Code.FAILED_PRECONDITION);
+    }
+
+    @Test
+    public void testExtendedAgentCardWithoutRouter() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(AbstractA2ARequestHandlerTest.CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+
+        GrpcHandler handler = new TestGrpcHandler(cardWithExtCapability, requestHandler, internalExecutor);
+
+        org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest request =
+                org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder().build();
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+        handler.getExtendedAgentCard(request, recorder);
+
+        Assertions.assertNull(recorder.getError());
+        assertEquals(1, recorder.getValues().size());
     }
 
     @Test

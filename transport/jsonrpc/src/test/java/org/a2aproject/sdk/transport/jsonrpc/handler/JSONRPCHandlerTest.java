@@ -52,6 +52,7 @@ import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.events.EventConsumer;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler;
 import org.a2aproject.sdk.server.tasks.ResultAggregator;
@@ -66,6 +67,7 @@ import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
+import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
@@ -1139,6 +1141,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1162,6 +1165,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1276,6 +1280,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1441,6 +1446,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
@@ -1539,6 +1545,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
@@ -1574,6 +1581,64 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(request.getId(), response.getId());
         assertInstanceOf(UnsupportedOperationError.class, response.getError());
         assertNull(response.getResult());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterKnownTenant() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard tenantCard = AgentCard.builder(cardWithExtCapability).name("acme-card").build();
+        AgentCardRouter router = tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
+
+        JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(cardWithExtCapability), null,
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.builder()
+                .id("1")
+                .params(new GetExtendedAgentCardParams("acme"))
+                .build();
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
+
+        assertNull(response.getError());
+        assertNotNull(response.getResult());
+        assertEquals("acme-card", response.getResult().name());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterReturnsNull() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCardRouter router = tenant -> null;
+
+        JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(cardWithExtCapability), null,
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.builder()
+                .id("1")
+                .params(new GetExtendedAgentCardParams("acme"))
+                .build();
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
+
+        assertInstanceOf(ExtendedAgentCardNotConfiguredError.class, response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithoutRouter() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard extended = AgentCard.builder(cardWithExtCapability).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        JSONRPCHandler handler = new JSONRPCHandler(
+                new FixedInstance<>(cardWithExtCapability), extendedInstance, requestHandler, internalExecutor, null);
+
+        GetExtendedAgentCardRequest request = new GetExtendedAgentCardRequest("1");
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
+
+        assertNull(response.getError());
+        assertNotNull(response.getResult());
+        assertEquals("extended", response.getResult().description());
     }
 
     @Test
@@ -2039,7 +2104,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     void constructorDoesNotResolveAgentCardInstances() {
         Instance<AgentCard> throwOnGet = TestInstances.throwOnGet();
 
-        assertDoesNotThrow(() -> new JSONRPCHandler(throwOnGet, null, requestHandler, internalExecutor));
+        assertDoesNotThrow(() -> new JSONRPCHandler(throwOnGet, null, requestHandler, internalExecutor, null));
     }
 
     @Test
@@ -2150,7 +2215,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
 
         JSONRPCHandler handler = new JSONRPCHandler(
-                new FixedInstance<>(versionTestCard()), extendedInstance, requestHandler, internalExecutor);
+                new FixedInstance<>(versionTestCard()), extendedInstance, requestHandler, internalExecutor, null);
 
         GetExtendedAgentCardResponse response =
                 handler.onGetExtendedCardRequest(new GetExtendedAgentCardRequest("1"), incompatibleVersionContext());

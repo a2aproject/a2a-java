@@ -24,6 +24,7 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.server.tasks.TaskStore;
@@ -64,9 +65,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     @Inject
     public JpaDatabaseTaskStore(@Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
-        this.authorizationProvider = authorizationProviderInstance.isResolvable()
-                ? authorizationProviderInstance.get()
-                : null;
+        this.authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
     }
 
     /**

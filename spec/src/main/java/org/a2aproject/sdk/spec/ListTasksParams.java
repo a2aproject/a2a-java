@@ -3,6 +3,7 @@ package org.a2aproject.sdk.spec;
 import org.a2aproject.sdk.util.Assert;
 import java.time.Instant;
 
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -45,6 +46,7 @@ public record ListTasksParams(
      * @throws InvalidParamsError if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
+        Utils.validateTenant(tenant);
         // Validate pageSize (1-100)
         if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
             throw new InvalidParamsError(null,

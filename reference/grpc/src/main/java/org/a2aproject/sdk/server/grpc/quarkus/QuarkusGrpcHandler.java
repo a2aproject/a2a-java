@@ -2,11 +2,14 @@ package org.a2aproject.sdk.server.grpc.quarkus;
 
 import java.util.concurrent.Executor;
 
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -80,6 +83,8 @@ public class QuarkusGrpcHandler extends GrpcHandler {
     private final Instance<CallContextFactory> callContextFactoryInstance;
     private final Executor executor;
 
+    private @Nullable AgentCardRouter agentCardRouter;
+
     /**
      * Constructs a new QuarkusGrpcHandler with CDI-injected dependencies.
      *
@@ -97,6 +102,7 @@ public class QuarkusGrpcHandler extends GrpcHandler {
      * <ul>
      *   <li>{@code extendedAgentCard} - Extended agent card (can be unresolvable)</li>
      *   <li>{@code callContextFactoryInstance} - Custom context factory (can be unsatisfied)</li>
+     *   <li>{@code agentCardRouterInstance} - Agent card router for multitenancy (can be unsatisfied)</li>
      * </ul>
      *
      * @param agentCard the public agent card (qualified with {@code @PublicAgentCard})
@@ -104,18 +110,21 @@ public class QuarkusGrpcHandler extends GrpcHandler {
      * @param requestHandler the request handler for protocol operations
      * @param callContextFactoryInstance the call context factory instance (optional)
      * @param executor the executor for async operations (qualified with {@code @Internal})
+     * @param agentCardRouterInstance optional agent card router instance for multitenancy
      */
     @Inject
     public QuarkusGrpcHandler(@PublicAgentCard Instance<AgentCard> agentCard,
                               @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
                               RequestHandler requestHandler,
                               Instance<CallContextFactory> callContextFactoryInstance,
-                              @Internal Executor executor) {
+                              @Internal Executor executor,
+                              @Any @Nullable Instance<AgentCardRouter> agentCardRouterInstance) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
         this.callContextFactoryInstance = callContextFactoryInstance;
         this.executor = executor;
+        this.agentCardRouter = CdiUtils.getIfResolvable(agentCardRouterInstance);
     }
 
     @Override
@@ -144,5 +153,10 @@ public class QuarkusGrpcHandler extends GrpcHandler {
     @Override
     protected Executor getExecutor() {
         return executor;
+    }
+
+    @Override
+    protected @Nullable AgentCardRouter getAgentCardRouter() {
+        return agentCardRouter;
     }
 }

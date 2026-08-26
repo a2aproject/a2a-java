@@ -135,6 +135,7 @@ class DefaultRequestHandlerReferenceTaskAuthorizationTest {
                 .executor(executor)
                 .eventConsumerExecutor(executor)
                 .populateReferredTasks(true)
+                .authorizationRequired(false)
                 .build();
 
         Task task1 = Task.builder()
@@ -166,18 +167,11 @@ class DefaultRequestHandlerReferenceTaskAuthorizationTest {
     @Nested
     class ValidateRequestedTaskAuthorizationTests {
 
-        private RequestHandler decoratedHandler;
-
-        @BeforeEach
-        void setUpDecorated() {
-            decoratedHandler = new AuthorizationRequestHandlerDecorator(requestHandler, authProvider);
-        }
-
         @Test
         void ownerCanValidateOwnActiveTask() throws A2AError {
             Task task = saveActiveTaskOwnedBy("userA");
 
-            decoratedHandler.authorizeTaskAccess(task.id(), contextForUser("userA"), TaskOperation.SUBSCRIBE_TO_TASK);
+            requestHandler.authorizeTaskAccess(task.id(), contextForUser("userA"), TaskOperation.SUBSCRIBE_TO_TASK);
         }
 
         @Test
@@ -185,13 +179,13 @@ class DefaultRequestHandlerReferenceTaskAuthorizationTest {
             Task task = saveActiveTaskOwnedBy("userA");
 
             assertThrows(TaskNotFoundError.class,
-                    () -> decoratedHandler.authorizeTaskAccess(task.id(), contextForUser("userB"),
+                    () -> requestHandler.authorizeTaskAccess(task.id(), contextForUser("userB"),
                             TaskOperation.SUBSCRIBE_TO_TASK));
         }
 
         @Test
         void nullTaskId_skipsAuthorizationCheck() throws A2AError {
-            decoratedHandler.authorizeTaskAccess(null, contextForUser("anyone"), TaskOperation.SUBSCRIBE_TO_TASK);
+            requestHandler.authorizeTaskAccess(null, contextForUser("anyone"), TaskOperation.SUBSCRIBE_TO_TASK);
         }
 
         private Task saveActiveTaskOwnedBy(String owner) {
