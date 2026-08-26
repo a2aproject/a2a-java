@@ -241,7 +241,7 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.Part part(Part_v0_3<?> part) {
+        static org.a2aproject.sdk.compat03.grpc.Part part(Part_v0_3<?> part) {
             org.a2aproject.sdk.compat03.grpc.Part.Builder builder = org.a2aproject.sdk.compat03.grpc.Part.newBuilder();
             if (part instanceof TextPart_v0_3 textPart) {
                 builder.setText(textPart.text());
@@ -260,6 +260,12 @@ public class ProtoUtils_v0_3 {
                 builder.setFileWithBytes(ByteString.copyFrom(((FileWithBytes_v0_3) fileContent).bytes(), StandardCharsets.UTF_8));
             } else if (fileContent instanceof FileWithUri_v0_3) {
                 builder.setFileWithUri(((FileWithUri_v0_3) fileContent).uri());
+            }
+            if (fileContent.mimeType() != null) {
+                builder.setMimeType(fileContent.mimeType());
+            }
+            if (fileContent.name() != null) {
+                builder.setName(fileContent.name());
             }
             return builder.build();
         }
@@ -908,7 +914,7 @@ public class ProtoUtils_v0_3 {
             );
         }
 
-        private static Part_v0_3<?> part(org.a2aproject.sdk.compat03.grpc.PartOrBuilder part) {
+        static Part_v0_3<?> part(org.a2aproject.sdk.compat03.grpc.PartOrBuilder part) {
             if (part.hasText()) {
                 return textPart(part.getText());
             } else if (part.hasFile()) {
@@ -924,10 +930,11 @@ public class ProtoUtils_v0_3 {
         }
 
         private static FilePart_v0_3 filePart(org.a2aproject.sdk.compat03.grpc.FilePartOrBuilder filePart) {
+            String name = filePart.getName().isEmpty() ? null : filePart.getName();
             if (filePart.hasFileWithBytes()) {
-                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), null, filePart.getFileWithBytes().toStringUtf8()));
+                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), name, filePart.getFileWithBytes().toStringUtf8()));
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart_v0_3(new FileWithUri_v0_3(filePart.getMimeType(), null, filePart.getFileWithUri()));
+                return new FilePart_v0_3(new FileWithUri_v0_3(filePart.getMimeType(), name, filePart.getFileWithUri()));
             }
             throw new InvalidRequestError_v0_3();
         }

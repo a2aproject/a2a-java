@@ -221,10 +221,12 @@ public class RestTransport_v0_3_Test {
         assertEquals(Kind.FILE, ((FilePart_v0_3) history.parts().get(1)).kind());
         FilePart_v0_3 part = (FilePart_v0_3) history.parts().get(1);
         assertEquals("text/plain", part.file().mimeType());
+        assertEquals("file.txt", part.file().name());
         assertEquals("file:///path/to/file.txt", ((FileWithUri_v0_3) part.file()).uri());
         part = (FilePart_v0_3) history.parts().get(2);
         assertEquals(Kind.FILE, part.kind());
         assertEquals("text/plain", part.file().mimeType());
+        assertEquals("greeting.txt", part.file().name());
         assertEquals("hello", ((FileWithBytes_v0_3) part.file()).bytes());
         assertNull(history.metadata());
         assertNull(history.referenceTaskIds());

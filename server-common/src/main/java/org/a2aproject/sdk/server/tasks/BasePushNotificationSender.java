@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Message;
@@ -43,6 +44,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private A2AHttpClient httpClient;
     private PushNotificationConfigStore configStore;
     private Map<String, PushNotificationPayloadFormatter> formattersByVersion;
+    private PushNotificationUrlValidator urlValidator;
 
 
     /**
@@ -52,43 +54,57 @@ public class BasePushNotificationSender implements PushNotificationSender {
      */
     @SuppressWarnings("NullAway")
     protected BasePushNotificationSender() {
-        // For CDI proxy creation
+        // For CDI proxy creation — all fields are overwritten by the @Inject constructor.
+        // urlValidator is intentionally non-null so that SSRF protection is active even
+        // if an instance is accidentally used before injection completes.
         this.httpClient = null;
         this.configStore = null;
         this.formattersByVersion = Map.of();
+        this.urlValidator = new DefaultPushNotificationUrlValidator();
     }
 
-    public BasePushNotificationSender(PushNotificationConfigStore configStore) {
+    public BasePushNotificationSender(PushNotificationConfigStore configStore,
+                                       PushNotificationUrlValidator urlValidator) {
         this.httpClient = A2AHttpClientFactory.create();
         this.configStore = configStore;
         this.formattersByVersion = Map.of();
+        this.urlValidator = urlValidator;
     }
 
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore,
-                                       Instance<PushNotificationPayloadFormatter> formatters) {
+                                       Instance<PushNotificationPayloadFormatter> formatters,
+                                       PushNotificationUrlValidator urlValidator) {
         this.httpClient = A2AHttpClientFactory.create();
         this.configStore = configStore;
-        this.formattersByVersion = new HashMap<>();
-        for (PushNotificationPayloadFormatter f : formatters) {
-            this.formattersByVersion.put(f.targetVersion(), f);
-        }
-    }
-
-    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient) {
-        this.configStore = configStore;
-        this.httpClient = httpClient;
-        this.formattersByVersion = Map.of();
+        this.formattersByVersion = toFormatterMap(formatters);
+        this.urlValidator = urlValidator;
     }
 
     public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
-                                       List<PushNotificationPayloadFormatter> formatters) {
+                                       PushNotificationUrlValidator urlValidator) {
         this.configStore = configStore;
         this.httpClient = httpClient;
-        this.formattersByVersion = new HashMap<>();
+        this.formattersByVersion = Map.of();
+        this.urlValidator = urlValidator;
+    }
+
+    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
+                                       List<PushNotificationPayloadFormatter> formatters,
+                                       PushNotificationUrlValidator urlValidator) {
+        this.configStore = configStore;
+        this.httpClient = httpClient;
+        this.formattersByVersion = toFormatterMap(formatters);
+        this.urlValidator = urlValidator;
+    }
+
+    private static Map<String, PushNotificationPayloadFormatter> toFormatterMap(
+            Iterable<PushNotificationPayloadFormatter> formatters) {
+        Map<String, PushNotificationPayloadFormatter> map = new HashMap<>();
         for (PushNotificationPayloadFormatter f : formatters) {
-            formattersByVersion.put(f.targetVersion(), f);
+            map.put(f.targetVersion(), f);
         }
+        return map;
     }
 
     @Override
@@ -163,6 +179,14 @@ public class BasePushNotificationSender implements PushNotificationSender {
                                           TaskPushNotificationConfig pushInfo,
                                           Map<String, String> versionsByConfigId) {
         String url = pushInfo.url();
+
+        try {
+            urlValidator.validate(url);
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+            return false;
+        }
+
         String token = pushInfo.token();
 
         String version = versionsByConfigId.get(pushInfo.id());
@@ -192,13 +216,30 @@ public class BasePushNotificationSender implements PushNotificationSender {
             }
         }
 
-        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost();
+        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
+                .followRedirects(false);
         if (token != null && !token.isBlank()) {
+            try {
+                rejectCrlf(token, X_A2A_NOTIFICATION_TOKEN);
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+                return false;
+            }
             postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
         }
-        if (pushInfo.authentication() != null && pushInfo.authentication().credentials() != null) {
-            postBuilder.addHeader("Authorization",
-                    pushInfo.authentication().scheme() + " " + pushInfo.authentication().credentials());
+        AuthenticationInfo authentication = pushInfo.authentication();
+        if (authentication != null) {
+            String credentials = authentication.credentials();
+            if (credentials != null) {
+                String authorizationHeader;
+                try {
+                    authorizationHeader = buildAuthorizationHeader(authentication.scheme(), credentials);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+                    return false;
+                }
+                postBuilder.addHeader("Authorization", authorizationHeader);
+            }
         }
 
         try {
@@ -212,5 +253,40 @@ public class BasePushNotificationSender implements PushNotificationSender {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Builds the Authorization header value for a push notification config.
+     *
+     * <p>The {@code scheme} and {@code credentials} are client-controlled values that are
+     * concatenated directly into the header. Rejecting CR/LF characters here prevents
+     * HTTP header injection (CWE-113). The {@link A2AHttpClient} SPI is pluggable, so we
+     * cannot rely on every implementation (or the underlying HTTP client) to validate
+     * header values.</p>
+     *
+     * @param scheme the authentication scheme
+     * @param credentials the authentication credentials
+     * @return the assembled {@code "scheme credentials"} header value
+     * @throws IllegalArgumentException if either field contains CR or LF
+     */
+    private static String buildAuthorizationHeader(String scheme, String credentials) {
+        rejectCrlf(scheme, "Authorization scheme");
+        rejectCrlf(credentials, "Authorization credentials");
+        return scheme + " " + credentials;
+    }
+
+    /**
+     * Throws {@link IllegalArgumentException} if {@code value} contains CR or LF.
+     *
+     * <p>Prevents HTTP header injection (CWE-113) for client-controlled header values.</p>
+     *
+     * @param value non-null string to validate
+     * @param label human-readable description of the field, used in the exception message
+     */
+    private static void rejectCrlf(String value, String label) {
+        if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0) {
+            throw new IllegalArgumentException(
+                    label + " must not contain CR/LF characters");
+        }
     }
 }

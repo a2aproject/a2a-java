@@ -88,13 +88,15 @@ public class JsonRestMessages_v0_3 {
                  {
                   "file": {
                      "file_with_uri": "file:///path/to/file.txt",
-                     "mimeType": "text/plain"
+                     "mimeType": "text/plain",
+                     "name": "file.txt"
                   }
                  },
                  {
                   "file": {
                      "file_with_bytes": "aGVsbG8=",
-                     "mimeType": "text/plain"
+                     "mimeType": "text/plain",
+                     "name": "greeting.txt"
                   }
                  }
                 ],

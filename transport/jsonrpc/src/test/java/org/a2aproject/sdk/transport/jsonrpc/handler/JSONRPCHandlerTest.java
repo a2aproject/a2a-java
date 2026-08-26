@@ -1,6 +1,8 @@
 package org.a2aproject.sdk.transport.jsonrpc.handler;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -20,6 +22,8 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import jakarta.enterprise.inject.Instance;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
@@ -43,12 +47,16 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
+
+import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.events.EventConsumer;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler;
 import org.a2aproject.sdk.server.tasks.ResultAggregator;
+import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentExtension;
@@ -59,9 +67,9 @@ import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
+import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -79,8 +87,12 @@ import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.server.TestInstances;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+
+import jakarta.enterprise.inject.Instance;
+
 import mutiny.zero.ZeroPublisher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -1047,7 +1059,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         });
 
         assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
+        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
             fail("Expected a response containing an error");
@@ -1094,7 +1106,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         });
 
         assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
+        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
             fail("Expected a response containing an error");
@@ -1129,6 +1141,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1152,6 +1165,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1187,6 +1201,25 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageResponse response = handler.onMessageSend(request, callContext);
 
         assertInstanceOf(InternalError.class, response.getError());
+    }
+
+    @Test
+    public void testOnMessageSendSanitizesUnexpectedException() {
+        // A non-A2AError exception must not leak its message to the client
+        DefaultRequestHandler mocked = Mockito.mock(DefaultRequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked)
+                .onMessageSend(Mockito.any(MessageSendParams.class), Mockito.any(ServerCallContext.class));
+
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, mocked, internalExecutor);
+
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(MESSAGE, defaultConfiguration(), null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        assertInstanceOf(InternalError.class, response.getError());
+        assertEquals("Internal error", response.getError().getMessage());
+        assertFalse(response.getError().getMessage().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
     }
 
     @Test
@@ -1247,6 +1280,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1412,6 +1446,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
@@ -1510,6 +1545,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
@@ -1545,6 +1581,64 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(request.getId(), response.getId());
         assertInstanceOf(UnsupportedOperationError.class, response.getError());
         assertNull(response.getResult());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterKnownTenant() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard tenantCard = AgentCard.builder(cardWithExtCapability).name("acme-card").build();
+        AgentCardRouter router = tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
+
+        JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(cardWithExtCapability), null,
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.builder()
+                .id("1")
+                .params(new GetExtendedAgentCardParams("acme"))
+                .build();
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
+
+        assertNull(response.getError());
+        assertNotNull(response.getResult());
+        assertEquals("acme-card", response.getResult().name());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterReturnsNull() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCardRouter router = tenant -> null;
+
+        JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(cardWithExtCapability), null,
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.builder()
+                .id("1")
+                .params(new GetExtendedAgentCardParams("acme"))
+                .build();
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
+
+        assertInstanceOf(ExtendedAgentCardNotConfiguredError.class, response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testExtendedAgentCardWithoutRouter() throws Exception {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard extended = AgentCard.builder(cardWithExtCapability).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        JSONRPCHandler handler = new JSONRPCHandler(
+                new FixedInstance<>(cardWithExtCapability), extendedInstance, requestHandler, internalExecutor, null);
+
+        GetExtendedAgentCardRequest request = new GetExtendedAgentCardRequest("1");
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
+
+        assertNull(response.getError());
+        assertNotNull(response.getResult());
+        assertEquals("extended", response.getResult().description());
     }
 
     @Test
@@ -2004,5 +2098,231 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(0, result.totalSize(), "totalSize should be 0");
         assertEquals(0, result.pageSize(), "pageSize should be 0");
         // nextPageToken can be null for empty results
+    }
+
+    @Test
+    void constructorDoesNotResolveAgentCardInstances() {
+        Instance<AgentCard> throwOnGet = TestInstances.throwOnGet();
+
+        assertDoesNotThrow(() -> new JSONRPCHandler(throwOnGet, null, requestHandler, internalExecutor, null));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetTask() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        GetTaskRequest request = new GetTaskRequest("1", new TaskQueryParams(MINIMAL_TASK.id()));
+        GetTaskResponse response = handler.onGetTask(request, incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnListTasks() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        ListTasksParams params = ListTasksParams.builder().contextId(MINIMAL_TASK.contextId()).tenant("").build();
+        ListTasksResponse response = handler.onListTasks(new ListTasksRequest("1", params), incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnCancelTask() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        // Without this the executor emits nothing, and a cancel that reaches the request handler
+        // waits forever for a final event rather than failing the assertion.
+        agentExecutorCancel = (context, agentEmitter) -> agentEmitter.cancel();
+
+        CancelTaskRequest request = new CancelTaskRequest("1", new CancelTaskParams(MINIMAL_TASK.id()));
+        CancelTaskResponse response = handler.onCancelTask(request, incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSetPushNotificationConfig() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .id(MINIMAL_TASK.id())
+                .taskId(MINIMAL_TASK.id())
+                .url("http://example.com")
+                .build();
+        CreateTaskPushNotificationConfigResponse response =
+                handler.setPushNotificationConfig(
+                        new CreateTaskPushNotificationConfigRequest("1", config), incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetPushNotificationConfig() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        GetTaskPushNotificationConfigParams params =
+                new GetTaskPushNotificationConfigParams(MINIMAL_TASK.id(), MINIMAL_TASK.id());
+        GetTaskPushNotificationConfigResponse response =
+                handler.getPushNotificationConfig(
+                        new GetTaskPushNotificationConfigRequest("1", params), incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnListPushNotificationConfigs() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id());
+        ListTaskPushNotificationConfigsResponse response =
+                handler.listPushNotificationConfigs(
+                        new ListTaskPushNotificationConfigsRequest("1", params), incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnDeletePushNotificationConfig() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        DeleteTaskPushNotificationConfigParams params =
+                new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), MINIMAL_TASK.id());
+        DeleteTaskPushNotificationConfigResponse response =
+                handler.deletePushNotificationConfig(
+                        new DeleteTaskPushNotificationConfigRequest("1", params), incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetExtendedCard() throws Exception {
+        AgentCard extended = AgentCard.builder(versionTestCard()).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        JSONRPCHandler handler = new JSONRPCHandler(
+                new FixedInstance<>(versionTestCard()), extendedInstance, requestHandler, internalExecutor, null);
+
+        GetExtendedAgentCardResponse response =
+                handler.onGetExtendedCardRequest(new GetExtendedAgentCardRequest("1"), incompatibleVersionContext());
+
+        assertVersionRejected(response.getError());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSubscribeToTask() throws Exception {
+        JSONRPCHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
+        Flow.Publisher<SendStreamingMessageResponse> publisher =
+                handler.onSubscribeToTask(request, incompatibleVersionContext());
+
+        List<SendStreamingMessageResponse> results = drainStream(publisher);
+
+        assertEquals(1, results.size());
+        assertVersionRejected(results.get(0).getError());
+        assertNull(results.get(0).getResult());
+    }
+
+    /**
+     * A card whose sole interface speaks protocol version 1.0, with every capability enabled so
+     * that each operation reaches the version check instead of stopping at a capability guard.
+     */
+    private static AgentCard versionTestCard() {
+        return AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extendedAgentCard(true)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+    }
+
+    private JSONRPCHandler versionTestHandler() {
+        return new JSONRPCHandler(versionTestCard(), requestHandler, internalExecutor);
+    }
+
+    /**
+     * A context requesting version 2.0, whose major differs from the card built by
+     * {@link #versionTestCard()} and is therefore incompatible under section 3.6.2.
+     */
+    private static ServerCallContext incompatibleVersionContext() {
+        return new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "2.0");
+    }
+
+    /**
+     * Asserts that an operation refused the call over its version rather than for some other
+     * reason, by checking that the rejected version is named in the message.
+     *
+     * @param error the error an operation placed on its response
+     */
+    private static void assertVersionRejected(A2AError error) {
+        assertInstanceOf(VersionNotSupportedError.class, error);
+        assertTrue(error.getMessage().contains("2.0"));
+    }
+
+    /**
+     * Subscribes to a streaming response and returns the items it emitted before terminating,
+     * so that a rejection delivered as a stream item can be asserted like a unary one.
+     *
+     * @param publisher the streaming response under test
+     * @return the emitted items, in order
+     * @throws InterruptedException if the wait for termination is interrupted
+     */
+    private static List<SendStreamingMessageResponse> drainStream(
+            Flow.Publisher<SendStreamingMessageResponse> publisher) throws InterruptedException {
+        List<SendStreamingMessageResponse> results = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        publisher.subscribe(new Flow.Subscriber<>() {
+            private Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(SendStreamingMessageResponse item) {
+                results.add(item);
+                subscription.request(1);
+                latch.countDown();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected an event within timeout");
+        return results;
     }
 }

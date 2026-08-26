@@ -28,18 +28,22 @@ Import the extras BOM to manage versions:
 </dependencyManagement>
 ```
 
-## [HTTP Clients](extras/http-clients)
+## [HTTP Clients](../extra/http-clients)
 
-Alternative `A2AHttpClient` implementations. The **Vert.x HTTP Client** (`a2a-java-sdk-http-client-vertx`) replaces the default JDK HttpClient with a reactive, non-blocking Vert.x WebClient — recommended for Quarkus, reactive frameworks, and high-throughput scenarios. An **Android HTTP Client** (`a2a-java-sdk-http-client-android`) is also available for mobile applications.
+Alternative `A2AHttpClient` implementations. The **Vert.x HTTP Client** (`a2a-java-sdk-http-client-vertx`) replaces the default JDK HttpClient with a reactive, non-blocking Vert.x WebClient — recommended for Quarkus, reactive frameworks, and high-throughput scenarios. An **Android HTTP Client** (`a2a-java-sdk-http-client-android`) is available for mobile applications. The **CDI HTTP Client** (`a2a-java-sdk-http-client-cdi`) lets you supply any custom `A2AHttpClient` bean via the CDI container, taking highest priority (200) over all built-in providers.
 
-## [Storage & Persistence](extras/storage)
+## [Storage & Persistence](../extra/storage)
 
 JPA-backed replacements for the in-memory stores, providing database persistence for production and load-balanced deployments. Includes a **JPA Task Store** (`a2a-java-extras-task-store-database-jpa`) and a **JPA Push Notification Config Store** (`a2a-java-extras-push-notification-config-store-database-jpa`). Both use Jakarta Persistence API (JPA 3.0+) and share the same datasource configuration.
 
-## [Replicated Queue Manager](extras/replicated-queue-manager)
+## [Replicated Queue Manager](../extra/replicated-queue-manager)
 
 Replaces the default `InMemoryQueueManager` with event replication across multiple A2A server instances via message brokers. Required for multi-instance deployments. The core module (`a2a-java-queue-manager-replicated-core`) pairs with a MicroProfile Reactive Messaging strategy (`a2a-java-queue-manager-replication-mp-reactive`) supporting Apache Kafka, Pulsar, or AMQP. You can also write your own `ReplicationStrategy`.
 
-## [OpenTelemetry](extras/opentelemetry)
+## [Multi-Tenancy](../extra/multi-tenancy)
+
+Serve multiple tenants from a single A2A server with per-tenant `AgentExecutor` and `AgentCard` routing. The module (`a2a-java-extras-multitenancy`) provides a `@Tenant` CDI qualifier and automatic routing — requests are dispatched to tenant-specific beans based on the `tenant` field in the request payload, with fallback to the default beans for unknown tenants.
+
+## [OpenTelemetry](../extra/opentelemetry)
 
 Distributed tracing, metrics, and context propagation for A2A servers and clients using OpenTelemetry. The server module (`a2a-java-sdk-opentelemetry-server`) adds automatic span creation for all protocol methods with context propagation across async boundaries. Client modules (`a2a-java-sdk-opentelemetry-client`, `a2a-java-sdk-opentelemetry-client-propagation`) instrument A2A client operations.

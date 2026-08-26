@@ -5,8 +5,9 @@ package org.a2aproject.sdk.client.http;
  *
  * <p>
  * Implementations of this interface can be registered via the Java ServiceLoader
- * mechanism. The {@link A2AHttpClientFactory} will discover and use the highest
- * priority provider available.
+ * mechanism. The {@link A2AHttpClientFactory} discovers all registered providers,
+ * sorts them by descending {@link #priority()}, and tries each in order, returning
+ * the first one whose {@link #create()} succeeds.
  *
  * <p>
  * To register a provider, create a file named
@@ -24,13 +25,15 @@ public interface A2AHttpClientProvider {
 
     /**
      * Returns the priority of this provider. Higher priority providers are
-     * preferred over lower priority ones.
+     * tried first; the first one whose {@link #create()} succeeds is used.
      *
      * <p>
-     * Default priorities:
+     * Built-in priorities (for reference when choosing a custom value):
      * <ul>
-     * <li>JdkA2AHttpClient: 0 (fallback)</li>
-     * <li>VertxA2AHttpClient: 100 (preferred when available)</li>
+     * <li>CdiA2AHttpClient: 200 (CDI-provided bean, when a container and bean are active)</li>
+     * <li>AndroidA2AHttpClient: 110 (Android runtime only)</li>
+     * <li>VertxA2AHttpClient: 100 (when {@code vertx-web-client} is on the classpath)</li>
+     * <li>JdkA2AHttpClient: 0 (always available, last resort)</li>
      * </ul>
      *
      * @return the priority value (higher is better)

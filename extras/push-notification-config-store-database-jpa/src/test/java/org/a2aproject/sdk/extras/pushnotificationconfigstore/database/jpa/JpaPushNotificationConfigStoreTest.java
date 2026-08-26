@@ -20,6 +20,7 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
+import org.a2aproject.sdk.server.tasks.PushNotificationUrlValidator;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Task;
@@ -54,7 +55,8 @@ public class JpaPushNotificationConfigStoreTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient);
+        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient,
+                PushNotificationUrlValidator.ALLOW_ALL);
     }
 
     @Test
@@ -233,6 +235,16 @@ public class JpaPushNotificationConfigStoreTest {
         assertTrue(configResult.configs().isEmpty(), "Should return empty list after deletion when using taskId as configId");
     }
 
+    private void setupBasicMockHttpResponse() throws Exception {
+        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.followRedirects(false)).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.addHeader(any(String.class), any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.success()).thenReturn(true);
+    }
+
     @Test
     @Transactional
     public void testSendNotificationSuccess() throws Exception {
@@ -241,19 +253,14 @@ public class JpaPushNotificationConfigStoreTest {
         TaskPushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
         configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
-        // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.addHeader(CONTENT_TYPE, APPLICATION_JSON)).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.success()).thenReturn(true);
+        setupBasicMockHttpResponse();
 
         notificationSender.sendNotification(task, null);
 
         // Verify HTTP client was called
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockHttpClient).createPost();
+        verify(mockPostBuilder).followRedirects(false);
         verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).addHeader(CONTENT_TYPE, APPLICATION_JSON);
         verify(mockPostBuilder).body(bodyCaptor.capture());
@@ -274,12 +281,7 @@ public class JpaPushNotificationConfigStoreTest {
         TaskPushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
-        // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.success()).thenReturn(true);
+        setupBasicMockHttpResponse();
 
         notificationSender.sendNotification(task, null);
 

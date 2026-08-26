@@ -3,13 +3,15 @@ package org.a2aproject.sdk.server.tasks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.a2aproject.sdk.server.config.A2AConfigProvider;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
@@ -24,8 +26,19 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class InMemoryPushNotificationConfigStore implements PushNotificationConfigStore {
 
-    private final Map<String, List<TaskPushNotificationConfig>> pushNotificationInfos = Collections.synchronizedMap(new HashMap<>());
-    private final Map<String, String> protocolVersions = Collections.synchronizedMap(new HashMap<>());
+    /**
+     * Default maximum number of push notification configs allowed per task.
+     * Prevents a single task from accumulating an unbounded list of configs
+     * (each config consumes memory and can trigger outbound HTTP requests).
+     * Overridable via {@code a2a.push-notification-config.max-per-task}.
+     */
+    public static final int MAX_PUSH_CONFIGS_PER_TASK = PushNotificationConfigStore.DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
+
+    private final ConcurrentHashMap<String, List<TaskPushNotificationConfig>> pushNotificationInfos = new ConcurrentHashMap<>();
+    private final Map<String, String> protocolVersions = new ConcurrentHashMap<>();
+
+    @Inject
+    @Nullable A2AConfigProvider configProvider;
 
     @Inject
     public InMemoryPushNotificationConfigStore() {
@@ -34,24 +47,26 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
-        List<TaskPushNotificationConfig> notificationConfigList = pushNotificationInfos.getOrDefault(taskId, new ArrayList<>());
         TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder(notificationConfig);
         if (notificationConfig.id().isEmpty()) {
             builder.id(taskId);
         }
-        notificationConfig = builder.build();
+        TaskPushNotificationConfig config = builder.build();
+        String configId = config.id();
+        int maxPerTask = PushNotificationConfigStore.maxPushConfigsPerTask(configProvider);
 
-        Iterator<TaskPushNotificationConfig> notificationConfigIterator = notificationConfigList.iterator();
-        while (notificationConfigIterator.hasNext()) {
-            TaskPushNotificationConfig config = notificationConfigIterator.next();
-            if (config.id() != null  && config.id().equals(notificationConfig.id())) {
-                notificationConfigIterator.remove();
-                break;
+        pushNotificationInfos.compute(taskId, (key, list) -> {
+            List<TaskPushNotificationConfig> mutable = list == null ? new ArrayList<>() : new ArrayList<>(list);
+            boolean isExistingConfig = mutable.removeIf(
+                    existing -> existing.id() != null && existing.id().equals(configId));
+            if (!isExistingConfig && mutable.size() >= maxPerTask) {
+                throw new InvalidParamsError("Too many push notification configs for task " + taskId
+                        + " (max " + maxPerTask + ")");
             }
-        }
-        notificationConfigList.add(notificationConfig);
-        pushNotificationInfos.put(taskId, notificationConfigList);
-        return notificationConfig;
+            mutable.add(config);
+            return List.copyOf(mutable);
+        });
+        return config;
     }
 
     @Override
@@ -68,10 +83,9 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
             return new ListTaskPushNotificationConfigsResult(Collections.emptyList());
         }
         if (params.pageSize() <= 0) {
-            return new ListTaskPushNotificationConfigsResult(new ArrayList<>(configs), null);
+            return new ListTaskPushNotificationConfigsResult(configs, null);
         }
         if (params.pageToken() != null && !params.pageToken().isBlank()) {
-            //find first index
             int index = findFirstIndex(configs, params.pageToken());
             if (index < configs.size()) {
                 configs = configs.subList(index, configs.size());
@@ -85,16 +99,12 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     }
 
     private int findFirstIndex(List<TaskPushNotificationConfig> configs, String id) {
-        //find first index
-        Iterator<TaskPushNotificationConfig> iter = configs.iterator();
-        int index = 0;
-        while (iter.hasNext()) {
-            if (id.equals(iter.next().id())) {
-                return index;
+        for (int i = 0; i < configs.size(); i++) {
+            if (id.equals(configs.get(i).id())) {
+                return i;
             }
-            index++;
         }
-        return index;
+        return configs.size();
     }
 
     @Override
@@ -102,23 +112,13 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
         if (configId == null) {
             configId = taskId;
         }
-        List<TaskPushNotificationConfig> notificationConfigList = pushNotificationInfos.get(taskId);
-        if (notificationConfigList == null || notificationConfigList.isEmpty()) {
-            return;
-        }
-
-        Iterator<TaskPushNotificationConfig> notificationConfigIterator = notificationConfigList.iterator();
-        while (notificationConfigIterator.hasNext()) {
-            TaskPushNotificationConfig config = notificationConfigIterator.next();
-            if (configId.equals(config.id())) {
-                notificationConfigIterator.remove();
-                break;
-            }
-        }
-        protocolVersions.remove(taskId + ":" + configId);
-        if (notificationConfigList.isEmpty()) {
-            pushNotificationInfos.remove(taskId);
-        }
+        String deleteId = configId;
+        pushNotificationInfos.computeIfPresent(taskId, (key, list) -> {
+            List<TaskPushNotificationConfig> mutable = new ArrayList<>(list);
+            mutable.removeIf(config -> deleteId.equals(config.id()));
+            return mutable.isEmpty() ? null : List.copyOf(mutable);
+        });
+        protocolVersions.remove(taskId + ":" + deleteId);
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
@@ -23,7 +24,6 @@ import org.jspecify.annotations.Nullable;
  *   <li>JSON objects: {@code Map<String, Object>}</li>
  *   <li>JSON arrays: {@code List<Object>}</li>
  *   <li>Primitives: {@code String}, {@code Number}, {@code Boolean}</li>
- *   <li>Null values: {@code null}</li>
  * </ul>
  * <p>
  * Example usage:
@@ -42,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  * DataPart primitive = new DataPart(42);
  * }</pre>
  *
- * @param data the structured data (required, supports JSON objects, arrays, primitives, and null)
+ * @param data the structured data (required, supports JSON objects, arrays, and primitives)
  * @param metadata additional metadata for the part
  * @see Part
  * @see Message
@@ -59,24 +59,25 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
     public static final String DATA = "data";
 
     /**
-     * Compact constructor with validation.
+     * Compact constructor with validation and defensive copying.
      * <p>
-     * Note: For mutable data types (Map, List), callers should ensure immutability
-     * by using {@code Map.copyOf()} or {@code List.copyOf()} before passing to this constructor.
+     * For mutable data types ({@code Map} and {@code List}), an unmodifiable defensive
+     * copy is created. Primitives and other immutable values are stored as-is.
      *
-     * @param data the structured data (supports JSON objects, arrays, primitives, and null)
+     * @param data the structured data (required, supports JSON objects, arrays, and primitives)
+     * @param metadata additional metadata for the part
      * @throws IllegalArgumentException if data is null
      */
     public DataPart (Object data, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("data", data);
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
-        this.data = data;
+        this.data = defensivelyCopy(data);
     }
 
     /**
      * Constructor.
      *
-     * @param data the structured data (supports JSON objects, arrays, primitives, and not null)
+     * @param data the structured data (required, supports JSON objects, arrays, and primitives)
      * @throws IllegalArgumentException if data is null
      */
     public DataPart(Object data) {
@@ -137,4 +138,24 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
     private static final Gson JSON_PARSER = new GsonBuilder()
             .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
             .create();
+
+    /**
+     * Creates a defensive copy of mutable collection types to ensure immutability.
+     * <p>
+     * For {@code Map} and {@code List} instances, returns an unmodifiable copy preserving
+     * null elements. For all other types (primitives, Strings, immutable objects), returns
+     * the value as-is.
+     *
+     * @param data the data value to potentially copy
+     * @return an unmodifiable copy for collections, or the original value for immutable types
+     */
+    private static Object defensivelyCopy(Object data) {
+        if (data instanceof Map<?, ?> map) {
+            return CollectionCopies.unmodifiableShallowMap(map);
+        }
+        if (data instanceof List<?> list) {
+            return CollectionCopies.unmodifiableShallowList(list);
+        }
+        return data;
+    }
 }

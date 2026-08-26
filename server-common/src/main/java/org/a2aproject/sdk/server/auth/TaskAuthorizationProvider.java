@@ -9,7 +9,10 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Implementers provide a CDI bean ({@code @ApplicationScoped}) implementing this interface
  * to control which users can read, write, or create tasks. When no implementation is provided,
- * all operations are permitted.
+ * all operations are <b>denied by default</b> (fail-closed). To allow unauthenticated access
+ * without a provider (e.g., for single-user deployments or testing), set the
+ * {@code a2a.authorization.required} property to {@code false}, or call
+ * {@code DefaultRequestHandler.builder().authorizationRequired(false)} on the builder path.
  *
  * <h2>Providing an implementation</h2>
  * <p>
@@ -61,8 +64,10 @@ import org.jspecify.annotations.Nullable;
  *   <li>{@code onMessageSend}, {@code onMessageSendStream} — call {@link #checkWrite} if an
  *       existing task ID is provided, otherwise call {@link #checkCreate}; after the delegate
  *       returns, call {@link #recordOwnership} if a new task was created</li>
- *   <li>{@code onListTasks} — filtering is pushed down to the {@code TaskStore}, which calls
- *       {@link #checkRead} per task to exclude unauthorized entries</li>
+ *   <li>{@code onListTasks} — a list-scoped read check is performed before delegation
+ *       (see {@link #checkRead}); after the delegate returns, per-task filtering is also
+ *       pushed down to the {@code TaskStore}, which calls {@link #checkRead} for each task
+ *       to exclude unauthorized entries</li>
  * </ul>
  * Denied operations throw {@code TaskNotFoundError} — the caller cannot distinguish
  * "does not exist" from "not authorized", preventing information leakage.
@@ -92,10 +97,6 @@ import org.jspecify.annotations.Nullable;
  *       and both call {@code recordOwnership}. Implementations must use atomic-insert patterns
  *       (e.g., {@code ConcurrentMap.putIfAbsent}, {@code INSERT ... ON CONFLICT DO NOTHING})
  *       so the first writer wins and the second is a harmless no-op.</li>
- *   <li><b>CDI injection requirement:</b> When task authorization is required, always obtain
- *       {@code RequestHandler} through CDI injection. Manual instantiation via
- *       {@code DefaultRequestHandler.builder().build()} bypasses the
- *       {@code AuthorizationRequestHandlerDecorator}.</li>
  * </ul>
  *
  * @see TaskOperation
@@ -105,8 +106,15 @@ public interface TaskAuthorizationProvider {
     /**
      * Check whether the current user is allowed to read the given task.
      *
+     * <p>For {@link TaskOperation#LIST_TASKS}, {@code taskId} is an empty-string sentinel
+     * representing the whole list scope: the decorator calls this method once before
+     * delegation (deny rejects the entire list), and the {@code TaskStore} subsequently
+     * calls it per task during {@code list()} filtering. Providers should treat {@code ""}
+     * with {@code LIST_TASKS} as "may this user list tasks at all" — returning {@code false}
+     * hides all tasks.</p>
+     *
      * @param context the server call context containing the authenticated user
-     * @param taskId the task being accessed
+     * @param taskId the task being accessed, or {@code ""} for the list scope of {@code LIST_TASKS}
      * @param operation which RequestHandler method triggered the check
      * @return {@code true} to allow, {@code false} to deny
      * @throws A2AError if the authorization check itself fails

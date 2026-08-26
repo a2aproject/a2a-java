@@ -8,6 +8,7 @@ import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent;
+import org.a2aproject.sdk.server.events.DefaultTaskStreamLifecycleHook;
 import org.a2aproject.sdk.server.events.EventEnqueueHook;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueFactory;
@@ -15,6 +16,7 @@ import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.server.events.InMemoryQueueManager;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.QueueManager;
+import org.a2aproject.sdk.server.events.TaskStreamLifecycleHook;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ public class ReplicatedQueueManager implements QueueManager {
     private InMemoryQueueManager delegate;
     private ReplicationStrategy replicationStrategy;
     private TaskStateProvider taskStateProvider;
+    private TaskStreamLifecycleHook streamLifecycleHook;
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -43,15 +46,25 @@ public class ReplicatedQueueManager implements QueueManager {
         this.delegate = null;
         this.replicationStrategy = null;
         this.taskStateProvider = null;
+        this.streamLifecycleHook = null;
+    }
+
+    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy,
+                                    TaskStateProvider taskStateProvider,
+                                    MainEventBus mainEventBus) {
+        this(replicationStrategy, taskStateProvider, mainEventBus, new DefaultTaskStreamLifecycleHook());
     }
 
     @Inject
     public ReplicatedQueueManager(ReplicationStrategy replicationStrategy,
                                     TaskStateProvider taskStateProvider,
-                                    MainEventBus mainEventBus) {
+                                    MainEventBus mainEventBus,
+                                    TaskStreamLifecycleHook streamLifecycleHook) {
         this.replicationStrategy = replicationStrategy;
         this.taskStateProvider = taskStateProvider;
-        this.delegate = new InMemoryQueueManager(new ReplicatingEventQueueFactory(), taskStateProvider, mainEventBus);
+        this.streamLifecycleHook = streamLifecycleHook;
+        this.delegate = new InMemoryQueueManager(
+                new ReplicatingEventQueueFactory(), taskStateProvider, mainEventBus, streamLifecycleHook);
     }
 
 

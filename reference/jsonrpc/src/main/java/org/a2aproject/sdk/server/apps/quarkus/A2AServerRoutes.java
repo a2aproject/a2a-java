@@ -79,6 +79,8 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Quarkus routing configuration for JSON-RPC A2A protocol requests.
@@ -170,6 +172,8 @@ import org.jspecify.annotations.Nullable;
 @Singleton
 public class A2AServerRoutes {
 
+    private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
+
     @Inject
     JSONRPCHandler jsonRpcHandler;
 
@@ -225,6 +229,21 @@ public class A2AServerRoutes {
             .handler(ctx -> {
                 try {
                     String agentCard = getAgentCard(ctx);
+                    ctx.response()
+                        .setStatusCode(200)
+                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .end(agentCard);
+                } catch (JsonProcessingException e) {
+                    ctx.response().setStatusCode(500).end("Internal Server Error");
+                }
+            });
+
+        // Tenant-specific agent card: GET /.well-known/{tenant}/agent-card.json
+        router.getWithRegex("^\\/.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
+            .produces(APPLICATION_JSON)
+            .handler(ctx -> {
+                try {
+                    String agentCard = getTenantAgentCard(ctx);
                     ctx.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -337,7 +356,8 @@ public class A2AServerRoutes {
         } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
-            error = new A2AErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            error = new A2AErrorResponse(new InternalError("Internal error"));
         } finally {
             if (error != null) {
                 rc.response()
@@ -410,6 +430,19 @@ public class A2AServerRoutes {
         // Add caching headers per A2A specification section 8.6
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
         return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
+    }
+
+    /**
+     * Retrieves the public agent card for a specific tenant.
+     *
+     * @param rc the Vert.x routing context (must contain a {@code tenant} path parameter)
+     * @return the tenant-specific agent card as a JSON string
+     * @throws JsonProcessingException if serialization fails
+     */
+    public String getTenantAgentCard(RoutingContext rc) throws JsonProcessingException {
+        String tenant = extractTenant(rc);
+        cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
+        return JsonUtil.toJson(jsonRpcHandler.getAgentCard(tenant));
     }
 
     /**
@@ -594,12 +627,11 @@ public class A2AServerRoutes {
      * Extracts the tenant identifier from the request path.
      *
      * <p>The tenant is determined by the normalized path, with leading and trailing
-     * slashes stripped:
+     * slashes stripped. The tenant must be a simple identifier (no {@code /} or {@code ?}):
      * <ul>
      *   <li>{@code /} → empty tenant</li>
      *   <li>{@code /tenant1} → "tenant1"</li>
      *   <li>{@code /tenant1/} → "tenant1"</li>
-     *   <li>{@code /org/team} → "org/team"</li>
      * </ul>
      *
      * @param rc the routing context

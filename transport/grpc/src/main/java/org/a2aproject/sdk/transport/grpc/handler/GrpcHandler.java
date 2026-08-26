@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.Vetoed;
@@ -28,6 +29,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.A2AError;
@@ -61,6 +63,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys;
 import io.grpc.Context;
 import io.grpc.Metadata;
@@ -158,7 +161,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     // Without this we get intermittent failures
     private static volatile @Nullable Runnable streamingSubscribedRunnable;
 
-    private final AtomicBoolean initialised = new AtomicBoolean(false);
+    private final AtomicBoolean transportValidated = new AtomicBoolean(false);
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
@@ -199,8 +202,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                            StreamObserver<org.a2aproject.sdk.grpc.SendMessageResponse> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
-            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
-            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             EventKind taskOrMessage = getRequestHandler().onMessageSend(params, context);
             org.a2aproject.sdk.grpc.SendMessageResponse response = ToProto.taskOrMessage(taskOrMessage);
@@ -280,7 +281,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void createTaskPushNotificationConfig(org.a2aproject.sdk.grpc.TaskPushNotificationConfig request,
                                                StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -303,7 +304,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void getTaskPushNotificationConfig(org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest request,
                                             StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -326,7 +327,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void listTaskPushNotificationConfigs(org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest request,
                                              StreamObserver<org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -375,7 +376,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *
      * <p><b>Error Handling:</b>
      * <ul>
-     *   <li>Streaming not enabled → {@link org.a2aproject.sdk.spec.InvalidRequestError}</li>
+     *   <li>Streaming not enabled → {@link org.a2aproject.sdk.spec.UnsupportedOperationError}</li>
      *   <li>Other {@link A2AError} → mapped to appropriate gRPC status code</li>
      *   <li>{@link SecurityException} → {@code UNAUTHENTICATED} or {@code PERMISSION_DENIED}</li>
      *   <li>{@link Throwable} → {@code INTERNAL} error</li>
@@ -387,16 +388,15 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void sendStreamingMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                                      StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new InvalidRequestError());
+        if (!resolveAgentCard().capabilities().streaming()) {
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
             installForkedContextWrapper(context);
-            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
-            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
@@ -412,8 +412,9 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
-        if (!getAgentCardInternal().capabilities().streaming()) {
-            handleError(responseObserver, new InvalidRequestError());
+        if (!resolveAgentCard().capabilities().streaming()) {
+            handleError(responseObserver,
+                    new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
             return;
         }
 
@@ -564,11 +565,22 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest request,
                            StreamObserver<org.a2aproject.sdk.grpc.AgentCard> responseObserver) {
         try {
-            if (!getAgentCard().capabilities().extendedAgentCard()) {
+            if (!resolveAgentCard().capabilities().extendedAgentCard()) {
                 handleError(responseObserver, new UnsupportedOperationError());
                 return;
             }
-            AgentCard extendedAgentCard = getExtendedAgentCard();
+            // Removing this 2A causes protocol version validation and required extensions validation to no longer run for gRPC getExtendedAgentCard requests.
+            //This violates Section 3.6.2 of the A2A spec which requires version checking on every request.
+            createCallContext(responseObserver);
+            String tenant = request.getTenant().isBlank() ? null : request.getTenant();
+            Utils.validateTenant(tenant);
+            AgentCardRouter router = getAgentCardRouter();
+            AgentCard extendedAgentCard;
+            if (router != null) {
+                extendedAgentCard = router.resolveExtendedCard(tenant);
+            } else {
+                extendedAgentCard = getExtendedAgentCard();
+            }
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
                 responseObserver.onCompleted();
@@ -584,7 +596,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     @Override
     public void deleteTaskPushNotificationConfig(org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest request,
                                                StreamObserver<Empty> responseObserver) {
-        if (!getAgentCardInternal().capabilities().pushNotifications()) {
+        if (!resolveAgentCard().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
             return;
         }
@@ -643,6 +655,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      */
     private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver) {
         CallContextFactory factory = getCallContextFactory();
+        ServerCallContext context;
         if (factory == null) {
             // Default implementation when no custom CallContextFactory is provided
             // This handles both CDI injection scenarios and test scenarios where callContextFactory is null
@@ -699,12 +712,16 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 requestedExtensions = A2AExtensions.getRequestedExtensions(List.of(extensionsHeader));
             }
 
-            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
+            context = new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             // TODO: CallContextFactory interface expects ServerCall + Metadata, but we only have StreamObserver
             // This is another manifestation of the architectural limitation mentioned above
-            return factory.create(responseObserver); // Fall back to basic create() method for now
+            context = factory.create(responseObserver); // Fall back to basic create() method for now
         }
+
+        A2AVersionValidator.validateProtocolVersion(resolveAgentCard(), context);
+        A2AExtensions.validateRequiredExtensions(resolveAgentCard(), context);
+        return context;
     }
 
     /**
@@ -822,17 +839,17 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     private <V> void handleInternalError(StreamObserver<V> responseObserver, Throwable t) {
-        handleError(responseObserver, new InternalError(t.getMessage()));
+        // Log the full exception server-side but send only a generic message to the client:
+        // leaking internal exception messages can expose file paths, library
+        // names, and other implementation details that aid server fingerprinting (CWE-209).
+        LOGGER.log(Level.SEVERE, "Internal error while processing gRPC request", t);
+        handleError(responseObserver, new InternalError("Internal error"));
     }
 
 
-    private AgentCard getAgentCardInternal() {
-        AgentCard agentCard = getAgentCard();
-        if (initialised.compareAndSet(false, true)) {
-            // Validate transport configuration with proper classloader context
-            validateTransportConfigurationWithCorrectClassLoader(agentCard);
-        }
-        return agentCard;
+    private AgentCard resolveAgentCard() {
+        return AgentCardValidator.resolveAndValidateOnce(
+                this::getAgentCard, transportValidated, this::validateTransportConfigurationWithCorrectClassLoader);
     }
 
     private void validateTransportConfigurationWithCorrectClassLoader(AgentCard agentCard) {
@@ -911,6 +928,16 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * @return the executor
      */
     protected abstract Executor getExecutor();
+
+    /**
+     * Returns the optional agent card router for tenant-based resolution, or {@code null}.
+     * Subclasses may override to provide a router implementation.
+     *
+     * @return the agent card router, or {@code null} if multitenancy is not configured
+     */
+    protected @Nullable AgentCardRouter getAgentCardRouter() {
+        return null;
+    }
 
     /**
      * Attempts to extract the A2A-Version header from the current gRPC context.

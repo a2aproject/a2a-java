@@ -1,0 +1,239 @@
+---
+title: A2A Server Guide
+description: Run your agentic Java application as an A2A server following the Agent2Agent Protocol.
+layout: page
+---
+
+# A2A Server
+
+The A2A Java SDK provides a Java server implementation of the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/). To run your agentic Java application as an A2A server, follow the steps below.
+
+## Supported Transports
+
+- JSON-RPC 2.0
+- gRPC
+- HTTP+JSON/REST
+
+## 1. Add a Server Dependency
+
+### JSON-RPC
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
+    <version>$\{org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+### gRPC
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-grpc</artifactId>
+    <version>$\{org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+### HTTP+JSON/REST
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-rest</artifactId>
+    <version>$\{org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+You can add more than one transport dependency to support multiple protocols simultaneously.
+
+## 2. Define an Agent Card
+
+```java
+@ApplicationScoped
+public class WeatherAgentCardProducer {
+
+    private static final String AGENT_URL = "http://localhost:10001";
+
+    @Produces
+    @PublicAgentCard
+    public AgentCard agentCard() {
+        return AgentCard.builder()
+                .name("Weather Agent")
+                .description("Helps with weather")
+                .supportedInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL)))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(Collections.singletonList("text"))
+                .defaultOutputModes(Collections.singletonList("text"))
+                .skills(Collections.singletonList(AgentSkill.builder()
+                        .id("weather_search")
+                        .name("Search weather")
+                        .description("Helps with weather in cities or states")
+                        .tags(Collections.singletonList("weather"))
+                        .examples(List.of("weather in LA, CA"))
+                        .build()))
+                .build();
+    }
+}
+```
+
+## 3. Implement an Agent Executor
+
+```java
+@ApplicationScoped
+public class WeatherAgentExecutorProducer {
+
+    @Inject
+    WeatherAgent weatherAgent;
+
+    @Produces
+    public AgentExecutor agentExecutor() {
+        return new WeatherAgentExecutor(weatherAgent);
+    }
+
+    private static class WeatherAgentExecutor implements AgentExecutor {
+
+        private final WeatherAgent weatherAgent;
+
+        public WeatherAgentExecutor(WeatherAgent weatherAgent) {
+            this.weatherAgent = weatherAgent;
+        }
+
+        @Override
+        public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
+            if (context.getTask() == null) {
+                agentEmitter.submit();
+            }
+            agentEmitter.startWork();
+
+            String userMessage = extractTextFromMessage(context.getMessage());
+            String response = weatherAgent.chat(userMessage);
+
+            agentEmitter.addArtifact(List.of(new TextPart(response)));
+            agentEmitter.complete();
+        }
+
+        @Override
+        public void cancel(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
+            Task task = context.getTask();
+            if (task == null) {
+                agentEmitter.cancel();
+                return;
+            }
+            if (task.status().state() == TaskState.TASK_STATE_CANCELED ||
+                task.status().state() == TaskState.TASK_STATE_COMPLETED) {
+                throw new TaskNotCancelableError();
+            }
+            agentEmitter.cancel();
+        }
+
+        private String extractTextFromMessage(Message message) {
+            if (message == null) {
+                return "";
+            }
+            StringBuilder textBuilder = new StringBuilder();
+            for (Part<?> part : message.parts()) {
+                if (part instanceof TextPart textPart) {
+                    textBuilder.append(textPart.text());
+                }
+            }
+            return textBuilder.toString();
+        }
+    }
+}
+```
+
+## 4. Configuration
+
+See [Configuration](configuration) for all config properties and tuning.
+
+## 5. Task Authorization (Optional)
+
+See [Task Authorization](authorization) for per-user access control.
+
+## 6. Stream Lifecycle Hook (Optional)
+
+The `TaskStreamLifecycleHook` lets you observe and control streaming connections for a task. You are notified when clients subscribe, unsubscribe, or when events are distributed, and you can close all active streams on demand via the `StreamCloseHandle`.
+
+### Implementing a Hook
+
+Create a CDI bean that implements `TaskStreamLifecycleHook` and overrides the default no-op:
+
+```java
+@ApplicationScoped
+@Alternative
+@Priority(1)
+public class MyStreamHook implements TaskStreamLifecycleHook {
+
+    @Override
+    public void onSubscribe(String taskId, StreamCloseHandle handle) {
+        // Called when a client subscribes to a task's event stream
+    }
+
+    @Override
+    public void onUnsubscribe(String taskId, StreamCloseHandle handle) {
+        // Called when a client disconnects
+    }
+
+    @Override
+    public void onEvent(String taskId, Event event, StreamCloseHandle handle) {
+        // Called after an event is persisted and distributed to all subscribers
+    }
+}
+```
+
+### StreamCloseHandle
+
+Each callback receives a `StreamCloseHandle` with two methods:
+
+- **`closeStreams()`** — Gracefully closes all active subscriber streams for the task. The agent executor continues running and the MainQueue stays alive (for non-finalized tasks), so new clients can resubscribe.
+- **`getActiveSubscriberCount()`** — Returns the number of currently connected subscribers.
+
+### Example: Close Streams at a Subscriber Threshold
+
+```java
+@ApplicationScoped
+@Alternative
+@Priority(1)
+public class CloseStreamsHook implements TaskStreamLifecycleHook {
+
+    private static final int MAX_SUBSCRIBERS = 3;
+
+    @Override
+    public void onSubscribe(String taskId, StreamCloseHandle handle) {
+        if (handle.getActiveSubscriberCount() >= MAX_SUBSCRIBERS) {
+            handle.closeStreams();
+        }
+    }
+
+    @Override
+    public void onUnsubscribe(String taskId, StreamCloseHandle handle) { }
+
+    @Override
+    public void onEvent(String taskId, Event event, StreamCloseHandle handle) { }
+}
+```
+
+See the [`examples/stream-lifecycle`](https://github.com/a2aproject/a2a-java/tree/main/examples/stream-lifecycle) directory for a complete working example with server, client, and integration tests for all three transports.
+
+## Observability (Optional)
+
+Add distributed tracing to your server with the [OpenTelemetry extras module](extra/opentelemetry). It decorates the request handler to create spans for every A2A protocol method, with automatic error tracking and optional request/response extraction.
+
+## Backward Compatibility with v0.3
+
+See [Backward Compatibility](compatibility) for multi-version modules, version routing, and v0.3 client support.
+
+## Server Integrations
+
+- **Quarkus** — Reference implementations are Quarkus-based (JSON-RPC, gRPC, REST)
+- **Jakarta EE** — [a2a-jakarta](https://github.com/wildfly-extras/a2a-jakarta) works with any Jakarta EE Web Profile runtime
+
+See [CONTRIBUTING_INTEGRATIONS.md](https://github.com/a2aproject/a2a-java/blob/main/CONTRIBUTING_INTEGRATIONS.md) to submit your own integration.

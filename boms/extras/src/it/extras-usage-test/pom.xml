@@ -54,6 +54,10 @@
         </dependency>
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-http-client-cdi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-opentelemetry-common</artifactId>
         </dependency>
         <dependency>
@@ -83,6 +87,10 @@
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-extras-multitenancy</artifactId>
         </dependency>
 
         <!-- Core SDK modules (inherited from SDK BOM via Extras BOM) -->

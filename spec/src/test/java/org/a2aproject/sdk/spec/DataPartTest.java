@@ -3,9 +3,11 @@ package org.a2aproject.sdk.spec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,5 +109,63 @@ class DataPartTest {
     @Test
     void testFromJson_invalidJsonThrows() {
         assertThrows(IllegalArgumentException.class, () -> DataPart.fromJson("{invalid}"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testDataMapIsDefensivelyCopiedAndImmutable() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("temperature", 22.5);
+
+        DataPart part = new DataPart(data);
+
+        assertThrows(UnsupportedOperationException.class, () -> ((Map<String, Object>) part.data()).put("humidity", 65));
+        data.put("humidity", 65);
+        assertEquals(Map.of("temperature", 22.5), part.data());
+    }
+
+    @Test
+    void testDataListIsDefensivelyCopiedAndImmutable() {
+        List<Object> data = new ArrayList<>();
+        data.add("a");
+
+        DataPart part = new DataPart(data);
+
+        assertThrows(UnsupportedOperationException.class, () -> ((List<Object>) part.data()).add("b"));
+        data.add("b");
+        assertEquals(List.of("a"), part.data());
+    }
+
+    @Test
+    void testDataMapPreservesNullValues() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("source", null);
+
+        DataPart part = new DataPart(data);
+
+        assertTrue(part.data() instanceof Map);
+        assertTrue(((Map<?, ?>) part.data()).containsKey("source"));
+        assertNull(((Map<?, ?>) part.data()).get("source"));
+    }
+
+    @Test
+    void testDataListPreservesNullElements() {
+        List<Object> data = new ArrayList<>();
+        data.add(null);
+
+        DataPart part = new DataPart(data);
+
+        assertTrue(part.data() instanceof List);
+        assertEquals(1, ((List<?>) part.data()).size());
+        assertNull(((List<?>) part.data()).get(0));
+    }
+
+    @Test
+    void testDataPrimitiveStoredAsIs() {
+        Integer data = 42;
+
+        DataPart part = new DataPart(data);
+
+        assertSame(data, part.data());
     }
 }

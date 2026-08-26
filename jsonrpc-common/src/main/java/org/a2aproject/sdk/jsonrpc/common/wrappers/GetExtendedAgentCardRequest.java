@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
+import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
+import org.jspecify.annotations.Nullable;
 
 /**
  * JSON-RPC request to retrieve an agent's extended card with authenticated details.
@@ -32,20 +34,21 @@ import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
  * @see ExtendedAgentCardNotConfiguredError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCRequest<Void> {
+public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCRequest<GetExtendedAgentCardParams> {
 
     private GetExtendedAgentCardRequest() {
     }
 
-
     /**
-     * Constructs request with full parameters.
+     * Constructs request with optional parameters.
      *
      * @param jsonrpc the JSON-RPC version
      * @param id the request ID
+     * @param params the request parameters, may be {@code null}
      */
-    public GetExtendedAgentCardRequest(String jsonrpc, Object id) {
-        super(jsonrpc, GET_EXTENDED_AGENT_CARD_METHOD, id);
+    public GetExtendedAgentCardRequest(String jsonrpc, Object id, @Nullable GetExtendedAgentCardParams params) {
+        // params are optional for getExtendedAgentCard (tenant is optional)
+        validateAndSetJsonParameters(jsonrpc, GET_EXTENDED_AGENT_CARD_METHOD, id, params, false);
     }
 
     /**
@@ -54,7 +57,7 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
      * @param id the request ID
      */
     public GetExtendedAgentCardRequest(String id) {
-        this(null, id);
+        this(null, id, null);
     }
 
     /**
@@ -72,6 +75,7 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
     public static class Builder {
         private String jsonrpc;
         private Object id;
+        private @Nullable GetExtendedAgentCardParams params;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -102,6 +106,17 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
         }
 
         /**
+         * Sets the request parameters.
+         *
+         * @param params the request parameters
+         * @return this builder for method chaining
+         */
+        public GetExtendedAgentCardRequest.Builder params(@Nullable GetExtendedAgentCardParams params) {
+            this.params = params;
+            return this;
+        }
+
+        /**
          * Builds the instance.
          *
          * @return a new instance
@@ -110,7 +125,7 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new GetExtendedAgentCardRequest(jsonrpc, id);
+            return new GetExtendedAgentCardRequest(jsonrpc, id, params);
         }
     }
 }

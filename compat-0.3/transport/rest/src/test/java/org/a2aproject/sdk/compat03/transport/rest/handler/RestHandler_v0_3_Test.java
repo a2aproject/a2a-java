@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
+import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
@@ -374,4 +375,33 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         assertEquals(200, response.getStatusCode());
         assertEquals("application/json", response.getContentType());
     }
+
+    @Test
+    public void testPushNotificationConfigParseError_DoesNotLogSensitiveData() {
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+        taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
+
+        String requestBody = """
+            {
+              "name": "tasks/%s/pushNotificationConfigs/",
+              "pushNotificationConfig": {
+                "url": "https://webhook.example.com",
+                "token": "secret-token-12345",
+                "authentication": {
+                  "scheme": "Bearer",
+                  "credentials": "oauth-secret-67890"
+                },
+                "unknownField": "trigger-parse-error"
+              }
+            }""".formatted(MINIMAL_TASK.id());
+
+        // Request body with sensitive data and an unknown field to trigger parse error
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RestHandler_v0_3.class.getName());
+        LogCaptureAssertions.assertSensitiveDataNotLogged(logger,
+                () -> assertEquals(422,
+                        handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.id(), requestBody, callContext)
+                                .getStatusCode()),
+                "secret-token-12345", "oauth-secret-67890");
+    }
+
 }

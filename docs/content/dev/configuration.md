@@ -65,6 +65,54 @@ a2a.request-context.populate-referred-tasks=true
 
 When enabled, task IDs referenced in incoming messages are looked up in the `TaskStore` and made available to the `AgentExecutor` via `RequestContext.getRelatedTasks()`. This is useful for multi-task conversations where the agent needs access to state from related tasks. Enabled by default; set to `false` to avoid extra `TaskStore` lookups when not needed.
 
+### Authorization
+
+```properties
+# Require a TaskAuthorizationProvider to be configured (default: true)
+# When true, all task operations are denied if no provider is present (fail-closed).
+# Set to false for single-user deployments or testing where authorization is not needed.
+a2a.authorization.required=true
+```
+
+See [Task Authorization](authorization.md) for details on implementing a `TaskAuthorizationProvider`.
+
+### Push Notification Config Store
+
+```properties
+# Maximum push notification configs per task (default: 100)
+a2a.push-notification-config.max-per-task=100
+```
+
+Limits the number of distinct push notification configurations a single task may register. Each config consumes memory and can trigger an outbound HTTP request on every task event. Re-registering an existing config ID (updating it) does not count against the limit. Both `InMemoryPushNotificationConfigStore` and `JpaDatabasePushNotificationConfigStore` enforce this limit, throwing `InvalidParamsError` when exceeded.
+
+### Push Notifications
+
+```properties
+# Enable or disable push notification support (default: true)
+a2a.push-notification.enabled=true
+
+# Allowed URL schemes for push notification targets, comma-separated (default: https)
+a2a.push-notification.url.allowed-schemes=https
+
+# Allow push notification URLs targeting private/internal network addresses (default: false)
+a2a.push-notification.url.allow-private-network-targets=false
+
+# TTL in seconds for DNS resolution caching during URL validation (default: 30, 0 to disable)
+a2a.push-notification.url.dns-cache-ttl-seconds=30
+```
+
+**`a2a.push-notification.enabled`** controls whether the server accepts push notification configurations. When `false`, push notification configs embedded in `sendMessage` requests are silently ignored, and explicit `CreateTaskPushNotificationConfig` calls return `UnsupportedOperationError`.
+
+**`a2a.push-notification.url.allowed-schemes`** restricts which URL schemes are accepted for push notification targets. Defaults to `https` only. To also allow plain HTTP (e.g. in development), set to `http,https`.
+
+**`a2a.push-notification.url.allow-private-network-targets`** controls whether push notifications can target private/internal network addresses. The default (`false`) blocks loopback addresses, link-local (169.254.x.x), site-local (10.x, 172.16.x, 192.168.x), RFC 6598 shared space (100.64.0.0/10), IPv6 unique-local (fc00::/7), IPv4-mapped IPv6 variants, and multicast addresses. This prevents Server-Side Request Forgery (SSRF) attacks where a client registers a push notification URL pointing to internal infrastructure. Set to `true` **only** in trusted development environments.
+
+**`a2a.push-notification.url.dns-cache-ttl-seconds`** controls how long (in seconds) resolved DNS results are cached during URL validation. Defaults to `30`. Caching avoids a blocking DNS lookup on every push notification delivery. Set to `0` to disable caching entirely (every validation triggers a fresh DNS resolution).
+
+The `DefaultPushNotificationUrlValidator` enforces these policies. Custom implementations can be provided via CDI by implementing `PushNotificationUrlValidator`.
+
+> **Known limitation — DNS rebinding:** hostname resolution happens at validation time, not at connection time. An attacker controlling a domain could register a URL that initially resolves to a public IP, then change the DNS record to an internal address before the next push event fires. The DNS cache reduces this window but does not eliminate it. Deployments with strict SSRF requirements should use network-level firewall rules to block outbound traffic to internal ranges.
+
 ### Tuning Guidelines
 
 - **Streaming Performance**: The executor handles streaming subscriptions. Too few threads can cause timeouts under concurrent load.

@@ -6,7 +6,7 @@ layout: page
 
 # Task Authorization
 
-> **Security note:** For multi-user deployments, a `TaskAuthorizationProvider` **must** be configured. Without one, all operations are permitted regardless of authentication — any authenticated user can read, modify, or cancel any task. Production deployments should use a fail-closed ownership policy (deny access when ownership is unknown).
+> **Security note:** By default, all task operations are **denied** when no `TaskAuthorizationProvider` is configured (fail-closed). This ensures multi-user deployments cannot accidentally expose tasks. For single-user deployments or testing where authorization is not needed, set `a2a.authorization.required=false` in your configuration, or call `.authorizationRequired(false)` on the builder. Production deployments should always configure a provider with a fail-closed ownership policy (deny access when ownership is unknown).
 
 ## Implementing TaskAuthorizationProvider
 
@@ -45,9 +45,7 @@ public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
 }
 ```
 
-The SDK discovers the bean via CDI automatically — no additional wiring needed.
-
-> **Note:** When task authorization is required, always obtain `RequestHandler` through CDI injection. Manual instantiation via `DefaultRequestHandler.create()` bypasses the `AuthorizationRequestHandlerDecorator` and all authorization checks.
+The SDK discovers the bean via CDI automatically — no additional wiring needed. Authorization is also enforced when using `DefaultRequestHandler.builder()` directly — pass the provider via `.authorizationProvider(provider)`.
 
 ## User Identity in ServerCallContext
 

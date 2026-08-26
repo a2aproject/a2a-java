@@ -10,7 +10,9 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
 // Copied from https://github.com/a2aproject/A2A/blob/v0.3.0/specification/grpc/a2a.proto
-// The only change is the 'java_package' update
+// Modifications from the original spec:
+// - 'java_package' updated to org.a2aproject.sdk.compat03.grpc
+// - Added 'name' field to FilePart (field 4) for lenient compatibility
 
 option csharp_namespace = "A2a.V1";
 option go_package = "google.golang.org/a2a/v1";
@@ -216,6 +218,7 @@ message FilePart {
     bytes file_with_bytes = 2;
   }
   string mime_type = 3;
+  string name = 4;
 }
 
 // DataPart represents a structured blob. This is most commonly a JSON payload.

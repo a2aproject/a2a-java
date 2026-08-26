@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -13,15 +14,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
@@ -36,9 +42,12 @@ import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.InvalidParamsError;
+import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
@@ -46,9 +55,11 @@ import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
+import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
@@ -132,9 +143,11 @@ public class DefaultRequestHandlerTest {
                 .taskStore(taskStore)
                 .queueManager(queueManager)
                 .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(true)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor)
                 .eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
     }
 
@@ -1145,5 +1158,447 @@ public class DefaultRequestHandlerTest {
         // Assert
         assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
             "Protocol version should be stored when push config is provided via onMessageSendStream");
+    }
+
+    @Test
+    void testOnGetTaskHistoryLengthLimitsHistory() throws Exception {
+        Task task = taskWithHistory("task-hl-limit");
+        taskStore.save(task, false);
+
+        Task result = requestHandler.onGetTask(new TaskQueryParams("task-hl-limit", 2), NULL_CONTEXT);
+
+        assertEquals(2, result.history().size());
+        assertEquals("msg-2", result.history().get(0).messageId());
+        assertEquals("msg-3", result.history().get(1).messageId());
+    }
+
+    @Test
+    void testOnGetTaskHistoryLengthZeroReturnsEmptyHistory() throws Exception {
+        Task task = taskWithHistory("task-hl-zero");
+        taskStore.save(task, false);
+
+        Task result = requestHandler.onGetTask(new TaskQueryParams("task-hl-zero", 0), NULL_CONTEXT);
+
+        assertNotNull(result.history());
+        assertTrue(result.history().isEmpty());
+    }
+
+    private Task taskWithHistory(String id) {
+        return Task.builder()
+                .id(id)
+                .contextId("ctx-history")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .history(List.of(
+                        Message.builder().messageId("msg-1").role(Message.Role.ROLE_USER)
+                                .parts(new TextPart("one")).build(),
+                        Message.builder().messageId("msg-2").role(Message.Role.ROLE_AGENT)
+                                .parts(new TextPart("two")).build(),
+                        Message.builder().messageId("msg-3").role(Message.Role.ROLE_AGENT)
+                                .parts(new TextPart("three")).build()))
+                .artifacts(List.of())
+                .build();
+    }
+
+    @Test
+    void testConcurrentCancelsAreSerialized() throws Exception {
+        // Regression: two concurrent cancels of the same task must serialize on a
+        // per-task lock so the second one observes the CANCELED terminal state and fails
+        // with TaskNotCancelableError instead of both acting on the pre-transition state.
+        Task workingTask = Task.builder()
+                .id("task-cancel-lock")
+                .contextId("ctx-cancel")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .history(List.of())
+                .artifacts(List.of())
+                .build();
+        taskStore.save(workingTask, false);
+
+        CountDownLatch cancelEntered = new CountDownLatch(1);
+        CountDownLatch releaseCancel = new CountDownLatch(1);
+
+        agentExecutorCancel = (context, emitter) -> {
+            cancelEntered.countDown();
+            try {
+                releaseCancel.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            emitter.cancel();
+        };
+
+        ExecutorService cancelExec = Executors.newFixedThreadPool(2);
+        try {
+            CountDownLatch firstDone = new CountDownLatch(1);
+            Future<Task> first = cancelExec.submit(() -> {
+                try {
+                    Task result = requestHandler.onCancelTask(
+                            new CancelTaskParams("task-cancel-lock"), NULL_CONTEXT);
+                    firstDone.countDown();
+                    return result;
+                } catch (A2AError e) {
+                    firstDone.countDown();
+                    throw e;
+                }
+            });
+
+            // Wait until the first cancel is inside agentExecutor.cancel() (holding the per-task lock)
+            assertTrue(cancelEntered.await(5, TimeUnit.SECONDS),
+                    "First cancel should enter agentExecutor.cancel()");
+
+            // The second cancel must block on the per-task lock while the first is in progress
+            Future<Task> second = cancelExec.submit(() -> requestHandler.onCancelTask(
+                    new CancelTaskParams("task-cancel-lock"), NULL_CONTEXT));
+            assertThrows(TimeoutException.class, () -> second.get(300, TimeUnit.MILLISECONDS),
+                    "Second cancel should not complete while the first holds the per-task lock");
+
+            // Release the first cancel so it can enqueue CANCELED and finish
+            releaseCancel.countDown();
+            assertTrue(firstDone.await(10, TimeUnit.SECONDS), "First cancel should complete");
+            assertEquals(TaskState.TASK_STATE_CANCELED, first.get().status().state());
+
+            // The second cancel now observes the terminal state and is rejected
+            ExecutionException ex = assertThrows(ExecutionException.class, second::get);
+            assertInstanceOf(TaskNotCancelableError.class, ex.getCause(),
+                    "Second cancel should fail with TaskNotCancelableError");
+        } finally {
+            releaseCancel.countDown();
+            cancelExec.shutdownNow();
+        }
+    }
+
+    @Test
+    void agentExecutorRouterRoutesToTenantSpecificExecutor() throws Exception {
+        AgentExecutor tenantExecutor = new AgentExecutor() {
+            @Override
+            public void execute(RequestContext context, AgentEmitter emitter) {
+                assertEquals("acme", context.getTenant());
+                emitter.complete();
+            }
+
+            @Override
+            public void cancel(RequestContext context, AgentEmitter emitter) {
+            }
+        };
+
+        requestHandler = buildHandlerWithRouter(tenant -> {
+            if ("acme".equals(tenant)) {
+                return tenantExecutor;
+            }
+            return executor;
+        });
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-tenant")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .tenant("acme")
+                .build();
+
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
+    }
+
+    @Test
+    void cancelFlowSetsTenantOnRequestContext() throws Exception {
+        AtomicReference<String> capturedTenant = new AtomicReference<>();
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+        };
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-cancel-tenant")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .tenant("acme")
+                .build();
+
+        requestHandler.onMessageSend(params, NULL_CONTEXT);
+        Task task = taskStore.list(ListTasksParams.builder().build(), NULL_CONTEXT).tasks().get(0);
+
+        agentExecutorCancel = (context, emitter) -> {
+            capturedTenant.set(context.getTenant());
+            emitter.cancel();
+        };
+
+        requestHandler.onCancelTask(new CancelTaskParams(task.id(), "acme", Map.of()), NULL_CONTEXT);
+        assertEquals("acme", capturedTenant.get());
+    }
+
+    @Test
+    void agentExecutorRouterNullTenantFallsBackToDefault() throws Exception {
+        AtomicReference<String> capturedTenant = new AtomicReference<>("not-set");
+
+        agentExecutorExecute = (context, emitter) -> {
+            capturedTenant.set(context.getTenant());
+            emitter.complete();
+        };
+
+        requestHandler = buildHandlerWithRouter(tenant -> executor);
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-null-tenant")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .build();
+
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        assertEquals(TaskState.TASK_STATE_COMPLETED, ((Task) result).status().state());
+        assertNull(capturedTenant.get());
+    }
+
+    @Test
+    void agentExecutorRouterPropagatesUnknownTenantToContext() throws Exception {
+        AtomicReference<String> capturedTenant = new AtomicReference<>();
+
+        agentExecutorExecute = (context, emitter) -> {
+            capturedTenant.set(context.getTenant());
+            emitter.complete();
+        };
+
+        requestHandler = buildHandlerWithRouter(tenant -> executor);
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-unknown-tenant")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .tenant("unknown")
+                .build();
+
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        assertEquals(TaskState.TASK_STATE_COMPLETED, ((Task) result).status().state());
+        assertEquals("unknown", capturedTenant.get());
+    }
+
+    @Test
+    void agentExecutorRouterWorksWithStreaming() throws Exception {
+        AtomicReference<String> capturedTenant = new AtomicReference<>();
+
+        AgentExecutor tenantExecutor = new AgentExecutor() {
+            @Override
+            public void execute(RequestContext context, AgentEmitter emitter) {
+                capturedTenant.set(context.getTenant());
+                emitter.complete();
+            }
+
+            @Override
+            public void cancel(RequestContext context, AgentEmitter emitter) {
+            }
+        };
+
+        requestHandler = buildHandlerWithRouter(tenant -> {
+            if ("acme".equals(tenant)) {
+                return tenantExecutor;
+            }
+            return executor;
+        });
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-stream-tenant")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(MessageSendConfiguration.builder()
+                        .returnImmediately(true)
+                        .acceptedOutputModes(List.of())
+                        .build())
+                .tenant("acme")
+                .build();
+
+        CountDownLatch streamDone = new CountDownLatch(1);
+        ServerCallContext streamContext = contextWithVersion("1.0");
+        Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(params, streamContext);
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(StreamingEventKind item) {
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                streamDone.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                streamDone.countDown();
+            }
+        });
+
+        assertTrue(streamDone.await(5, TimeUnit.SECONDS), "Stream should complete");
+        assertEquals("acme", capturedTenant.get());
+    }
+
+    @Test
+    void noRouterUsesDefaultExecutor() throws Exception {
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.complete();
+        };
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-no-router")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .tenant("acme")
+                .build();
+
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        assertEquals(TaskState.TASK_STATE_COMPLETED, ((Task) result).status().state());
+    }
+
+    @Test
+    void routerResolvedExecutorErrorSetsTaskFailed() throws Exception {
+        CountDownLatch executorRan = new CountDownLatch(1);
+
+        AgentExecutor failingExecutor = new AgentExecutor() {
+            @Override
+            public void execute(RequestContext context, AgentEmitter emitter) {
+                executorRan.countDown();
+                emitter.fail();
+            }
+
+            @Override
+            public void cancel(RequestContext context, AgentEmitter emitter) {
+            }
+        };
+
+        requestHandler = buildHandlerWithRouter(tenant -> failingExecutor);
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-failing")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .tenant("acme")
+                .build();
+
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        assertTrue(executorRan.await(5, TimeUnit.SECONDS), "Executor should have run");
+        // Poll for the async state update instead of a fixed sleep
+        Task storedTask = null;
+        for (int i = 0; i < 50; i++) {
+            storedTask = taskStore.get(task.id());
+            if (storedTask != null && storedTask.status().state() == TaskState.TASK_STATE_FAILED) {
+                break;
+            }
+            Thread.sleep(20);
+        }
+        assertNotNull(storedTask);
+        assertEquals(TaskState.TASK_STATE_FAILED, storedTask.status().state());
+    }
+
+    private DefaultRequestHandler buildHandlerWithRouter(AgentExecutorRouter router) {
+        return DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .agentExecutorRouter(router)
+                .authorizationRequired(false)
+                .build();
+    }
+
+    @Test
+    void testPushConfigNotStoredWhenPushNotificationsDisabled() throws Exception {
+        DefaultRequestHandler handlerNoPush = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(false)
+                .authorizationRequired(false)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .build();
+
+        agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+                .id("push-disabled-test")
+                .url("http://example.com/webhook")
+                .build();
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
+                .returnImmediately(true)
+                .acceptedOutputModes(List.of())
+                .taskPushNotificationConfig(pushConfig)
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(MESSAGE)
+                .configuration(config)
+                .build();
+
+        EventKind result = handlerNoPush.onMessageSend(params, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        assertTrue(pushConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(task.id())).configs().isEmpty(),
+                "Push config should not be stored when pushNotificationsEnabled is false");
+    }
+
+    @Test
+    void testCreatePushNotificationConfigRejectedWhenPushNotificationsDisabled() throws Exception {
+        DefaultRequestHandler handlerNoPush = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(false)
+                .authorizationRequired(false)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .build();
+
+        agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+        EventKind result = handlerNoPush.onMessageSend(
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build(),
+                NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+                .id("cfg-disabled")
+                .taskId(task.id())
+                .url("http://example.com/webhook")
+                .build();
+
+        assertThrows(UnsupportedOperationError.class,
+                () -> handlerNoPush.onCreateTaskPushNotificationConfig(pushConfig, NULL_CONTEXT),
+                "CreateTaskPushNotificationConfig should throw UnsupportedOperationError when push is disabled");
     }
 }

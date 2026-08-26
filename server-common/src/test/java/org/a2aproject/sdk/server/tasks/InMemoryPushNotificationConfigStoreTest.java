@@ -5,6 +5,7 @@ import static org.a2aproject.sdk.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -12,11 +13,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Task;
@@ -47,11 +52,13 @@ class InMemoryPushNotificationConfigStoreTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         configStore = new InMemoryPushNotificationConfigStore();
-        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient);
+        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient,
+                PushNotificationUrlValidator.ALLOW_ALL);
     }
 
     private void setupBasicMockHttpResponse() throws Exception {
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.followRedirects(false)).thenReturn(mockPostBuilder);
         when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.addHeader(CONTENT_TYPE, APPLICATION_JSON)).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
@@ -272,13 +279,7 @@ class InMemoryPushNotificationConfigStoreTest {
         TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(config);
 
-        // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.addHeader(any(String.class), any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.success()).thenReturn(true);
+        setupBasicMockHttpResponse();
 
         notificationSender.sendNotification(task, null);
 
@@ -657,6 +658,103 @@ class InMemoryPushNotificationConfigStoreTest {
 
         assertEquals(7, totalCollected, "Should collect all 7 configs across all pages");
         assertEquals(3, pageCount, "Should have exactly 3 pages (3+3+1)");
+    }
+
+    @Test
+    public void testSetInfoAtLimitExactlyAllowed() {
+        String taskId = "task_limit_exact";
+        for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
+    }
+
+    @Test
+    public void testSetInfoRejectsExceedingPerTaskLimit() {
+        String taskId = "task_limit_exceed";
+        for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        // The (MAX+1)-th distinct config for the same task must be rejected
+        TaskPushNotificationConfig overflow = createSamplePushConfig(taskId,
+                "http://url-overflow.com/callback", "cfg-overflow", null);
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(overflow));
+
+        // The store is unchanged
+        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
+        assertTrue(result.configs().stream().noneMatch(c -> "cfg-overflow".equals(c.id())));
+    }
+
+    @Test
+    public void testConcurrentSetInfoAtLimitOnlyOneSucceeds() throws InterruptedException {
+        String taskId = "task_concurrent_limit";
+        int limit = InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK;
+
+        // Fill to limit - 1, leaving exactly one slot open
+        for (int i = 0; i < limit - 1; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger errorCount = new AtomicInteger(0);
+
+        Runnable contestant = () -> {
+            try {
+                barrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            try {
+                configStore.setInfo(createSamplePushConfig(taskId,
+                        "http://concurrent.com/callback",
+                        "cfg-concurrent-" + Thread.currentThread().getId(), null));
+                successCount.incrementAndGet();
+            } catch (InvalidParamsError e) {
+                errorCount.incrementAndGet();
+            }
+        };
+
+        Thread t1 = new Thread(contestant);
+        Thread t2 = new Thread(contestant);
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        assertEquals(1, successCount.get(), "Exactly one thread should succeed");
+        assertEquals(1, errorCount.get(), "Exactly one thread should be rejected");
+
+        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(limit, result.configs().size(), "Store must be at exactly the limit after the race");
+    }
+
+    @Test
+    public void testSetInfoUpdateExistingConfigAtLimitAllowed() {
+        String taskId = "task_limit_update";
+        for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
+            configStore.setInfo(createSamplePushConfig(taskId,
+                    "http://url" + i + ".com/callback", "cfg" + i, null));
+        }
+
+        // Updating an existing config at the limit must still be allowed
+        TaskPushNotificationConfig updated = createSamplePushConfig(taskId,
+                "http://url-updated.com/callback", "cfg0", "new-token");
+        TaskPushNotificationConfig result = configStore.setInfo(updated);
+
+        assertEquals("cfg0", result.id());
+        ListTaskPushNotificationConfigsResult configs = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, configs.configs().size());
+        assertEquals("http://url-updated.com/callback",
+                configs.configs().stream().filter(c -> "cfg0".equals(c.id())).findFirst().orElseThrow().url());
     }
 
 }

@@ -54,6 +54,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
@@ -124,6 +126,8 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_K
  */
 @Singleton
 public class A2AServerRoutes {
+
+    private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
 
     private static final String HISTORY_LENGTH_PARAM = "historyLength";
     private static final String PAGE_SIZE_PARAM = "pageSize";
@@ -242,6 +246,12 @@ public class A2AServerRoutes {
             .produces(APPLICATION_JSON)
             .handler(this::getAgentCard);
 
+        // GET /.well-known/{tenant}/agent-card.json - Tenant-specific public agent card (no auth required)
+        router.getWithRegex("^\\/.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
+            .order(1)
+            .produces(APPLICATION_JSON)
+            .handler(this::getTenantAgentCard);
+
         // GET /{tenant}/extendedAgentCard - Extended agent card (auth required)
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
             .order(1)
@@ -306,7 +316,8 @@ public class A2AServerRoutes {
         try {
             response = jsonRestHandler.sendMessage(context, extractTenant(rc), body);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -424,7 +435,8 @@ public class A2AServerRoutes {
         } catch (IllegalArgumentException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -458,7 +470,8 @@ public class A2AServerRoutes {
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -492,7 +505,8 @@ public class A2AServerRoutes {
             if (t instanceof A2AError error) {
                 response = jsonRestHandler.createErrorResponse(error);
             } else {
-                response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+                LOG.error("Internal error while processing request", t);
+                response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
             }
         } finally {
             sendResponse(rc, response);
@@ -602,7 +616,8 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -633,7 +648,8 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -678,7 +694,8 @@ public class A2AServerRoutes {
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -711,7 +728,8 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+            LOG.error("Internal error while processing request", t);
+            response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
         } finally {
             sendResponse(rc, response);
         }
@@ -812,6 +830,22 @@ public class A2AServerRoutes {
     @PermitAll
     public void getAgentCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getAgentCard();
+        sendResponse(rc, response);
+    }
+
+    /**
+     * Retrieves the public agent card for a specific tenant.
+     *
+     * <p>Maps {@code GET /.well-known/{tenant}/agent-card.json} to
+     * {@link RestHandler#getAgentCard(String)}.
+     *
+     * <p><b>Authentication:</b> {@code @PermitAll} - Public endpoint requiring no authentication
+     *
+     * @param rc the Vert.x routing context
+     */
+    @PermitAll
+    public void getTenantAgentCard(RoutingContext rc) {
+        HTTPRestResponse response = jsonRestHandler.getAgentCard(extractTenant(rc));
         sendResponse(rc, response);
     }
 

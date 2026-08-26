@@ -15,6 +15,9 @@ import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentSkill_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
+import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
+import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
+import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
@@ -270,6 +273,36 @@ public class ToProto_v0_3_Test {
         assertEquals(false, result.getBlocking());
         assertEquals(1, result.getAcceptedOutputModesCount());
         assertEquals("text", result.getAcceptedOutputModesBytes(0).toStringUtf8());
+    }
+
+    @Test
+    public void convertFilePartWithBytesRoundTrip() {
+        FilePart_v0_3 filePart = new FilePart_v0_3(new FileWithBytes_v0_3("image/png", "photo.png", "aGVsbG8="));
+        org.a2aproject.sdk.compat03.grpc.Part proto = ProtoUtils_v0_3.ToProto.part(filePart);
+        assertEquals(true, proto.hasFile());
+        assertEquals("image/png", proto.getFile().getMimeType());
+        assertEquals("photo.png", proto.getFile().getName());
+        assertEquals("aGVsbG8=", proto.getFile().getFileWithBytes().toStringUtf8());
+        FilePart_v0_3 roundTripped = (FilePart_v0_3) ProtoUtils_v0_3.FromProto.part(proto);
+        FileWithBytes_v0_3 fileContent = (FileWithBytes_v0_3) roundTripped.file();
+        assertEquals("image/png", fileContent.mimeType());
+        assertEquals("photo.png", fileContent.name());
+        assertEquals("aGVsbG8=", fileContent.bytes());
+    }
+
+    @Test
+    public void convertFilePartWithUriRoundTrip() {
+        FilePart_v0_3 filePart = new FilePart_v0_3(new FileWithUri_v0_3("text/plain", "readme.txt", "file:///path/to/readme.txt"));
+        org.a2aproject.sdk.compat03.grpc.Part proto = ProtoUtils_v0_3.ToProto.part(filePart);
+        assertEquals(true, proto.hasFile());
+        assertEquals("text/plain", proto.getFile().getMimeType());
+        assertEquals("readme.txt", proto.getFile().getName());
+        assertEquals("file:///path/to/readme.txt", proto.getFile().getFileWithUri());
+        FilePart_v0_3 roundTripped = (FilePart_v0_3) ProtoUtils_v0_3.FromProto.part(proto);
+        FileWithUri_v0_3 fileContent = (FileWithUri_v0_3) roundTripped.file();
+        assertEquals("text/plain", fileContent.mimeType());
+        assertEquals("readme.txt", fileContent.name());
+        assertEquals("file:///path/to/readme.txt", fileContent.uri());
     }
 
     @Test

@@ -524,10 +524,17 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     private class VertxPostBuilder extends VertxBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
 
         private String body = "";
+        private boolean followRedirects = true;
 
         @Override
         public PostBuilder body(String body) {
             this.body = body;
+            return self();
+        }
+
+        @Override
+        public PostBuilder followRedirects(boolean follow) {
+            this.followRedirects = follow;
             return self();
         }
 
@@ -546,7 +553,9 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         @Override
         public A2AHttpResponse post() throws IOException, InterruptedException {
             Buffer bodyBuffer = Buffer.buffer(body, StandardCharsets.UTF_8.name());
-            return executeSyncRequest(webClient.postAbs(url), headers, bodyBuffer);
+            HttpRequest<Buffer> request = webClient.postAbs(url);
+            request.followRedirects(followRedirects);
+            return executeSyncRequest(request, headers, bodyBuffer);
         }
 
         @Override

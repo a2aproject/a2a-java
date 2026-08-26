@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -23,6 +24,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nulla
      */
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
+        Utils.validateTenant(tenant);
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }

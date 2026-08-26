@@ -48,6 +48,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.spec.util.Utils;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.StatusException;
@@ -84,6 +85,9 @@ public class GrpcTransport implements ClientTransport {
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
         this.agentCard = agentCard;
         this.interceptors = interceptors;
+        if (agentTenant != null && !agentTenant.isBlank()) {
+            Utils.validateTenant(agentTenant);
+        }
         this.agentTenant = agentTenant == null || agentTenant.isBlank() ? "" : agentTenant;
     }
 
@@ -252,9 +256,7 @@ public class GrpcTransport implements ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("taskId", request.taskId());
-        if(request.id() == null) {
-             throw new IllegalArgumentException("Id must not be null");
-        }
+        checkNotNullParam("id", request.id());
 
         org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest grpcRequest = org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder()
                 .setTaskId(request.taskId())
@@ -333,7 +335,7 @@ public class GrpcTransport implements ClientTransport {
             A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
             stubWithMetadata.subscribeToTask(grpcRequest, streamObserver);
         } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to subscribe task push notification config: ");
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to subscribe to task: ");
         }
     }
 
@@ -354,11 +356,9 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
-        GetExtendedAgentCardRequest.Builder builder = GetExtendedAgentCardRequest.newBuilder();
-        if (params.tenant() != null) {
-            builder.setTenant(params.tenant());
-        }
-        GetExtendedAgentCardRequest request = builder.build();
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.newBuilder()
+                .setTenant(resolveTenant(params.tenant()))
+                .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD, request, agentCard, context);
 
         try {

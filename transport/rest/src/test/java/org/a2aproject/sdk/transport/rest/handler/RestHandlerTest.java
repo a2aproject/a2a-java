@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.transport.rest.handler;
 
-
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 
 import java.util.Collections;
@@ -13,16 +12,22 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import jakarta.enterprise.inject.Instance;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.a2aproject.sdk.common.MediaType;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
+import org.a2aproject.sdk.server.TestInstances;
+import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
+import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
+import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentExtension;
@@ -31,6 +36,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.Mockito;
 
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
 public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
@@ -362,7 +368,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
 
         assertProblemDetail(response, 400,
-                "INVALID_REQUEST",
+                "UNSUPPORTED_OPERATION",
                 "Streaming is not supported by the agent");
     }
 
@@ -450,6 +456,33 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void testPushNotificationConfigParseError_DoesNotLogSensitiveData() {
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        String requestBody = """
+            {
+              "id": "default-config-id",
+              "taskId": "%s",
+              "url": "https://webhook.example.com",
+              "token": "secret-token-12345",
+              "authentication": {
+                "scheme": "Bearer",
+                "credentials": "oauth-secret-67890"
+              },
+              "unknownField": "trigger-parse-error"
+            }""".formatted(MINIMAL_TASK.id());
+
+        // Request body with sensitive data and an unknown field to trigger parse error
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RestHandler.class.getName());
+        LogCaptureAssertions.assertSensitiveDataNotLogged(logger,
+                () -> Assertions.assertEquals(422,
+                        handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id())
+                                .getStatusCode()),
+                "secret-token-12345", "oauth-secret-67890");
     }
 
     @Test
@@ -554,7 +587,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard cardWithExtension = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with required extension")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -602,7 +635,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard cardWithExtension = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with required extension")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -697,7 +730,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard cardWithExtension = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with required extension")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -760,7 +793,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard agentCard = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -810,7 +843,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard agentCard = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -906,7 +939,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard agentCard = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -961,7 +994,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard agentCard = AgentCard.builder()
                 .name("test-card")
                 .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -1077,6 +1110,14 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "tasks should be empty array");
     }
 
+    @Test
+    void constructorDoesNotResolveAgentCardInstances() {
+        Instance<AgentCard> throwOnGet = TestInstances.throwOnGet();
+
+        Assertions.assertDoesNotThrow(() -> new RestHandler(throwOnGet, throwOnGet,
+                createCacheMetadata(), requestHandler, internalExecutor, null));
+    }
+
     private static void assertProblemDetail(RestHandler.HTTPRestResponse response,
                                             int expectedStatus, String expectedReason, String expectedMessage) {
         Assertions.assertEquals(expectedStatus, response.getStatusCode());
@@ -1094,5 +1135,274 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals("type.googleapis.com/google.rpc.ErrorInfo", detail.get("@type").getAsString(), "@type field mismatch");
         Assertions.assertEquals(expectedReason, detail.get("reason").getAsString(), "reason field mismatch");
         Assertions.assertEquals("a2a-protocol.org", detail.get("domain").getAsString(), "domain field mismatch");
+    }
+
+    @Test
+    public void testSendMessageSanitizesInternalError() {
+        // A non-A2AError exception must not leak its message to the client
+        RequestHandler mocked = Mockito.mock(RequestHandler.class);
+        Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
+                .when(mocked).onMessageSend(Mockito.any(), Mockito.any());
+
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), mocked, internalExecutor);
+        String requestBody = """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{"text": "hello"}],
+                    "metadata": {}
+                  }
+                }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
+
+        JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
+        JsonObject error = body.getAsJsonObject("error");
+        Assertions.assertEquals(500, error.get("code").getAsInt());
+        Assertions.assertEquals("Internal error", error.get("message").getAsString());
+        Assertions.assertFalse(error.get("message").getAsString().contains("sensitive"),
+                "Internal exception message must not be leaked to the client");
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetTask() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.getTask(incompatibleVersionContext(), "", MINIMAL_TASK.id(), null));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnListTasks() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.listTasks(incompatibleVersionContext(), "",
+                MINIMAL_TASK.contextId(), null, null, null, null, null, null));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnCancelTask() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        // Without this the executor emits nothing, and a cancel that reaches the request handler
+        // waits forever for a final event rather than failing the assertion.
+        agentExecutorCancel = (context, agentEmitter) -> agentEmitter.cancel();
+
+        assertVersionRejected(handler.cancelTask(incompatibleVersionContext(), "", "{}", MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnCreateTaskPushNotificationConfiguration() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        String requestBody = """
+            {
+              "id": "config-1",
+              "taskId": "%s",
+              "url": "http://example.com"
+            }""".formatted(MINIMAL_TASK.id());
+
+        assertVersionRejected(handler.createTaskPushNotificationConfiguration(
+                incompatibleVersionContext(), "", requestBody, MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetTaskPushNotificationConfiguration() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.getTaskPushNotificationConfiguration(
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnListTaskPushNotificationConfigurations() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.listTaskPushNotificationConfigurations(
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), 10, ""));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnDeleteTaskPushNotificationConfiguration() {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        assertVersionRejected(handler.deleteTaskPushNotificationConfiguration(
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnGetExtendedAgentCard() {
+        AgentCard card = versionTestCard();
+        AgentCard extended = AgentCard.builder(card).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(card), extendedInstance,
+                createCacheMetadata(card), requestHandler, internalExecutor, null);
+
+        assertVersionRejected(handler.getExtendedAgentCard(incompatibleVersionContext(), ""));
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterKnownTenant() {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard tenantCard = AgentCard.builder(cardWithExtCapability).name("acme-card").build();
+        AgentCardRouter router = tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
+                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
+                new FixedInstance<>(router));
+
+        RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("acme-card"));
+    }
+
+    @Test
+    public void testExtendedAgentCardWithRouterReturnsNull() {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCardRouter router = tenant -> null;
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
+                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
+                new FixedInstance<>(router));
+
+        RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
+
+        assertProblemDetail(response, 400,
+                "EXTENDED_AGENT_CARD_NOT_CONFIGURED", "Extended Card not configured");
+    }
+
+    @Test
+    public void testExtendedAgentCardWithoutRouter() {
+        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard extended = AgentCard.builder(cardWithExtCapability).description("extended").build();
+        Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), extendedInstance,
+                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor, null);
+
+        RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains("extended"));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSubscribeToTask() throws Exception {
+        RestHandler handler = versionTestHandler();
+        taskStore.save(MINIMAL_TASK, false);
+
+        RestHandler.HTTPRestResponse response =
+                handler.subscribeToTask(incompatibleVersionContext(), "", MINIMAL_TASK.id());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
+        assertVersionRejectedInStream((RestHandler.HTTPRestStreamingResponse) response);
+    }
+
+    /**
+     * A card whose sole interface speaks protocol version 1.0, with every capability enabled so
+     * that each operation reaches the version check instead of stopping at a capability guard.
+     */
+    private static AgentCard versionTestCard() {
+        return AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extendedAgentCard(true)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+    }
+
+    private RestHandler versionTestHandler() {
+        AgentCard card = versionTestCard();
+        return new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
+    }
+
+    /**
+     * A context requesting version 2.0, whose major differs from the card built by
+     * {@link #versionTestCard()} and is therefore incompatible under section 3.6.2.
+     */
+    private static ServerCallContext incompatibleVersionContext() {
+        return new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "2.0");
+    }
+
+    /**
+     * Asserts that an operation answered with the problem detail carried by a version refusal,
+     * rather than with a success status or an unrelated error.
+     *
+     * @param response the response an operation returned
+     */
+    private static void assertVersionRejected(RestHandler.HTTPRestResponse response) {
+        assertProblemDetail(response, 400, "VERSION_NOT_SUPPORTED",
+                "Protocol version '2.0' is not supported. Supported versions: [1.0]");
+    }
+
+    /**
+     * Asserts the same refusal for a streaming operation, which answers 200 and embeds the error
+     * as an event rather than surfacing it in the status line.
+     *
+     * @param response the streaming response under test
+     * @throws InterruptedException if the wait for termination is interrupted
+     */
+    private static void assertVersionRejectedInStream(RestHandler.HTTPRestStreamingResponse response)
+            throws InterruptedException {
+        AtomicBoolean errorFound = new AtomicBoolean(false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        response.getPublisher().subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(String item) {
+                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                if (!body.has("error")) {
+                    return;
+                }
+                JsonObject error = body.getAsJsonObject("error");
+                var details = error.has("details") ? error.getAsJsonArray("details") : null;
+                if (details != null && !details.isEmpty()
+                        && "VERSION_NOT_SUPPORTED".equals(details.get(0).getAsJsonObject().get("reason").getAsString())
+                        && error.get("message").getAsString().contains("2.0")) {
+                    errorFound.set(true);
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected the stream to terminate within timeout");
+        Assertions.assertTrue(errorFound.get(), "Expected a VERSION_NOT_SUPPORTED event in the stream");
     }
 }

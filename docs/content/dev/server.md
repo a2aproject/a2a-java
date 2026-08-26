@@ -158,6 +158,79 @@ See [Configuration](configuration) for all config properties and tuning.
 
 See [Task Authorization](authorization) for per-user access control.
 
+## 6. Stream Lifecycle Hook (Optional)
+
+The `TaskStreamLifecycleHook` lets you observe and control streaming connections for a task. You are notified when clients subscribe, unsubscribe, or when events are distributed, and you can close all active streams on demand via the `StreamCloseHandle`.
+
+### Implementing a Hook
+
+Create a CDI bean that implements `TaskStreamLifecycleHook` and overrides the default no-op:
+
+```java
+@ApplicationScoped
+@Alternative
+@Priority(1)
+public class MyStreamHook implements TaskStreamLifecycleHook {
+
+    @Override
+    public void onSubscribe(String taskId, StreamCloseHandle handle) {
+        // Called when a client subscribes to a task's event stream
+    }
+
+    @Override
+    public void onUnsubscribe(String taskId, StreamCloseHandle handle) {
+        // Called when a client disconnects
+    }
+
+    @Override
+    public void onEvent(String taskId, Event event, StreamCloseHandle handle) {
+        // Called after an event is persisted and distributed to all subscribers
+    }
+}
+```
+
+### StreamCloseHandle
+
+Each callback receives a `StreamCloseHandle` with two methods:
+
+- **`closeStreams()`** — Gracefully closes all active subscriber streams for the task. The agent executor continues running and the MainQueue stays alive (for non-finalized tasks), so new clients can resubscribe.
+- **`getActiveSubscriberCount()`** — Returns the number of currently connected subscribers.
+
+### Example: Close Streams at a Subscriber Threshold
+
+```java
+@ApplicationScoped
+@Alternative
+@Priority(1)
+public class CloseStreamsHook implements TaskStreamLifecycleHook {
+
+    private static final int MAX_SUBSCRIBERS = 3;
+
+    @Override
+    public void onSubscribe(String taskId, StreamCloseHandle handle) {
+        if (handle.getActiveSubscriberCount() >= MAX_SUBSCRIBERS) {
+            handle.closeStreams();
+        }
+    }
+
+    @Override
+    public void onUnsubscribe(String taskId, StreamCloseHandle handle) { }
+
+    @Override
+    public void onEvent(String taskId, Event event, StreamCloseHandle handle) { }
+}
+```
+
+See the [`examples/stream-lifecycle`](https://github.com/a2aproject/a2a-java/tree/main/examples/stream-lifecycle) directory for a complete working example with server, client, and integration tests for all three transports.
+
+## Multi-Tenancy (Optional)
+
+Serve multiple tenants from a single server with per-tenant `AgentExecutor` and `AgentCard` beans. See [Multi-Tenancy](multi-tenancy) for setup and configuration.
+
+## Observability (Optional)
+
+Add distributed tracing to your server with the [OpenTelemetry extras module](extra/opentelemetry). It decorates the request handler to create spans for every A2A protocol method, with automatic error tracking and optional request/response extraction.
+
 ## Backward Compatibility with v0.3
 
 See [Backward Compatibility](compatibility) for multi-version modules, version routing, and v0.3 client support.
