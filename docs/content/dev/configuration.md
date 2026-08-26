@@ -65,6 +65,17 @@ a2a.request-context.populate-referred-tasks=true
 
 When enabled, task IDs referenced in incoming messages are looked up in the `TaskStore` and made available to the `AgentExecutor` via `RequestContext.getRelatedTasks()`. This is useful for multi-task conversations where the agent needs access to state from related tasks. Enabled by default; set to `false` to avoid extra `TaskStore` lookups when not needed.
 
+### Authorization
+
+```properties
+# Require a TaskAuthorizationProvider to be configured (default: true)
+# When true, all task operations are denied if no provider is present (fail-closed).
+# Set to false for single-user deployments or testing where authorization is not needed.
+a2a.authorization.required=true
+```
+
+See [Task Authorization](authorization.md) for details on implementing a `TaskAuthorizationProvider`.
+
 ### Push Notification Config Store
 
 ```properties

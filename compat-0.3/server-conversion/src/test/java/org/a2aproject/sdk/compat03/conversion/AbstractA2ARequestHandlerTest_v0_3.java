@@ -147,6 +147,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
                         .mainEventBusProcessor(mainEventBusProcessor)
                         .executor(internalExecutor)
                         .eventConsumerExecutor(internalExecutor)
+                        .authorizationRequired(false)
                         .build();
 
         // Wrap in v0.3 conversion handler

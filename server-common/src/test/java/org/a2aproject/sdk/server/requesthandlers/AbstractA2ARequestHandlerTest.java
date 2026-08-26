@@ -124,6 +124,7 @@ public class AbstractA2ARequestHandlerTest {
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor)
                 .eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
     }
 

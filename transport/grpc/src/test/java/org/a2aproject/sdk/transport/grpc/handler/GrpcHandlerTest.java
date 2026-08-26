@@ -282,6 +282,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
@@ -297,6 +298,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
@@ -724,6 +726,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
@@ -799,6 +802,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()

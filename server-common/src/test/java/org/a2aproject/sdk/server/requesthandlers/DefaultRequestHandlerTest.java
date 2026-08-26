@@ -145,6 +145,7 @@ public class DefaultRequestHandlerTest {
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor)
                 .eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
     }
 
@@ -1524,6 +1525,7 @@ public class DefaultRequestHandlerTest {
                 .executor(internalExecutor)
                 .eventConsumerExecutor(internalExecutor)
                 .agentExecutorRouter(router)
+                .authorizationRequired(false)
                 .build();
     }
 }

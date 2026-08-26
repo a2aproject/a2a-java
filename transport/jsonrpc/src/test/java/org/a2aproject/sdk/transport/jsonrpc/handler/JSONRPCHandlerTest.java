@@ -1141,6 +1141,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1164,6 +1165,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1278,6 +1280,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1443,6 +1446,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
@@ -1541,6 +1545,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
                 .mainEventBusProcessor(mainEventBusProcessor)
                 .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
                 .build();
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
