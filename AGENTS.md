@@ -82,6 +82,12 @@ The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-
 - Only edit pages under `docs/content/dev/` — released version folders are frozen snapshots and must not be modified
 - New versioned folders are created at release time (see RELEASE.md step 9)
 
+**Release announcement posts** live under `docs/content/posts/` (one directory per release). Each post directory must contain:
+- `index.adoc` (or `index.md`) — the post content, with `image: announce.png` in the YAML frontmatter
+- `announce.png` — the announcement banner image (PNG format, named exactly `announce.png`)
+
+The `announce.png` filename is required: the home page (`docs/content/index.html`) renders the latest post's image using the `post.image` field resolved from this frontmatter entry, and the Roq site theme uses it as the post cover.
+
 **Version metadata:** Each version has a YAML file in `docs/data/versions/` (e.g. `dev.yml`, `1.1.0.Final.yml`) that defines the label, URL path, sort order, default/dev flags, and sidebar menu. When adding or removing a documentation page, update the `menu` list in `docs/data/versions/dev.yml` accordingly.
 
 **Running the docs site locally:**

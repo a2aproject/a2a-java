@@ -5,9 +5,10 @@ date: 2026-06-10
 tags: ai a2a
 synopsis: 'A2A Java SDK 1.0.0.Final is now available -- the first GA release of the official Java SDK for the A2A Protocol.'
 author: kkhan
+image: announce.png
 ---
 
-![A2A Java SDK 1.0.0.Final announcement](annouce.png)
+![A2A Java SDK 1.0.0.Final announcement](announce.png)
 
 I am pleased to announce the release of [A2A Java SDK 1.0.0.Final](https://github.com/a2aproject/a2a-java/releases/tag/v1.0.0.Final) -- our first GA release. The A2A Java SDK is the official Java implementation of the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/v1.0.0/specification/), an open standard that enables AI agents to communicate and collaborate regardless of underlying framework, language, or vendor.
 

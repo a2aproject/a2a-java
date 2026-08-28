@@ -53,9 +53,14 @@ only), not a fact about the code to be confirmed or denied.
 either directly documented in the project's own sources or maintainer-confirmed as of this revision — see
 [§14](#14-resolved-questions) for the record of what was reviewed and when.
 
-**Version binding:** This threat model is written against the `a2a-java` `main` branch,
-version `1.2.1.Final-SNAPSHOT`. A report against a released version *N* should be triaged against the model as
-it stood at *N*'s release, not necessarily at `HEAD`.
+**Version binding:** This threat model is written against `a2a-java` `1.3.0.Final`. A report against a released
+version *N* should be triaged against the model as it stood at *N*'s release, not necessarily at `HEAD`. The four
+advisories published for `1.3.0.Final` —
+[GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w),
+[GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8),
+[GHSA-9rhm-2h4x-jwmx](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-9rhm-2h4x-jwmx),
+[GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725) — have
+been incorporated; the sections they affected are annotated with the advisory identifier.
 
 **Status:** Maintainer-reviewed.
 
@@ -153,6 +158,10 @@ Once a request is admitted, its `Message`/`Task`/`Part` payload flows: transport
 execute message content at any point in this pipeline — it is opaque data until it reaches the user's
 `AgentExecutor`.
 
+Authorization enforcement (when a `TaskAuthorizationProvider` is configured) is applied in
+`DefaultRequestHandler` as of 1.3.0.Final — previously it was applied only via the CDI decorator
+`AuthorizationRequestHandlerDecorator` *(see [GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w))*.
+
 For **client usage**, remote agent responses (task state, artifacts, streamed events) are deserialized into the
 `spec/` record types and returned to the calling application as data; they are never executed as code by the
 client library.
@@ -202,7 +211,9 @@ client library.
 
 | Knob | Default | Effect on the model | Maintainer stance |
 | --- | --- | --- | --- |
-| Absence of a `TaskAuthorizationProvider` CDI bean | No provider configured (fail-open) | **All** `onGetTask`/`onCancelTask`/`onMessageSend`/etc. operations are permitted for any caller regardless of authentication *(documented, `TaskAuthorizationProvider` Javadoc: "When no implementation is provided, all operations are permitted")* | *(maintainer, §14.1)* Intentionally fail-open for backward compatibility and single-tenant/dev simplicity; production multi-tenant deployments must register a provider (§10) |
+| Absence of a `TaskAuthorizationProvider` bean | **Fail-closed** (as of 1.3.0.Final; was fail-open in ≤1.2.x — [GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w)) | All task operations are **denied** by default when no provider is configured; set `a2a.authorization.required=false` to restore the open behavior for development/single-user deployments | *(maintainer)* Fail-closed chosen as the safer default for production deployments |
+| `a2a.authorization.required` | `true` | When `false`, restores the pre-1.3.0 fail-open behavior: all task operations are permitted regardless of whether a `TaskAuthorizationProvider` is registered | *(maintainer)* Intended only for development, testing, or fully-trusted single-user deployments |
+| `a2a.push-notifications.enabled` | `true` | When `false`, the server rejects all push-notification configuration requests (`onCreateTaskPushNotificationConfig`), preventing SSRF via webhook registration ([GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8)) | *(maintainer)* Set to `false` to disable push notifications entirely in deployments that don't need them |
 | `org.a2aproject.sdk.transport.skipValidation` (and `.jsonrpc./.grpc./.rest.skipValidation`) | `false` | Skips `AgentCardValidator` consistency checks between declared and available transports; a misconfiguration/availability issue, not directly an authz/authn bypass | *(maintainer)* debugging/testing convenience; not security-relevant beyond hiding a misconfiguration warning |
 | `org.a2aproject.sdk.server.extract.request` / `.extract.response` (OpenTelemetry extras) | `false` | When `true`, full request/response payloads (potentially including sensitive message content) are attached as span attributes *(documented, `extras/opentelemetry/README.md`: "Extracting request/response data may expose sensitive information in traces. Use with caution in production environments.")* | *(documented)* explicitly discouraged in production by the module's own README |
 | `a2a.request-context.populate-referred-tasks` | `true` | When enabled, referenced task IDs are resolved via `TaskStore` and pushed through the same `TaskAuthorizationProvider.checkRead` gate; disabling it skips that lookup/check for referenced tasks | *(maintainer)* |
@@ -303,20 +314,72 @@ scores depend on the specific violation and deployment context.
    - *Violation symptom:* a client on an incompatible major version being silently processed instead of
      rejected.
    - *Severity:* correctness-only.
+6. **Fail-closed authorization default.** *(Added in 1.3.0.Final — [GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w))* When no
+   `TaskAuthorizationProvider` is configured, `DefaultRequestHandler` denies all task operations by default.
+   Authorization enforcement is now applied on both the CDI and builder paths directly in
+   `DefaultRequestHandler`, eliminating the earlier gap where the builder path bypassed
+   `AuthorizationRequestHandlerDecorator`. Deployments can opt back to open behavior with
+   `a2a.authorization.required=false` (intended only for development or fully-trusted single-user deployments).
+   - *Violation symptom:* an absent or misconfigured `TaskAuthorizationProvider` silently permitting operations
+     for callers it should deny.
+   - *Severity:* security-critical for multi-tenant deployments. Indicative CVSS 7.5 (CWE-862 + CWE-1188).
+7. **SSRF protection for push-notification webhooks.** *(Added in 1.3.0.Final — [GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8))* Push
+   notification URLs are validated against an SSRF-safe policy before delivery: only `http`/`https` schemes are
+   accepted, and private-network destinations (RFC 1918, loopback, link-local including IPv4-mapped IPv6 such as
+   `169.254.169.254`) are blocked. HTTP redirect following is disabled on push-notification POST requests to
+   prevent bypass via redirect chains. Push notification config storage can be disabled entirely with
+   `a2a.push-notifications.enabled=false`.
+   - *Violation symptom:* an attacker-supplied `TaskPushNotificationConfig.url()` causing the server to issue
+     requests to internal or metadata endpoints.
+   - *Severity:* security-critical for internet-reachable deployments. Indicative CVSS 5.8 (CWE-918).
+8. **API key header allowlist and redirect disable.** *(Added in 1.3.0.Final — [GHSA-9rhm-2h4x-jwmx](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-9rhm-2h4x-jwmx))* The
+   client-side `AuthInterceptor` validates that `APIKeySecurityScheme.name()` (the header name carrying API key
+   credentials) matches a safe allowlist before placing credentials in a request header; invalid names are
+   rejected. Automatic HTTP redirect following is disabled in all HTTP client implementations (JDK, Vert.x,
+   Android), preventing credential leakage to attacker-controlled redirect destinations.
+   - *Violation symptom:* a malicious agent's AgentCard naming an arbitrary header causes the client to forward
+     API key credentials to an attacker-controlled server via redirect.
+   - *Severity:* moderate. Indicative CVSS moderate range (CWE-522).
+9. **Push-notification credential log suppression.** *(Added in 1.3.0.Final — [GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725))* The REST
+   transport handler no longer logs the raw request body on parse failure. Previously, a protobuf parse error in
+   `parseRequestBody` caused the full JSON body — which may contain push-notification `token` and
+   `authentication.credentials` fields — to be written to server logs at `SEVERE` level. The fix restricts error
+   logging to metadata only (body length and content type).
+   - *Violation symptom:* push-notification bearer tokens or credentials appearing in server logs after a
+     malformed request.
+   - *Severity:* moderate (CWE-532).
+10. **Authorization check for `listTasks` operation.** *(Added in 1.3.0.Final)* The `onListTasks` handler now
+    performs a list-scoped read authorization check before delegating to the task store, consistent with the
+    checks applied to all other task-reading operations.
+    - *Violation symptom:* a caller denied read access on individual tasks still being able to enumerate all
+      tasks via `listTasks`.
+    - *Severity:* moderate information disclosure.
 
-### §8a Anticipated vulnerability classes (no disclosed CVEs to date)
+### §8a Anticipated vulnerability classes
 
-This project has no publicly disclosed CVEs at the time of writing. The classes below are *anticipated* — attack
-shapes that the adversary model (§7) and the code paths reviewed in this document make plausible — not a
-historical record. They exist so a future report can be judged against a named class rather than argued from
-scratch, and so this section itself has something concrete to revise (§12) the first time a real report lands.
+Four advisories were published for 1.3.0.Final, converting the first two anticipated classes below into
+confirmed historical cases. The remaining classes are still *anticipated* — attack shapes that the adversary
+model (§7) and the code paths reviewed in this document make plausible.
 
-- **Authorization bypass via a missing or misconfigured `TaskAuthorizationProvider`.** The most likely class
-  given the fail-open default (§9.2) — a multi-tenant deployment that forgets to register a provider, or
-  registers one with a fail-open ownership policy for unknown owners. *(anticipated)*
-- **SSRF via push-notification webhook registration.** Given §9.3, a caller registering a
-  `TaskPushNotificationConfig` pointing at an internal address (e.g. a cloud metadata endpoint) is the most
-  concrete, reachable-today attack shape in this codebase. *(anticipated)*
+- **Authorization bypass via a missing or misconfigured `TaskAuthorizationProvider`.** *(confirmed and fixed)*
+  Disclosed as [GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w)
+  (High, CVSS 7.5). The fail-open default in ≤1.2.x allowed any caller to read, cancel, or modify any task
+  without authentication. Fixed in 1.3.0.Final by switching to a fail-closed default (§8.6) and moving
+  enforcement into `DefaultRequestHandler` so both CDI and builder paths are covered.
+- **SSRF via push-notification webhook registration.** *(confirmed and fixed)* Disclosed as
+  [GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8)
+  (Moderate, CVSS 5.8). An unauthenticated caller could register a webhook pointing at internal or metadata
+  endpoints; the server would POST task data to them. Fixed in 1.3.0.Final with SSRF-safe URL validation and
+  redirect-following disabled (§8.7).
+- **Client credential leakage via attacker-controlled redirect.** *(confirmed and fixed)* Disclosed as
+  [GHSA-9rhm-2h4x-jwmx](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-9rhm-2h4x-jwmx)
+  (Moderate). A malicious agent could name an arbitrary HTTP header in its AgentCard's `APIKeySecurityScheme`,
+  causing the client to forward API key credentials to an attacker-controlled server via redirect. Fixed in
+  1.3.0.Final with an allowlist for header names and redirect-following disabled (§8.8).
+- **Credential disclosure via error-path logging.** *(confirmed and fixed)* Disclosed as
+  [GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725)
+  (Moderate, CWE-532). Push-notification bearer tokens were written to server logs in cleartext on parse failure.
+  Fixed in 1.3.0.Final by restricting error logging to metadata only (§8.9).
 - **HTTP header/response-splitting bypass in push-notification delivery.** Would require finding a gap in the
   CRLF rejection described in §8.1 — the class §8.1 exists specifically to close. *(anticipated)*
 - **Resource exhaustion via unbounded task/queue creation.** §8.3 bounds a single task's queue and
@@ -336,14 +399,15 @@ grant or withhold in-scope status.
    `return true` with no verification logic; see §3)*. **False-friend:** `AuthenticatedUser.isAuthenticated()`
    returning `true` reflects only that *some* upstream code populated the context that way; it is not itself a
    verification step.
-2. **No authorization by default.** Absent a `TaskAuthorizationProvider` bean, every `RequestHandler` operation
-   is permitted for every caller, regardless of identity *(documented, `TaskAuthorizationProvider` Javadoc)*.
-   This is the single most consequential disclaimed property for any deployment reachable by more than one
-   user/tenant.
-3. **No SSRF protection for push-notification webhooks.** `BasePushNotificationSender` sends an HTTP POST to
-   whatever URL is stored in a `TaskPushNotificationConfig`, which a caller supplies at registration time. No
-   allow-list, deny-list, or restriction on internal/link-local/loopback destinations is applied by the SDK
-   *(maintainer — confirmed against `BasePushNotificationSender.dispatchNotification`)*.
+2. **No authorization by default (≤1.2.x only — fixed in 1.3.0.Final).** In versions up to and including
+   1.2.0.Final, absent a `TaskAuthorizationProvider` bean, every `RequestHandler` operation was permitted for
+   every caller regardless of identity ([GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w)). As of 1.3.0.Final the default is
+   **fail-closed**: operations are denied when no provider is configured. Set `a2a.authorization.required=false`
+   to restore the open behavior for development or fully-trusted single-user deployments. See §8.6.
+3. **No SSRF protection for push-notification webhooks (≤1.2.x only — fixed in 1.3.0.Final).** In versions up
+   to and including 1.2.0.Final, `BasePushNotificationSender` sent an HTTP POST to whatever URL a caller
+   supplied in `TaskPushNotificationConfig`, with no destination validation ([GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8)). As of 1.3.0.Final,
+   push-notification URLs are validated against an SSRF-safe policy and redirect following is disabled. See §8.7.
 4. **No transport-layer encryption.** TLS/mTLS for any of the three transports is entirely a deployment concern;
    the SDK neither defaults to nor enforces encrypted transport (§3).
 5. **`SecurityScheme` declarations are not enforcement.** **False-friend:** an `AgentCard` declaring
@@ -377,18 +441,19 @@ grant or withhold in-scope status.
 
 - **Configure authentication** at the runtime/transport layer (Quarkus HTTP security, a custom
   `CallContextFactory`, mTLS, etc.) before exposing a server to any network the deployer does not fully trust.
-- **Configure a `TaskAuthorizationProvider`** for any deployment reachable by more than one user or tenant; the
-  fail-open default (§9.2) is appropriate only for single-tenant, development, or fully-trusted deployments.
-  Always obtain `RequestHandler` via CDI injection so the `AuthorizationRequestHandlerDecorator` is applied —
-  manually building `DefaultRequestHandler.builder().build()` bypasses it (§11).
+- **Configure a `TaskAuthorizationProvider`** for any deployment reachable by more than one user or tenant. As
+  of 1.3.0.Final the default is fail-closed (§8.6, §9.2), so absent a provider all task operations are denied
+  rather than permitted — but providing a real implementation with proper ownership semantics is still essential
+  for multi-tenant security. Do not set `a2a.authorization.required=false` in production.
 - **Use fail-closed ownership semantics** in custom `TaskAuthorizationProvider` implementations for production
   (deny when ownership data is unknown); reserve `owner == null → allow` for testing/single-user setups
   *(documented, Javadoc)*.
 - **Use atomic inserts** for `recordOwnership` in custom `TaskAuthorizationProvider` implementations to avoid the
   TOCTOU race in §9.8.
 - **Terminate/enforce TLS** for whichever transports are exposed; the SDK will not do this.
-- **Validate or restrict push-notification webhook URLs** before allowing external clients to register them, or
-  wrap `PushNotificationConfigStore`/the create-config path with a custom SSRF guard — the SDK performs none.
+- **Push-notification SSRF protection is provided by the SDK** as of 1.3.0.Final (§8.7), but you can further
+  restrict the attack surface by setting `a2a.push-notifications.enabled=false` in deployments that do not need
+  push notifications at all.
 - **Leave OpenTelemetry request/response extraction disabled** (`-Dorg.a2aproject.sdk.server.extract.request`
   and `.extract.response`) in production unless the sensitivity of captured data has been reviewed (§5a).
 - **Treat all `Message`/`Task` content reaching `AgentExecutor` as untrusted** network input; never build shell
@@ -428,20 +493,14 @@ framework analogous to what some other projects use to flag insecure defaults.
 
 ### §11 Known misuse patterns
 
-- **Assuming an absent `TaskAuthorizationProvider` is "safe by default."** It is the opposite: it means every
-  operation is permitted for every caller. What it looks like: a multi-tenant deployment where any authenticated
-  (or even unauthenticated) user can read/cancel/modify any other user's tasks. What to do instead: implement
-  and register a `TaskAuthorizationProvider` before going to production with more than one user/tenant.
-- **Manually instantiating `DefaultRequestHandler.builder().build()` in a CDI-based application.** This bypasses
-  the CDI-discovered `AuthorizationRequestHandlerDecorator`, silently disabling authorization even though a
-  `TaskAuthorizationProvider` bean exists. What to do instead: always inject `RequestHandler` via CDI.
+- **Setting `a2a.authorization.required=false` in production.** This restores the pre-1.3.0 fail-open behavior
+  where every operation is permitted for every caller regardless of identity. It is appropriate only for
+  development, testing, or fully-trusted single-user deployments. What it looks like: a multi-tenant deployment
+  where any caller can read/cancel/modify any other user's tasks. What to do instead: provide a real
+  `TaskAuthorizationProvider` implementation with proper ownership semantics.
 - **Enabling OpenTelemetry request/response extraction in production.** This captures full message content
   (which may include PII or secrets) into trace spans exported to a collector. What to do instead: enable only
   in controlled debugging sessions, and review collector access controls first.
-- **Allowing arbitrary client-supplied push-notification URLs with no allow-list.** This exposes the server to
-  SSRF: an attacker registers a webhook pointing at an internal service (e.g., a cloud metadata endpoint) and the
-  server will POST to it. What to do instead: validate/restrict destination URLs before accepting a
-  `TaskPushNotificationConfig`.
 - **Building a custom `TaskAuthorizationProvider` with `owner == null → allow`.** Appropriate only for
   single-user or test deployments; in production this means any task without recorded ownership (e.g., legacy
   tasks, or tasks created by a bug) is accessible to everyone. What to do instead: fail closed, and add a
@@ -453,15 +512,20 @@ framework analogous to what some other projects use to flag insecure defaults.
   runtime/deployment concern this SDK deliberately does not implement.
 - **"`SecurityScheme` records have no associated validation code."** By design — they are declarative metadata
   per the A2A protocol spec, not an enforcement mechanism; see §9.5. `BY-DESIGN: property-disclaimed`.
-- **"Any caller can read/cancel any task when no `TaskAuthorizationProvider` is registered."** This is the
-  documented, intentional default behavior (§9.2), not an unintended bug. `BY-DESIGN: property-disclaimed`.
+- **"Any caller can read/cancel any task when no `TaskAuthorizationProvider` is registered."** As of 1.3.0.Final
+  this is no longer the default behavior: operations are **denied** when no provider is configured (§8.6). A
+  report of this behavior on 1.3.0.Final+ is a valid finding unless `a2a.authorization.required=false` has been
+  set, in which case the open behavior is intentional by the deployer. On ≤1.2.x the behavior was
+  `BY-DESIGN: property-disclaimed` per §9.2; it was fixed via [GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w).
 - **"`InMemoryTaskStore`/`InMemoryQueueManager` lose all data on restart."** By design — they are the
   non-persistent defaults; use the JPA/replicated `extras/*` modules for persistence across restarts. `OUT-OF-MODEL`
   is not quite right here since it's core behavior, not an unsupported component — treat as
   `BY-DESIGN: property-disclaimed`, cf. `InMemoryTaskStore` Javadoc.
-- **"`BasePushNotificationSender` will POST to any URL, including internal addresses."** Documented gap, not a
-  new finding — see §9.3; report as `BY-DESIGN: property-disclaimed`. URL validation is permanently a deployer
-  responsibility since acceptable destinations are deployment-specific.
+- **"`BasePushNotificationSender` will POST to any URL, including internal addresses."** As of 1.3.0.Final this
+  is no longer accurate: push-notification URLs are validated against an SSRF-safe policy and redirect following
+  is disabled (§8.7). A report of SSRF via push notifications on 1.3.0.Final+ should be evaluated against the
+  current policy implementation. On ≤1.2.x the behavior was `BY-DESIGN: property-disclaimed` per §9.3; it was
+  fixed via [GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8).
 - **"An attacker can create unlimited tasks/queues, exhausting server memory."** Documented gap — see §9.6;
   global rate and resource limits are a deployment concern (reverse proxy, runtime configuration), not an
   SDK-level control. `BY-DESIGN: property-disclaimed`.
@@ -469,15 +533,16 @@ framework analogous to what some other projects use to flag insecure defaults.
 ### §12 Conditions that would change this model
 
 - Addition of a built-in authentication mechanism to `server-common` (would revise §3, §9.1, §9.2, §10).
-- Addition of SSRF filtering to `BasePushNotificationSender` or `PushNotificationConfigStore` (would revise
-  §9.3, §10, §11).
+- ~~Addition of SSRF filtering to `BasePushNotificationSender` or `PushNotificationConfigStore`~~ —
+  **triggered in 1.3.0.Final** ([GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8)); §8.7, §9.3, §10, §11a revised accordingly.
+- ~~The first confirmed vulnerability report against this project~~ — **triggered in 1.3.0.Final**; four
+  advisories published (GHSA-qw47-mcm5-934w, GHSA-q78c-5jjq-57g8, GHSA-9rhm-2h4x-jwmx, GHSA-x32g-jvvm-4725).
+  §8a, §8.6–§8.9, §9.2–§9.3, §11, §11a, §14 revised accordingly.
 - A new transport, extras module, or reference implementation gaining direct filesystem or process-spawning
   access (would revise §5, §5a).
 - Promotion of any `examples/` code into a supported, shipped module (would revise §3, §2's component table).
 - A vulnerability report that cannot be cleanly routed to one of the §13 dispositions — this signals the model
   has a gap and should be revised (add the property to §8 or §9) rather than resolved ad hoc.
-- The first confirmed vulnerability report against this project — it would convert the corresponding §8a
-  anticipated class into a documented historical case, and should prompt a review of the rest of §8a.
 
 ### §13 Triage dispositions
 
@@ -549,3 +614,23 @@ All questions from the initial draft have been resolved. Answers are recorded he
 The five items in §8a remain tagged *(anticipated)* rather than promoted to *(maintainer)*: they are
 forward-looking risk hypotheses, not facts about the code, and are not subject to confirmation in the same
 sense as the claims above.
+
+**Wave 4 — 1.3.0.Final advisories (resolved):**
+
+12. **Fail-open authorization default ([GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w)).** Confirmed: absent a
+    `TaskAuthorizationProvider`, all task operations were permitted for any caller in ≤1.2.x. Fixed in 1.3.0.Final
+    by switching to a fail-closed default in `DefaultRequestHandler` and enforcing it on both CDI and builder
+    paths. §5a, §8.6, §9.2, §10, §11, §11a updated.
+13. **SSRF via push-notification webhook ([GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8)).** Confirmed: `BasePushNotificationSender`
+    POSTed to caller-supplied URLs with no destination validation in ≤1.2.x. Fixed in 1.3.0.Final with SSRF-safe
+    URL validation (scheme allowlist, private-network blocking, IPv4-mapped IPv6 blocking) and redirect-following
+    disabled. §5a, §8.7, §9.3, §10, §11a updated.
+14. **API key credential leakage via redirect ([GHSA-9rhm-2h4x-jwmx](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-9rhm-2h4x-jwmx)).** Confirmed: `AuthInterceptor` used
+    `APIKeySecurityScheme.name()` as an HTTP header name without validation, and all HTTP clients followed
+    redirects by default, allowing an attacker-controlled agent to harvest credentials. Fixed in 1.3.0.Final with
+    an allowlist for API key header names and redirect-following disabled across all HTTP client implementations.
+    §8.8 added.
+15. **Push-notification credentials logged in cleartext ([GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725)).** Confirmed: parse failures
+    in the REST handler's `parseRequestBody` logged the full JSON request body at `SEVERE` level, exposing push
+    notification `token` and `authentication.credentials` fields. Fixed in 1.3.0.Final by restricting error
+    logging to body metadata (length, content type) only. §8.9 added.

@@ -170,6 +170,18 @@ When applicable:
 
 7. Add Javadoc menu entry to the version yml if not already present.
 
+8. Add a row for the new version to the compatibility table in `docs/content/index.html`. The table is in the
+   `<section class="roq-section">` block with heading `Compatibility`. Insert a new `<tr>` for the released
+   version immediately before the `<tr>` for `dev (unreleased)`, using the same A2A Protocol and Java columns as
+   the previous row. Example:
+   ```html
+   <tr>
+     <td>1.3.0.Final</td>
+     <td>1.0, 0.3</td>
+     <td>17+</td>
+   </tr>
+   ```
+
 ### Step 3: Bump to next SNAPSHOT
 
 ```bash

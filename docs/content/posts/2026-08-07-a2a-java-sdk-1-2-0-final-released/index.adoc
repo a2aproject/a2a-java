@@ -5,6 +5,7 @@ date: 2026-08-07
 tags: ai a2a
 synopsis: 'A2A Java SDK 1.2.0.Final is now available -- with authorization hardening, stream lifecycle hooks, and improved spec compliance.'
 author: kkhan
+image: announce.png
 ---
 image::announce.png[A2A Java SDK 1.2.0.Final announcement]
 

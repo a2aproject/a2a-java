@@ -5,6 +5,7 @@ date: 2026-06-29
 tags: ai a2a
 synopsis: 'A2A Java SDK 1.1.0.Final is now available -- adding per-user task authorization and a new project website.'
 author: ehsavoie
+image: announce.png
 ---
 
 ![A2A Java SDK 1.1.0.Final announcement](announce.png)

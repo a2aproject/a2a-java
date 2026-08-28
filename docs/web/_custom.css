@@ -213,6 +213,75 @@
     text-align: left;
 }
 
+/* ── Latest Announcement banner ──────────────────────────────────────────── */
+
+.latest-post-banner {
+    display: flex;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.latest-post-banner:hover {
+    border-color: var(--color-accent-400);
+    box-shadow: 0 4px 20px rgba(63, 81, 181, 0.2);
+    text-decoration: none;
+}
+
+.latest-post-banner-image {
+    width: 45%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+}
+
+.latest-post-banner-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+    flex: 1;
+}
+
+.latest-post-banner-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.latest-post-banner-synopsis {
+    font-size: 0.95rem;
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.latest-post-banner-cta {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-accent-300);
+}
+
+@media (max-width: 640px) {
+    .latest-post-banner {
+        flex-direction: column;
+    }
+
+    .latest-post-banner-image {
+        width: 100%;
+        max-height: 220px;
+    }
+
+    .latest-post-banner-content {
+        padding: 1.25rem;
+    }
+}
+
 /* ── Syntax Highlighting (highlight.js) ───────────────────────────────────── */
 
 /* Match the site's monospace font (Roboto Mono) */
