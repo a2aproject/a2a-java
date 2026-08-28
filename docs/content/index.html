@@ -50,16 +50,7 @@ layout: home
   {#if site.collections.get('posts')}
   {#for post in site.collections.get('posts')}
   {#if post_index == 0}
-  <a href="{post.url}" class="latest-post-banner">
-    <img src="{post.image}" alt="{post.title}" class="latest-post-banner-image">
-    <div class="latest-post-banner-content">
-      <h3 class="latest-post-banner-title">{post.title}</h3>
-      {#if post.data.synopsis??}
-      <p class="latest-post-banner-synopsis">{post.data.synopsis}</p>
-      {/if}
-      <span class="latest-post-banner-cta">Read announcement <i class="fa-solid fa-arrow-right"></i></span>
-    </div>
-  </a>
+  {#roq/postCard post /}
   {/if}
   {/for}
   {/if}

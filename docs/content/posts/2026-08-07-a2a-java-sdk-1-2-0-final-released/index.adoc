@@ -7,6 +7,7 @@ synopsis: 'A2A Java SDK 1.2.0.Final is now available -- with authorization harde
 author: kkhan
 image: announce.png
 ---
+
 image::announce.png[A2A Java SDK 1.2.0.Final announcement]
 
 I am happy to announce the release of link:https://github.com/a2aproject/a2a-java/releases/tag/v1.2.0.Final[A2A Java SDK 1.2.0.Final]. This release hardens the authorization model, adds stream lifecycle management, and fixes several protocol compliance issues.

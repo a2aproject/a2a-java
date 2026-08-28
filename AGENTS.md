@@ -86,7 +86,9 @@ The docs site (`docs/`) is built with [Roq](https://docs.quarkiverse.io/quarkus-
 - `index.adoc` (or `index.md`) — the post content, with `image: announce.png` in the YAML frontmatter
 - `announce.png` — the announcement banner image (PNG format, named exactly `announce.png`)
 
-The `announce.png` filename is required: the home page (`docs/content/index.html`) renders the latest post's image using the `post.image` field resolved from this frontmatter entry, and the Roq site theme uses it as the post cover.
+The `announce.png` filename is required. The `image: announce.png` frontmatter field is used by the post card component (on the home page and announces listing) to show the thumbnail. The theme's cover image block is hidden via CSS on post pages, so the image must also be added as the **first line of the post content** (after an empty line following the closing `---`) so it appears after the title:
+- AsciiDoc: blank line after `---`, then `image::announce.png[<alt text>]` (blank line required for block macro recognition)
+- Markdown: blank line after `---`, then `![<alt text>](announce.png)`
 
 **Version metadata:** Each version has a YAML file in `docs/data/versions/` (e.g. `dev.yml`, `1.1.0.Final.yml`) that defines the label, URL path, sort order, default/dev flags, and sidebar menu. When adding or removing a documentation page, update the `menu` list in `docs/data/versions/dev.yml` accordingly.
 

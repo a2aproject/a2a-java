@@ -7,6 +7,7 @@ synopsis: 'A2A Java SDK 1.3.0.Final is now available -- with multi-tenancy suppo
 author: ehsavoie
 image: announce.png
 ---
+
 image::announce.png[A2A Java SDK 1.3.0.Final announcement]
 
 I am happy to announce the release of link:https://github.com/a2aproject/a2a-java/releases/tag/v1.3.0.Final[A2A Java SDK 1.3.0.Final]. This release introduces multi-tenancy support, switches the authorization model to fail-closed by default, delivers a wave of security hardening, and improves protocol compliance across all transports.
