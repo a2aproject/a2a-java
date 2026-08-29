@@ -166,18 +166,17 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(1, configResult.configs().size());
         assertEquals(taskId, configResult.configs().get(0).id());
 
-        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
+        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
                 .id("")
                 .url("http://initial.url/callback_new")
                 .taskId(taskId)
                 .build();
 
-        TaskPushNotificationConfig updatedResult = configStore.setInfo(updatedConfig);
-        assertEquals(taskId, updatedResult.id());
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
 
         configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(1, configResult.configs().size(), "Should replace existing config with same ID rather than adding new one");
-        assertEquals(updatedConfig.url(), configResult.configs().get(0).url());
+        assertEquals(1, configResult.configs().size());
+        assertEquals(initialConfig.url(), configResult.configs().get(0).url());
     }
 
     @Test
@@ -191,6 +190,13 @@ class InMemoryPushNotificationConfigStoreTest {
         TaskPushNotificationConfig result = configStore.setInfo(config);
 
         assertEquals(taskId, result.id(), "Config ID should default to taskId when null");
+
+        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
+                .url("http://updated.url/callback")
+                .taskId(taskId)
+                .build();
+
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
     }
 
     @Test

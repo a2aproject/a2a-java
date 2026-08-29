@@ -51,7 +51,8 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         // Default missing config IDs to the task ID, matching the in-memory store.
-        if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
+        boolean configIdIsMissing = notificationConfig.id() == null || notificationConfig.id().isEmpty();
+        if (configIdIsMissing) {
             notificationConfig = TaskPushNotificationConfig.builder(notificationConfig).id(taskId).build();
         }
 
@@ -62,6 +63,11 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
             // Check if entity already exists
             JpaPushNotificationConfig existingJpaConfig = em.find(JpaPushNotificationConfig.class, configId);
+
+            if (configIdIsMissing && existingJpaConfig != null) {
+                throw new InvalidParamsError("A push notification config with the default ID already exists for task "
+                        + taskId + "; specify the config ID explicitly to update it");
+            }
 
             if (existingJpaConfig != null) {
                 // Update existing entity

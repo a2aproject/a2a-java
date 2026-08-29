@@ -59,6 +59,12 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
 
         pushNotificationInfos.compute(taskId, (key, list) -> {
             List<TaskPushNotificationConfig> mutable = list == null ? new ArrayList<>() : new ArrayList<>(list);
+            boolean defaultConfigAlreadyExists = configIdIsMissing
+                    && mutable.stream().anyMatch(existing -> existing.id() != null && existing.id().equals(configId));
+            if (defaultConfigAlreadyExists) {
+                throw new InvalidParamsError("A push notification config with the default ID already exists for task "
+                        + taskId + "; specify the config ID explicitly to update it");
+            }
             boolean isExistingConfig = mutable.removeIf(
                     existing -> existing.id() != null && existing.id().equals(configId));
             if (!isExistingConfig && mutable.size() >= maxPerTask) {

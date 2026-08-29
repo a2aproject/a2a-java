@@ -88,8 +88,11 @@ public interface PushNotificationConfigStore {
     /**
      * Sets or updates the push notification configuration for a task.
      * <p>
-     * If {@code notificationConfig.id()} is null or empty, it's set to the task ID.
-     * If a config with the same ID already exists for this task, it's replaced.
+     * If {@code notificationConfig.id()} is null or empty, the store creates the
+     * default config with the task ID. Omitting the ID is a create-only shorthand:
+     * if the default config already exists, the store rejects the request instead
+     * of silently replacing it. To update the default config, provide the task ID
+     * explicitly. Configurations beyond the default one must always provide an ID.
      * </p>
      *
      * @param notificationConfig the task push notification configuration

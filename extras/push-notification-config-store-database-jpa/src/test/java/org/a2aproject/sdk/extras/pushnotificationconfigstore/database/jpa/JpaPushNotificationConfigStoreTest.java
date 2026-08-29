@@ -5,6 +5,7 @@ import static org.a2aproject.sdk.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -21,6 +22,7 @@ import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationUrlValidator;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Task;
@@ -149,18 +151,17 @@ public class JpaPushNotificationConfigStoreTest {
         assertEquals(1, configResult.configs().size());
         assertEquals(taskId, configResult.configs().get(0).id());
 
-        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
+        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
                 .id("")
                 .url("http://initial.url/callback_new")
                 .taskId(taskId)
                 .build();
 
-        TaskPushNotificationConfig updatedResult = configStore.setInfo(updatedConfig);
-        assertEquals(taskId, updatedResult.id());
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
 
         configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(1, configResult.configs().size(), "Should replace existing config with same ID rather than adding new one");
-        assertEquals(updatedConfig.url(), configResult.configs().get(0).url());
+        assertEquals(1, configResult.configs().size());
+        assertEquals(initialConfig.url(), configResult.configs().get(0).url());
     }
 
     @Test
@@ -179,6 +180,13 @@ public class JpaPushNotificationConfigStoreTest {
                 new ListTaskPushNotificationConfigsParams(taskId));
         assertEquals(1, configResult.configs().size());
         assertEquals(taskId, configResult.configs().get(0).id());
+
+        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
+                .url("http://updated.url/callback")
+                .taskId(taskId)
+                .build();
+
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
     }
 
     @Test
