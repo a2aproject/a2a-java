@@ -93,6 +93,7 @@ public interface PushNotificationConfigStore {
      * if the default config already exists, the store rejects the request instead
      * of silently replacing it. To update the default config, provide the task ID
      * explicitly. Configurations beyond the default one must always provide an ID.
+     * The v0.3 compatibility path keeps its historical single-config update behavior.
      * </p>
      *
      * @param notificationConfig the task push notification configuration

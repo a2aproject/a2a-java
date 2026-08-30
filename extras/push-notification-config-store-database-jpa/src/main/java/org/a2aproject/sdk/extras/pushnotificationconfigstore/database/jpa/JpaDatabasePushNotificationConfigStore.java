@@ -64,7 +64,7 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
             // Check if entity already exists
             JpaPushNotificationConfig existingJpaConfig = em.find(JpaPushNotificationConfig.class, configId);
 
-            if (configIdIsMissing && existingJpaConfig != null) {
+            if (configIdIsMissing && existingJpaConfig != null && !"0.3".equals(resolvedVersion)) {
                 throw new InvalidParamsError("A push notification config with the default ID already exists for task "
                         + taskId + "; specify the config ID explicitly to update it");
             }

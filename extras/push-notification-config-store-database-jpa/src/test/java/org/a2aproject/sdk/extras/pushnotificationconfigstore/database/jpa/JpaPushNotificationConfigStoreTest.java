@@ -191,6 +191,29 @@ public class JpaPushNotificationConfigStoreTest {
 
     @Test
     @Transactional
+    public void testSetInfoAllowsV03DefaultConfigUpdate() {
+        String taskId = "task_v03_default_update";
+        TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://initial.url/callback")
+                .build();
+        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://updated.url/callback")
+                .build();
+
+        configStore.setInfo(initialConfig, "0.3");
+        TaskPushNotificationConfig result = configStore.setInfo(updatedConfig, "0.3");
+
+        assertEquals(taskId, result.id());
+        ListTaskPushNotificationConfigsResult stored =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(1, stored.configs().size());
+        assertEquals(updatedConfig.url(), stored.configs().get(0).url());
+    }
+
+    @Test
+    @Transactional
     public void testGetInfoExistingConfig() {
         String taskId = "task_get_exist";
         TaskPushNotificationConfig config = createSamplePushConfig("http://get.this/callback", "cfg1", null);

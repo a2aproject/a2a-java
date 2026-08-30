@@ -46,6 +46,12 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
 
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
+        return setInfo(notificationConfig, false);
+    }
+
+    private TaskPushNotificationConfig setInfo(
+            TaskPushNotificationConfig notificationConfig,
+            boolean allowDefaultConfigUpdate) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder(notificationConfig);
         String requestedConfigId = notificationConfig.id();
@@ -61,7 +67,7 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
             List<TaskPushNotificationConfig> mutable = list == null ? new ArrayList<>() : new ArrayList<>(list);
             boolean defaultConfigAlreadyExists = configIdIsMissing
                     && mutable.stream().anyMatch(existing -> existing.id() != null && existing.id().equals(configId));
-            if (defaultConfigAlreadyExists) {
+            if (defaultConfigAlreadyExists && !allowDefaultConfigUpdate) {
                 throw new InvalidParamsError("A push notification config with the default ID already exists for task "
                         + taskId + "; specify the config ID explicitly to update it");
             }
@@ -79,8 +85,10 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
 
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig config, @Nullable String protocolVersion) {
-        TaskPushNotificationConfig result = setInfo(config);
-        protocolVersions.put(result.taskId() + ":" + result.id(), PushNotificationConfigStore.resolveProtocolVersion(protocolVersion));
+        TaskPushNotificationConfig result = setInfo(config, "0.3".equals(protocolVersion));
+        protocolVersions.put(
+                result.taskId() + ":" + result.id(),
+                PushNotificationConfigStore.resolveProtocolVersion(protocolVersion));
         return result;
     }
 
