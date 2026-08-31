@@ -390,6 +390,12 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-tests-multitenancy-test-common</artifactId>
+                <scope>test</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jspecify</groupId>
                 <artifactId>jspecify</artifactId>
                 <version>1.0.1</version>
@@ -632,8 +638,14 @@
         <!-- Multitenancy test module (Weld SE unit tests, no Quarkus) -->
         <module>tests/multitenancy</module>
 
+        <!-- Multitenancy common test infrastructure (shared CDI producers) -->
+        <module>tests/multitenancy/test-common</module>
+
         <!-- Multitenancy JSON-RPC integration tests (no REST transport on classpath) -->
         <module>tests/multitenancy/jsonrpc</module>
+
+        <!-- Multitenancy gRPC integration tests (executor routing via gRPC) -->
+        <module>tests/multitenancy/grpc</module>
 
         <!-- Multi-version test modules -->
         <module>tests/multiversion/jsonrpc</module>
