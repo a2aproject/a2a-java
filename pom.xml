@@ -632,6 +632,9 @@
         <!-- Multitenancy test module (Weld SE unit tests, no Quarkus) -->
         <module>tests/multitenancy</module>
 
+        <!-- Multitenancy JSON-RPC integration tests (no REST transport on classpath) -->
+        <module>tests/multitenancy/jsonrpc</module>
+
         <!-- Multi-version test modules -->
         <module>tests/multiversion/jsonrpc</module>
         <module>tests/multiversion/rest</module>

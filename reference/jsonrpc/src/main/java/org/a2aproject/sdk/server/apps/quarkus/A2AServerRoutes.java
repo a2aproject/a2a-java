@@ -440,7 +440,7 @@ public class A2AServerRoutes {
      * @throws JsonProcessingException if serialization fails
      */
     public String getTenantAgentCard(RoutingContext rc) throws JsonProcessingException {
-        String tenant = extractTenant(rc);
+        String tenant = rc.pathParam("tenant");
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
         return JsonUtil.toJson(jsonRpcHandler.getAgentCard(tenant));
     }
