@@ -384,6 +384,43 @@ public class A2ACardResolverTest {
     }
 
     @Test
+    public void testGetAgentCard_doubleSlashWellKnownUrl_normalizedCardUrl() throws Exception {
+        // A baseUrl that is already the well-known URL but with a double slash before /.well-known
+        // must strip the well-known suffix and rebuild cleanly.
+        TestHttpClient client = createTestClient();
+        A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com//.well-known/agent-card.json").build().getAgentCard();
+        assertEquals(1, client.urlsCalled.size());
+        assertEquals("http://example.com" + AGENT_CARD_PATH, client.urlsCalled.get(0));
+    }
+
+    @Test
+    public void testGetAgentCard_doubleSlashTenantCardUrl_sameTenant_normalizedCardUrl() throws Exception {
+        // baseUrl is the tenant card URL with a double slash; tenant matches — must normalize cleanly.
+        TestHttpClient client = createTestClient();
+        A2ACardResolver.builder().httpClient(client)
+                .baseUrl("http://example.com//.well-known/acme/agent-card.json")
+                .tenant("acme")
+                .build()
+                .getAgentCard();
+        assertEquals(1, client.urlsCalled.size());
+        assertEquals("http://example.com/.well-known/acme/agent-card.json", client.urlsCalled.get(0));
+    }
+
+    @Test
+    public void testGetAgentCard_doubleSlashTenantCardUrl_differentTenant_normalizedCardUrl() throws Exception {
+        // baseUrl is a tenant card URL with a double slash; a different tenant is requested — the
+        // suffix must be stripped before the new tenant path is embedded.
+        TestHttpClient client = createTestClient();
+        A2ACardResolver.builder().httpClient(client)
+                .baseUrl("http://example.com//.well-known/acme/agent-card.json")
+                .tenant("foo")
+                .build()
+                .getAgentCard();
+        assertEquals(1, client.urlsCalled.size());
+        assertEquals("http://example.com/.well-known/foo/agent-card.json", client.urlsCalled.get(0));
+    }
+
+    @Test
     public void testGetAgentCard_httpError_bothFail_throwsLastError() throws Exception {
         // Both primary (/.well-known/agent-card.json) and fallback return 404; last error is propagated
         // and the primary error is attached as a suppressed exception.
@@ -398,9 +435,10 @@ public class A2ACardResolverTest {
         assertEquals(404, ((A2AClientHTTPError) error.getSuppressed()[0]).getCode());
     }
 
+
     @Test
-    public void testGetAgentCard_nonNotFound_httpError_noFallback() throws Exception {
-        // Non-404 errors (e.g. 503) must not trigger the fallback — only 1 request made.
+    public void testGetAgentCard_nonNotFound_noFallback() throws Exception {
+        // A 5xx from the primary URL is not a URL-format issue, so no fallback is attempted.
         TestHttpClient client = createTestClient();
         client.status = 503;
         A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").build();

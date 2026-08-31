@@ -94,30 +94,9 @@ public class A2ACardResolver {
             // Strip any well-known suffix from baseUrl so that a full card URL like
             // https://host/.well-known/agent-card.json doesn't produce a malformed path.
             String cleanBase = Utils.stripWellKnownSuffix(baseUrl);
-            String resolvedCardUrl;
-            @Nullable String resolvedFallbackUrl;
-            if (agentCardPath != null && !agentCardPath.isEmpty()) {
-                // Custom path: tenant goes as path prefix (explicit override); no fallback.
-                String baseUrlWithTenant = Utils.buildBaseUrl(cleanBase, tenant);
-                Utils.validateAbsoluteUrl(baseUrlWithTenant);
-                resolvedCardUrl = Utils.buildCardUrl(baseUrlWithTenant, agentCardPath);
-                resolvedFallbackUrl = null;
-            } else {
-                // Standard well-known path: optionally embed tenant inside the path.
-                if (tenant != null && !tenant.isBlank()) {
-                    // {base}/.well-known/{tenant}/agent-card.json
-                    Utils.validateTenant(tenant);
-                    Utils.validateAbsoluteUrl(cleanBase);
-                    resolvedCardUrl = Utils.buildCardUrl(cleanBase, "/.well-known/" + Utils.normalizeTenant(tenant) + "/agent-card.json");
-                } else {
-                    // {base}/.well-known/agent-card.json
-                    Utils.validateAbsoluteUrl(cleanBase);
-                    resolvedCardUrl = Utils.buildCardUrl(cleanBase, Utils.DEFAULT_AGENT_CARD_PATH);
-                }
-                resolvedFallbackUrl = isSameUrl(resolvedCardUrl, baseUrl) ? null : cleanBase;
-            }
-            this.cardUrl = resolvedCardUrl;
-            this.fallbackUrl = resolvedFallbackUrl;
+            ResolvedUrls resolved = resolveUrls(cleanBase, baseUrl, tenant, agentCardPath);
+            this.cardUrl = resolved.cardUrl();
+            this.fallbackUrl = resolved.fallbackUrl();
         } catch (URISyntaxException e) {
             throw new A2AClientError("Invalid agent URL", e);
         }
@@ -244,8 +223,8 @@ public class A2ACardResolver {
      * <p>Fetches from the custom {@code agentCardPath} when one was supplied, otherwise fetches
      * from the standard {@code /.well-known/agent-card.json} (or tenant-specific variant) endpoint.
      * When no custom path was provided and the computed card URL differs from the originally
-     * supplied base URL, a 404 on the primary URL triggers a single retry against the
-     * original base URL before propagating the error.
+     * supplied base URL, a 404 response from the primary URL triggers a single retry against
+     * the original base URL before propagating the error.
      *
      * @return the agent card
      * @throws A2AClientHTTPError If the server returns a non-2xx response (carries status, body, and headers)
@@ -271,9 +250,37 @@ public class A2ACardResolver {
         }
     }
 
+    private static ResolvedUrls resolveUrls(String cleanBase, String originalBase, @Nullable String tenant, @Nullable String agentCardPath) throws URISyntaxException {
+        if (agentCardPath != null && !agentCardPath.isEmpty()) {
+            // Custom path: tenant goes as path prefix (explicit override); no fallback.
+            String baseUrlWithTenant = Utils.buildBaseUrl(cleanBase, tenant);
+            Utils.validateAbsoluteUrl(baseUrlWithTenant);
+            return new ResolvedUrls(Utils.buildCardUrl(baseUrlWithTenant, agentCardPath), null);
+        }
+        // Standard well-known path: optionally embed tenant inside the path.
+        String cardUrl;
+        if (tenant != null && !tenant.isBlank()) {
+            // {base}/.well-known/{tenant}/agent-card.json
+            Utils.validateTenant(tenant);
+            Utils.validateAbsoluteUrl(cleanBase);
+            cardUrl = Utils.buildCardUrl(cleanBase, Utils.buildTenantCardPath(tenant));
+        } else {
+            // {base}/.well-known/agent-card.json
+            Utils.validateAbsoluteUrl(cleanBase);
+            cardUrl = Utils.buildCardUrl(cleanBase, Utils.DEFAULT_AGENT_CARD_PATH);
+        }
+        String fallbackUrl = isSameUrl(cardUrl, originalBase) ? null : cleanBase;
+        return new ResolvedUrls(cardUrl, fallbackUrl);
+    }
+
+    private record ResolvedUrls(String cardUrl, @Nullable String fallbackUrl) {}
+
+    // Intentionally limited: only strips trailing slashes. Both arguments are always
+    // programmatically constructed URLs so case, port, and percent-encoding are consistent.
     private static boolean isSameUrl(String a, String b) {
-        String stripSlash = b.endsWith("/") ? b.substring(0, b.length() - 1) : b;
-        return a.equals(stripSlash);
+        String normA = a.endsWith("/") ? a.substring(0, a.length() - 1) : a;
+        String normB = b.endsWith("/") ? b.substring(0, b.length() - 1) : b;
+        return normA.equals(normB);
     }
 
     private AgentCard fetchAgentCard(String url) throws A2AClientError, A2AClientJSONError {

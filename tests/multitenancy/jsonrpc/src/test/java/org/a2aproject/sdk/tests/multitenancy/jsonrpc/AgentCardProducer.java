@@ -6,6 +6,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
 
 import org.a2aproject.sdk.extras.multitenancy.Tenant;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
@@ -16,15 +17,18 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 @Singleton
 public class AgentCardProducer {
 
-    private static final String BASE_URL = "http://localhost:8081";
+    @ConfigProperty(name = "quarkus.http.port", defaultValue = "8081")
+    int serverPort;
 
     @Produces
+    @Singleton
     @PublicAgentCard
     public AgentCard publicCard() {
         return card("Default Agent");
     }
 
     @Produces
+    @Singleton
     @ExtendedAgentCard
     public AgentCard defaultExtendedCard() {
         return card("Default Agent (extended)");
@@ -60,7 +64,7 @@ public class AgentCardProducer {
         return card("Beta Agent (extended)");
     }
 
-    private static AgentCard card(String name) {
+    private AgentCard card(String name) {
         return AgentCard.builder()
                 .name(name)
                 .description(name)
@@ -69,7 +73,7 @@ public class AgentCardProducer {
                 .defaultOutputModes(List.of("text"))
                 .capabilities(AgentCapabilities.builder().streaming(true).extendedAgentCard(true).build())
                 .skills(List.of())
-                .supportedInterfaces(List.of(new AgentInterface(TransportProtocol.JSONRPC.asString(), BASE_URL)))
+                .supportedInterfaces(List.of(new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:" + serverPort)))
                 .build();
     }
 }

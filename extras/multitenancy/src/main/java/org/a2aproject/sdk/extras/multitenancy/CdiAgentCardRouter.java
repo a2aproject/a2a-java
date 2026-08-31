@@ -25,8 +25,9 @@ import org.jspecify.annotations.Nullable;
  * qualifier must NOT be used on tenant-specific public cards because it would cause CDI
  * ambiguity on injection points requesting the default public card.
  * <p>
- * Falls back to the default (non-{@code @Tenant}) card when the tenant is {@code null},
- * blank, or does not match any registered tenant.
+ * Returns {@code null} from {@link #resolvePublicCard} when the tenant is {@code null},
+ * blank, or does not match any registered tenant — the caller decides whether to fall
+ * back to the default card or return 404 based on the original input.
  */
 @ApplicationScoped
 public class CdiAgentCardRouter implements AgentCardRouter {
@@ -62,7 +63,7 @@ public class CdiAgentCardRouter implements AgentCardRouter {
     @Override
     public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
         if (tenant == null || tenant.isBlank()) {
-            return defaultPublicCard;
+            return null;
         }
         for (Instance.Handle<AgentCard> handle : allCards.handles()) {
             Set<Annotation> qualifiers = handle.getBean().getQualifiers();
@@ -74,6 +75,6 @@ public class CdiAgentCardRouter implements AgentCardRouter {
                 return handle.get();
             }
         }
-        return defaultPublicCard;
+        return null;
     }
 }

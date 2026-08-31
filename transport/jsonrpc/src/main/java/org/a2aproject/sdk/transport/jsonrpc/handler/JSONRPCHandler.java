@@ -45,6 +45,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
+import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
@@ -747,19 +748,28 @@ public class JSONRPCHandler {
      * Returns the public agent card, optionally for a specific tenant.
      * <p>
      * When a tenant is specified and an {@link AgentCardRouter} is available, the router
-     * resolves a tenant-specific public card. Falls back to the default public card
-     * if no tenant-specific card is configured.
+     * resolves the card. If the router returns {@code null} the tenant is unknown and a
+     * {@link TenantNotFoundException} is thrown (callers should map this to HTTP 404).
+     * <p>
+     * When no router is configured, any non-blank tenant is logged and the default card
+     * is returned (single-tenant server, tenant segment is ignored).
      *
      * @param tenant the tenant identifier, may be {@code null}
      * @return the public agent card
+     * @throws TenantNotFoundException if a router is configured but the tenant is not registered
      */
     public AgentCard getAgentCard(@Nullable String tenant) {
         Utils.validateTenant(tenant);
-        if (agentCardRouter != null && tenant != null && !tenant.isBlank()) {
-            AgentCard card = agentCardRouter.resolvePublicCard(tenant);
-            if (card != null) {
-                return card;
+        if (tenant != null && !tenant.isBlank()) {
+            if (agentCardRouter != null) {
+                AgentCard card = agentCardRouter.resolvePublicCard(tenant);
+                if (card != null) {
+                    return card;
+                }
+                LOGGER.fine(() -> "Tenant '" + tenant + "' not found in AgentCardRouter — returning 404");
+                throw new TenantNotFoundException(tenant);
             }
+            LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
         }
         return resolveAgentCard();
     }

@@ -1300,6 +1300,65 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertTrue(response.getBody().contains("extended"));
     }
 
+    // -------------------------------------------------------------------------
+    // Public agent card — tenant routing
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testGetPublicAgentCard_withRouterKnownTenant_returns200() {
+        AgentCard tenantCard = AgentCard.builder(CARD).name("acme-public").build();
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override public AgentCard resolveExtendedCard(String t) { return null; }
+            @Override public AgentCard resolvePublicCard(String t) { return "acme".equals(t) ? tenantCard : null; }
+        };
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
+                createCacheMetadata(CARD), requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        RestHandler.HTTPRestResponse response = handler.getAgentCard("acme");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains("acme-public"));
+    }
+
+    @Test
+    public void testGetPublicAgentCard_withRouterUnknownTenant_returns404() {
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override public AgentCard resolveExtendedCard(String t) { return null; }
+            @Override public AgentCard resolvePublicCard(String t) { return null; }
+        };
+
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
+                createCacheMetadata(CARD), requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        RestHandler.HTTPRestResponse response = handler.getAgentCard("unknown");
+
+        Assertions.assertEquals(404, response.getStatusCode());
+    }
+
+    @Test
+    public void testGetPublicAgentCard_noRouterWithTenant_returnsDefaultCard() {
+        // Single-tenant server: no AgentCardRouter configured; tenant segment is ignored.
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
+                createCacheMetadata(CARD), requestHandler, internalExecutor, null);
+
+        RestHandler.HTTPRestResponse response = handler.getAgentCard("any-tenant");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains(CARD.name()));
+    }
+
+    @Test
+    public void testGetPublicAgentCard_noTenant_returnsDefaultCard() {
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
+                createCacheMetadata(CARD), requestHandler, internalExecutor, null);
+
+        RestHandler.HTTPRestResponse response = handler.getAgentCard((String) null);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains(CARD.name()));
+    }
+
     @Test
     public void testVersionNotSupportedErrorOnSubscribeToTask() throws Exception {
         RestHandler handler = versionTestHandler();

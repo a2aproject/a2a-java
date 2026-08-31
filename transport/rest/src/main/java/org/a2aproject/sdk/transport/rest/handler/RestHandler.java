@@ -41,6 +41,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
+import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.util.async.Internal;
@@ -917,24 +918,32 @@ public class RestHandler {
      * Retrieves the public agent card, optionally for a specific tenant.
      * <p>
      * When a tenant is specified and an {@link AgentCardRouter} is available, the router
-     * resolves a tenant-specific public card. Falls back to the default public card
-     * if no tenant-specific card is configured.
+     * resolves the card. A {@code null} result for a non-blank tenant means the tenant is
+     * unknown and a 404 is returned. When no router is configured the default card is returned
+     * regardless of the tenant value (single-tenant server).
      *
      * @param tenant the tenant identifier, may be {@code null}
-     * @return the HTTP response containing the agent card
+     * @return the HTTP response containing the agent card, or a 404 if the tenant is unknown
      */
     public HTTPRestResponse getAgentCard(@Nullable String tenant) {
         try {
             Utils.validateTenant(tenant);
-            if (agentCardRouter != null && tenant != null && !tenant.isBlank()) {
-                AgentCard card = agentCardRouter.resolvePublicCard(tenant);
-                if (card != null) {
-                    return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(card),
-                            cacheMetadata.getHttpHeadersMap());
+            if (tenant != null && !tenant.isBlank()) {
+                if (agentCardRouter != null) {
+                    AgentCard card = agentCardRouter.resolvePublicCard(tenant);
+                    if (card != null) {
+                        return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(card),
+                                cacheMetadata.getHttpHeadersMap());
+                    }
+                    log.fine(() -> "Tenant '" + tenant + "' not found in AgentCardRouter — returning 404");
+                    throw new TenantNotFoundException(tenant);
                 }
+                log.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
             }
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(resolveAgentCard()),
                     cacheMetadata.getHttpHeadersMap());
+        } catch (TenantNotFoundException e) {
+            return new HTTPRestResponse(404, "text/plain", e.getResponseMessage());
         } catch (Throwable t) {
             return createErrorResponse(500, internalError(t));
         }

@@ -137,13 +137,10 @@ public class MultiTenantRESTTest {
     }
 
     @Test
-    public void getPublicAgentCardWithUnknownTenantFallsBackToDefault() {
-        String response = RestAssured.given()
+    public void unknownTenantReturns404() {
+        RestAssured.given()
                 .when().get("/.well-known/unknown/agent-card.json")
-                .then().statusCode(200)
-                .extract().asString();
-        JsonPath json = JsonPath.from(response);
-        assertEquals("Multi-Tenant Test Agent", json.getString("name"));
+                .then().statusCode(404);
     }
 
     @Test

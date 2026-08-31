@@ -301,12 +301,16 @@ public class Utils {
     }
 
     /**
-     * Normalizes a tenant identifier by stripping any leading or trailing slashes.
+     * Builds the standard well-known path for a tenant-specific agent card.
      *
-     * @param tenant the tenant to normalize, must not be null
-     * @return the normalized tenant identifier (e.g. {@code "acme"} for {@code "/acme/"})
+     * @param tenant the tenant identifier, must not be null or blank
+     * @return the card path (e.g. {@code "/.well-known/acme/agent-card.json"})
      */
-    public static String normalizeTenant(String tenant) {
+    public static String buildTenantCardPath(String tenant) {
+        return "/.well-known/" + normalizeTenant(tenant) + "/agent-card.json";
+    }
+
+    static String normalizeTenant(String tenant) {
         String stripped = tenant;
         if (stripped.startsWith("/")) {
             stripped = stripped.substring(1);

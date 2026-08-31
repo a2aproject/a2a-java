@@ -407,4 +407,18 @@ class UtilsTest {
         assertEquals("http://example.com/.well-known/bad@tenant/agent-card.json",
                 Utils.stripWellKnownSuffix("http://example.com/.well-known/bad@tenant/agent-card.json"));
     }
+
+    // -------------------------------------------------------------------------
+    // buildTenantCardPath
+    // -------------------------------------------------------------------------
+
+    @Test
+    void testBuildTenantCardPath_simple() {
+        assertEquals("/.well-known/acme/agent-card.json", Utils.buildTenantCardPath("acme"));
+    }
+
+    @Test
+    void testBuildTenantCardPath_stripsLeadingAndTrailingSlashes() {
+        assertEquals("/.well-known/acme/agent-card.json", Utils.buildTenantCardPath("/acme/"));
+    }
 }

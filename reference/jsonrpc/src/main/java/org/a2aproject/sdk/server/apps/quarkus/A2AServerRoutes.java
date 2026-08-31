@@ -72,11 +72,13 @@ import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.server.util.sse.SseFormatter;
+import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -248,8 +250,10 @@ public class A2AServerRoutes {
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .end(agentCard);
+                } catch (TenantNotFoundException e) {
+                    ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE, "text/plain").end(e.getResponseMessage());
                 } catch (IllegalArgumentException e) {
-                    ctx.response().setStatusCode(400).end(e.getMessage());
+                    ctx.response().setStatusCode(400).putHeader(CONTENT_TYPE, "text/plain").end(e.getMessage());
                 } catch (JsonProcessingException e) {
                     ctx.response().setStatusCode(500).end("Internal Server Error");
                 }
@@ -439,15 +443,15 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (must contain a {@code tenant} path parameter)
      * @return the tenant-specific agent card as a JSON string
-     * @throws IllegalArgumentException if the {@code tenant} path parameter is absent
+     * @throws IllegalArgumentException if the tenant contains invalid characters
      * @throws JsonProcessingException if serialization fails
      */
     public String getTenantAgentCard(RoutingContext rc) throws JsonProcessingException {
-        // Route is /.well-known/{tenant}/agent-card.json — the named capture group must be present.
         String tenant = rc.pathParam("tenant");
         if (tenant == null) {
             throw new IllegalArgumentException("Missing tenant path parameter");
         }
+        Utils.validateTenant(tenant);
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
         return JsonUtil.toJson(jsonRpcHandler.getAgentCard(tenant));
     }
