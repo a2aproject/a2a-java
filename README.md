@@ -19,6 +19,7 @@ Full documentation is available at **[a2aproject.github.io/a2a-java](https://a2a
 
 - [Server Guide](https://a2aproject.github.io/a2a-java/server) — Run your agentic Java application as an A2A server
 - [Client Guide](https://a2aproject.github.io/a2a-java/client) — Communicate with any A2A-compliant agent
+- [Javadoc](https://a2aproject.github.io/a2a-java/1_3_0_Final/apidocs/) — Java API reference
 - [Community Articles](https://a2aproject.github.io/a2a-java/community) — Tutorials, blog posts, and videos
 - [Announcements](https://a2aproject.github.io/a2a-java/announces) — Release announcements and project news
 - [Contributing](https://a2aproject.github.io/a2a-java/contributing) — Developer guide for contributing
