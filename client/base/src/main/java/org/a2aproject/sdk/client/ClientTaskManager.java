@@ -67,12 +67,12 @@ class ClientTaskManager {
         }
 
         Task.Builder taskBuilder = Task.builder(task);
-        if (taskStatusUpdateEvent.status().message() != null) {
+        if (task.status().message() != null) {
             if (task.history() == null) {
-                taskBuilder.history(taskStatusUpdateEvent.status().message());
+                taskBuilder.history(task.status().message());
             } else {
                 List<Message> history = new ArrayList<>(task.history());
-                history.add(taskStatusUpdateEvent.status().message());
+                history.add(task.status().message());
                 taskBuilder.history(history);
             }
         }

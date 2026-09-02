@@ -67,9 +67,9 @@ class ClientTaskManager_v0_3 {
         }
 
         Task_v0_3.Builder taskBuilder = new Task_v0_3.Builder(task);
-        if (taskStatusUpdateEvent.status().message() != null) {
+        if (task.status().message() != null) {
             List<Message_v0_3> history = new ArrayList<>(task.history());
-            history.add(taskStatusUpdateEvent.status().message());
+            history.add(task.status().message());
             taskBuilder.history(history);
         }
         if (taskStatusUpdateEvent.metadata() != null) {
