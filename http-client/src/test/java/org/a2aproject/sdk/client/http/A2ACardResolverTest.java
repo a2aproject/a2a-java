@@ -179,7 +179,7 @@ public class A2ACardResolverTest {
     public void testGetAgentCard_withTenant() throws Exception {
         TestHttpClient client = createTestClient();
         A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").tenant("my-tenant").build().getAgentCard();
-        assertEquals("http://example.com/my-tenant" + AGENT_CARD_PATH, client.url);
+        assertEquals("http://example.com/.well-known/my-tenant/agent-card.json", client.url);
     }
 
     @Test
@@ -233,8 +233,8 @@ public class A2ACardResolverTest {
 
     @Test
     public void testFullWellKnownUrlWithTenant() throws Exception {
-        // Full well-known URL + tenant must strip the suffix before appending tenant,
-        // not produce a malformed path like ...agent-card.json/my-tenant/.well-known/agent-card.json
+        // Full well-known URL + tenant must strip the suffix before embedding tenant inside the path,
+        // not produce a malformed path like ...agent-card.json/.well-known/my-tenant/agent-card.json
         TestHttpClient client = createTestClient();
         A2ACardResolver resolver = A2ACardResolver.builder()
                 .httpClient(client)
@@ -242,7 +242,7 @@ public class A2ACardResolverTest {
                 .tenant("my-tenant")
                 .build();
         resolver.getAgentCard();
-        assertEquals("https://example.com/my-tenant" + AGENT_CARD_PATH, client.url);
+        assertEquals("https://example.com/.well-known/my-tenant/agent-card.json", client.url);
     }
 
     // -------------------------------------------------------------------------
@@ -260,7 +260,7 @@ public class A2ACardResolverTest {
     public void testSpec03PathPreservation_withTenant() throws Exception {
         TestHttpClient client = createTestClient();
         A2ACardResolver.builder().httpClient(client).baseUrl("https://example.com/spec03").tenant("my-tenant").build().getAgentCard();
-        assertEquals("https://example.com/spec03/my-tenant" + AGENT_CARD_PATH, client.url);
+        assertEquals("https://example.com/spec03/.well-known/my-tenant/agent-card.json", client.url);
     }
 
     @Test
@@ -304,6 +304,134 @@ public class A2ACardResolverTest {
     }
 
     // -------------------------------------------------------------------------
+    // Tenant URL — correct /.well-known/{tenant}/agent-card.json pattern
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testTenantUrl_embeddedInWellKnownPath() throws Exception {
+        TestHttpClient client = createTestClient();
+        A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").tenant("acme").build().getAgentCard();
+        assertEquals("http://example.com/.well-known/acme/agent-card.json", client.url);
+    }
+
+    @Test
+    public void testTenantUrl_fullTenantCardUrlProvidedAsBase_notDuplicated() throws Exception {
+        // When the caller already supplies the tenant card URL, it must be used as-is.
+        TestHttpClient client = createTestClient();
+        String tenantCardUrl = "http://example.com/.well-known/acme/agent-card.json";
+        A2ACardResolver.builder().httpClient(client).baseUrl(tenantCardUrl).tenant("acme").build().getAgentCard();
+        assertEquals(tenantCardUrl, client.url);
+        assertEquals(1, client.urlsCalled.size());
+    }
+
+    @Test
+    public void testTenantUrl_fullTenantCardUrlProvidedAsBase_withTrailingSlash_notDuplicated() throws Exception {
+        TestHttpClient client = createTestClient();
+        A2ACardResolver.builder().httpClient(client)
+                .baseUrl("http://example.com/.well-known/acme/agent-card.json/")
+                .tenant("acme")
+                .build()
+                .getAgentCard();
+        assertEquals("http://example.com/.well-known/acme/agent-card.json", client.url);
+        assertEquals(1, client.urlsCalled.size());
+    }
+
+    @Test
+    public void testTenantUrl_fullTenantCardUrlProvidedAsBase_noFallback() throws Exception {
+        // No fallback when the provided URL already IS the computed card URL.
+        TestHttpClient client = createTestClient();
+        client.status = 404;
+        String tenantCardUrl = "http://example.com/.well-known/acme/agent-card.json";
+        A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl(tenantCardUrl).tenant("acme").build();
+        assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
+        assertEquals(1, client.urlsCalled.size());
+    }
+
+    @Test
+    public void testTenantUrl_withSubBasePath() throws Exception {
+        TestHttpClient client = createTestClient();
+        A2ACardResolver.builder().httpClient(client).baseUrl("https://example.com/spec03").tenant("acme").build().getAgentCard();
+        assertEquals("https://example.com/spec03/.well-known/acme/agent-card.json", client.url);
+    }
+
+    // -------------------------------------------------------------------------
+    // Fallback to provided URL on HTTP error
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testGetAgentCard_httpError_fallsBackToProvidedUrl() throws Exception {
+        // Primary URL (/.well-known/agent-card.json) returns 404; fallback to original base URL succeeds.
+        TestHttpClient client = createTestClient();
+        client.statusSequence.add(404);
+        client.statusSequence.add(200);
+        A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").build().getAgentCard();
+        assertEquals(2, client.urlsCalled.size());
+        assertEquals("http://example.com" + AGENT_CARD_PATH, client.urlsCalled.get(0));
+        assertEquals("http://example.com", client.urlsCalled.get(1));
+    }
+
+    @Test
+    public void testGetAgentCard_doubleSlashBaseUrl_fallbackUrlNormalized() throws Exception {
+        // A baseUrl with a double trailing slash must not produce a double-slash fallback URL.
+        TestHttpClient client = createTestClient();
+        client.statusSequence.add(404);
+        client.statusSequence.add(200);
+        A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com//").build().getAgentCard();
+        assertEquals(2, client.urlsCalled.size());
+        assertEquals("http://example.com" + AGENT_CARD_PATH, client.urlsCalled.get(0));
+        // cleanBase strips one trailing slash from "http://example.com//", yielding "http://example.com/"
+        assertEquals("http://example.com/", client.urlsCalled.get(1));
+    }
+
+    @Test
+    public void testGetAgentCard_httpError_bothFail_throwsLastError() throws Exception {
+        // Both primary (/.well-known/agent-card.json) and fallback return 404; last error is propagated
+        // and the primary error is attached as a suppressed exception.
+        TestHttpClient client = createTestClient();
+        client.status = 404;
+        A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").build();
+        A2AClientHTTPError error = assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
+        assertEquals(404, error.getCode());
+        assertEquals(2, client.urlsCalled.size());
+        assertEquals(1, error.getSuppressed().length);
+        assertTrue(error.getSuppressed()[0] instanceof A2AClientHTTPError);
+        assertEquals(404, ((A2AClientHTTPError) error.getSuppressed()[0]).getCode());
+    }
+
+    @Test
+    public void testGetAgentCard_nonNotFound_httpError_noFallback() throws Exception {
+        // Non-404 errors (e.g. 503) must not trigger the fallback — only 1 request made.
+        TestHttpClient client = createTestClient();
+        client.status = 503;
+        A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").build();
+        A2AClientHTTPError error = assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
+        assertEquals(503, error.getCode());
+        assertEquals(1, client.urlsCalled.size());
+    }
+
+    @Test
+    public void testGetAgentCard_noFallback_whenUrlAlreadyIsCardUrl() throws Exception {
+        // When the provided URL already equals the computed card URL, no fallback.
+        TestHttpClient client = createTestClient();
+        client.status = 404;
+        String fullCardUrl = "http://example.com" + AGENT_CARD_PATH;
+        A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl(fullCardUrl).build();
+        assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
+        assertEquals(1, client.urlsCalled.size());
+    }
+
+    @Test
+    public void testGetAgentCard_withTenant_httpError_fallsBackToProvidedUrl() throws Exception {
+        TestHttpClient client = createTestClient();
+        client.statusSequence.add(404);
+        client.statusSequence.add(200);
+        A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com").tenant("acme").build().getAgentCard();
+        assertEquals(2, client.urlsCalled.size());
+        assertEquals("http://example.com/.well-known/acme/agent-card.json", client.urlsCalled.get(0));
+        assertEquals("http://example.com", client.urlsCalled.get(1));
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -319,6 +447,7 @@ public class A2ACardResolverTest {
 
     private static class TestHttpClient implements A2AHttpClient {
         int status = 200;
+        List<Integer> statusSequence = new ArrayList<>();
         String body;
         String url;
         boolean throwIOException = false;
@@ -352,7 +481,7 @@ public class A2ACardResolverTest {
                 if (throwInterruptedException) {
                     throw new InterruptedException("Simulated interrupt");
                 }
-                int effectiveStatus = status;
+                int effectiveStatus = statusSequence.isEmpty() ? status : statusSequence.remove(0);
                 return new A2AHttpResponse() {
                     @Override
                     public int status() {

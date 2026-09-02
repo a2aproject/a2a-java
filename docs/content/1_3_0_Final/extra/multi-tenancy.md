@@ -148,7 +148,11 @@ public void execute(RequestContext context, AgentEmitter emitter) throws A2AErro
 
 ## Tenant Source
 
-The tenant is read from the `tenant` field in the request payload (e.g. `MessageSendParams.tenant()`, `CancelTaskParams.tenant()`). For the REST transport the tenant can also come from the URL path (e.g. `/\{tenant}/extendedAgentCard`); the payload value takes precedence when both are present.
+The tenant is read from the `tenant` field in the request payload (e.g. `MessageSendParams.tenant()`, `CancelTaskParams.tenant()`).
+
+For the **public agent card**, the tenant is encoded in the URL path — `/.well-known/\{tenant}/agent-card.json` — and is served by all transports (JSON-RPC and REST).
+
+For the **REST transport**, task-operation URLs also encode the tenant as a path prefix (e.g. `/\{tenant}/message:send`, `/\{tenant}/extendedAgentCard`); the payload `tenant` field takes precedence when both are present.
 
 Tenant identifiers are restricted to `a-zA-Z0-9_-.` characters — path segments containing `/` or `?` are rejected.
 

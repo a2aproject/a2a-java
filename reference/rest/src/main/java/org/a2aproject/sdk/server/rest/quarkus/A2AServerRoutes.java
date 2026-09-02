@@ -247,7 +247,7 @@ public class A2AServerRoutes {
             .handler(this::getAgentCard);
 
         // GET /.well-known/{tenant}/agent-card.json - Tenant-specific public agent card (no auth required)
-        router.getWithRegex("^\\/.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
+        router.getWithRegex("^\\/\\.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
             .order(1)
             .produces(APPLICATION_JSON)
             .handler(this::getTenantAgentCard);

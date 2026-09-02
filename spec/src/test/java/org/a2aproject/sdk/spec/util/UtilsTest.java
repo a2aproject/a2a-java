@@ -373,4 +373,38 @@ class UtilsTest {
         assertEquals("http://example.com/custom/agent.json",
                 Utils.stripWellKnownSuffix("http://example.com/custom/agent.json"));
     }
+
+    @Test
+    void testStripWellKnownSuffix_tenantSpecific() {
+        assertEquals("http://example.com",
+                Utils.stripWellKnownSuffix("http://example.com/.well-known/acme/agent-card.json"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_tenantSpecificWithSubPath() {
+        assertEquals("http://example.com/spec03",
+                Utils.stripWellKnownSuffix("http://example.com/spec03/.well-known/acme/agent-card.json"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_tenantSpecificWithTrailingSlash() {
+        assertEquals("http://example.com",
+                Utils.stripWellKnownSuffix("http://example.com/.well-known/acme/agent-card.json/"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_multiLevelTenantNotStripped() {
+        // Multi-level tenant paths (containing /) are not stripped
+        assertEquals("http://example.com/.well-known/org/team/agent-card.json",
+                Utils.stripWellKnownSuffix("http://example.com/.well-known/org/team/agent-card.json"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_invalidTenantCharsNotStripped() {
+        // Tenant with characters outside [a-zA-Z0-9_.-] must not be stripped
+        assertEquals("http://example.com/.well-known/invalid tenant/agent-card.json",
+                Utils.stripWellKnownSuffix("http://example.com/.well-known/invalid tenant/agent-card.json"));
+        assertEquals("http://example.com/.well-known/bad@tenant/agent-card.json",
+                Utils.stripWellKnownSuffix("http://example.com/.well-known/bad@tenant/agent-card.json"));
+    }
 }

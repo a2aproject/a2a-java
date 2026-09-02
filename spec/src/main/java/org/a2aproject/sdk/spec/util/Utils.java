@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import org.a2aproject.sdk.spec.A2AClientException;
@@ -42,6 +43,13 @@ public class Utils {
 
     public static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
     static final int MAX_TENANT_LENGTH = 256;
+
+    /** Matches both {@code /.well-known/agent-card.json} and {@code /.well-known/{tenant}/agent-card.json} at end of URL.
+     *  Tenant characters are constrained to the same set enforced by {@link #validateTenant}: {@code [a-zA-Z0-9_.-]}. */
+    private static final Pattern WELL_KNOWN_SUFFIX = Pattern.compile("/\\.well-known/([a-zA-Z0-9_.\\-]+/)?agent-card\\.json$");
+
+    /** Validates that a (normalized) tenant identifier contains only safe characters: {@code [a-zA-Z0-9_.-]}. */
+    private static final Pattern VALID_TENANT_CHARS = Pattern.compile("^[a-zA-Z0-9_.\\-]+$");
 
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
@@ -205,21 +213,17 @@ public class Utils {
     }
 
     /**
-     * Strips any trailing slash and the standard well-known suffix from {@code baseUrl} so that
+     * Strips any trailing slash and any well-known agent card suffix from {@code baseUrl} so that
      * {@link #buildCardUrl} can append the desired path without doubling it.
      *
-     * <p>
-     * Only {@link #DEFAULT_AGENT_CARD_PATH} is stripped; custom paths are never inferred
-     * from the URL structure.
+     * <p>Handles both the standard suffix ({@code /.well-known/agent-card.json}) and
+     * single-level tenant suffixes ({@code /.well-known/{tenant}/agent-card.json}).
      *
      * @param baseUrl the URL to strip
      * @return the URL with any trailing slash and well-known suffix removed
      */
     public static String stripWellKnownSuffix(String baseUrl) {
-        String s = stripTrailingSlash(baseUrl);
-        return s.endsWith(DEFAULT_AGENT_CARD_PATH)
-                ? s.substring(0, s.length() - DEFAULT_AGENT_CARD_PATH.length())
-                : s;
+        return WELL_KNOWN_SUFFIX.matcher(stripTrailingSlash(baseUrl)).replaceFirst("");
     }
 
     /**
@@ -290,13 +294,19 @@ public class Utils {
             throw new IllegalArgumentException("Tenant exceeds maximum length of " + MAX_TENANT_LENGTH + " characters");
         }
 
-        if (!stripped.matches("^[a-zA-Z0-9_.\\-]+$")) {
+        if (!VALID_TENANT_CHARS.matcher(stripped).matches()) {
             throw new IllegalArgumentException(
                     "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed");
         }
     }
 
-    private static String normalizeTenant(String tenant) {
+    /**
+     * Normalizes a tenant identifier by stripping any leading or trailing slashes.
+     *
+     * @param tenant the tenant to normalize, must not be null
+     * @return the normalized tenant identifier (e.g. {@code "acme"} for {@code "/acme/"})
+     */
+    public static String normalizeTenant(String tenant) {
         String stripped = tenant;
         if (stripped.startsWith("/")) {
             stripped = stripped.substring(1);
