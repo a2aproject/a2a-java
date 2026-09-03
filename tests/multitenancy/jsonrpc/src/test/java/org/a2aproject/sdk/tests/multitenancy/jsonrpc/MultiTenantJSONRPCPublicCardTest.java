@@ -43,11 +43,9 @@ public class MultiTenantJSONRPCPublicCardTest {
     }
 
     @Test
-    public void unknownTenantPublicCardFallsBackToDefault() {
-        String response = RestAssured.given()
+    public void unknownTenantReturns404() {
+        RestAssured.given()
                 .when().get("/.well-known/unknown-corp/agent-card.json")
-                .then().statusCode(200)
-                .extract().asString();
-        assertEquals("Default Agent", JsonPath.from(response).getString("name"));
+                .then().statusCode(404);
     }
 }

@@ -84,17 +84,25 @@ class CdiAgentCardRouterTest {
     }
 
     @Test
-    void publicCardUnknownTenantFallsBackToDefault() {
+    void publicCardUnknownTenantReturnsNull() {
         startContainer(FullCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
-        assertEquals("default-public", router.resolvePublicCard("unknown").name());
+        assertNull(router.resolvePublicCard("unknown"));
     }
 
     @Test
-    void publicCardNullTenantReturnsDefault() {
+    void publicCardNullTenantReturnsDefaultCard() {
         startContainer(FullCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertEquals("default-public", router.resolvePublicCard(null).name());
+    }
+
+    @Test
+    void publicCardBlankTenantReturnsDefaultCard() {
+        startContainer(FullCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertEquals("default-public", router.resolvePublicCard("").name());
+        assertEquals("default-public", router.resolvePublicCard("   ").name());
     }
 
     @Test
