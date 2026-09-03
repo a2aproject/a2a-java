@@ -68,7 +68,7 @@ import org.mockserver.model.JsonBody;
 
 public class RestTransportTest {
 
-    private static final Logger log = Logger.getLogger(RestTransportTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestTransportTest.class.getName());
     private ClientAndServer server;
     private static final AgentCard CARD = AgentCard.builder()
                 .name("Hello World Agent")
@@ -288,7 +288,7 @@ public class RestTransportTest {
      */
     @Test
     public void testCreateTaskPushNotificationConfiguration() throws Exception {
-        log.info("Testing CreateTaskPushNotificationConfiguration");
+        LOGGER.info("Testing CreateTaskPushNotificationConfiguration");
         this.server.when(
                 request()
                         .withMethod("POST")
@@ -380,7 +380,7 @@ public class RestTransportTest {
      */
     @Test
     public void testDeleteTaskPushNotificationConfigurations() throws Exception {
-        log.info("Testing deleteTaskPushNotificationConfigurations");
+        LOGGER.info("Testing deleteTaskPushNotificationConfigurations");
         this.server.when(
                 request()
                         .withMethod("DELETE")
@@ -400,7 +400,7 @@ public class RestTransportTest {
      */
     @Test
     public void testSubscribe() throws Exception {
-        log.info("Testing subscribeToTask");
+        LOGGER.info("Testing subscribeToTask");
 
         this.server.when(
                         request()
@@ -451,7 +451,7 @@ public class RestTransportTest {
      */
     @Test
     public void testExtensionSupportRequiredErrorUnmarshalling() throws Exception {
-        log.info("Testing ExtensionSupportRequiredError unmarshalling");
+        LOGGER.info("Testing ExtensionSupportRequiredError unmarshalling");
 
         // Mock server returns HTTP 400 with ExtensionSupportRequiredError
         String errorResponseBody = """
@@ -499,7 +499,7 @@ public class RestTransportTest {
      */
     @Test
     public void testVersionNotSupportedErrorUnmarshalling() throws Exception {
-        log.info("Testing VersionNotSupportedError unmarshalling");
+        LOGGER.info("Testing VersionNotSupportedError unmarshalling");
 
         // Mock server returns HTTP 501 with VersionNotSupportedError
         String errorResponseBody = """
@@ -548,7 +548,7 @@ public class RestTransportTest {
      */
     @Test
     public void testVersionNotSupportedErrorUnmarshallingStreaming() throws Exception {
-        log.info("Testing VersionNotSupportedError unmarshalling in streaming");
+        LOGGER.info("Testing VersionNotSupportedError unmarshalling in streaming");
 
         // Mock server returns HTTP 200 with error event in SSE stream
         String streamResponseBody = """

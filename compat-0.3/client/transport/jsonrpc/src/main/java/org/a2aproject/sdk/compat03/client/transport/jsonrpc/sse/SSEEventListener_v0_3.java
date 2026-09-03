@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class SSEEventListener_v0_3 {
-    private static final Logger log = Logger.getLogger(SSEEventListener_v0_3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SSEEventListener_v0_3.class.getName());
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     private final Consumer<Throwable> errorHandler;
     private volatile boolean completed = false;
@@ -29,11 +29,11 @@ public class SSEEventListener_v0_3 {
         try {
             handleMessage(JsonParser.parseString(message).getAsJsonObject(), completableFuture);
         } catch (JsonSyntaxException e) {
-            log.warning("Failed to parse JSON message: " + message);
+            LOGGER.warning("Failed to parse JSON message: " + message);
         } catch (JsonProcessingException_v0_3 e) {
-            log.warning("Failed to process JSON message: " + message);
+            LOGGER.warning("Failed to process JSON message: " + message);
         } catch (IllegalArgumentException e) {
-            log.warning("Invalid message format: " + message);
+            LOGGER.warning("Invalid message format: " + message);
             if (errorHandler != null) {
                 errorHandler.accept(e);
             }
@@ -51,18 +51,18 @@ public class SSEEventListener_v0_3 {
     public void onComplete() {
         // Idempotent: only signal completion once, even if called multiple times
         if (completed) {
-            log.fine("SSEEventListener.onComplete() called again - ignoring (already completed)");
+            LOGGER.fine("SSEEventListener.onComplete() called again - ignoring (already completed)");
             return;
         }
         completed = true;
 
         // Signal normal stream completion (null error means successful completion)
-        log.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
+        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
         if (errorHandler != null) {
-            log.fine("Calling errorHandler.accept(null) to signal successful completion");
+            LOGGER.fine("Calling errorHandler.accept(null) to signal successful completion");
             errorHandler.accept(null);
         } else {
-            log.warning("errorHandler is null, cannot signal completion");
+            LOGGER.warning("errorHandler is null, cannot signal completion");
         }
     }
 

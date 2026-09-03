@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 public class Utils_v0_3 {
 
 
-    private static final Logger log = Logger.getLogger(Utils_v0_3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Utils_v0_3.class.getName());
 
     public static String toJsonString(Object data) {
         try {
@@ -97,18 +97,18 @@ public class Utils_v0_3 {
             // This represents the first chunk for this artifact index
             if (existingArtifactIndex >= 0) {
                 // Replace the existing artifact entirely with the new artifact
-                log.fine(String.format("Replacing artifact at id %s for task %s", artifactId, taskId));
+                LOGGER.fine(String.format("Replacing artifact at id %s for task %s", artifactId, taskId));
                 artifacts.set(existingArtifactIndex, newArtifact);
             } else {
                 // Append the new artifact since no artifact with this id/index exists yet
-                log.fine(String.format("Adding artifact at id %s for task %s", artifactId, taskId));
+                LOGGER.fine(String.format("Adding artifact at id %s for task %s", artifactId, taskId));
                 artifacts.add(newArtifact);
             }
 
         } else if (existingArtifact != null) {
             // Append new parts to the existing artifact's parts list
             // Do this to a copy
-            log.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
+            LOGGER.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
             List<Part_v0_3<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
             Artifact_v0_3 updated = new Artifact_v0_3.Builder(existingArtifact)
@@ -118,7 +118,7 @@ public class Utils_v0_3 {
         } else {
             // We received a chunk to append, but we don't have an existing artifact.
             // We will ignore this chunk
-            log.warning(
+            LOGGER.warning(
                     String.format("Received append=true for nonexistent artifact index for artifact %s in task %s. Ignoring chunk.",
                     artifactId, taskId));
         }

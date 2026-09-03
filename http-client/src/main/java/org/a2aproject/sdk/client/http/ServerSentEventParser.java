@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * Not thread-safe — each connection should use its own instance.
  */
 public class ServerSentEventParser {
-    private static final Logger log = Logger.getLogger(ServerSentEventParser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ServerSentEventParser.class.getName());
 
     private static final int MAX_BUFFER_SIZE = 1000;
     private static final int MAX_BUFFER_CHARS = 1024 * 1024; // 1 MB (Java chars, so up to 2 MB in UTF-16; actual UTF-8 bytes may differ)
@@ -132,15 +132,15 @@ public class ServerSentEventParser {
                         retry = Long.parseLong(value);
                     } catch (NumberFormatException e) {
                         // Value is all digits but too large for long; log and ignore per spec.
-                        log.fine("Ignoring retry value out of long range: " + value);
+                        LOGGER.fine("Ignoring retry value out of long range: " + value);
                     }
                 } else {
-                    log.fine("Ignoring non-digit retry value: " + value);
+                    LOGGER.fine("Ignoring non-digit retry value: " + value);
                 }
             }
             default -> {
                 // Unknown field - ignore per spec
-                log.fine("Ignoring unknown SSE field: " + field);
+                LOGGER.fine("Ignoring unknown SSE field: " + field);
             }
         }
     }
@@ -189,7 +189,7 @@ public class ServerSentEventParser {
         if (errorConsumer != null) {
             errorConsumer.accept(error);
         } else {
-            log.warning("SSE parsing error: " + error.getMessage());
+            LOGGER.warning("SSE parsing error: " + error.getMessage());
         }
     }
 }

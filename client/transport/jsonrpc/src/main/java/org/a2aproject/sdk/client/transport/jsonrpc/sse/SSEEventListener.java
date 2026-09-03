@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class SSEEventListener extends AbstractSSEEventListener {
 
-    private static final Logger log = Logger.getLogger(SSEEventListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SSEEventListener.class.getName());
     private volatile boolean completed = false;
 
     public SSEEventListener(Consumer<StreamingEventKind> eventHandler,
@@ -36,18 +36,18 @@ public class SSEEventListener extends AbstractSSEEventListener {
     public void onComplete() {
         // Idempotent: only signal completion once, even if called multiple times
         if (completed) {
-            log.fine("SSEEventListener.onComplete() called again - ignoring (already completed)");
+            LOGGER.fine("SSEEventListener.onComplete() called again - ignoring (already completed)");
             return;
         }
         completed = true;
 
         // Signal normal stream completion (null error means successful completion)
-        log.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
+        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
         if (getErrorHandler() != null) {
-            log.fine("Calling errorHandler.accept(null) to signal successful completion");
+            LOGGER.fine("Calling errorHandler.accept(null) to signal successful completion");
             getErrorHandler().accept(null);
         } else {
-            log.warning("errorHandler is null, cannot signal completion");
+            LOGGER.warning("errorHandler is null, cannot signal completion");
         }
     }
 

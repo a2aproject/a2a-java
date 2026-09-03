@@ -12,7 +12,7 @@ import io.grpc.stub.StreamObserver;
 
 public class EventStreamObserver implements StreamObserver<StreamResponse> {
 
-    private static final Logger log = Logger.getLogger(EventStreamObserver.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(EventStreamObserver.class.getName());
     private final Consumer<StreamingEventKind> eventHandler;
     private final Consumer<Throwable> errorHandler;
 
@@ -38,7 +38,7 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
                 event = FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
                 break;
             default:
-                log.warning("Invalid stream response " + response.getPayloadCase());
+                LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
                 return;
         }

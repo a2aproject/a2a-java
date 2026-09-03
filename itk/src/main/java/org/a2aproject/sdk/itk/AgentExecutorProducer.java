@@ -69,7 +69,7 @@ import itk.InstructionOuterClass.Instruction;
 @ApplicationScoped
 public class AgentExecutorProducer {
 
-    private static final Logger log = LoggerFactory.getLogger(AgentExecutorProducer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentExecutorProducer.class);
 
     @Produces
     public AgentExecutor agentExecutor() {
@@ -84,13 +84,13 @@ public class AgentExecutorProducer {
 
         @Override
         public void execute(RequestContext context, AgentEmitter emitter) throws A2AError {
-            log.info("Executing task {}", emitter.getTaskId());
+            LOGGER.info("Executing task {}", emitter.getTaskId());
 
             emitter.startWork();
 
             Instruction instruction = extractInstruction(context.getMessage());
             if (instruction == null) {
-                log.error("No valid instruction found in request");
+                LOGGER.error("No valid instruction found in request");
                 emitter.sendMessage("No valid instruction found in request");
                 emitter.fail();
                 return;
@@ -99,26 +99,26 @@ public class AgentExecutorProducer {
             try {
                 List<String> results = handleInstruction(instruction);
                 String response = String.join("\n", results);
-                log.info("Response: {}", response);
+                LOGGER.info("Response: {}", response);
 
                 if (shouldHold(instruction)) {
-                    log.info("Holding task {} as requested", emitter.getTaskId());
+                    LOGGER.info("Holding task {} as requested", emitter.getTaskId());
 
                     Message holdMsg = emitter.newAgentMessage(
                             List.of(new TextPart(response + "\ntask-finished")), null);
                     emitter.updateStatus(TaskState.TASK_STATE_WORKING, holdMsg);
 
                     for (int i = 0; i < HOLD_ITERATIONS; i++) {
-                        log.info("Emitting periodic status update for held task {}", emitter.getTaskId());
+                        LOGGER.info("Emitting periodic status update for held task {}", emitter.getTaskId());
                         try {
                             Thread.sleep(HOLD_INTERVAL_MS);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            log.info("Task {} interrupted during hold", emitter.getTaskId());
+                            LOGGER.info("Task {} interrupted during hold", emitter.getTaskId());
                             return;
                         }
                     }
-                    log.info("Held task {} timed out, auto-completing", emitter.getTaskId());
+                    LOGGER.info("Held task {} timed out, auto-completing", emitter.getTaskId());
                     Message completeMsg = emitter.newAgentMessage(
                             List.of(new TextPart(response + "\ntask-finished")), null);
                     emitter.complete(completeMsg);
@@ -128,18 +128,18 @@ public class AgentExecutorProducer {
                     emitter.complete(completeMsg);
                 }
             } catch (TimeoutException e) {
-                log.error("Timed out waiting for remote agent response", e);
+                LOGGER.error("Timed out waiting for remote agent response", e);
                 emitter.fail();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                log.error("Task {} interrupted while calling remote agent", emitter.getTaskId(), e);
+                LOGGER.error("Task {} interrupted while calling remote agent", emitter.getTaskId(), e);
                 emitter.fail();
             } catch (ExecutionException e) {
-                log.error("Remote agent call failed for task {}: {}",
+                LOGGER.error("Remote agent call failed for task {}: {}",
                         emitter.getTaskId(), e.getCause().getMessage(), e.getCause());
                 emitter.fail();
             } catch (Exception e) {
-                log.error("Unexpected error handling instruction for task {}",
+                LOGGER.error("Unexpected error handling instruction for task {}",
                         emitter.getTaskId(), e);
                 emitter.fail();
             }
@@ -147,7 +147,7 @@ public class AgentExecutorProducer {
 
         @Override
         public void cancel(RequestContext context, AgentEmitter emitter) throws A2AError {
-            log.info("Cancel requested for task {}", emitter.getTaskId());
+            LOGGER.info("Cancel requested for task {}", emitter.getTaskId());
             emitter.cancel();
         }
 
@@ -167,7 +167,7 @@ public class AgentExecutorProducer {
                                 return Instruction.parseFrom(raw);
                             }
                         } catch (Exception e) {
-                            log.debug("Failed to parse instruction from file part", e);
+                            LOGGER.debug("Failed to parse instruction from file part", e);
                         }
                     }
                 }
@@ -177,7 +177,7 @@ public class AgentExecutorProducer {
                         byte[] raw = Base64.getDecoder().decode(textPart.text());
                         return Instruction.parseFrom(raw);
                     } catch (Exception e) {
-                        log.debug("Failed to parse instruction from text part", e);
+                        LOGGER.debug("Failed to parse instruction from text part", e);
                     }
                 }
             }
@@ -202,11 +202,11 @@ public class AgentExecutorProducer {
         }
 
         private List<String> handleCallAgent(CallAgent call) throws Exception {
-            log.info("Calling agent {} via {}", call.getAgentCardUri(), call.getTransport());
+            LOGGER.info("Calling agent {} via {}", call.getAgentCardUri(), call.getTransport());
             AgentCard remoteCard = A2A.getAgentCard(call.getAgentCardUri());
 
             if (remoteCard.supportedInterfaces().isEmpty()) {
-                log.info("Agent {} has no supportedInterfaces, falling back to v0.3 client", call.getAgentCardUri());
+                LOGGER.info("Agent {} has no supportedInterfaces, falling back to v0.3 client", call.getAgentCardUri());
                 return handleCallAgentV03(call);
             }
 
@@ -263,7 +263,7 @@ public class AgentExecutorProducer {
                 }
             });
             clientBuilder.streamingErrorHandler(error -> {
-                log.error("Streaming error calling {} via {}",
+                LOGGER.error("Streaming error calling {} via {}",
                         call.getAgentCardUri(), call.getTransport(), error);
                 if (!resultFuture.isDone()) {
                     resultFuture.completeExceptionally(error);
@@ -272,7 +272,7 @@ public class AgentExecutorProducer {
 
             try (Client client = clientBuilder.build()) {
                 client.sendMessage(wrappedMsg, (TaskPushNotificationConfig) null, null, null);
-                log.info("Received responses from {}", call.getAgentCardUri());
+                LOGGER.info("Received responses from {}", call.getAgentCardUri());
                 return resultFuture.get(TASK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             }
         }
@@ -335,7 +335,7 @@ public class AgentExecutorProducer {
                 }
             });
             clientBuilder.streamingErrorHandler(error -> {
-                log.error("Streaming error calling v0.3 agent {}", call.getAgentCardUri(), error);
+                LOGGER.error("Streaming error calling v0.3 agent {}", call.getAgentCardUri(), error);
                 if (!resultFuture.isDone()) {
                     resultFuture.completeExceptionally(error);
                 }
@@ -344,7 +344,7 @@ public class AgentExecutorProducer {
             Client_v0_3 client = clientBuilder.build();
             try {
                 client.sendMessage(wrappedMsg, pushConfig, null, null);
-                log.info("Received v0.3 responses from {}", call.getAgentCardUri());
+                LOGGER.info("Received v0.3 responses from {}", call.getAgentCardUri());
                 return resultFuture.get(TASK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } finally {
                 client.close();

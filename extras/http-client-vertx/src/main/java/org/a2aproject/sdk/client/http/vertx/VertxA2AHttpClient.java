@@ -143,7 +143,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     private final WebClient webClient;
     private final HttpClient httpClient;
     private boolean ownsVertx;
-    private static final Logger log = Logger.getLogger(VertxA2AHttpClient.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(VertxA2AHttpClient.class.getName());
 
     /**
      * Creates a new VertxA2AHttpClient with an internally managed Vert.x instance.
@@ -167,7 +167,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 .setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
         this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
-       log.fine("Vert.x client is ready.");
+       LOGGER.fine("Vert.x client is ready.");
     }
 
     private Vertx createVertx() {
@@ -181,7 +181,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 return (Vertx) beanManager.getReference(bean, Vertx.class, context);
             }
         } catch (Exception ex) {
-            log.log(Level.FINE, "Error loading vertx from CDI error details", ex);
+            LOGGER.log(Level.FINE, "Error loading vertx from CDI error details", ex);
         }
         this.ownsVertx = true;
         return Vertx.vertx();
@@ -211,7 +211,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 .setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
         this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
-        log.fine("Vert.x client is ready.");
+        LOGGER.fine("Vert.x client is ready.");
     }
 
     /**

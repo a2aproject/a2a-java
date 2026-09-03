@@ -65,7 +65,7 @@ import org.mockserver.model.JsonBody;
 
 public class RestTransport_v0_3_Test {
 
-    private static final Logger log = Logger.getLogger(RestTransport_v0_3_Test.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3_Test.class.getName());
     private ClientAndServer server;
     private static final AgentCard_v0_3 CARD = new AgentCard_v0_3.Builder()
                 .name("Hello World Agent")
@@ -288,7 +288,7 @@ public class RestTransport_v0_3_Test {
      */
     @Test
     public void testSetTaskPushNotificationConfiguration() throws Exception {
-        log.info("Testing setTaskPushNotificationConfiguration");
+        LOGGER.info("Testing setTaskPushNotificationConfiguration");
         this.server.when(
                 request()
                         .withMethod("POST")
@@ -386,7 +386,7 @@ public class RestTransport_v0_3_Test {
      */
     @Test
     public void testDeleteTaskPushNotificationConfigurations() throws Exception {
-        log.info("Testing deleteTaskPushNotificationConfigurations");
+        LOGGER.info("Testing deleteTaskPushNotificationConfigurations");
         this.server.when(
                 request()
                         .withMethod("DELETE")
@@ -406,7 +406,7 @@ public class RestTransport_v0_3_Test {
      */
     @Test
     public void testResubscribe() throws Exception {
-        log.info("Testing resubscribe");
+        LOGGER.info("Testing resubscribe");
         
         this.server.when(
                         request()

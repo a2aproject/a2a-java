@@ -171,7 +171,7 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
  */
 public class JSONRPCUtils {
 
-    private static final Logger log = Logger.getLogger(JSONRPCUtils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JSONRPCUtils.class.getName());
     private static final Gson GSON = new GsonBuilder()
             .setStrictness(Strictness.STRICT)
             .create();
@@ -446,8 +446,8 @@ public class JSONRPCUtils {
             JsonFormat.Parser parser = ignoringUnknownFields ? JsonFormat.parser().ignoringUnknownFields() : JsonFormat.parser();
             parser.merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            log.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
-            log.log(Level.FINE, "Proto parsing error details", e);
+            LOGGER.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
+            LOGGER.log(Level.FINE, "Proto parsing error details", e);
             throw convertProtoBufExceptionToJsonProcessingException(e, id);
         }
     }
@@ -478,8 +478,8 @@ public class JSONRPCUtils {
      */
     private static JsonProcessingException convertProtoBufExceptionToJsonProcessingException(InvalidProtocolBufferException e, Object id) {
         // Log the original exception for debugging purposes
-        log.log(Level.FINE, "Converting protobuf parsing exception to JSON-RPC error. Request ID: {0}", id);
-        log.log(Level.FINE, "Original proto exception details", e);
+        LOGGER.log(Level.FINE, "Converting protobuf parsing exception to JSON-RPC error. Request ID: {0}", id);
+        LOGGER.log(Level.FINE, "Original proto exception details", e);
 
         String message = e.getMessage();
         if (message == null) {

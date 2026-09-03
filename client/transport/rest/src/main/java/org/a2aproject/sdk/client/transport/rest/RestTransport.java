@@ -65,7 +65,7 @@ import org.jspecify.annotations.Nullable;
 
 public class RestTransport implements ClientTransport {
 
-    private static final Logger log = Logger.getLogger(RestTransport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
@@ -432,14 +432,14 @@ public class RestTransport implements ClientTransport {
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException {
         MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
         String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(body);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(body);
         }
         A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Error on POST processing " + body);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Error on POST processing " + body);
             }
             throw RestErrorMapper.mapRestError(response);
         }
@@ -448,8 +448,8 @@ public class RestTransport implements ClientTransport {
 
     private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders payloadAndHeaders) throws JsonProcessingException, InvalidProtocolBufferException {
         String body = ProtoJsonUtils.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(body);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(body);
         }
         return buildPost(url, payloadAndHeaders, body);
     }

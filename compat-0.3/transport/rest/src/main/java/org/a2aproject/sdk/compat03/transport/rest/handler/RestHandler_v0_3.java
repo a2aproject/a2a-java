@@ -57,7 +57,7 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class RestHandler_v0_3 {
 
-    private static final Logger log = Logger.getLogger(RestHandler_v0_3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestHandler_v0_3.class.getName());
     private AgentCard_v0_3 agentCard;
     private @Nullable
     Instance<AgentCard_v0_3> extendedAgentCard;
@@ -252,9 +252,9 @@ public class RestHandler_v0_3 {
             validate(body);
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            log.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
+            LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
                     body != null ? body.length() : 0);
-            log.log(Level.SEVERE, "Parse error details", e);
+            LOGGER.log(Level.SEVERE, "Parse error details", e);
             throw new InvalidParamsError_v0_3("Failed to parse request body: " + e.getMessage());
         }
     }

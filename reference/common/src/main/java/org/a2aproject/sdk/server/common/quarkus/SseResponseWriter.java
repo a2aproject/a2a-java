@@ -35,7 +35,7 @@ import org.a2aproject.sdk.server.events.EventConsumer;
  */
 public final class SseResponseWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(SseResponseWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SseResponseWriter.class);
     private static final String SERVER_SENT_EVENTS = "text/event-stream";
 
     private SseResponseWriter() {
@@ -82,7 +82,7 @@ public final class SseResponseWriter {
                 this.upstream.request(Long.MAX_VALUE);
 
                 response.closeHandler(v -> {
-                    logger.info("SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
+                    LOGGER.info("SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
                     context.invokeEventConsumerCancelCallback();
                     subscription.cancel();
                 });

@@ -12,7 +12,7 @@ import static org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.FromProto;
 
 public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> {
 
-    private static final Logger log = Logger.getLogger(EventStreamObserver_v0_3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(EventStreamObserver_v0_3.class.getName());
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     private final Consumer<Throwable> errorHandler;
 
@@ -38,7 +38,7 @@ public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> 
                 event = FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
                 break;
             default:
-                log.warning("Invalid stream response " + response.getPayloadCase());
+                LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
                 return;
         }

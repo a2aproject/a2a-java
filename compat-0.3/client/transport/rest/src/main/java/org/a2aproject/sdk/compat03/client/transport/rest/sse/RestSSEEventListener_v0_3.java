@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 public class RestSSEEventListener_v0_3 {
 
-    private static final Logger log = Logger.getLogger(RestSSEEventListener_v0_3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestSSEEventListener_v0_3.class.getName());
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     private final Consumer<Throwable> errorHandler;
 
@@ -26,7 +26,7 @@ public class RestSSEEventListener_v0_3 {
 
     public void onMessage(String message, @Nullable Future<Void> completableFuture) {
         try {
-            log.fine("Streaming message received: " + message);
+            LOGGER.fine("Streaming message received: " + message);
             org.a2aproject.sdk.compat03.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.compat03.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(message, builder);
             handleMessage(builder.build());
@@ -56,7 +56,7 @@ public class RestSSEEventListener_v0_3 {
             case ARTIFACT_UPDATE ->
                 event = ProtoUtils_v0_3.FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
             default -> {
-                log.warning("Invalid stream response " + response.getPayloadCase());
+                LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
                 return;
             }

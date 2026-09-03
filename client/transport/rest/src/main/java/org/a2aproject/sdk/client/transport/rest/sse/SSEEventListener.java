@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class SSEEventListener extends AbstractSSEEventListener {
 
-    private static final Logger log = Logger.getLogger(SSEEventListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SSEEventListener.class.getName());
 
     public SSEEventListener(Consumer<StreamingEventKind> eventHandler,
             @Nullable Consumer<Throwable> errorHandler) {
@@ -30,7 +30,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
     @Override
     public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
         try {
-            log.fine("REST SSE raw data: " + event.data());
+            LOGGER.fine("REST SSE raw data: " + event.data());
             org.a2aproject.sdk.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(event.data(), builder);
             parseAndHandleMessage(builder.build(), completableFuture);
@@ -59,7 +59,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
             case ARTIFACT_UPDATE ->
                 event = ProtoUtils.FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
             default -> {
-                log.warning("Invalid stream response " + response.getPayloadCase());
+                LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 if (getErrorHandler() != null) {
                     getErrorHandler().accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
                 }

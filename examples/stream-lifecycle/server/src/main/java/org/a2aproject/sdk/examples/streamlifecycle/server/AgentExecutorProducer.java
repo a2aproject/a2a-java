@@ -23,14 +23,14 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class AgentExecutorProducer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AgentExecutorProducer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentExecutorProducer.class);
 
     @Produces
     public AgentExecutor agentExecutor() {
         return new AgentExecutor() {
             @Override
             public void execute(RequestContext context, AgentEmitter emitter) throws A2AError {
-                LOG.info("[AGENT] Starting execution for task {}", context.getTaskId());
+                LOGGER.info("[AGENT] Starting execution for task {}", context.getTaskId());
                 emitter.startWork();
 
                 for (int i = 1; i <= 20; i++) {
@@ -38,15 +38,15 @@ public class AgentExecutorProducer {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        LOG.info("[AGENT] Interrupted at message {}", i);
+                        LOGGER.info("[AGENT] Interrupted at message {}", i);
                         break;
                     }
                     String text = "Progress update " + i + "/20";
-                    LOG.info("[AGENT] Sending: {}", text);
+                    LOGGER.info("[AGENT] Sending: {}", text);
                     emitter.addArtifact(java.util.List.of(new TextPart(text)));
                 }
 
-                LOG.info("[AGENT] Completing task {}", context.getTaskId());
+                LOGGER.info("[AGENT] Completing task {}", context.getTaskId());
                 emitter.complete();
             }
 

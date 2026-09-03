@@ -61,7 +61,7 @@ import org.jspecify.annotations.Nullable;
 
 public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
-    private static final Logger log = Logger.getLogger(RestTransport_v0_3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3.class.getName());
     private final A2AHttpClient httpClient;
     private final String agentUrl;
     private @Nullable final List<ClientCallInterceptor_v0_3> interceptors;
@@ -377,14 +377,14 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     private String sendPostRequest(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException_v0_3 {
         MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
         String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(body);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(body);
         }
         A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Error on POST processing " + body);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Error on POST processing " + body);
             }
             throw RestErrorMapper_v0_3.mapRestError(response);
         }
@@ -393,8 +393,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws JsonProcessingException_v0_3, InvalidProtocolBufferException {
         String body = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(body);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(body);
         }
         return buildPost(url, payloadAndHeaders, body);
     }

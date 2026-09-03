@@ -175,7 +175,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class A2AServerRoutes {
 
-    private static final Logger LOG = LoggerFactory.getLogger(A2AServerRoutes.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(A2AServerRoutes.class);
 
     @Inject
     JSONRPCHandler jsonRpcHandler;
@@ -371,7 +371,7 @@ public class A2AServerRoutes {
         } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
-            LOG.error("Internal error while processing request", t);
+            LOGGER.error("Internal error while processing request", t);
             error = new A2AErrorResponse(new InternalError("Internal error"));
         } finally {
             if (error != null) {

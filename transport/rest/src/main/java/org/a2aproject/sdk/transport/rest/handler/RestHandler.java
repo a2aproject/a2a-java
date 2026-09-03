@@ -125,7 +125,7 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class RestHandler {
 
-    private static final Logger log = Logger.getLogger(RestHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RestHandler.class.getName());
     private static final String TASK_STATE_PREFIX = "TASK_STATE_";
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
@@ -683,9 +683,9 @@ public class RestHandler {
             validate(body);
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            log.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
+            LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
                     body != null ? body.length() : 0);
-            log.log(Level.SEVERE, "Parse error details", e);
+            LOGGER.log(Level.SEVERE, "Parse error details", e);
             throw new InvalidParamsError("Failed to parse request body: " + e.getMessage());
         }
     }
@@ -704,7 +704,7 @@ public class RestHandler {
             String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
             return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
-            log.log(Level.SEVERE, "Failed to serialize response", e);
+            LOGGER.log(Level.SEVERE, "Failed to serialize response", e);
             return createErrorResponse(new InternalError("Internal error"));
         }
     }
@@ -737,7 +737,7 @@ public class RestHandler {
      * @return a sanitized internal error with a generic message
      */
     private static InternalError internalError(Throwable t) {
-        log.log(Level.SEVERE, "Internal error while processing request", t);
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
         return new InternalError("Internal error");
     }
 
@@ -750,47 +750,47 @@ public class RestHandler {
             Flow.Publisher<StreamingEventKind> publisher) {
         // We can't use the normal convertingProcessor since that propagates any errors as an error handled
         // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
-        log.log(Level.FINE, "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
+        LOGGER.log(Level.FINE, "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
         return ZeroPublisher.create(createTubeConfig(), tube -> {
-            log.log(Level.FINE, "REST: ZeroPublisher tube created, starting CompletableFuture.runAsync");
+            LOGGER.log(Level.FINE, "REST: ZeroPublisher tube created, starting CompletableFuture.runAsync");
             CompletableFuture.runAsync(() -> {
-                log.log(Level.FINE, "REST: Inside CompletableFuture, subscribing to EventKind publisher");
+                LOGGER.log(Level.FINE, "REST: Inside CompletableFuture, subscribing to EventKind publisher");
                 publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
                     Flow.@Nullable Subscription subscription;
 
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
-                        log.log(Level.FINE, "REST: onSubscribe called, storing subscription and requesting first event");
+                        LOGGER.log(Level.FINE, "REST: onSubscribe called, storing subscription and requesting first event");
                         this.subscription = subscription;
                         subscription.request(1);
                     }
 
                     @Override
                     public void onNext(StreamingEventKind item) {
-                        log.log(Level.FINE, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
+                        LOGGER.log(Level.FINE, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
                         try {
                             String payload = ProtoJsonUtils.toJson(
                                     JsonFormat.printer().omittingInsignificantWhitespace(), ProtoUtils.ToProto.taskOrMessageStream(item));
-                            log.log(Level.FINE, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
+                            LOGGER.log(Level.FINE, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
                             tube.send(payload);
-                            log.log(Level.FINE, "REST: tube.send() completed, requesting next event from EventConsumer");
+                            LOGGER.log(Level.FINE, "REST: tube.send() completed, requesting next event from EventConsumer");
                             // Request next event from EventConsumer (Chain 1: EventConsumer → RestHandler)
                             // This is safe because ZeroPublisher buffers items
                             // Chain 2 (ZeroPublisher → MultiSseSupport) controls actual delivery via request(1) in onWriteDone()
                             if (subscription != null) {
                                 subscription.request(1);
                             } else {
-                                log.log(Level.WARNING, "REST: subscription is null in onNext!");
+                                LOGGER.log(Level.WARNING, "REST: subscription is null in onNext!");
                             }
                         } catch (InvalidProtocolBufferException ex) {
-                            log.log(Level.SEVERE, "REST: JSON conversion failed", ex);
+                            LOGGER.log(Level.SEVERE, "REST: JSON conversion failed", ex);
                             onError(ex);
                         }
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
-                        log.log(Level.SEVERE, "REST: onError called", throwable);
+                        LOGGER.log(Level.SEVERE, "REST: onError called", throwable);
                         if (throwable instanceof A2AError jsonrpcError) {
                             tube.send(new HTTPRestErrorResponse(jsonrpcError).toJson());
                         } else {
@@ -801,7 +801,7 @@ public class RestHandler {
 
                     @Override
                     public void onComplete() {
-                        log.log(Level.FINE, "REST: onComplete called, calling tube.complete()");
+                        LOGGER.log(Level.FINE, "REST: onComplete called, calling tube.complete()");
                         tube.complete();
                     }
                 });
@@ -935,10 +935,10 @@ public class RestHandler {
                         return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(card),
                                 cacheMetadata.getHttpHeadersMap());
                     }
-                    log.fine(() -> "Tenant '" + tenant + "' not found in AgentCardRouter — returning 404");
+                    LOGGER.fine(() -> "Tenant '" + tenant + "' not found in AgentCardRouter — returning 404");
                     throw new TenantNotFoundException(tenant);
                 }
-                log.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
+                LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
             }
             if (!agentCardInstance.isResolvable()) {
                 return new HTTPRestResponse(404, "text/plain", "Public agent card not configured");
@@ -1101,7 +1101,7 @@ public class RestHandler {
             try {
                 return JsonUtil.toJson(this);
             } catch (JsonProcessingException ex) {
-                log.log(Level.SEVERE, "Failed to serialize HTTPRestErrorResponse to JSON", ex);
+                LOGGER.log(Level.SEVERE, "Failed to serialize HTTPRestErrorResponse to JSON", ex);
                 return "{\"error\":{\"code\":500,\"status\":\"INTERNAL\",\"message\":\"Internal Server Error\",\"details\":[]}}";
             }
         }

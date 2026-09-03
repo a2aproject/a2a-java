@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class DockerAvailability {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DockerAvailability.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerAvailability.class);
     private static final String SKIP_DOCKER_TESTS_PROPERTY = "skipDockerTests";
 
     private static volatile Boolean dockerAvailable = null;
@@ -50,16 +50,16 @@ public final class DockerAvailability {
     private static boolean checkDockerAvailable() {
         // Try docker first, then podman
         if (tryContainerCommand("docker")) {
-            LOG.info("Docker is available");
+            LOGGER.info("Docker is available");
             return true;
         }
 
         if (tryContainerCommand("podman")) {
-            LOG.info("Podman is available");
+            LOGGER.info("Podman is available");
             return true;
         }
 
-        LOG.warn("Neither Docker nor Podman is available");
+        LOGGER.warn("Neither Docker nor Podman is available");
         return false;
     }
 
@@ -72,7 +72,7 @@ public final class DockerAvailability {
 
             boolean finished = process.waitFor(5, TimeUnit.SECONDS);
             if (!finished) {
-                LOG.debug("Timeout waiting for '{} info' command, destroying process", command);
+                LOGGER.debug("Timeout waiting for '{} info' command, destroying process", command);
                 process.destroyForcibly();
                 return false;
             }
@@ -80,11 +80,11 @@ public final class DockerAvailability {
             int exitCode = process.exitValue();
             return exitCode == 0;
         } catch (IOException e) {
-            LOG.debug("Failed to execute '{} info' command", command, e);
+            LOGGER.debug("Failed to execute '{} info' command", command, e);
             return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOG.debug("Interrupted while waiting for '{} info' command", command, e);
+            LOGGER.debug("Interrupted while waiting for '{} info' command", command, e);
             return false;
         }
     }

@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract class AbstractSSEEventListener {
 
-    private static final Logger log = Logger.getLogger(AbstractSSEEventListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractSSEEventListener.class.getName());
 
     private final Consumer<StreamingEventKind> eventHandler;
     private final @Nullable Consumer<Throwable> errorHandler;
@@ -96,7 +96,7 @@ public abstract class AbstractSSEEventListener {
         // Handles both TaskStatusUpdateEvent and Task objects with final states
         // This covers late subscriptions to completed tasks and ensures no connection leaks
         if (shouldAutoClose(event) && future != null) {
-            log.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
+            LOGGER.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
             future.cancel(true); // close SSE channel
         }
     }
