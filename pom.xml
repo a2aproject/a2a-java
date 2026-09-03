@@ -31,9 +31,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/a2asdk/a2a-java-sdk.git</connection>
-        <developerConnection>scm:git:ssh://github.com:a2asdk/a2a-java-sdk.git</developerConnection>
-        <url>https://github.com/a2asdk/a2a-java-sdk</url>
+        <connection>scm:git:git://github.com/a2aproject/a2a-java.git</connection>
+        <developerConnection>scm:git:ssh://github.com:a2aproject/a2a-java.git</developerConnection>
+        <url>https://github.com/a2aproject/a2a-java</url>
     </scm>
 
 
