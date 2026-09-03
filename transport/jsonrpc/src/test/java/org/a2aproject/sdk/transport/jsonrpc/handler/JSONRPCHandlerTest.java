@@ -2325,4 +2325,53 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected an event within timeout");
         return results;
     }
+
+    @Test
+    public void testGetAgentCardReturnsNullWhenNoPublicCard() {
+        AgentCard extendedCard = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).streaming(true).build()).build();
+        JSONRPCHandler handler = new JSONRPCHandler(
+                FixedInstance.empty(), new FixedInstance<>(extendedCard), requestHandler, internalExecutor, null);
+
+        assertNull(handler.getAgentCard());
+    }
+
+    @Test
+    public void testCapabilityChecksFallBackToExtendedCard() throws Exception {
+        AgentCard extendedCard = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().streaming(true).pushNotifications(true).build()).build();
+        JSONRPCHandler handler = new JSONRPCHandler(
+                FixedInstance.empty(), new FixedInstance<>(extendedCard), requestHandler, internalExecutor, null);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+        taskStore.save(MINIMAL_TASK, false);
+        Message message = Message.builder(MESSAGE).contextId(MINIMAL_TASK.contextId()).build();
+        SendMessageRequest request = new SendMessageRequest("1",
+                new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        assertNull(response.getError());
+    }
+
+    @Test
+    public void testNoCardAtAllThrowsIllegalStateException() {
+        JSONRPCHandler handler = new JSONRPCHandler(
+                FixedInstance.empty(), FixedInstance.empty(), requestHandler, internalExecutor, null);
+
+        Message message = Message.builder(MESSAGE).contextId("ctx").build();
+        SendMessageRequest request = new SendMessageRequest("1",
+                new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        assertNotNull(response.getError());
+        assertInstanceOf(InternalError.class, response.getError());
+    }
+
+    @Test
+    public void testConvenienceConstructorWithNullCard() {
+        JSONRPCHandler handler = new JSONRPCHandler(null, requestHandler, internalExecutor);
+        assertNull(handler.getAgentCard());
+    }
 }

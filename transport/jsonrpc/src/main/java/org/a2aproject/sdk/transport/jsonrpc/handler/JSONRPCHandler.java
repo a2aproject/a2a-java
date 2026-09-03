@@ -191,12 +191,13 @@ public class JSONRPCHandler {
     /**
      * Creates a JSON-RPC handler with basic dependencies.
      *
-     * @param agentCard the agent card containing agent capabilities
+     * @param agentCard the agent card containing agent capabilities, or {@code null} if no public card
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
-    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
-        this(new FixedInstance<>(agentCard), null, requestHandler, executor, null);
+    public JSONRPCHandler(@Nullable AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
+        this(agentCard != null ? new FixedInstance<>(agentCard) : FixedInstance.empty(),
+                null, requestHandler, executor, null);
     }
 
     /**
@@ -731,16 +732,16 @@ public class JSONRPCHandler {
     }
 
     /**
-     * Returns the public agent card.
+     * Returns the public agent card, or {@code null} if no {@code @PublicAgentCard} bean is configured.
      *
      * <p>The agent card is a self-describing manifest that provides essential metadata about
      * the agent, including its capabilities, supported skills, communication methods, and
      * security requirements.
      *
-     * @return the public agent card
+     * @return the public agent card, or {@code null} if not configured
      * @see AgentCard
      */
-    public AgentCard getAgentCard() {
+    public @Nullable AgentCard getAgentCard() {
         return getAgentCard(null);
     }
 
@@ -755,10 +756,10 @@ public class JSONRPCHandler {
      * is returned (single-tenant server, tenant segment is ignored).
      *
      * @param tenant the tenant identifier, may be {@code null}
-     * @return the public agent card
+     * @return the public agent card, or {@code null} if no {@code @PublicAgentCard} bean is configured
      * @throws TenantNotFoundException if a router is configured but the tenant is not registered
      */
-    public AgentCard getAgentCard(@Nullable String tenant) {
+    public @Nullable AgentCard getAgentCard(@Nullable String tenant) {
         Utils.validateTenant(tenant);
         if (tenant != null && !tenant.isBlank()) {
             if (agentCardRouter != null) {
@@ -771,11 +772,14 @@ public class JSONRPCHandler {
             }
             LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
         }
-        return resolveAgentCard();
+        if (!agentCardInstance.isResolvable()) {
+            return null;
+        }
+        return AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated);
     }
 
     private AgentCard resolveAgentCard() {
-        return AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated);
+        return AgentCardValidator.resolveWithFallback(agentCardInstance, extendedAgentCard, transportValidated);
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(

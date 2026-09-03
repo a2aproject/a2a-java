@@ -74,6 +74,7 @@ import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.server.util.sse.SseFormatter;
 import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.TransportProtocol;
@@ -231,6 +232,10 @@ public class A2AServerRoutes {
             .handler(ctx -> {
                 try {
                     String agentCard = getAgentCard(ctx);
+                    if (agentCard == null) {
+                        sendAgentCardNotConfigured(ctx);
+                        return;
+                    }
                     ctx.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -246,6 +251,10 @@ public class A2AServerRoutes {
             .handler(ctx -> {
                 try {
                     String agentCard = getTenantAgentCard(ctx);
+                    if (agentCard == null) {
+                        sendAgentCardNotConfigured(ctx);
+                        return;
+                    }
                     ctx.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -432,10 +441,14 @@ public class A2AServerRoutes {
      * @throws JsonProcessingException if serialization fails
      * @see JSONRPCHandler#getAgentCard()
      */
-    public String getAgentCard(RoutingContext rc) throws JsonProcessingException {
+    public @Nullable String getAgentCard(RoutingContext rc) throws JsonProcessingException {
+        AgentCard card = jsonRpcHandler.getAgentCard();
+        if (card == null) {
+            return null;
+        }
         // Add caching headers per A2A specification section 8.6
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
-        return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
+        return JsonUtil.toJson(card);
     }
 
     /**
@@ -446,14 +459,23 @@ public class A2AServerRoutes {
      * @throws IllegalArgumentException if the tenant contains invalid characters
      * @throws JsonProcessingException if serialization fails
      */
-    public String getTenantAgentCard(RoutingContext rc) throws JsonProcessingException {
+    public @Nullable String getTenantAgentCard(RoutingContext rc) throws JsonProcessingException {
         String tenant = rc.pathParam("tenant");
         if (tenant == null) {
             throw new IllegalArgumentException("Missing tenant path parameter");
         }
         Utils.validateTenant(tenant);
+        AgentCard card = jsonRpcHandler.getAgentCard(tenant);
+        if (card == null) {
+            return null;
+        }
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
-        return JsonUtil.toJson(jsonRpcHandler.getAgentCard(tenant));
+        return JsonUtil.toJson(card);
+    }
+
+    private static void sendAgentCardNotConfigured(RoutingContext ctx) {
+        ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE, "text/plain")
+                .end("Public agent card not configured");
     }
 
     /**

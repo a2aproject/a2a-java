@@ -1464,4 +1464,18 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected the stream to terminate within timeout");
         Assertions.assertTrue(errorFound.get(), "Expected a VERSION_NOT_SUPPORTED event in the stream");
     }
+
+    @Test
+    public void testGetAgentCardReturns404WhenNoPublicCard() {
+        RestHandler handler = new RestHandler(null, createCacheMetadata(CARD), requestHandler, internalExecutor);
+        RestHandler.HTTPRestResponse response = handler.getAgentCard();
+        Assertions.assertEquals(404, response.getStatusCode());
+    }
+
+    @Test
+    public void testGetAgentCardWithTenantReturns404WhenNoPublicCard() {
+        RestHandler handler = new RestHandler(null, createCacheMetadata(CARD), requestHandler, internalExecutor);
+        RestHandler.HTTPRestResponse response = handler.getAgentCard("some-tenant");
+        Assertions.assertEquals(404, response.getStatusCode());
+    }
 }

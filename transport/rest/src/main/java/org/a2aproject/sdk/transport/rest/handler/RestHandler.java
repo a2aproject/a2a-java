@@ -177,14 +177,14 @@ public class RestHandler {
     /**
      * Creates a REST handler with basic dependencies.
      *
-     * @param agentCard the agent card containing agent capabilities
+     * @param agentCard the agent card containing agent capabilities, or {@code null} if no public card
      * @param cacheMetadata the agent card caching metadata
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
-    public RestHandler(AgentCard agentCard, AgentCardCacheMetadata cacheMetadata,
+    public RestHandler(@Nullable AgentCard agentCard, AgentCardCacheMetadata cacheMetadata,
             RequestHandler requestHandler, Executor executor) {
-        this.agentCardInstance = new FixedInstance<>(agentCard);
+        this.agentCardInstance = agentCard != null ? new FixedInstance<>(agentCard) : FixedInstance.empty();
         this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
         this.executor = executor;
@@ -907,7 +907,7 @@ public class RestHandler {
      * @see #getExtendedAgentCard(ServerCallContext, String)
      */
     private AgentCard resolveAgentCard() {
-        return AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated);
+        return AgentCardValidator.resolveWithFallback(agentCardInstance, extendedAgentCard, transportValidated);
     }
 
     public HTTPRestResponse getAgentCard() {
@@ -940,7 +940,11 @@ public class RestHandler {
                 }
                 log.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
             }
-            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(resolveAgentCard()),
+            if (!agentCardInstance.isResolvable()) {
+                return new HTTPRestResponse(404, "text/plain", "Public agent card not configured");
+            }
+            return new HTTPRestResponse(200, APPLICATION_JSON,
+                    JsonUtil.toJson(AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated)),
                     cacheMetadata.getHttpHeadersMap());
         } catch (TenantNotFoundException e) {
             return new HTTPRestResponse(404, "text/plain", e.getResponseMessage());

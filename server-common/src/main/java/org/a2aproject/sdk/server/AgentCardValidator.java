@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.inject.Instance;
 
 import org.a2aproject.sdk.spec.AgentCard;
+import org.jspecify.annotations.Nullable;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
 
@@ -21,8 +22,11 @@ import org.a2aproject.sdk.spec.TransportProtocol;
  * Validates AgentCard transport configuration against available transport endpoints.
  */
 public class AgentCardValidator {
-    
+
     private static final Logger LOGGER = Logger.getLogger(AgentCardValidator.class.getName());
+
+    static final String NO_AGENT_CARD_MESSAGE =
+            "No agent card configured. Provide either a @PublicAgentCard or @ExtendedAgentCard bean.";
 
     // Properties to turn off validation globally, or per known transport
     public static final String SKIP_PROPERTY = "org.a2aproject.sdk.transport.skipValidation";
@@ -69,6 +73,47 @@ public class AgentCardValidator {
             }
         }
         return card;
+    }
+
+    /**
+     * Resolves an agent card from the public instance, falling back to the extended instance
+     * if the public one is absent. Throws if neither is available.
+     *
+     * @param publicCard the CDI instance for the {@code @PublicAgentCard}
+     * @param extendedCard the CDI instance for the {@code @ExtendedAgentCard}, may be {@code null}
+     * @param transportValidated atomic guard ensuring validation runs once
+     * @return the resolved agent card
+     * @throws IllegalStateException if neither card is available
+     */
+    public static AgentCard resolveWithFallback(Instance<AgentCard> publicCard,
+            @Nullable Instance<AgentCard> extendedCard,
+            AtomicBoolean transportValidated) {
+        if (publicCard.isResolvable()) {
+            return resolveAndValidateOnce(publicCard, transportValidated);
+        }
+        if (extendedCard != null && extendedCard.isResolvable()) {
+            return resolveAndValidateOnce(extendedCard, transportValidated);
+        }
+        throw new IllegalStateException(NO_AGENT_CARD_MESSAGE);
+    }
+
+    /**
+     * Returns the first non-null agent card, preferring the public card.
+     * Throws if both are {@code null}.
+     *
+     * @param publicCard the public agent card, may be {@code null}
+     * @param extendedCard the extended agent card, may be {@code null}
+     * @return the first non-null card
+     * @throws IllegalStateException if both cards are {@code null}
+     */
+    public static AgentCard requireFirst(@Nullable AgentCard publicCard, @Nullable AgentCard extendedCard) {
+        if (publicCard != null) {
+            return publicCard;
+        }
+        if (extendedCard != null) {
+            return extendedCard;
+        }
+        throw new IllegalStateException(NO_AGENT_CARD_MESSAGE);
     }
 
     /**

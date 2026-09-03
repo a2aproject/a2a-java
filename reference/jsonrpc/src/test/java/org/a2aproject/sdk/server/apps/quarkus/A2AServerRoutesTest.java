@@ -17,6 +17,7 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -49,6 +50,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
+import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -101,6 +103,7 @@ public class A2AServerRoutesTest {
         setField(routes, "jsonRpcHandler", mockJsonRpcHandler);
         setField(routes, "executor", mockExecutor);
         setField(routes, "callContextFactory", mockCallContextFactory);
+        setField(routes, "cacheMetadata", mock(AgentCardCacheMetadata.class));
 
         // Setup common mock behavior
         when(mockCallContextFactory.isUnsatisfied()).thenReturn(true);
@@ -723,6 +726,23 @@ public class A2AServerRoutesTest {
 
         // Assert
         verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    }
+
+    @Test
+    public void testGetAgentCardReturnsNullWhenNoPublicCard() throws Exception {
+        when(mockJsonRpcHandler.getAgentCard()).thenReturn(null);
+        String result = routes.getAgentCard(mockRoutingContext);
+        assertNull(result);
+        verify(mockHttpResponse, never()).putHeader(any(CharSequence.class), any(CharSequence.class));
+    }
+
+    @Test
+    public void testGetTenantAgentCardReturnsNullWhenNoPublicCard() throws Exception {
+        when(mockRoutingContext.pathParam("tenant")).thenReturn("acme");
+        when(mockJsonRpcHandler.getAgentCard("acme")).thenReturn(null);
+        String result = routes.getTenantAgentCard(mockRoutingContext);
+        assertNull(result);
+        verify(mockHttpResponse, never()).putHeader(any(CharSequence.class), any(CharSequence.class));
     }
 
     /**

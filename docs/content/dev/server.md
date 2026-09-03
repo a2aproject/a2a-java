@@ -51,6 +51,13 @@ You can add more than one transport dependency to support multiple protocols sim
 
 ## 2. Define an Agent Card
 
+The agent card tells clients what the agent can do. Two qualifiers control how the card is exposed:
+
+- **`@PublicAgentCard`** — served at `/.well-known/agent-card.json` for public discovery. Use this when external clients need to find your agent.
+- **`@ExtendedAgentCard`** — used for internal capability checks (transport validation, feature gates) and served via the `GetExtendedAgentCard` JSON-RPC method. Use this when you need to advertise additional capabilities that are not publicly visible.
+
+`@PublicAgentCard` is optional — if omitted, the public endpoint returns HTTP 404 and the server falls back to `@ExtendedAgentCard` for internal capability checks. At least one of the two must be provided, or the server will fail to start with an error.
+
 ```java
 @ApplicationScoped
 public class WeatherAgentCardProducer {

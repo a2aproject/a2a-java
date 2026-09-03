@@ -849,7 +849,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
     private AgentCard resolveAgentCard() {
         return AgentCardValidator.resolveAndValidateOnce(
-                this::getAgentCard, transportValidated, this::validateTransportConfigurationWithCorrectClassLoader);
+                () -> AgentCardValidator.requireFirst(getAgentCard(), getExtendedAgentCard()),
+                transportValidated, this::validateTransportConfigurationWithCorrectClassLoader);
     }
 
     private void validateTransportConfigurationWithCorrectClassLoader(AgentCard agentCard) {
@@ -902,11 +903,12 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     protected abstract RequestHandler getRequestHandler();
 
     /**
-     * Returns the public agent card defining the agent's capabilities and metadata.
+     * Returns the public agent card defining the agent's capabilities and metadata,
+     * or {@code null} if no public agent card is configured.
      *
-     * @return the agent card
+     * @return the agent card, or {@code null} if not configured
      */
-    protected abstract AgentCard getAgentCard();
+    protected abstract @Nullable AgentCard getAgentCard();
 
     /**
      * Returns the extended agent card with additional capabilities, or null if not configured.

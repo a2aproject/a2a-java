@@ -100,9 +100,7 @@ public class A2AServerRoutes_v0_3 {
                 }
             }, false);
 
-        // Only register v0.3 agent card if no real v1.0 agent card producer exists.
-        // DefaultProducers provides a @DefaultBean AgentCard fallback that is always
-        // present, so we must exclude it and only check for non-default beans.
+        // Only register v0.3 agent card if no user-provided v1.0 @PublicAgentCard bean exists.
         if (!hasNonDefaultV10AgentCard()) {
             router.get("/.well-known/agent-card.json")
                 .produces(APPLICATION_JSON)

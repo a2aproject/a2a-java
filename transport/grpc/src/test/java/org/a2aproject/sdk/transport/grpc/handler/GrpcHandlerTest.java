@@ -1381,6 +1381,55 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testGetAgentCardReturnsNullFallsBackToExtendedCard() throws Exception {
+        AgentCard extendedCard = AgentCard.builder(AbstractA2ARequestHandlerTest.CARD)
+                .capabilities(AgentCapabilities.builder().streaming(true).pushNotifications(true).build()).build();
+        GrpcHandler handler = new TestGrpcHandler(null, requestHandler, internalExecutor) {
+            @Override
+            protected AgentCard getExtendedAgentCard() {
+                return extendedCard;
+            }
+        };
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setMessage(GRPC_MESSAGE)
+                .build();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        Assertions.assertNull(streamRecorder.getError());
+        Assertions.assertFalse(streamRecorder.getValues().isEmpty());
+    }
+
+    @Test
+    public void testNoCardAtAllThrowsError() throws Exception {
+        GrpcHandler handler = new TestGrpcHandler(null, requestHandler, internalExecutor) {
+            @Override
+            protected AgentCard getExtendedAgentCard() {
+                return null;
+            }
+        };
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setMessage(GRPC_MESSAGE)
+                .build();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.INTERNAL);
+    }
+
+    @Test
     public void testListTasksNegativeTimestampReturnsInvalidArgument() {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor);
         StreamRecorder<ListTasksResponse> responseObserver = StreamRecorder.create();

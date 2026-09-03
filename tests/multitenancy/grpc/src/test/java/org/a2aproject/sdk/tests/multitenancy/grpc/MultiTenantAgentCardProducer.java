@@ -20,12 +20,14 @@ public class MultiTenantAgentCardProducer extends org.a2aproject.sdk.tests.multi
     int serverPort;
 
     @Produces
+    @Singleton
     @PublicAgentCard
     public AgentCard publicCard() {
         return card("Default Agent", grpcInterfaces());
     }
 
     @Produces
+    @Singleton
     @ExtendedAgentCard
     public AgentCard defaultExtendedCard() {
         return card("Default Agent (extended)", grpcInterfaces());

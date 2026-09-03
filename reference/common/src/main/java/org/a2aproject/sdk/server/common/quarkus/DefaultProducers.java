@@ -3,9 +3,7 @@ package org.a2aproject.sdk.server.common.quarkus;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
-import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
-import org.a2aproject.sdk.spec.AgentCard;
 import io.quarkus.arc.DefaultBean;
 
 /**
@@ -18,12 +16,6 @@ import io.quarkus.arc.DefaultBean;
  */
 @ApplicationScoped
 public class DefaultProducers {
-    @Produces
-    @PublicAgentCard
-    @DefaultBean
-    public AgentCard createDefaultAgentCard() {
-        throw new IllegalStateException(wrap("Please provide your own AgentCard implementation"));
-    }
 
     @Produces
     @DefaultBean

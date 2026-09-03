@@ -270,6 +270,84 @@ public class AgentCardValidatorTest {
         assertEquals(1, validationCount.get(), "validation should run only once");
     }
 
+    @Test
+    void resolveWithFallbackUsesPublicCardWhenPresent() {
+        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
+        try {
+            AgentCard publicCard = createTestAgentCardBuilder().name("public").build();
+            AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
+            AtomicBoolean guard = new AtomicBoolean(false);
+
+            AgentCard result = AgentCardValidator.resolveWithFallback(
+                    new FixedInstance<>(publicCard), new FixedInstance<>(extendedCard), guard);
+
+            assertEquals("public", result.name());
+        } finally {
+            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
+        }
+    }
+
+    @Test
+    void resolveWithFallbackFallsBackToExtendedCard() {
+        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
+        try {
+            AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
+            AtomicBoolean guard = new AtomicBoolean(false);
+
+            AgentCard result = AgentCardValidator.resolveWithFallback(
+                    FixedInstance.empty(), new FixedInstance<>(extendedCard), guard);
+
+            assertEquals("extended", result.name());
+        } finally {
+            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
+        }
+    }
+
+    @Test
+    void resolveWithFallbackThrowsWhenBothAbsent() {
+        AtomicBoolean guard = new AtomicBoolean(false);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                AgentCardValidator.resolveWithFallback(
+                        FixedInstance.empty(), FixedInstance.empty(), guard));
+
+        assertEquals(AgentCardValidator.NO_AGENT_CARD_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    void resolveWithFallbackThrowsWhenExtendedIsNull() {
+        AtomicBoolean guard = new AtomicBoolean(false);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                AgentCardValidator.resolveWithFallback(
+                        FixedInstance.empty(), null, guard));
+
+        assertEquals(AgentCardValidator.NO_AGENT_CARD_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    void requireFirstReturnsPublicCard() {
+        AgentCard publicCard = createTestAgentCardBuilder().name("public").build();
+        AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
+
+        assertEquals("public", AgentCardValidator.requireFirst(publicCard, extendedCard).name());
+    }
+
+    @Test
+    void requireFirstReturnsExtendedWhenPublicIsNull() {
+        AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
+
+        assertEquals("extended", AgentCardValidator.requireFirst(null, extendedCard).name());
+    }
+
+    @Test
+    void requireFirstThrowsWhenBothNull() {
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                AgentCardValidator.requireFirst(null, null));
+
+        assertEquals(AgentCardValidator.NO_AGENT_CARD_MESSAGE, ex.getMessage());
+    }
+
     // A simple log handler for testing
     private static class TestLogHandler extends Handler {
         private final List<String> logMessages = new java.util.ArrayList<>();
