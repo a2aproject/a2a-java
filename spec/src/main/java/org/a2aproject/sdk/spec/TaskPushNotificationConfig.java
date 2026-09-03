@@ -21,7 +21,8 @@ import org.jspecify.annotations.Nullable;
  * Used for managing task-specific push notification settings via the push notification
  * management methods ({@code tasks/pushNotificationConfig/set}, {@code tasks/pushNotificationConfig/get}, etc.).
  *
- * @param id unique identifier (e.g. UUID) for this push notification configuration
+ * @param id optional unique identifier (e.g. UUID) for this push notification configuration.
+ *        When omitted while creating a configuration, the server assigns one.
  * @param taskId the unique identifier of the task to receive push notifications for
  * @param url the HTTP/HTTPS endpoint URL to receive push notifications (required)
  * @param token optional bearer token for simple authentication
@@ -31,14 +32,14 @@ import org.jspecify.annotations.Nullable;
  * @see MessageSendConfiguration for configuring push notifications on message send
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskPushNotificationConfig(String id, @Nullable String taskId, String url, @Nullable String token,
+public record TaskPushNotificationConfig(@Nullable String id, @Nullable String taskId, String url, @Nullable String token,
         @Nullable AuthenticationInfo authentication, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
      * Validates that required parameters are not null.
      *
-     * @param id the configuration identifier
+     * @param id the optional configuration identifier
      * @param taskId the task identifier
      * @param url the notification endpoint URL
      * @param token optional bearer token
@@ -46,7 +47,6 @@ public record TaskPushNotificationConfig(String id, @Nullable String taskId, Str
      * @param tenant the tenant identifier
      */
     public TaskPushNotificationConfig {
-        Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("url", url);
         Utils.validateTenant(tenant);
     }
@@ -105,10 +105,10 @@ public record TaskPushNotificationConfig(String id, @Nullable String taskId, Str
         /**
          * Sets the configuration identifier.
          *
-         * @param id the configuration ID
+         * @param id the optional configuration ID
          * @return this builder
          */
-        public Builder id(String id) {
+        public Builder id(@Nullable String id) {
             this.id = id;
             return this;
         }
@@ -172,11 +172,11 @@ public record TaskPushNotificationConfig(String id, @Nullable String taskId, Str
          * Builds the {@link TaskPushNotificationConfig}.
          *
          * @return a new push notification configuration
-         * @throws IllegalArgumentException if id or url is null
+         * @throws IllegalArgumentException if url is null
          */
         public TaskPushNotificationConfig build() {
             return new TaskPushNotificationConfig(
-                    Assert.checkNotNullParam("id", id),
+                    id,
                     taskId,
                     Assert.checkNotNullParam("url", url),
                     token,
