@@ -89,8 +89,8 @@ public class ClientTaskManagerTest {
         
         assertEquals(TaskState.TASK_STATE_COMPLETED, updatedTask.status().state());
         assertNotNull(updatedTask.history());
-        assertEquals(1, updatedTask.history().size());
-        assertEquals(sampleMessage, updatedTask.history().get(0));
+        assertEquals(0, updatedTask.history().size());
+        assertEquals(sampleMessage, updatedTask.status().message());
     }
 
     @Test
@@ -251,7 +251,8 @@ public class ClientTaskManagerTest {
         
         Task updatedTask1 = taskManager.saveTaskEvent(statusUpdate1);
         assertEquals(TaskState.TASK_STATE_WORKING, updatedTask1.status().state());
-        assertEquals(1, updatedTask1.history().size());
+        assertEquals(0, updatedTask1.history().size());
+        assertEquals(sampleMessage, updatedTask1.status().message());
         
         // Second status update
         Message secondMessage = Message.builder()
@@ -268,7 +269,9 @@ public class ClientTaskManagerTest {
         
         Task updatedTask2 = taskManager.saveTaskEvent(statusUpdate2);
         assertEquals(TaskState.TASK_STATE_COMPLETED, updatedTask2.status().state());
-        assertEquals(2, updatedTask2.history().size());
+        assertEquals(1, updatedTask2.history().size());
+        assertEquals(sampleMessage, updatedTask2.history().get(0));
+        assertEquals(secondMessage, updatedTask2.status().message());
     }
 
     @Test
