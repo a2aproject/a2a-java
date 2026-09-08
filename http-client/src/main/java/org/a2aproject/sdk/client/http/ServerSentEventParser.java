@@ -17,7 +17,6 @@ public class ServerSentEventParser {
 
     private static final int MAX_BUFFER_SIZE = 1000;
     private static final int MAX_BUFFER_CHARS = 1024 * 1024; // 1 MB (Java chars, so up to 2 MB in UTF-16; actual UTF-8 bytes may differ)
-    private static final int MAX_LINE_LENGTH = 65536;         // 64 KB
 
     private final Consumer<ServerSentEvent> eventConsumer;
     private final @Nullable Consumer<Throwable> errorConsumer;
@@ -30,7 +29,7 @@ public class ServerSentEventParser {
     private @Nullable String currentEventId;
     private @Nullable String lastEventId;
     private @Nullable Long retry;
-    // Set when the current event block is corrupt (line too long, buffer overflow).
+    // Set when the current event block exceeds a buffer limit.
     // All further fields are ignored until the next empty-line boundary.
     private boolean skippingCurrentEvent = false;
 
@@ -50,15 +49,6 @@ public class ServerSentEventParser {
     public void processLine(@Nullable String line) {
         if (line == null) {
             handleError(new IllegalArgumentException("Line cannot be null"));
-            return;
-        }
-
-        // Check line length to prevent DoS; corrupt the current event so it is not dispatched
-        if (line.length() > MAX_LINE_LENGTH) {
-            handleError(new IllegalArgumentException("Line exceeds maximum length of " + MAX_LINE_LENGTH + " characters"));
-            skippingCurrentEvent = true;
-            dataBuffer.clear();
-            dataBufferChars = 0;
             return;
         }
 

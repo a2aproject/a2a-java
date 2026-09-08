@@ -367,29 +367,18 @@ public class ServerSentEventParserTest {
     }
 
     @Test
-    public void testErrorConsumerCalledForLineTooLong() {
+    public void testLargeSingleLineDataEvent() {
         List<ServerSentEvent> events = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
         ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set);
 
-        // Oversized line mid-event: the whole event block is discarded
-        parser.processLine("data: before overflow");
-        String longLine = "data: " + "x".repeat(65537);
-        parser.processLine(longLine);
-        // Subsequent lines in the same block are skipped
-        parser.processLine("data: should be skipped");
-        parser.processLine(""); // end of corrupted block — nothing dispatched
-
-        assertNotNull(error.get(), "errorConsumer should be called for oversized line");
-        assertEquals(IllegalArgumentException.class, error.get().getClass());
-        assertNotNull(error.get().getMessage());
-        assertEquals(0, events.size(), "Corrupted event block must not be dispatched");
-
-        // Parser recovers cleanly at the next event boundary
-        parser.processLine("data: recovered");
+        String data = "x".repeat(70_000);
+        parser.processLine("data: " + data);
         parser.processLine("");
-        assertEquals(1, events.size(), "Parser should recover after oversized line");
-        assertEquals("recovered", events.get(0).data());
+
+        assertNull(error.get(), "A valid SSE line below the event limit should not be rejected");
+        assertEquals(1, events.size());
+        assertEquals(data, events.get(0).data());
     }
 
     @Test
@@ -425,8 +414,7 @@ public class ServerSentEventParserTest {
         AtomicReference<Throwable> error = new AtomicReference<>();
         ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set);
 
-        // Value is 65530 chars so the full line ("data: " + value = 65536) stays within the per-line
-        // limit; 17 such lines (17 * 65530 = 1,114,010 bytes) exceed the 1MB buffer byte limit.
+        // Seventeen lines of 65,530 characters exceed the 1 MB event limit.
         String bigValue = "x".repeat(65530);
         for (int i = 0; i < 17; i++) {
             parser.processLine("data: " + bigValue);
