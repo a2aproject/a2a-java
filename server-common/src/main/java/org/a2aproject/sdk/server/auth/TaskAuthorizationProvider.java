@@ -21,34 +21,47 @@ import org.jspecify.annotations.Nullable;
  * configuration is required.
  *
  * <pre>{@code
+ * import java.util.concurrent.ConcurrentHashMap;
+ * import java.util.concurrent.ConcurrentMap;
+ *
+ * import jakarta.enterprise.context.ApplicationScoped;
+ *
+ * import org.a2aproject.sdk.server.ServerCallContext;
+ * import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+ * import org.a2aproject.sdk.server.auth.TaskOperation;
+ *
  * @ApplicationScoped
  * public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
+ *     private final ConcurrentMap<String, String> owners = new ConcurrentHashMap<>();
  *
  *     @Override
  *     public boolean checkRead(ServerCallContext context, String taskId, TaskOperation op) {
- *         User user = context.getUser();
- *         // look up ownership in your backing store
- *         return isOwner(user, taskId);
+ *         String owner = owners.get(taskId);
+ *         return owner != null
+ *                 && context.getUser() != null
+ *                 && owner.equals(context.getUser().getUsername());
  *     }
  *
  *     @Override
  *     public boolean checkWrite(ServerCallContext context, String taskId, TaskOperation op) {
- *         return checkRead(context, taskId, op); // same rule
+ *         return checkRead(context, taskId, op);
  *     }
  *
  *     @Override
  *     public boolean checkCreate(ServerCallContext context, TaskOperation op) {
- *         return context.getUser().isAuthenticated();
+ *         return context.getUser() != null && context.getUser().isAuthenticated();
  *     }
  *
  *     @Override
  *     public boolean isTaskRecorded(String taskId) {
- *         return ownershipStore.contains(taskId);
+ *         return owners.containsKey(taskId);
  *     }
  *
  *     @Override
  *     public void recordOwnership(ServerCallContext context, String taskId, TaskOperation op) {
- *         ownershipStore.put(taskId, context.getUser().getUsername());
+ *         if (context.getUser() != null) {
+ *             owners.putIfAbsent(taskId, context.getUser().getUsername());
+ *         }
  *     }
  * }
  * }</pre>
