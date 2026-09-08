@@ -40,9 +40,11 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
  * </ul>
  *
  * <p><b>Security Note:</b> The default client does not follow HTTP redirects
- * automatically to prevent credential leakage to third-party origins. If redirect
- * following is required, provide a custom {@link HttpClient} via the constructor
- * {@link #JdkA2AHttpClient(HttpClient)}.
+ * automatically to prevent credential leakage to third-party origins. To enable
+ * redirect following for a POST request, supply a redirect-capable {@link HttpClient}
+ * via {@link #JdkA2AHttpClient(HttpClient)} <em>and</em> call
+ * {@link org.a2aproject.sdk.client.http.A2AHttpClient.PostBuilder#followRedirects(boolean)
+ * followRedirects(true)} on the builder. Both steps are required.
  *
  * <p><b>Provider Priority:</b> 0 (lowest - used as fallback)
  *
@@ -68,8 +70,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      *   <li>No automatic redirect following (security hardening to prevent credential leakage)</li>
      * </ul>
      *
-     * <p>If redirect following is required, use {@link #JdkA2AHttpClient(HttpClient)}
-     * with a custom {@link HttpClient} configured appropriately.
+     * <p>To enable redirect following for POST requests, use
+     * {@link #JdkA2AHttpClient(HttpClient)} with a redirect-capable {@link HttpClient}
+     * <em>and</em> call {@link PostBuilder#followRedirects(boolean) followRedirects(true)}
+     * on each {@link PostBuilder}. Both steps are required: the builder flag selects
+     * which underlying client is used; supplying a redirect-capable client alone has
+     * no effect if the flag is not set.
      */
     public JdkA2AHttpClient() {
         this(HttpClient.newBuilder()
@@ -81,9 +87,14 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     /**
      * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}.
      *
-     * <p>This constructor allows full control over the {@link HttpClient} configuration,
-     * including redirect policy. The caller is responsible for ensuring the client is
-     * configured securely.
+     * <p>This constructor allows full control over the {@link HttpClient} configuration.
+     * The caller is responsible for ensuring the client is configured securely.
+     *
+     * <p><strong>POST redirect opt-in requires two steps:</strong> this client is only
+     * used for a POST request when {@link PostBuilder#followRedirects(boolean)
+     * followRedirects(true)} is also called on the builder. If the flag is not set the
+     * builder uses an internal no-redirect client regardless of the policy configured
+     * on the {@code httpClient} supplied here.
      *
      * @param httpClient the JDK HTTP client to delegate requests to
      * @throws IllegalArgumentException if {@code httpClient} is {@code null}
@@ -157,6 +168,15 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         }
 
         protected CompletableFuture<Void> asyncRequest(
+                HttpRequest request,
+                Consumer<ServerSentEvent> messageConsumer,
+                Consumer<Throwable> errorConsumer,
+                Runnable completeRunnable) {
+            return asyncRequest(httpClient, request, messageConsumer, errorConsumer, completeRunnable);
+        }
+
+        protected CompletableFuture<Void> asyncRequest(
+                HttpClient client,
                 HttpRequest request,
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
@@ -264,7 +284,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             // handle() catches failures before the body handler is reached (e.g. connection
             // errors, DNS failures) and routes them to errorConsumer, then always completes
             // normally — consistent with the Vert.x and Android implementations.
-            return httpClient.sendAsync(request, bodyHandler)
+            return client.sendAsync(request, bodyHandler)
                     .<Void>handle((response, throwable) -> {
                         if (throwable != null && errorNotified.compareAndSet(false, true)) {
                             if (!isCancellation(throwable)) {
@@ -361,7 +381,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
     private class JdkPostBuilder extends JdkBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
         String body = "";
-        boolean followRedirects = true;
+        boolean followRedirects = false;
 
         @Override
         public PostBuilder body(String body) {
@@ -415,7 +435,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 Runnable completeRunnable) throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(true)
                     .build();
-            return super.asyncRequest(request, messageConsumer, errorConsumer, completeRunnable);
+            return super.asyncRequest(resolveClient(), request, messageConsumer, errorConsumer, completeRunnable);
         }
     }
 

@@ -168,7 +168,7 @@ public interface A2AHttpClient {
          * {@code followRedirects(false)} calls have no effect and redirects will still
          * be followed, bypassing SSRF protection.
          *
-         * @param follow {@code true} to follow redirects (default), {@code false} to disable
+         * @param follow {@code true} to follow redirects, {@code false} to disable (default)
          * @return this builder for chaining
          */
         default PostBuilder followRedirects(boolean follow) {
