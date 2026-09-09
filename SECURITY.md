@@ -49,17 +49,18 @@ reported through the channel above. Findings that fall under [§3](#3-out-of-sco
 *(maintainer)* — confirmed directly by a maintainer. *(anticipated)* — a forward-looking risk hypothesis (§8a
 only), not a fact about the code to be confirmed or denied.
 
-**Confidence:** ~12 documented / ~15 maintainer-confirmed / ~7 anticipated (§8a). All non-anticipated claims are
+**Confidence:** ~12 documented / ~16 maintainer-confirmed / ~3 anticipated (§8a). All non-anticipated claims are
 either directly documented in the project's own sources or maintainer-confirmed as of this revision — see
 [§14](#14-resolved-questions) for the record of what was reviewed and when.
 
-**Version binding:** This threat model is written against `a2a-java` `1.3.0.Final`. A report against a released
-version *N* should be triaged against the model as it stood at *N*'s release, not necessarily at `HEAD`. The four
-advisories published for `1.3.0.Final` —
+**Version binding:** This threat model is written against `a2a-java` `1.3.2.Final`. A report against a released
+version *N* should be triaged against the model as it stood at *N*'s release, not necessarily at `HEAD`. The five
+advisories published since `1.3.0.Final` —
 [GHSA-qw47-mcm5-934w](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-qw47-mcm5-934w),
 [GHSA-q78c-5jjq-57g8](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-q78c-5jjq-57g8),
 [GHSA-9rhm-2h4x-jwmx](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-9rhm-2h4x-jwmx),
-[GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725) — have
+[GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725),
+[GHSA-4fpj-g9jf-9rgg](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-4fpj-g9jf-9rgg) — have
 been incorporated; the sections they affected are annotated with the advisory identifier.
 
 **Status:** Maintainer-reviewed.
@@ -337,9 +338,14 @@ scores depend on the specific violation and deployment context.
    credentials) matches a safe allowlist before placing credentials in a request header; invalid names are
    rejected. Automatic HTTP redirect following is disabled in all HTTP client implementations (JDK, Vert.x,
    Android), preventing credential leakage to attacker-controlled redirect destinations.
+
+   *Correction (1.3.2.Final — [GHSA-4fpj-g9jf-9rgg](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-4fpj-g9jf-9rgg)):* The 1.3.0.Final fix was
+   incomplete for the Android client: `AndroidA2AHttpClient.post()` re-enabled redirect following by overwriting
+   the safe default from `createConnection()` with a builder field initialized to `true`; corrected in
+   1.3.2.Final by defaulting that field to `false` (see §8.11).
    - *Violation symptom:* a malicious agent's AgentCard naming an arbitrary header causes the client to forward
      API key credentials to an attacker-controlled server via redirect.
-   - *Severity:* moderate. Indicative CVSS moderate range (CWE-522).
+   - *Severity:* moderate (header-allowlist bypass); see §8.11 for the Android synchronous POST severity.
 9. **Push-notification credential log suppression.** *(Added in 1.3.0.Final — [GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725))* The REST
    transport handler no longer logs the raw request body on parse failure. Previously, a protobuf parse error in
    `parseRequestBody` caused the full JSON body — which may contain push-notification `token` and
@@ -354,11 +360,24 @@ scores depend on the specific violation and deployment context.
     - *Violation symptom:* a caller denied read access on individual tasks still being able to enumerate all
       tasks via `listTasks`.
     - *Severity:* moderate information disclosure.
+11. **Android synchronous POST redirect-disable corrected.** *(Added in 1.3.2.Final — [GHSA-4fpj-g9jf-9rgg](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-4fpj-g9jf-9rgg))* The
+    `AndroidA2AHttpClient` synchronous POST builder had `followRedirects` initialized to `true`, which caused
+    `post()` to overwrite the `setInstanceFollowRedirects(false)` applied in `createConnection()` by the
+    GHSA-9rhm-2h4x-jwmx fix. On Android's OkHttp-backed `HttpURLConnection`, cross-authority redirects strip
+    the standard `Authorization` header but forward nonstandard headers; credentials injected by `AuthInterceptor`
+    under any of the four allowlisted names (`X-API-Key`, `API-Key`, `X-Auth-Token`, `X-Authentication`) were
+    therefore forwarded to attacker-controlled redirect destinations on the synchronous POST path used by both
+    `JSONRPCTransport` and `RestTransport`. Fixed in 1.3.2.Final by defaulting `followRedirects` to `false`,
+    making redirect-following behavior the opt-in rather than the opt-out for the Android client.
+    - *Violation symptom:* a malicious agent returning a redirect on a synchronous POST request causes the
+      Android client to forward allowlisted API key credentials to a second authority.
+    - *Severity:* high. CVSS 7.5 (CWE-522).
 
 ### §8a Anticipated vulnerability classes
 
-Four advisories were published for 1.3.0.Final, converting the first two anticipated classes below into
-confirmed historical cases. The remaining classes are still *anticipated* — attack shapes that the adversary
+Five advisories have been published since 1.3.0.Final, converting the first four anticipated classes below into
+confirmed historical cases (the Android advisory is an additional finding within the credential-leakage class,
+not a new class). The remaining classes are still *anticipated* — attack shapes that the adversary
 model (§7) and the code paths reviewed in this document make plausible.
 
 - **Authorization bypass via a missing or misconfigured `TaskAuthorizationProvider`.** *(confirmed and fixed)*
@@ -371,11 +390,16 @@ model (§7) and the code paths reviewed in this document make plausible.
   (Moderate, CVSS 5.8). An unauthenticated caller could register a webhook pointing at internal or metadata
   endpoints; the server would POST task data to them. Fixed in 1.3.0.Final with SSRF-safe URL validation and
   redirect-following disabled (§8.7).
-- **Client credential leakage via attacker-controlled redirect.** *(confirmed and fixed)* Disclosed as
+- **Client credential leakage via attacker-controlled redirect.** *(confirmed and fixed; incomplete fix confirmed and fixed)* Disclosed as
   [GHSA-9rhm-2h4x-jwmx](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-9rhm-2h4x-jwmx)
   (Moderate). A malicious agent could name an arbitrary HTTP header in its AgentCard's `APIKeySecurityScheme`,
   causing the client to forward API key credentials to an attacker-controlled server via redirect. Fixed in
-  1.3.0.Final with an allowlist for header names and redirect-following disabled (§8.8).
+  1.3.0.Final with an allowlist for header names and redirect-following disabled (§8.8). The fix was
+  subsequently found incomplete on the Android synchronous POST path: `AndroidA2AHttpClient.post()` overwrote
+  the safe `setInstanceFollowRedirects(false)` with a builder field defaulting to `true`, re-enabling redirect
+  following for `JSONRPCTransport` and `RestTransport` on Android. Disclosed as
+  [GHSA-4fpj-g9jf-9rgg](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-4fpj-g9jf-9rgg)
+  (High, CVSS 7.5); corrected in 1.3.2.Final (§8.11).
 - **Credential disclosure via error-path logging.** *(confirmed and fixed)* Disclosed as
   [GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725)
   (Moderate, CWE-532). Push-notification bearer tokens were written to server logs in cleartext on parse failure.
@@ -572,6 +596,14 @@ An incomplete fix for a `VALID` finding is a **new finding**, not a reopening of
 
 Each shape gets its own CVE (if warranted) and its own triage; the original CVE remains closed as fixed.
 
+**Confirmed incomplete fix on record:** [GHSA-4fpj-g9jf-9rgg](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-4fpj-g9jf-9rgg)
+is an example of the *Different route to the same sink* shape. The GHSA-9rhm-2h4x-jwmx fix set
+`setInstanceFollowRedirects(false)` inside `AndroidA2AHttpClient.createConnection()`, but the synchronous POST
+builder subsequently called `connection.setInstanceFollowRedirects(followRedirects)` — a builder field
+initialized to `true` — overwriting the safe setting. The second assignment wins at runtime, so both
+`JSONRPCTransport` and `RestTransport` (which share the synchronous `post()` path) re-enabled redirect
+following on Android despite the earlier fix. Corrected in 1.3.2.Final by flipping the field default.
+
 ### §14 Resolved questions
 
 All questions from the initial draft have been resolved. Answers are recorded here for traceability.
@@ -611,7 +643,7 @@ All questions from the initial draft have been resolved. Answers are recorded he
 11. **§9.3 no SSRF protection.** Confirmed against `BasePushNotificationSender.dispatchNotification`: the
     outbound URL is taken from caller-supplied `TaskPushNotificationConfig.url()` with no validation.
 
-The five items in §8a remain tagged *(anticipated)* rather than promoted to *(maintainer)*: they are
+The three items in §8a remain tagged *(anticipated)* rather than promoted to *(maintainer)*: they are
 forward-looking risk hypotheses, not facts about the code, and are not subject to confirmation in the same
 sense as the claims above.
 
@@ -629,8 +661,22 @@ sense as the claims above.
     `APIKeySecurityScheme.name()` as an HTTP header name without validation, and all HTTP clients followed
     redirects by default, allowing an attacker-controlled agent to harvest credentials. Fixed in 1.3.0.Final with
     an allowlist for API key header names and redirect-following disabled across all HTTP client implementations.
-    §8.8 added.
+    §8.8 added. Subsequently found to be incomplete for the Android synchronous POST path — see item 16 below.
 15. **Push-notification credentials logged in cleartext ([GHSA-x32g-jvvm-4725](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-x32g-jvvm-4725)).** Confirmed: parse failures
     in the REST handler's `parseRequestBody` logged the full JSON request body at `SEVERE` level, exposing push
     notification `token` and `authentication.credentials` fields. Fixed in 1.3.0.Final by restricting error
     logging to body metadata (length, content type) only. §8.9 added.
+
+**Wave 5 — 1.3.2.Final advisory (resolved):**
+
+16. **Android POST overrides redirect-disable fix ([GHSA-4fpj-g9jf-9rgg](https://github.com/a2aproject/a2a-java/security/advisories/GHSA-4fpj-g9jf-9rgg)).** Confirmed: `AndroidA2AHttpClient`
+    maintained a `followRedirects` builder field initialized to `true`; `post()` called
+    `connection.setInstanceFollowRedirects(followRedirects)` after `createConnection()` had already applied the
+    GHSA-9rhm-2h4x-jwmx safe setting, overwriting it. On Android's OkHttp-backed `HttpURLConnection`,
+    cross-authority redirects strip `Authorization` but preserve nonstandard headers, so credentials injected
+    under any of the four `AuthInterceptor` allowlist names (`X-API-Key`, `API-Key`, `X-Auth-Token`,
+    `X-Authentication`) were forwarded to a second authority. Fixed in 1.3.2.Final by defaulting
+    `followRedirects` to `false`. §8.8 amended, §8.11 added, §8a and §13a updated. Note: the §8a
+    confirmed-class count was also corrected from two to four in this revision; the under-count predated this
+    advisory — all four 1.3.0.Final advisories (items 12–15) covered four distinct classes, so items 3 and 4
+    were already confirmed as of 1.3.0.Final.
