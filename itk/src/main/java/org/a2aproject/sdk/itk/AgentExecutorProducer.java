@@ -82,9 +82,20 @@ public class AgentExecutorProducer {
         private static final long HOLD_INTERVAL_MS = 2000;
         private static final long TASK_TIMEOUT_SECONDS = 60;
 
+        private final ActsBehaviors acts = new ActsBehaviors();
+
         @Override
         public void execute(RequestContext context, AgentEmitter emitter) throws A2AError {
             LOGGER.info("Executing task {}", emitter.getTaskId());
+
+            // Dual-mode (ACTS §11): a "tck-" prefix in the first user message names a conformance
+            // behaviour, anything else is an ITK traversal instruction. The branch is taken before
+            // startWork() because tck-message-response must open no task at all.
+            String behavior = acts.behaviorFor(context);
+            if (behavior != null) {
+                acts.run(context, emitter, behavior);
+                return;
+            }
 
             emitter.startWork();
 
@@ -149,6 +160,9 @@ public class AgentExecutorProducer {
         public void cancel(RequestContext context, AgentEmitter emitter) throws A2AError {
             LOGGER.info("Cancel requested for task {}", emitter.getTaskId());
             emitter.cancel();
+            // The SDK delivers no cancellation signal into a running execute(), so a tck-cancel
+            // task parked in WORKING has to be released from here.
+            acts.released(emitter.getTaskId());
         }
 
         private Instruction extractInstruction(Message message) {
