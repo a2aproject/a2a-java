@@ -59,7 +59,16 @@ public class TestUtilsBean {
     }
 
     public void saveTaskPushNotificationConfig(String taskId, TaskPushNotificationConfig notificationConfig) {
-        pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(notificationConfig).taskId(taskId).build());
+        saveTaskPushNotificationConfig(taskId, notificationConfig, null);
+    }
+
+    public void saveTaskPushNotificationConfig(
+            String taskId,
+            TaskPushNotificationConfig notificationConfig,
+            String protocolVersion) {
+        pushNotificationConfigStore.setInfo(
+                TaskPushNotificationConfig.builder(notificationConfig).taskId(taskId).build(),
+                protocolVersion);
     }
 
     /**

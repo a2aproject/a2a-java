@@ -151,10 +151,10 @@ class InMemoryPushNotificationConfigStoreTest {
     }
 
     @Test
-    public void testSetInfoWithoutConfigId() {
+    public void testSetInfoWithEmptyConfigId() {
         String taskId = "task1";
         TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
-                .id("") // No ID set
+                .id("")
                 .url("http://initial.url/callback")
                 .taskId(taskId)
                 .build();
@@ -166,18 +166,59 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(1, configResult.configs().size());
         assertEquals(taskId, configResult.configs().get(0).id());
 
-        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
-                .id("") // No ID set
+        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
+                .id("")
                 .url("http://initial.url/callback_new")
                 .taskId(taskId)
                 .build();
 
-        TaskPushNotificationConfig updatedResult = configStore.setInfo(updatedConfig);
-        assertEquals(taskId, updatedResult.id());
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
 
         configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(1, configResult.configs().size(), "Should replace existing config with same ID rather than adding new one");
-        assertEquals(updatedConfig.url(), configResult.configs().get(0).url());
+        assertEquals(1, configResult.configs().size());
+        assertEquals(initialConfig.url(), configResult.configs().get(0).url());
+    }
+
+    @Test
+    public void testSetInfoWithNullConfigId() {
+        String taskId = "task_with_null_config_id";
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://initial.url/callback")
+                .taskId(taskId)
+                .build();
+
+        TaskPushNotificationConfig result = configStore.setInfo(config);
+
+        assertEquals(taskId, result.id(), "Config ID should default to taskId when null");
+
+        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
+                .url("http://updated.url/callback")
+                .taskId(taskId)
+                .build();
+
+        assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
+    }
+
+    @Test
+    public void testSetInfoAllowsV03DefaultConfigUpdate() {
+        String taskId = "task_v03_default_update";
+        TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://initial.url/callback")
+                .build();
+        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://updated.url/callback")
+                .build();
+
+        configStore.setInfo(initialConfig, "0.3");
+        TaskPushNotificationConfig result = configStore.setInfo(updatedConfig, "0.3");
+
+        assertEquals(taskId, result.id());
+        ListTaskPushNotificationConfigsResult stored =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(1, stored.configs().size());
+        assertEquals(updatedConfig.url(), stored.configs().get(0).url());
     }
 
     @Test

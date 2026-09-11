@@ -1740,6 +1740,7 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
                 .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
                 .POST(HttpRequest.BodyPublishers.ofString(org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(v10Config)))
                 .header("Content-Type", APPLICATION_JSON)
+                .header("A2A-Version", A2AProtocol_v0_3.PROTOCOL_VERSION)
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));

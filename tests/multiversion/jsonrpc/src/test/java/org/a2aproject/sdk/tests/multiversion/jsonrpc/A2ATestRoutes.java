@@ -221,7 +221,8 @@ public class A2ATestRoutes {
                 rc.response().setStatusCode(404).end();
                 return;
             }
-            testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig);
+            testUtilsBean.saveTaskPushNotificationConfig(
+                    taskId, notificationConfig, rc.request().getHeader("A2A-Version"));
             rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
