@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>1.3.2.Final-SNAPSHOT</version>
+        <version>1.3.3.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>a2a-java-sdk-http-client-android</artifactId>
@@ -37,10 +37,20 @@
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-netty</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

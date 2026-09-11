@@ -7,6 +7,7 @@ import jakarta.enterprise.inject.Produces;
 
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -26,8 +27,26 @@ public class AgentCardProducer {
     @ConfigProperty(name = "quarkus.grpc.server.port", defaultValue = "11002")
     int grpcPort;
 
+    /**
+     * The capabilities this agent advertises — everything, unless the ACTS runner asked for less.
+     * See {@link ActsBehaviors#reducedCapabilities()} for why a diminished card is needed at all.
+     */
+    private AgentCapabilities capabilities() {
+        if (ActsBehaviors.reducedCapabilities()) {
+            return AgentCapabilities.builder().build();
+        }
+        return AgentCapabilities.builder()
+                .streaming(true)
+                .pushNotifications(true)
+                .extendedAgentCard(true)
+                .build();
+    }
+
+    // Both qualifiers on one card: ACTS exercises the extended-card endpoint for its capability
+    // gating and its access controls, not for content that differs from the public card.
     @Produces
     @PublicAgentCard
+    @ExtendedAgentCard
     public AgentCard agentCard() {
         String url = "http://127.0.0.1:" + httpPort;
         List<AgentInterface> interfaces = List.of(
@@ -40,10 +59,7 @@ public class AgentCardProducer {
                 .description("Java agent using A2A SDK (current source).")
                 .version("1.0.0")
                 .supportedInterfaces(interfaces)
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
+                .capabilities(capabilities())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of(AgentSkill.builder()

@@ -46,17 +46,31 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
 
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
+        return setInfo(notificationConfig, false);
+    }
+
+    private TaskPushNotificationConfig setInfo(
+            TaskPushNotificationConfig notificationConfig,
+            boolean allowDefaultConfigUpdate) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder(notificationConfig);
-        if (notificationConfig.id().isEmpty()) {
+        String requestedConfigId = notificationConfig.id();
+        boolean configIdIsMissing = requestedConfigId == null || requestedConfigId.isEmpty();
+        String configId = configIdIsMissing ? taskId : requestedConfigId;
+        if (configIdIsMissing) {
             builder.id(taskId);
         }
         TaskPushNotificationConfig config = builder.build();
-        String configId = config.id();
         int maxPerTask = PushNotificationConfigStore.maxPushConfigsPerTask(configProvider);
 
         pushNotificationInfos.compute(taskId, (key, list) -> {
             List<TaskPushNotificationConfig> mutable = list == null ? new ArrayList<>() : new ArrayList<>(list);
+            boolean defaultConfigAlreadyExists = configIdIsMissing
+                    && mutable.stream().anyMatch(existing -> existing.id() != null && existing.id().equals(configId));
+            if (defaultConfigAlreadyExists && !allowDefaultConfigUpdate) {
+                throw new InvalidParamsError("A push notification config with the default ID already exists for task "
+                        + taskId + "; specify the config ID explicitly to update it");
+            }
             boolean isExistingConfig = mutable.removeIf(
                     existing -> existing.id() != null && existing.id().equals(configId));
             if (!isExistingConfig && mutable.size() >= maxPerTask) {
@@ -71,8 +85,10 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
 
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig config, @Nullable String protocolVersion) {
-        TaskPushNotificationConfig result = setInfo(config);
-        protocolVersions.put(result.taskId() + ":" + result.id(), PushNotificationConfigStore.resolveProtocolVersion(protocolVersion));
+        TaskPushNotificationConfig result = setInfo(config, "0.3".equals(protocolVersion));
+        protocolVersions.put(
+                result.taskId() + ":" + result.id(),
+                PushNotificationConfigStore.resolveProtocolVersion(protocolVersion));
         return result;
     }
 

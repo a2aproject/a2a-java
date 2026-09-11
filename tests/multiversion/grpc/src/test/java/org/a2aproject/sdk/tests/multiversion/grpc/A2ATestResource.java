@@ -10,6 +10,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -131,12 +132,15 @@ public class A2ATestResource {
     @POST
     @Path("/task/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body) throws Exception {
+    public Response savePushNotificationConfigInStore(
+            @PathParam("taskId") String taskId,
+            @HeaderParam("A2A-Version") String protocolVersion,
+            String body) throws Exception {
         TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
         if (notificationConfig == null) {
             return Response.status(404).build();
         }
-        testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig);
+        testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig, protocolVersion);
         return Response.ok().build();
     }
 

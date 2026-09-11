@@ -88,9 +88,12 @@ import org.jspecify.annotations.Nullable;
  * <h2>Security</h2>
  * <p>
  * The default client does not follow HTTP redirects automatically to prevent
- * credential leakage to third-party origins. If redirect following is required,
- * create a custom {@link WebClient} with the desired redirect policy and pass
- * the underlying {@link Vertx} instance to {@link #VertxA2AHttpClient(Vertx)}.
+ * credential leakage to third-party origins. To opt into redirect following
+ * for a specific POST request, call
+ * {@link PostBuilder#followRedirects(boolean) followRedirects(true)} on the builder.
+ * When enabled, 301/302/303 responses are followed as a GET to the {@code Location}
+ * header (RFC 7231 semantics), and 307/308 responses are followed as a POST with the
+ * original body (RFC 7538 semantics). At most one redirect hop is followed.
  *
  * <h2>Usage Examples</h2>
  *
@@ -533,7 +536,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     private class VertxPostBuilder extends VertxBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
 
         private String body = "";
-        private boolean followRedirects = true;
+        private boolean followRedirects = false;
 
         @Override
         public PostBuilder body(String body) {
@@ -563,8 +566,21 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         public A2AHttpResponse post() throws IOException, InterruptedException {
             Buffer bodyBuffer = Buffer.buffer(body, StandardCharsets.UTF_8.name());
             HttpRequest<Buffer> request = webClient.postAbs(url);
-            request.followRedirects(followRedirects);
-            return executeSyncRequest(request, headers, bodyBuffer);
+            A2AHttpResponse response = executeSyncRequest(request, headers, bodyBuffer);
+            if (followRedirects) {
+                int statusCode = response.status();
+                String location = response.headers().firstValue("Location");
+                if (location != null) {
+                    if (statusCode == 301 || statusCode == 302 || statusCode == 303) {
+                        // RFC 7231: 301/302/303 redirect POST as GET; 307/308 would preserve the method
+                        return executeSyncRequest(webClient.getAbs(location), headers, null);
+                    } else if (statusCode == 307 || statusCode == 308) {
+                        // RFC 7538: 307/308 must repeat the request with the original method and body
+                        return executeSyncRequest(webClient.postAbs(location), headers, bodyBuffer);
+                    }
+                }
+            }
+            return response;
         }
 
         @Override

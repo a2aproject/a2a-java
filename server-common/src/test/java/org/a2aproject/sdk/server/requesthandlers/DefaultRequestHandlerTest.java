@@ -45,6 +45,7 @@ import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.EventKind;
+import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
@@ -987,6 +988,26 @@ public class DefaultRequestHandlerTest {
         // Assert: version is stored; configId defaults to taskId when id is empty
         assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
             "Protocol version should be stored for the push notification config");
+    }
+
+    @Test
+    void testGetTaskPushNotificationConfigDefaultsMissingIdToTaskId() throws Exception {
+        String taskId = "get-default-config-id";
+        taskStore.save(Task.builder()
+                .id(taskId)
+                .contextId("ctx-get-default-config-id")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build(), false);
+        requestHandler.onCreateTaskPushNotificationConfig(TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://example.com/get-default-config-id")
+                .build(), NULL_CONTEXT);
+
+        TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(
+                new GetTaskPushNotificationConfigParams(taskId), NULL_CONTEXT);
+
+        assertEquals(taskId, result.id());
+        assertEquals("http://example.com/get-default-config-id", result.url());
     }
 
     /**

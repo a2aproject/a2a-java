@@ -269,7 +269,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
   private static class AndroidPostBuilder extends AndroidBuilder<PostBuilder>
       implements PostBuilder {
     private String body = "";
-    private boolean followRedirects = true;
+    private boolean followRedirects = false;
 
     @Override
     public PostBuilder body(String body) {
