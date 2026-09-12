@@ -24,11 +24,15 @@ import org.a2aproject.sdk.server.auth.TaskOperation;
 
 @ApplicationScoped
 public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
-    private final ConcurrentMap<String, String> owners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> ownershipStore = new ConcurrentHashMap<>();
 
     @Override
     public boolean checkRead(ServerCallContext context, String taskId, TaskOperation op) {
-        String owner = owners.get(taskId);
+        return isOwner(context, taskId);
+    }
+
+    private boolean isOwner(ServerCallContext context, String taskId) {
+        String owner = ownershipStore.get(taskId);
         return owner != null
                 && context.getUser() != null
                 && owner.equals(context.getUser().getUsername());
@@ -36,7 +40,7 @@ public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
 
     @Override
     public boolean checkWrite(ServerCallContext context, String taskId, TaskOperation op) {
-        return checkRead(context, taskId, op);
+        return isOwner(context, taskId);
     }
 
     @Override
@@ -46,13 +50,13 @@ public class MyTaskAuthorizationProvider implements TaskAuthorizationProvider {
 
     @Override
     public boolean isTaskRecorded(String taskId) {
-        return owners.containsKey(taskId);
+        return ownershipStore.containsKey(taskId);
     }
 
     @Override
     public void recordOwnership(ServerCallContext context, String taskId, TaskOperation op) {
         if (context.getUser() != null) {
-            owners.putIfAbsent(taskId, context.getUser().getUsername());
+            ownershipStore.putIfAbsent(taskId, context.getUser().getUsername());
         }
     }
 }
