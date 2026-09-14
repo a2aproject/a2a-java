@@ -22,7 +22,7 @@ class AgentCardMapper_v0_3_Test {
     @Test
     void projectsCompleteLegacyCardAndConvertsItBack() {
         AgentCard_v0_3 legacy = new AgentCard_v0_3(
-            "agent", "description", null, null, "1", "https://docs.example",
+            "agent", "description", "https://agent.example", null, "1", "https://docs.example",
             new AgentCapabilities_v0_3(true, true, true, null), List.of("text"), List.of("text"),
             List.of(new AgentSkill_v0_3("skill", "Skill", "Does things", List.of("tag"),
                 List.of("example"), List.of("text"), List.of("text"), List.of(Map.of("auth", List.of("read"))))),
@@ -33,14 +33,14 @@ class AgentCardMapper_v0_3_Test {
 
         AgentCard current = AgentCardMapper_v0_3.INSTANCE.toV10(legacy);
 
-        assertEquals("https://agent.example/rpc", current.url());
+        assertEquals("https://agent.example", current.url());
         assertEquals("JSONRPC", current.preferredTransport());
         assertEquals("0.3", current.supportedInterfaces().get(0).protocolVersion());
         assertEquals("Authorization", ((APIKeySecurityScheme) current.securitySchemes().get("auth")).name());
         assertNotNull(current.signatures());
 
         AgentCard_v0_3 roundTrip = AgentCardMapper_v0_3.INSTANCE.fromV10(current);
-        assertEquals("https://agent.example/rpc", roundTrip.url());
+        assertEquals("https://agent.example", roundTrip.url());
         assertEquals("0.3", roundTrip.protocolVersion());
         assertEquals("Authorization", ((APIKeySecurityScheme_v0_3) roundTrip.securitySchemes().get("auth")).name());
         assertEquals("signature", roundTrip.signatures().get(0).signature());
