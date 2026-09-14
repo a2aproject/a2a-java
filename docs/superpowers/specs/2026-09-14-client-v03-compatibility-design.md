@@ -26,7 +26,7 @@ Legacy discovery is explicit on `A2A.getAgentCard(...)`. An overload accepts a s
 
 ```java
 AgentCard card = A2A.getAgentCard(
-        "https://agent.example", supportedVersions("1.0", "0.3"));
+        "https://agent.example", Set.of("1.0", "0.3"));
 ```
 
 The version policy filters discovered interface candidates before `ClientBuilder` sees the returned card. `ClientBuilder` preserves its existing API while selecting the provider appropriate to each retained interface's protocol version. Including a compatibility JAR does not alter default 1.0-only discovery or cause automatic protocol downgrade. When a caller requests `"0.3"` but the corresponding compatibility provider is absent, card resolution fails with a descriptive error that names the required artifact.
