@@ -21,6 +21,18 @@
 - Against a 0.3 binding, reject locally before I/O: `listTasks`, non-empty tenants, extended-agent-card retrieval, and non-default push-config pagination.
 - Use conventional commits. This work is not related to a GitHub issue, so do not add a `This fixes #...` footer.
 
+## Implementation Clarifications and Checkpoints
+
+- In the interceptor payload contract, the REST delete operation must use the concrete 1.0 generated protobuf type `DeleteTaskPushNotificationConfigRequest` for replacement validation. Do not use the `DeleteTaskPushNotificationConfigRequestOrBuilder` interface as the required replacement type.
+- “Generic 1.0 config parameters” means the map returned by `ClientTransportConfig.getParameters()`. Every 0.3 adapter must reject a non-empty map locally before invoking an interceptor or legacy delegate; an empty map is accepted.
+- Treat these as context-reset checkpoints. Stop after completing and verifying each checkpoint, report the result, and wait for the user to start a fresh session before continuing:
+  1. Task 1: neutral conversion extraction.
+  2. Task 3: version-aware `ClientBuilder` selection.
+  3. Task 4: shared 0.3 adapter behavior.
+  4. Task 6: all binding adapters, including gRPC.
+  5. Task 7: packaging, documentation, and end-to-end verification.
+- If implementation reveals that one of these clarifications conflicts with an existing public API or generated type, stop at the current checkpoint and update this plan before proceeding.
+
 ---
 
 ## Target file structure
@@ -274,27 +286,27 @@ git commit -m "feat: route client transports by protocol version"
 
 **Produces:** shared request/result/event/context/error conversion plus local validation used by each binding adapter.
 
-- [ ] **Step 1: Write failing unit tests for local semantics**
+- [x] **Step 1: Write failing unit tests for local semantics**
 
 Test every 0.3-rejected call before mapper, interceptor, or delegate invocation: `listTasks`, `getExtendedAgentCard`, non-empty tenant on every tenant-bearing request and `TaskPushNotificationConfig`, non-default list-push page size/token. For accepted list-push defaults, assert conversion returns `nextPageToken = ""`. Test `CancelTaskParams`, `TaskQueryParams`, `TaskIdParams`, `MessageSendParams`, tasks, events, and push config in both directions. Test known 0.3 errors become 1.0 `A2AClientException` with a meaningful 1.0 cause.
 
-- [ ] **Step 2: Run tests to verify failure**
+- [x] **Step 2: Run tests to verify failure**
 
 Run: `mvn -pl compat-0.3/client/adapter -am test`
 
 Expected: compilation fails because shared support classes do not exist.
 
-- [ ] **Step 3: Implement shared support**
+- [x] **Step 3: Implement shared support**
 
 Use neutral mappers for all domain conversions. Convert contexts by copying state and headers. Implement the exact method mapping: `cancelTask(CancelTaskParams)` → legacy `cancelTask(TaskIdParams_v0_3)`; `subscribeToTask` → legacy `resubscribe`; `createTaskPushNotificationConfiguration` → legacy `setTaskPushNotificationConfiguration`; legacy list-push `List<TaskPushNotificationConfig_v0_3>` → 1.0 `ListTaskPushNotificationConfigsResult(configs, "")`. Make adapter `close()` idempotent; do not claim ownership of caller-supplied gRPC channels. Copy the HTTP client/channel factory but **do not install 1.0 interceptors on a legacy delegate**: each binding adapter invokes them before conversion, because several legacy delegates ignore replacement payloads. Generic 1.0 config `parameters` are unsupported and must cause a local error when non-empty rather than being discarded.
 
-- [ ] **Step 4: Run focused verification**
+- [x] **Step 4: Run focused verification**
 
 Run: `mvn -pl compat-0.3/client/adapter -am test`
 
 Expected: all conversion, error, validation, context, and interceptor bridge tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add compat-0.3/client/adapter
@@ -395,27 +407,27 @@ The module owns `GrpcCompat03InterceptorBridge`. Its complete contract is below.
 
 After each interceptor, remove `A2A-Version` case-insensitively and reject an interceptor which supplied it; do not add version metadata. Selection of the legacy `a2a.v1.A2AService` service, rather than a metadata header, is the gRPC version-routing mechanism. Preserve all other metadata.
 
-- [ ] **Step 1: Write failing in-process gRPC tests**
+- [x] **Step 1: Write failing in-process gRPC tests**
 
 Start only the legacy generated gRPC service. Build the normal concrete 1.0 `Client` through the versioned adapter and verify blocking, streaming, get, cancel, subscribe, push config, error conversion, metadata/auth interceptor bridging, interceptor mutation failures, rejection of a version-header override, absence of `A2A-Version` metadata, and double `close()`. Assert a request reaches `a2a.v1.A2AService` and never the 1.0 `lf.a2a.v1` service.
 
-- [ ] **Step 2: Run tests to verify failure**
+- [x] **Step 2: Run tests to verify failure**
 
 Run: `mvn -pl compat-0.3/client/adapter-grpc -am -Dsurefire.failIfNoSpecifiedTests=false test`
 
 Expected: Maven reports the adapter module is absent.
 
-- [ ] **Step 3: Implement the adapter**
+- [x] **Step 3: Implement the adapter**
 
 Copy the ordinary 1.0 channel factory into `GrpcTransportConfig_v0_3`, pass no payload-mutating interceptors to the legacy delegate, and delegate every supported operation through the legacy gRPC transport after the adapter has invoked/mapped its ordinary 1.0 interceptors and copied their headers into the legacy context. Preserve caller ownership of the supplied channel and make only adapter-local close state idempotent.
 
-- [ ] **Step 4: Run focused verification**
+- [x] **Step 4: Run focused verification**
 
 Run: `mvn -pl compat-0.3/client/adapter-grpc -am test`
 
 Expected: all calls use the legacy service and consumers receive 1.0 events.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add compat-0.3/client/adapter-grpc compat-0.3/pom.xml

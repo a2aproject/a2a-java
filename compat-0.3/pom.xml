@@ -46,6 +46,11 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -144,6 +149,7 @@
         <module>client/adapter</module>
         <module>client/adapter-jsonrpc</module>
         <module>client/adapter-rest</module>
+        <module>client/adapter-grpc</module>
 
         <!-- Test infrastructure -->
         <module>tests/server-common</module>
