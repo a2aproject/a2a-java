@@ -57,7 +57,8 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
         Compat03ClientTransportSupport.run(() -> delegate.sendMessageStreaming(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.messageSendParams(
                         (org.a2aproject.sdk.grpc.SendMessageRequest) payload.getPayload())),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors,
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
     }
 
@@ -140,7 +141,8 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
         Compat03ClientTransportSupport.run(() -> delegate.resubscribe(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.taskIdParams(
                         (org.a2aproject.sdk.grpc.SubscribeToTaskRequest) payload.getPayload())),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors,
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
     }
 

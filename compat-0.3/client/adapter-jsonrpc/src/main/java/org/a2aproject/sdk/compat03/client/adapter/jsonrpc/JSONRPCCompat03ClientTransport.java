@@ -57,7 +57,8 @@ public class JSONRPCCompat03ClientTransport extends Compat03ClientTransportBase 
         Compat03ClientTransportSupport.run(() -> delegate.sendMessageStreaming(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.messageSendParams(
                         (org.a2aproject.sdk.grpc.SendMessageRequest) payload.getPayload())),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors,
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
     }
 
@@ -134,12 +135,14 @@ public class JSONRPCCompat03ClientTransport extends Compat03ClientTransportBase 
     @Override
     public void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> events,
             Consumer<Throwable> errors, @Nullable ClientCallContext context) {
+        Compat03ClientTransportSupport.validateTenant("subscribeToTask", request.tenant());
         PayloadAndHeaders payload = apply(A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
                 ProtoUtils.ToProto.subscribeToTaskRequest(request), org.a2aproject.sdk.grpc.SubscribeToTaskRequest.class, context);
         Compat03ClientTransportSupport.run(() -> delegate.resubscribe(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.taskIdParams(
                         (org.a2aproject.sdk.grpc.SubscribeToTaskRequest) payload.getPayload())),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors,
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
     }
 

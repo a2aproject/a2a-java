@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
@@ -81,5 +82,17 @@ class Compat03ClientTransportSupportTest {
                         "legacy failure", new org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3()));
         assertTrue(mapped.getMessage().contains("legacy failure"));
         assertTrue(mapped.getCause() instanceof org.a2aproject.sdk.spec.TaskNotFoundError);
+    }
+
+    @Test
+    void mapsAsynchronousLegacyErrors() {
+        AtomicReference<Throwable> mapped = new AtomicReference<>();
+
+        Compat03ClientTransportSupport.mapAsyncError(mapped::set).accept(
+                new org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3(
+                        "legacy stream failure", new org.a2aproject.sdk.compat03.spec.InternalError_v0_3("legacy")));
+
+        assertTrue(mapped.get() instanceof A2AClientException);
+        assertTrue(mapped.get().getCause() instanceof org.a2aproject.sdk.spec.InternalError);
     }
 }

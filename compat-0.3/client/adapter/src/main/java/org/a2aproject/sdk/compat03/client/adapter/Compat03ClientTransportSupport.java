@@ -2,6 +2,7 @@ package org.a2aproject.sdk.compat03.client.adapter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
@@ -163,6 +164,11 @@ public final class Compat03ClientTransportSupport {
 
     public static A2AClientException mapLegacyException(A2AClientException_v0_3 exception) {
         return Compat03ClientErrorMapper.toV10(exception);
+    }
+
+    public static Consumer<Throwable> mapAsyncError(Consumer<Throwable> errors) {
+        return error -> errors.accept(error instanceof A2AClientException_v0_3 legacy
+                ? mapLegacyException(legacy) : error);
     }
 
     public static <T> T call(ThrowingSupplier<T> delegate) {

@@ -40,7 +40,7 @@ public final class AgentCardMapper_v0_3 {
         return AgentCard.builder()
             .name(source.name()).description(source.description()).provider(toV10(source.provider()))
             .version(source.version()).documentationUrl(source.documentationUrl())
-            .capabilities(toV10(source.capabilities()))
+            .capabilities(toV10Capabilities(source))
             .defaultInputModes(source.defaultInputModes()).defaultOutputModes(source.defaultOutputModes())
             .skills(source.skills().stream().map(this::toV10).toList())
             .securitySchemes(toV10Security(source.securitySchemes()))
@@ -77,16 +77,18 @@ public final class AgentCardMapper_v0_3 {
         return value == null ? null : new AgentProvider_v0_3(value.organization(), value.url());
     }
 
-    private AgentCapabilities toV10(AgentCapabilities_v0_3 value) {
-        List<AgentExtension> extensions = value.extensions() == null ? null : value.extensions().stream()
+    private AgentCapabilities toV10Capabilities(AgentCard_v0_3 value) {
+        AgentCapabilities_v0_3 capabilities = value.capabilities();
+        List<AgentExtension> extensions = capabilities.extensions() == null ? null : capabilities.extensions().stream()
             .map(e -> new AgentExtension(e.description(), e.params(), e.required(), e.uri())).toList();
-        return new AgentCapabilities(value.streaming(), value.pushNotifications(), value.stateTransitionHistory(), extensions);
+        return new AgentCapabilities(capabilities.streaming(), capabilities.pushNotifications(),
+            value.supportsAuthenticatedExtendedCard(), extensions);
     }
 
     private AgentCapabilities_v0_3 fromV10(AgentCapabilities value) {
         List<AgentExtension_v0_3> extensions = value.extensions() == null ? null : value.extensions().stream()
             .map(e -> new AgentExtension_v0_3(e.description(), e.params(), e.required(), e.uri())).toList();
-        return new AgentCapabilities_v0_3(value.streaming(), value.pushNotifications(), value.extendedAgentCard(), extensions);
+        return new AgentCapabilities_v0_3(value.streaming(), value.pushNotifications(), false, extensions);
     }
 
     private AgentSkill toV10(AgentSkill_v0_3 value) {

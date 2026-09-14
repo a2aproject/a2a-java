@@ -59,7 +59,8 @@ public abstract class Compat03ClientTransportBase implements ClientTransport {
         Compat03ClientTransportSupport.validateMessageSend(request);
         Compat03ClientTransportSupport.run(() -> delegate.sendMessageStreaming(
                 Compat03ClientTransportSupport.toV03(request),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors,
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientTransportSupport.toV03Context(context)));
     }
 
@@ -126,7 +127,8 @@ public abstract class Compat03ClientTransportBase implements ClientTransport {
         Compat03ClientTransportSupport.validateTenant("subscribeToTask", request.tenant());
         Compat03ClientTransportSupport.run(() -> delegate.resubscribe(
                 Compat03ClientTransportSupport.toV03(request),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors,
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientTransportSupport.toV03Context(context)));
     }
 

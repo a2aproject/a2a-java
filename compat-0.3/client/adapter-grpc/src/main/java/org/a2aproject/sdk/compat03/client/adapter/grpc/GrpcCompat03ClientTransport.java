@@ -55,7 +55,8 @@ public final class GrpcCompat03ClientTransport extends Compat03ClientTransportBa
                 ProtoUtils.ToProto.sendMessageRequest(request), org.a2aproject.sdk.grpc.SendMessageRequest.class, context);
         Compat03ClientTransportSupport.run(() -> delegate.sendMessageStreaming(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.messageSendParams(payloadPayload(payload))),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors, legacyContext(context, payload)));
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors), legacyContext(context, payload)));
     }
 
     @Override
@@ -136,7 +137,8 @@ public final class GrpcCompat03ClientTransport extends Compat03ClientTransportBa
                 ProtoUtils.ToProto.subscribeToTaskRequest(request), org.a2aproject.sdk.grpc.SubscribeToTaskRequest.class, context);
         Compat03ClientTransportSupport.run(() -> delegate.resubscribe(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.taskIdParams(subscribePayload(payload))),
-                event -> events.accept(Compat03ClientTransportSupport.toV10(event)), errors, legacyContext(context, payload)));
+                event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
+                Compat03ClientTransportSupport.mapAsyncError(errors), legacyContext(context, payload)));
     }
 
     private PayloadAndHeaders apply(String method, Object payload, Class<?> expected,
