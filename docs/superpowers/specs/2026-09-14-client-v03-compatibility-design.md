@@ -65,9 +65,9 @@ Client (1.0 public API)
 
 The adapter maps 1.0 requests to 0.3, delegates the request, and maps responses and streaming events back to 1.0. It must not wrap `Client_v0_3` as its primary boundary: that client owns callback dispatch and its send methods do not return the raw values required by the 1.0 `ClientTransport` contract.
 
-The adapter maps 1.0 HTTP client/channel configuration to the equivalent 0.3 configuration. It bridges 1.0 interceptors by translating payload, card, and call context around each interceptor invocation, so users configure only normal 1.0 interceptors.
+The adapter maps 1.0 HTTP client/channel configuration to the equivalent 0.3 configuration. It invokes 1.0 interceptors in the adapter before request conversion, then translates the resulting payload and call context to 0.3, so users configure only normal 1.0 interceptors. It does not install payload-mutating 1.0 interceptors on a legacy delegate because some legacy delegates ignore replacement payloads.
 
-Interceptor bridging is binding- and operation-specific. The adapter defines the 1.0 protocol payload presented to each interceptor, validates any replacement payload before translating it back, copies the call context, and preserves headers. For a selected 0.3 binding it forces the legacy version routing and prevents an interceptor from changing the effective A2A version.
+Interceptor bridging is binding- and operation-specific. The adapter defines the 1.0 protocol payload presented to each interceptor, validates any replacement payload before translating it back, copies the call context, and preserves headers. For a selected 0.3 HTTP/gRPC binding it removes `A2A-Version` and rejects an interceptor which tries to add it: existing legacy transports route by their no-version-header behavior (or by legacy gRPC service selection), and an interceptor cannot change the effective A2A version.
 
 ## Compatibility Semantics
 
@@ -97,7 +97,8 @@ The normal 1.0 client artifacts have no compile-time dependency on 0.3 client, s
 |---|---|
 | Standard 1.0 artifacts only | Existing behavior; no 0.3 discovery or routing. |
 | Compat present, 0.3 not explicitly enabled | Existing 1.0-only discovery and behavior. |
-| 0.3 explicitly enabled, adapter absent | Construction error naming the compatibility artifact. |
+| 0.3 requested for a legacy-only card, card parser absent | Discovery error naming `a2a-java-sdk-compat-0.3-client-adapter`. |
+| Legacy card parsed, selected binding adapter absent | Construction error naming the binding-specific compatibility adapter artifact. |
 | Standalone 0.3 card, adapter installed | Normal concrete `Client`, using 1.0 types and an adapted transport. |
 | Dual-format/cohosted card | Native 1.0 interface preferred. |
 | 0.3 JSON-RPC, REST, gRPC | Supported operations use 1.0 public types and correct legacy wire protocol. |
