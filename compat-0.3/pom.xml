@@ -26,6 +26,11 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-conversion</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -118,7 +123,8 @@
         <module>spec</module>
         <module>spec-grpc</module>
 
-        <!-- Server conversion (0.3 to 1.0 translation layer) -->
+        <!-- Neutral conversion and server conversion (0.3 to 1.0 translation layer) -->
+        <module>conversion</module>
         <module>server-conversion</module>
 
         <!-- Test infrastructure -->
