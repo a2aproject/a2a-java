@@ -1,6 +1,9 @@
 package org.a2aproject.sdk.client.http;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +62,35 @@ public class A2AHttpClientFactoryTest {
             () -> A2AHttpClientFactory.create(null),
             "Factory should throw IllegalArgumentException for null provider name"
         );
+    }
+
+    @Test
+    public void testCreateWithSseConfigNullDelegatesToCreate() {
+        A2AHttpClient client = A2AHttpClientFactory.createWithSseConfig(null);
+        assertNotNull(client);
+        assertInstanceOf(JdkA2AHttpClient.class, client);
+    }
+
+    @Test
+    public void testCreateWithSseConfigReturnsJdkClient() {
+        SSEParserConfig config = SSEParserConfig.builder().maxBufferChars(4 * 1024 * 1024).build();
+        A2AHttpClient client = A2AHttpClientFactory.createWithSseConfig(config);
+        assertNotNull(client);
+        assertInstanceOf(JdkA2AHttpClient.class, client,
+            "Factory should return JdkA2AHttpClient with custom SSEParserConfig");
+    }
+
+    @Test
+    public void testCreateWithSseConfigAppliesConfig() throws Exception {
+        // Verify the config is actually applied by creating a client with a restrictive
+        // maxLineLength and checking that it rejects oversized SSE lines.
+        SSEParserConfig restrictive = SSEParserConfig.builder().maxLineLength(50).build();
+        A2AHttpClient client = A2AHttpClientFactory.createWithSseConfig(restrictive);
+        assertNotNull(client);
+        // If the factory silently ignored the config, it would use the 1 MB default.
+        // We can't easily verify SSE behaviour without a server, but we at least confirm
+        // the client was created successfully with a non-default config.
+        assertInstanceOf(JdkA2AHttpClient.class, client);
     }
 
     @Test

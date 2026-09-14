@@ -59,6 +59,7 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
 public class JdkA2AHttpClient implements A2AHttpClient {
 
     private final HttpClient httpClient;
+    private final SSEParserConfig sseParserConfig;
     private volatile @Nullable HttpClient noRedirectClient;
 
     /**
@@ -81,7 +82,25 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         this(HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .followRedirects(HttpClient.Redirect.NEVER)
-                .build());
+                .build(), SSEParserConfig.DEFAULT);
+    }
+
+    /**
+     * Creates a new JDK-based HTTP client with secure defaults and custom SSE parser limits.
+     *
+     * <p>Named factory method avoids overload ambiguity with {@link #JdkA2AHttpClient(HttpClient)}.
+     *
+     * @param sseParserConfig the SSE parser configuration to use for streaming responses
+     * @return a new JdkA2AHttpClient with the given SSE parser configuration
+     * @throws IllegalArgumentException if {@code sseParserConfig} is {@code null}
+     */
+    public static JdkA2AHttpClient withSseConfig(SSEParserConfig sseParserConfig) {
+        return new JdkA2AHttpClient(
+                HttpClient.newBuilder()
+                        .version(HttpClient.Version.HTTP_2)
+                        .followRedirects(HttpClient.Redirect.NEVER)
+                        .build(),
+                sseParserConfig);
     }
 
     /**
@@ -100,7 +119,20 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      * @throws IllegalArgumentException if {@code httpClient} is {@code null}
      */
     public JdkA2AHttpClient(HttpClient httpClient) {
+        this(httpClient, SSEParserConfig.DEFAULT);
+    }
+
+    /**
+     * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}
+     * and custom SSE parser limits.
+     *
+     * @param httpClient the JDK HTTP client to delegate requests to
+     * @param sseParserConfig the SSE parser configuration to use for streaming responses
+     * @throws IllegalArgumentException if {@code httpClient} or {@code sseParserConfig} is {@code null}
+     */
+    public JdkA2AHttpClient(HttpClient httpClient, SSEParserConfig sseParserConfig) {
         this.httpClient = checkNotNullParam("httpClient", httpClient);
+        this.sseParserConfig = checkNotNullParam("sseParserConfig", sseParserConfig);
     }
 
     @Override
@@ -182,7 +214,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable
         ) {
-            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
+            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer, sseParserConfig);
             AtomicBoolean useSseParser = new AtomicBoolean(false);
             AtomicBoolean errorNotified = new AtomicBoolean(false);
             StringBuilder nonSseBodyBuffer = new StringBuilder();
@@ -277,6 +309,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 boolean isSse = JdkHttpResponse.success(responseInfo.statusCode())
                         && contentType.contains(EVENT_STREAM);
                 useSseParser.set(isSse);
+                if (isSse) {
+                    // Use a bounded byte-level subscriber so that the maxLineLength limit is
+                    // enforced *before* a full line is materialised in memory, preventing memory
+                    // exhaustion from a malicious server that never sends a newline.
+                    return new BoundedLineBodySubscriber(subscriber, sseParserConfig.maxLineLength(), sseParser);
+                }
                 return BodyHandlers.fromLineSubscriber(subscriber).apply(responseInfo);
             };
 
@@ -463,6 +501,155 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         @Override
         public A2AHttpHeaders headers() {
             return A2AHttpHeaders.of(response.headers().map());
+        }
+    }
+
+    /**
+     * A {@link HttpResponse.BodySubscriber} that splits the raw byte stream into lines and
+     * delivers each complete line to a {@link Flow.Subscriber}{@code <String>}.
+     *
+     * <p>Unlike {@link java.net.http.HttpResponse.BodyHandlers#fromLineSubscriber}, this
+     * implementation enforces {@code maxLineBytes} <em>while accumulating bytes</em>, so a
+     * malicious unterminated line cannot exhaust heap before the limit is applied.
+     *
+     * <p>When {@code maxLineBytes <= 0} the per-line byte cap is disabled, matching the
+     * semantics of {@link SSEParserConfig#maxLineLength()} == 0.
+     */
+    private static final class BoundedLineBodySubscriber implements HttpResponse.BodySubscriber<Void> {
+
+        private final Flow.Subscriber<String> lineSubscriber;
+        private final ServerSentEventParser sseParser;
+        private final CompletableFuture<Void> result = new CompletableFuture<>();
+        private final BoundedLineAccumulator accumulator;
+        /** True when a bare CR was the last byte of the previous chunk (may start a CRLF pair). */
+        private boolean pendingCR = false;
+
+        BoundedLineBodySubscriber(Flow.Subscriber<String> lineSubscriber, int maxLineBytes,
+                ServerSentEventParser sseParser) {
+            this.lineSubscriber = lineSubscriber;
+            this.sseParser = sseParser;
+            this.accumulator = new BoundedLineAccumulator(maxLineBytes);
+        }
+
+        @Override
+        public CompletableFuture<Void> getBody() {
+            return result;
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            // Request all data from the HTTP body publisher up-front — the JDK HTTP
+            // layer is not back-pressure sensitive for this use-case, and mirroring what
+            // BodyHandlers.fromLineSubscriber does keeps behaviour consistent.
+            subscription.request(Long.MAX_VALUE);
+            // Give the line subscriber a no-op subscription: it cannot cancel the HTTP
+            // connection from the line level, and back-pressure is already handled above.
+            lineSubscriber.onSubscribe(new Flow.Subscription() {
+                @Override public void request(long n) { /* no-op */ }
+                @Override public void cancel() { /* no-op */ }
+            });
+        }
+
+        private record TerminatorScan(int lineLen, int resumePos, boolean crAtBoundary) {}
+
+        @Override
+        public void onNext(List<ByteBuffer> items) {
+            for (ByteBuffer buf : items) {
+                processBuffer(buf);
+            }
+        }
+
+        private void processBuffer(ByteBuffer buf) {
+            while (buf.hasRemaining()) {
+                if (consumePendingCR(buf)) {
+                    break;
+                }
+
+                int start = buf.position();
+                TerminatorScan scan = scanForTerminator(buf, start);
+
+                if (scan == null) {
+                    accumulateRemainingBytes(buf, start);
+                } else {
+                    pendingCR = scan.crAtBoundary();
+                    buf.position(scan.resumePos());
+                    deliverCompleteLine(buf, start, scan.lineLen());
+                }
+            }
+        }
+
+        private boolean consumePendingCR(ByteBuffer buf) {
+            if (!pendingCR) {
+                return false;
+            }
+            pendingCR = false;
+            if (buf.get(buf.position()) == '\n') {
+                buf.position(buf.position() + 1);
+                return !buf.hasRemaining();
+            }
+            return false;
+        }
+
+        private static @Nullable TerminatorScan scanForTerminator(ByteBuffer buf, int start) {
+            int end = buf.limit();
+            for (int i = start; i < end; i++) {
+                byte b = buf.get(i);
+                if (b == '\n') {
+                    return new TerminatorScan(i - start, i + 1, false);
+                }
+                if (b == '\r') {
+                    int lineLen = i - start;
+                    if (i + 1 < end) {
+                        int resumePos = buf.get(i + 1) == '\n' ? i + 2 : i + 1;
+                        return new TerminatorScan(lineLen, resumePos, false);
+                    }
+                    return new TerminatorScan(lineLen, i + 1, true);
+                }
+            }
+            return null;
+        }
+
+        private void accumulateRemainingBytes(ByteBuffer buf, int start) {
+            int len = buf.limit() - start;
+            byte[] chunk = new byte[len];
+            buf.get(start, chunk);
+            accumulator.addChunk(chunk, 0, len);
+            buf.position(buf.limit());
+        }
+
+        private void deliverCompleteLine(ByteBuffer buf, int start, int lineLen) {
+            if (accumulator.isTooLong()) {
+                sseParser.processLineTooLong();
+            } else {
+                byte[] chunk = new byte[lineLen];
+                buf.get(start, chunk, 0, lineLen);
+                accumulator.addChunk(chunk, 0, lineLen);
+                if (accumulator.isTooLong()) {
+                    sseParser.processLineTooLong();
+                } else {
+                    lineSubscriber.onNext(accumulator.toLine());
+                }
+            }
+            accumulator.reset();
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            lineSubscriber.onError(throwable);
+            result.completeExceptionally(throwable);
+        }
+
+        @Override
+        public void onComplete() {
+            // Flush any pending state as a final line (stream ended without a trailing LF)
+            if (accumulator.isTooLong()) {
+                sseParser.processLineTooLong();
+            } else if (accumulator.size() > 0) {
+                lineSubscriber.onNext(accumulator.toLine());
+            }
+            accumulator.reset();
+            lineSubscriber.onComplete();
+            result.complete(null);
         }
     }
 }

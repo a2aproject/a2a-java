@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.client.http.android;
 
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
+
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -27,7 +29,9 @@ import java.util.function.Consumer;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.BoundedLineAccumulator;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
+import org.a2aproject.sdk.client.http.SSEParserConfig;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
@@ -48,24 +52,44 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
     return t;
   });
 
+  private final SSEParserConfig sseParserConfig;
+
+  public AndroidA2AHttpClient() {
+    this(SSEParserConfig.DEFAULT);
+  }
+
+  /**
+   * Creates a new Android HTTP client with custom SSE parser limits.
+   *
+   * @param sseParserConfig the SSE parser configuration to use for streaming responses
+   */
+  public AndroidA2AHttpClient(SSEParserConfig sseParserConfig) {
+    this.sseParserConfig = checkNotNullParam("sseParserConfig", sseParserConfig);
+  }
+
   @Override
   public GetBuilder createGet() {
-    return new AndroidGetBuilder();
+    return new AndroidGetBuilder(sseParserConfig);
   }
 
   @Override
   public PostBuilder createPost() {
-    return new AndroidPostBuilder();
+    return new AndroidPostBuilder(sseParserConfig);
   }
 
   @Override
   public DeleteBuilder createDelete() {
-    return new AndroidDeleteBuilder();
+    return new AndroidDeleteBuilder(sseParserConfig);
   }
 
   private abstract static class AndroidBuilder<T extends Builder<T>> implements Builder<T> {
     protected String url = "";
     protected Map<String, String> headers = new HashMap<>();
+    protected final SSEParserConfig sseParserConfig;
+
+    AndroidBuilder(SSEParserConfig sseParserConfig) {
+      this.sseParserConfig = sseParserConfig;
+    }
 
     @Override
     public T url(String url) {
@@ -137,6 +161,52 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
       }
     }
 
+    /**
+     * Reads the next line from {@code is}, treating LF, CRLF, and bare CR as terminators
+     * per the SSE specification, and enforcing the byte limit <em>while accumulating
+     * bytes</em> — not after a full line has been materialised.
+     *
+     * <p>The caller must provide a {@link BoundedLineAccumulator} and call
+     * {@link BoundedLineAccumulator#reset()} between lines. After this method returns
+     * {@code true}, check {@link BoundedLineAccumulator#isTooLong()} to distinguish
+     * between a valid line and one that exceeded the limit.
+     *
+     * <p>The {@code is} parameter must support {@link InputStream#mark(int)} (e.g.
+     * {@link java.io.BufferedInputStream}) so that CR at end-of-buffer can be resolved
+     * without consuming the following byte.
+     *
+     * @param is the input stream to read from (must support mark/reset)
+     * @param accumulator the accumulator to use for byte collection and limit enforcement
+     * @return {@code true} if a line was read, {@code false} at end-of-stream
+     */
+    static boolean readBoundedLine(InputStream is, BoundedLineAccumulator accumulator) throws IOException {
+      boolean hasReadAnyBytes = false;
+
+      while (true) {
+        int b = is.read();
+        if (b == -1) {
+          return hasReadAnyBytes || accumulator.isTooLong();
+        }
+        hasReadAnyBytes = true;
+        if (b == '\n') {
+          return true;
+        }
+        if (b == '\r') {
+          consumeOptionalLF(is);
+          return true;
+        }
+        accumulator.addByte(b);
+      }
+    }
+
+    private static void consumeOptionalLF(InputStream is) throws IOException {
+      is.mark(1);
+      int next = is.read();
+      if (next != '\n' && next != -1) {
+        is.reset();
+      }
+    }
+
     protected A2AHttpResponse execute(HttpURLConnection connection) throws IOException {
       int status = connection.getResponseCode();
       A2AHttpHeaders responseHeaders = fromConnectionHeaders(connection.getHeaderFields());
@@ -199,29 +269,11 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
         String contentType = connection.getContentType();
         boolean isSse = contentType != null && contentType.contains(EVENT_STREAM);
 
-        try (InputStream is = connection.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-          String line;
+        try (InputStream is = connection.getInputStream()) {
           if (isSse) {
-            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
-            while ((line = reader.readLine()) != null) {
-              sseParser.processLine(line);
-            }
-            sseParser.flush();
+            readSSEStream(is, sseParserConfig, messageConsumer, errorConsumer);
           } else {
-            StringBuilder bodyBuffer = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-              if (!line.isEmpty()) {
-                if (bodyBuffer.length() > 0) {
-                  bodyBuffer.append('\n');
-                }
-                bodyBuffer.append(line);
-              }
-            }
-            String body = bodyBuffer.toString();
-            if (!body.isEmpty()) {
-              messageConsumer.accept(new ServerSentEvent(body));
-            }
+            readNonSSEStream(is, messageConsumer);
           }
           completeRunnable.run();
         }
@@ -229,6 +281,45 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
         errorConsumer.accept(e);
       } finally {
         connection.disconnect();
+      }
+    }
+
+    private static void readSSEStream(
+        InputStream is,
+        SSEParserConfig config,
+        Consumer<ServerSentEvent> messageConsumer,
+        Consumer<Throwable> errorConsumer) throws IOException {
+      InputStream buffered = new java.io.BufferedInputStream(is);
+      BoundedLineAccumulator accumulator = new BoundedLineAccumulator(config.maxLineLength());
+      ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer, config);
+      while (readBoundedLine(buffered, accumulator)) {
+        if (accumulator.isTooLong()) {
+          sseParser.processLineTooLong();
+        } else {
+          sseParser.processLine(accumulator.toLine());
+        }
+        accumulator.reset();
+      }
+      sseParser.flush();
+    }
+
+    private static void readNonSSEStream(
+        InputStream is,
+        Consumer<ServerSentEvent> messageConsumer) throws IOException {
+      StringBuilder bodyBuffer = new StringBuilder();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        if (!line.isEmpty()) {
+          if (bodyBuffer.length() > 0) {
+            bodyBuffer.append('\n');
+          }
+          bodyBuffer.append(line);
+        }
+      }
+      String body = bodyBuffer.toString();
+      if (!body.isEmpty()) {
+        messageConsumer.accept(new ServerSentEvent(body));
       }
     }
 
@@ -244,6 +335,10 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
   }
 
   private static class AndroidGetBuilder extends AndroidBuilder<GetBuilder> implements GetBuilder {
+AndroidGetBuilder(SSEParserConfig sseParserConfig) {
+      super(sseParserConfig);
+    }
+
     @Override
     public A2AHttpResponse get() throws IOException {
       HttpURLConnection connection = createConnection("GET", false);
@@ -270,6 +365,10 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
       implements PostBuilder {
     private String body = "";
     private boolean followRedirects = false;
+
+AndroidPostBuilder(SSEParserConfig sseParserConfig) {
+      super(sseParserConfig);
+    }
 
     @Override
     public PostBuilder body(String body) {
@@ -325,6 +424,10 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
   private static class AndroidDeleteBuilder extends AndroidBuilder<DeleteBuilder>
       implements DeleteBuilder {
+AndroidDeleteBuilder(SSEParserConfig sseParserConfig) {
+      super(sseParserConfig);
+    }
+
     @Override
     public A2AHttpResponse delete() throws IOException {
       HttpURLConnection connection = createConnection("DELETE", false);

@@ -2,8 +2,10 @@ package org.a2aproject.sdk.client.http;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -370,11 +372,12 @@ public class ServerSentEventParserTest {
     public void testErrorConsumerCalledForLineTooLong() {
         List<ServerSentEvent> events = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
-        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set);
+        SSEParserConfig config = SSEParserConfig.builder().maxLineLength(1000).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set, config);
 
         // Oversized line mid-event: the whole event block is discarded
         parser.processLine("data: before overflow");
-        String longLine = "data: " + "x".repeat(65537);
+        String longLine = "data: " + "x".repeat(1001);
         parser.processLine(longLine);
         // Subsequent lines in the same block are skipped
         parser.processLine("data: should be skipped");
@@ -425,8 +428,7 @@ public class ServerSentEventParserTest {
         AtomicReference<Throwable> error = new AtomicReference<>();
         ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set);
 
-        // Value is 65530 chars so the full line ("data: " + value = 65536) stays within the per-line
-        // limit; 17 such lines (17 * 65530 = 1,114,010 bytes) exceed the 1MB buffer byte limit.
+        // Each value is 65530 chars; 17 such lines (17 * 65530 = 1,114,010 chars) exceed the 1 MB buffer char limit.
         String bigValue = "x".repeat(65530);
         for (int i = 0; i < 17; i++) {
             parser.processLine("data: " + bigValue);
@@ -509,5 +511,328 @@ public class ServerSentEventParserTest {
 
         assertEquals(1, events.size());
         assertEquals("value\r", events.get(0).data());
+    }
+
+    @Test
+    public void testLargeJsonRpcResponseRejectedByOldLimit() {
+        // Reproducer: a 70 KB payload exceeds the old 64 KB per-line limit but fits within the
+        // new 1 MB default, proving the limit raise fixes real-world large JSON-RPC responses.
+        String hugeJson = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"" + "x".repeat(70_000) + "\"}";
+
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        SSEParserConfig oldLimit = SSEParserConfig.builder().maxLineLength(65536).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, oldLimit);
+
+        parser.processLine("data: " + hugeJson);
+        parser.processLine("");
+
+        assertEquals(0, events.size(), "Event must be rejected under the old 64 KB limit");
+        assertEquals(1, errors.size());
+        assertInstanceOf(IllegalArgumentException.class, errors.get(0));
+
+        // Same payload split across two data: lines parses fine under the old limit
+        events.clear();
+        errors.clear();
+        String half1 = hugeJson.substring(0, hugeJson.length() / 2);
+        String half2 = hugeJson.substring(hugeJson.length() / 2);
+        parser.processLine("data: " + half1);
+        parser.processLine("data: " + half2);
+        parser.processLine("");
+
+        assertEquals(0, errors.size(), "Split payload should not trigger any error");
+        assertEquals(1, events.size());
+        assertEquals(half1 + "\n" + half2, events.get(0).data());
+    }
+
+    @Test
+    public void testLargeJsonRpcResponseAcceptedByDefault() {
+        // With the raised 1 MB default the same payload parses on a single line
+        String hugeJson = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"" + "x".repeat(70_000) + "\"}";
+
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add);
+
+        parser.processLine("data: " + hugeJson);
+        parser.processLine("");
+
+        assertEquals(0, errors.size(), "70 KB line should be accepted with default 1 MB limit");
+        assertEquals(1, events.size());
+        assertEquals(hugeJson, events.get(0).data());
+    }
+
+    @Test
+    public void testLargeSingleLineEventAcceptedByDefault() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set);
+
+        // 200 KB single data: line -- previously rejected at 64 KB, now accepted with 1 MB default
+        String largeJson = "{\"result\":\"" + "x".repeat(200_000) + "\"}";
+        parser.processLine("data: " + largeJson);
+        parser.processLine("");
+
+        assertNull(error.get(), "200 KB line should be accepted with default 1 MB limit");
+        assertEquals(1, events.size());
+        assertEquals(largeJson, events.get(0).data());
+    }
+
+    @Test
+    public void testDisabledLineLengthCheck() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        SSEParserConfig config = SSEParserConfig.builder()
+                .maxLineLength(0)
+                .maxBufferChars(2 * 1024 * 1024)
+                .build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set, config);
+
+        // With maxLineLength=0 (disabled), even very large lines are accepted
+        String hugeLine = "data: " + "x".repeat(1_500_000);
+        parser.processLine(hugeLine);
+        parser.processLine("");
+
+        assertNull(error.get(), "Line length check should be disabled when maxLineLength=0");
+        assertEquals(1, events.size());
+        assertEquals("x".repeat(1_500_000), events.get(0).data());
+    }
+
+    @Test
+    public void testCustomBufferLineLimit() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        SSEParserConfig config = SSEParserConfig.builder()
+                .maxBufferLines(5)
+                .build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set, config);
+
+        for (int i = 0; i < 5; i++) {
+            parser.processLine("data: line" + i);
+        }
+        assertNull(error.get(), "No error expected at exactly the limit");
+
+        parser.processLine("data: overflow");
+        assertNotNull(error.get(), "errorConsumer should be called when custom buffer line limit exceeded");
+        parser.processLine("");
+        assertEquals(0, events.size(), "Corrupted event block must not be dispatched");
+    }
+
+    @Test
+    public void testCustomBufferCharLimit() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        SSEParserConfig config = SSEParserConfig.builder()
+                .maxBufferChars(100)
+                .build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set, config);
+
+        parser.processLine("data: " + "x".repeat(101));
+        assertNotNull(error.get(), "errorConsumer should be called when custom buffer char limit exceeded");
+        parser.processLine("");
+        assertEquals(0, events.size(), "Corrupted event block must not be dispatched");
+    }
+
+    @Test
+    public void testParserRecoveryAfterCustomLimitViolation() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        SSEParserConfig config = SSEParserConfig.builder()
+                .maxBufferLines(2)
+                .build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, error::set, config);
+
+        parser.processLine("data: line0");
+        parser.processLine("data: line1");
+        parser.processLine("data: overflow");
+        assertNotNull(error.get(), "errorConsumer should be called when custom buffer line limit exceeded");
+        parser.processLine("");
+        assertEquals(0, events.size(), "Corrupted event block must not be dispatched");
+
+        error.set(null);
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertNull(error.get(), "No error expected after recovery");
+        assertEquals(1, events.size(), "Parser should recover after custom limit violation");
+    }
+
+    @Test
+    public void testSSEParserConfigDefaults() {
+        SSEParserConfig config = SSEParserConfig.DEFAULT;
+        assertEquals(1024 * 1024, config.maxLineLength());
+        assertEquals(1000, config.maxBufferLines());
+        assertEquals(1024 * 1024, config.maxBufferChars());
+    }
+
+    @Test
+    public void testSSEParserConfigBuilder() {
+        SSEParserConfig config = SSEParserConfig.builder()
+                .maxLineLength(500_000)
+                .maxBufferLines(2000)
+                .maxBufferChars(4 * 1024 * 1024)
+                .build();
+        assertEquals(500_000, config.maxLineLength());
+        assertEquals(2000, config.maxBufferLines());
+        assertEquals(4 * 1024 * 1024, config.maxBufferChars());
+    }
+
+    @Test
+    public void testSSEParserConfigValidation() {
+        assertDoesNotThrow(() -> SSEParserConfig.builder().maxLineLength(0).build(),
+                "maxLineLength=0 (disabled) should be allowed");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> SSEParserConfig.builder().maxLineLength(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> SSEParserConfig.builder().maxBufferLines(0).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> SSEParserConfig.builder().maxBufferChars(0).build());
+    }
+
+    // --- lastEventId / skipping interaction ---
+
+    @Test
+    public void testLastEventIdNotAdvancedWhenBlockSkippedByLineTooLong() {
+        // Regression: id: in a corrupt block must not update the reconnect cursor.
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        // Limit long enough for "id: good-id" (11) and "data: ok" (8), but shorter than the oversized data line.
+        SSEParserConfig config = SSEParserConfig.builder().maxLineLength(50).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, config);
+
+        // Good event that sets lastEventId to "good-id"
+        parser.processLine("id: good-id");
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertEquals(1, events.size(), "Good event should be dispatched");
+        assertEquals("good-id", parser.getLastEventId(), "lastEventId should be set by good event");
+
+        // Corrupt block: id: comes before the oversized line
+        parser.processLine("id: bad-id");
+        parser.processLine("data: " + "x".repeat(51)); // triggers skip
+        parser.processLine(""); // end of corrupt block
+        assertEquals(1, events.size(), "Corrupt block must not be dispatched");
+        assertEquals("good-id", parser.getLastEventId(), "lastEventId must not advance for a skipped block");
+    }
+
+    @Test
+    public void testLastEventIdNotAdvancedWhenBlockSkippedByBufferLineOverflow() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        SSEParserConfig config = SSEParserConfig.builder().maxBufferLines(2).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, config);
+
+        parser.processLine("id: good-id");
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertEquals("good-id", parser.getLastEventId(), "lastEventId should be set by good event");
+
+        parser.processLine("id: bad-id");
+        parser.processLine("data: line0");
+        parser.processLine("data: line1");
+        parser.processLine("data: overflow"); // triggers skip
+        parser.processLine("");
+        assertEquals(1, events.size(), "Only the first good event should be dispatched");
+        assertEquals("good-id", parser.getLastEventId(), "lastEventId must not advance for a skipped block");
+    }
+
+    @Test
+    public void testSkippedBlockIdDoesNotPoisonNextEventByLineTooLong() {
+        // Regression: after a skipped block, currentEventId must be rolled back so a subsequent
+        // event without an id: field does not inherit the skipped block's id.
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        SSEParserConfig config = SSEParserConfig.builder().maxLineLength(50).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, config);
+
+        // Good event
+        parser.processLine("id: good");
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertEquals("good", parser.getLastEventId(), "lastEventId should be set by good event");
+
+        // Corrupt block with a different id
+        parser.processLine("id: bad");
+        parser.processLine("data: " + "x".repeat(51));
+        parser.processLine("");
+
+        // Next valid event has no id: field
+        parser.processLine("data: next-valid-event");
+        parser.processLine("");
+
+        assertEquals(2, events.size());
+        assertEquals("good", events.get(1).id(), "Next event must carry the pre-skip id, not the skipped block's id");
+        assertEquals("good", parser.getLastEventId(), "lastEventId must not be poisoned by the skipped block");
+    }
+
+    @Test
+    public void testSkippedBlockIdDoesNotPoisonNextEventByBufferOverflow() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        SSEParserConfig config = SSEParserConfig.builder().maxBufferLines(2).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, config);
+
+        parser.processLine("id: good");
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertEquals("good", parser.getLastEventId(), "lastEventId should be set by good event");
+
+        parser.processLine("id: bad");
+        parser.processLine("data: line0");
+        parser.processLine("data: line1");
+        parser.processLine("data: overflow");
+        parser.processLine("");
+
+        parser.processLine("data: next-valid-event");
+        parser.processLine("");
+
+        assertEquals(2, events.size());
+        assertEquals("good", events.get(1).id(), "Next event must carry the pre-skip id, not the skipped block's id");
+        assertEquals("good", parser.getLastEventId(), "lastEventId must not be poisoned by the skipped block");
+    }
+
+    @Test
+    public void testSkippedBlockIdDoesNotPoisonNextEventByCharOverflow() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        SSEParserConfig config = SSEParserConfig.builder().maxBufferChars(20).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, config);
+
+        parser.processLine("id: good");
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertEquals("good", parser.getLastEventId(), "lastEventId should be set by good event");
+
+        parser.processLine("id: bad");
+        parser.processLine("data: " + "x".repeat(21));
+        parser.processLine("");
+
+        parser.processLine("data: next-valid-event");
+        parser.processLine("");
+
+        assertEquals(2, events.size());
+        assertEquals("good", events.get(1).id(), "Next event must carry the pre-skip id, not the skipped block's id");
+        assertEquals("good", parser.getLastEventId(), "lastEventId must not be poisoned by the skipped block");
+    }
+
+    @Test
+    public void testLastEventIdNotAdvancedWhenBlockSkippedByBufferCharOverflow() {
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        SSEParserConfig config = SSEParserConfig.builder().maxBufferChars(20).build();
+        ServerSentEventParser parser = new ServerSentEventParser(events::add, errors::add, config);
+
+        parser.processLine("id: good-id");
+        parser.processLine("data: ok");
+        parser.processLine("");
+        assertEquals("good-id", parser.getLastEventId(), "lastEventId should be set by good event");
+
+        parser.processLine("id: bad-id");
+        parser.processLine("data: " + "x".repeat(21)); // triggers skip
+        parser.processLine("");
+        assertEquals(1, events.size(), "Only the first good event should be dispatched");
+        assertEquals("good-id", parser.getLastEventId(), "lastEventId must not advance for a skipped block");
     }
 }

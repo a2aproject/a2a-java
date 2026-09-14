@@ -15,6 +15,19 @@ public final class JdkA2AHttpClientProvider implements A2AHttpClientProvider {
         return new JdkA2AHttpClient();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
+        return JdkA2AHttpClient.withSseConfig(sseParserConfig);
+    }
+
+    @Override
+    public boolean supportsSseConfig() {
+        return true;
+    }
+
     @Override
     public int priority() {
         return 0; // Lowest priority - fallback

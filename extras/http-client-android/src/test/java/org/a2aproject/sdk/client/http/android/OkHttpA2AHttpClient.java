@@ -22,6 +22,7 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
+import org.a2aproject.sdk.client.http.SSEParserConfig;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
@@ -48,24 +49,39 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
         return t;
     });
 
+    private final SSEParserConfig sseParserConfig;
+
+    OkHttpA2AHttpClient() {
+        this(SSEParserConfig.DEFAULT);
+    }
+
+    OkHttpA2AHttpClient(SSEParserConfig sseParserConfig) {
+        this.sseParserConfig = sseParserConfig;
+    }
+
     @Override
     public GetBuilder createGet() {
-        return new OkHttpGetBuilder();
+        return new OkHttpGetBuilder(sseParserConfig);
     }
 
     @Override
     public PostBuilder createPost() {
-        return new OkHttpPostBuilder();
+        return new OkHttpPostBuilder(sseParserConfig);
     }
 
     @Override
     public DeleteBuilder createDelete() {
-        return new OkHttpDeleteBuilder();
+        return new OkHttpDeleteBuilder(sseParserConfig);
     }
 
     private abstract static class OkHttpBuilder<T extends Builder<T>> implements Builder<T> {
         protected String url = "";
         protected final Map<String, String> headers = new HashMap<>();
+        protected final SSEParserConfig sseParserConfig;
+
+        OkHttpBuilder(SSEParserConfig sseParserConfig) {
+            this.sseParserConfig = sseParserConfig;
+        }
 
         @Override
         public T url(String url) {
@@ -189,7 +205,7 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
                     new InputStreamReader(body.byteStream(), StandardCharsets.UTF_8))) {
                 String line;
                 if (isSse) {
-                    ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
+                    ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer, sseParserConfig);
                     while ((line = reader.readLine()) != null) {
                         sseParser.processLine(line);
                     }
@@ -214,6 +230,10 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     }
 
     private static class OkHttpGetBuilder extends OkHttpBuilder<GetBuilder> implements GetBuilder {
+OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
+            super(sseParserConfig);
+        }
+
         @Override
         public A2AHttpResponse get() throws IOException {
             OkHttpClient client = buildClient(false);
@@ -247,6 +267,10 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     private static class OkHttpPostBuilder extends OkHttpBuilder<PostBuilder> implements PostBuilder {
         private String body = "";
         private boolean followRedirects = false;
+
+OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
+            super(sseParserConfig);
+        }
 
         @Override
         public PostBuilder body(String body) {
@@ -295,6 +319,10 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     }
 
     private static class OkHttpDeleteBuilder extends OkHttpBuilder<DeleteBuilder> implements DeleteBuilder {
+OkHttpDeleteBuilder(SSEParserConfig sseParserConfig) {
+            super(sseParserConfig);
+        }
+
         @Override
         public A2AHttpResponse delete() throws IOException {
             OkHttpClient client = buildClient(false);

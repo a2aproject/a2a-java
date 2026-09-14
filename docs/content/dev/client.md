@@ -185,6 +185,35 @@ Client client = Client
         .build();
 ```
 
+### SSE Parser Configuration
+
+The client uses a Server-Sent Events (SSE) parser for streaming responses. You can tune its limits via `SSEParserConfig` to handle agents that return large payloads (e.g., large artifacts or tool results):
+
+| Parameter        | Description                                              | Default   |
+|------------------|----------------------------------------------------------|-----------|
+| `maxLineLength`  | Max bytes per raw SSE line (`0` = disabled)               | 1 MB      |
+| `maxBufferLines` | Max `data:` lines per event block                        | 1 000     |
+| `maxBufferChars` | Max total characters across all `data:` values per event | 1 MB      |
+
+The defaults are suitable for most deployments. To override them, build a custom `SSEParserConfig` and pass it to the HTTP client.
+
+> **Security note:** setting `maxLineLength` to `0` disables the per-line memory protection entirely. Without this limit, a malicious server sending a single unterminated line (no newline) can consume unbounded memory — `maxBufferChars` only limits accumulated `data:` field values _after_ lines have been decoded, not the raw line itself. Only disable the per-line check when you trust the remote agent or have other safeguards (e.g. a reverse proxy with its own line-length limit). Note that `maxLineLength` is enforced as a byte limit on raw UTF-8 data; for ASCII content (the common case) bytes and characters are equivalent.
+
+```java
+SSEParserConfig sseConfig = SSEParserConfig.builder()
+        .maxLineLength(4 * 1024 * 1024)   // 4 MB per line
+        .maxBufferChars(4 * 1024 * 1024)   // 4 MB per event
+        .build();
+
+// Pass to JdkA2AHttpClient, then to your transport config
+JdkA2AHttpClient httpClient = JdkA2AHttpClient.withSseConfig(sseConfig);
+
+Client client = Client
+        .builder(agentCard)
+        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(httpClient))
+        .build();
+```
+
 ## Observability (Optional)
 
 Add distributed tracing and W3C Trace Context propagation to client calls with the [OpenTelemetry extras modules](extra/opentelemetry#client).

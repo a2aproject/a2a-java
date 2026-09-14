@@ -94,7 +94,7 @@ public class JdkA2AHttpClientTest {
 
     @Test
     public void testConstructorRejectsNullHttpClient() {
-        assertThrows(IllegalArgumentException.class, () -> new JdkA2AHttpClient(null), "foo");
+        assertThrows(IllegalArgumentException.class, () -> new JdkA2AHttpClient((java.net.http.HttpClient) null), "foo");
     }
 
     @Test

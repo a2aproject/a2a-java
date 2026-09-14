@@ -24,6 +24,38 @@ public interface A2AHttpClientProvider {
     A2AHttpClient create();
 
     /**
+     * Creates a new instance of an A2AHttpClient with the given {@link SSEParserConfig}.
+     *
+     * <p>Providers that support SSE parser configuration should override both this method
+     * and {@link #supportsSseConfig()} to return {@code true}.
+     * The default implementation ignores {@code sseParserConfig} and delegates to {@link #create()}.
+     *
+     * @param sseParserConfig the SSE parser configuration to apply
+     * @return a new A2AHttpClient instance
+     */
+    default A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
+        return create();
+    }
+
+    /**
+     * Returns {@code true} if this provider honours the {@link SSEParserConfig} passed to
+     * {@link #createWithSseConfig(SSEParserConfig)}.
+     *
+     * <p>Providers that override {@link #createWithSseConfig} to actually apply the
+     * configuration must also override this method and return {@code true}; the
+     * {@link A2AHttpClientFactory#createWithSseConfig} method uses this flag to skip
+     * providers that would silently ignore the supplied configuration.
+     *
+     * <p>The default is {@code false}, matching the default no-op implementation of
+     * {@link #createWithSseConfig}.
+     *
+     * @return {@code true} if this provider applies the given {@link SSEParserConfig}
+     */
+    default boolean supportsSseConfig() {
+        return false;
+    }
+
+    /**
      * Returns the priority of this provider. Higher priority providers are
      * tried first; the first one whose {@link #create()} succeeds is used.
      *
