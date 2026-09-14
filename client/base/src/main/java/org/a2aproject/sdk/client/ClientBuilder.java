@@ -17,6 +17,7 @@ import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfigBuilder;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportProvider;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportWrapper;
+import org.a2aproject.sdk.client.http.A2ACardResolver;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -102,6 +103,7 @@ public class ClientBuilder {
 
     private static final Map<String, ClientTransportProvider<? extends ClientTransport, ? extends ClientTransportConfig<?>>> transportProviderRegistry = new HashMap<>();
     private static final Map<Class<? extends ClientTransport>, String> transportProtocolMapping = new HashMap<>();
+    private static final Map<VersionKey, VersionedClientTransportProvider> versionedTransportProviderRegistry = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientBuilder.class);
 
     static {
@@ -109,6 +111,14 @@ public class ClientBuilder {
         for (ClientTransportProvider<?, ?> transport : loader) {
             transportProviderRegistry.put(transport.getTransportProtocol(), transport);
             transportProtocolMapping.put(transport.getTransportProtocolClass(), transport.getTransportProtocol());
+        }
+        ServiceLoader<VersionedClientTransportProvider> versionedLoader = ServiceLoader.load(VersionedClientTransportProvider.class);
+        for (VersionedClientTransportProvider provider : versionedLoader) {
+            VersionKey key = new VersionKey(provider.protocolBinding(),
+                    A2ACardResolver.normalizeSupportedProtocolVersion(provider.protocolVersion()));
+            if (versionedTransportProviderRegistry.putIfAbsent(key, provider) != null) {
+                throw new IllegalStateException("Duplicate versioned client transport provider for " + key);
+            }
         }
     }
 
@@ -311,34 +321,58 @@ public class ClientBuilder {
         // Get the preferred transport
         AgentInterface agentInterface = findBestClientTransport();
 
-        // Get the transport provider associated with the protocol
-        ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.protocolBinding());
-        if (clientTransportProvider == null) {
-            throw new A2AClientException("No client available for " + agentInterface.protocolBinding());
+        String protocolVersion = normalizeInterfaceVersionForClient(agentInterface);
+        Class<? extends ClientTransport> transportProtocolClass;
+        ClientTransportConfig<? extends ClientTransport> clientTransportConfig;
+        ClientTransport transport;
+        if ("1.0".equals(protocolVersion)) {
+            ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.protocolBinding());
+            if (clientTransportProvider == null) {
+                throw new A2AClientException("No client available for " + agentInterface.protocolBinding());
+            }
+            transportProtocolClass = clientTransportProvider.getTransportProtocolClass();
+            clientTransportConfig = clientTransports.get(transportProtocolClass);
+            if (clientTransportConfig == null) {
+                throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
+            }
+            transport = clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface);
+        } else {
+            VersionedClientTransportProvider provider = versionedTransportProviderRegistry.get(
+                    new VersionKey(agentInterface.protocolBinding(), protocolVersion));
+            if (provider == null) {
+                throw new A2AClientException("No client available for " + agentInterface.protocolBinding()
+                        + " protocol version " + protocolVersion);
+            }
+            transportProtocolClass = provider.configuredTransportClass();
+            clientTransportConfig = clientTransports.get(transportProtocolClass);
+            if (clientTransportConfig == null) {
+                throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
+            }
+            transport = provider.create(clientTransportConfig, agentCard, agentInterface);
         }
-        Class<? extends ClientTransport> transportProtocolClass = clientTransportProvider.getTransportProtocolClass();
 
-        // Retrieve the configuration associated with the preferred transport
-        ClientTransportConfig<? extends ClientTransport> clientTransportConfig = clientTransports.get(transportProtocolClass);
-
-        if (clientTransportConfig == null) {
-            throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
-        }
-
-        return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig);
+        return wrap(transport, clientTransportConfig);
     }
 
-    private Map<String, AgentInterface> getServerInterfacesMap() throws A2AClientException {
+    private List<AgentInterface> getServerInterfaces() throws A2AClientException {
         List<AgentInterface> serverInterfaces = agentCard.supportedInterfaces();
         if (serverInterfaces == null || serverInterfaces.isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
-        // If there are multiple interfaces with the same protocol binding, only the first is considered
-        Map<String, AgentInterface> serverInterfacesMap = new LinkedHashMap<>();
+        Map<String, List<AgentInterface>> grouped = new LinkedHashMap<>();
         for (AgentInterface iface : serverInterfaces) {
-            serverInterfacesMap.putIfAbsent(iface.protocolBinding(), iface);
+            String version = normalizeInterfaceVersion(iface);
+            List<AgentInterface> candidates = grouped.computeIfAbsent(iface.protocolBinding(), key -> new ArrayList<>());
+            if (candidates.stream().noneMatch(existing -> normalizeInterfaceVersion(existing).equals(version))) {
+                candidates.add(iface);
+            }
         }
-        return serverInterfacesMap;
+        List<AgentInterface> ordered = new ArrayList<>();
+        for (List<AgentInterface> candidates : grouped.values()) {
+            candidates.stream().filter(i -> "1.0".equals(normalizeInterfaceVersion(i))).forEach(ordered::add);
+            candidates.stream().filter(i -> !"1.0".equals(normalizeInterfaceVersion(i))).forEach(ordered::add);
+        }
+        return ordered;
     }
 
     private List<String> getClientPreferredTransports() {
@@ -355,21 +389,29 @@ public class ClientBuilder {
 
     // Package-private for testing
     AgentInterface findBestClientTransport() throws A2AClientException {
-        Map<String, AgentInterface> serverInterfacesMap = getServerInterfacesMap();
+        final List<AgentInterface> serverInterfaces;
+        try {
+            serverInterfaces = getServerInterfaces();
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException("Unsupported protocol version in AgentCard", e);
+        }
         List<String> clientPreferredTransports = getClientPreferredTransports();
 
         AgentInterface matchedInterface = null;
         if (clientConfig.isUseClientPreference()) {
             // Client preference: iterate client transports first, find first server match
             for (String clientPreferredTransport : clientPreferredTransports) {
-                if (serverInterfacesMap.containsKey(clientPreferredTransport)) {
-                    matchedInterface = serverInterfacesMap.get(clientPreferredTransport);
-                    break;
+                for (AgentInterface iface : serverInterfaces) {
+                    if (clientPreferredTransport.equals(iface.protocolBinding())) {
+                        matchedInterface = iface;
+                        break;
+                    }
                 }
+                if (matchedInterface != null) break;
             }
         } else {
             // Server preference: iterate server interfaces first, find first client match
-            for (AgentInterface iface : serverInterfacesMap.values()) {
+            for (AgentInterface iface : serverInterfaces) {
                 if (clientPreferredTransports.contains(iface.protocolBinding())) {
                     matchedInterface = iface;
                     break;
@@ -380,11 +422,33 @@ public class ClientBuilder {
         if (matchedInterface == null) {
             throw new A2AClientException("No compatible transport found");
         }
-        if (!transportProviderRegistry.containsKey(matchedInterface.protocolBinding())) {
-            throw new A2AClientException("No client available for " + matchedInterface.protocolBinding());
+        String version = normalizeInterfaceVersionForClient(matchedInterface);
+        if ("1.0".equals(version)) {
+            if (!transportProviderRegistry.containsKey(matchedInterface.protocolBinding())) {
+                throw new A2AClientException("No client available for " + matchedInterface.protocolBinding());
+            }
+        } else if (!versionedTransportProviderRegistry.containsKey(
+                new VersionKey(matchedInterface.protocolBinding(), version))) {
+            throw new A2AClientException("No client available for " + matchedInterface.protocolBinding()
+                    + " protocol version " + version);
         }
 
         return matchedInterface;
+    }
+
+    private static String normalizeInterfaceVersion(AgentInterface agentInterface) {
+        return A2ACardResolver.normalizeSupportedProtocolVersion(agentInterface.protocolVersion());
+    }
+
+    private static String normalizeInterfaceVersionForClient(AgentInterface agentInterface) throws A2AClientException {
+        try {
+            return normalizeInterfaceVersion(agentInterface);
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException("Unsupported protocol version '" + agentInterface.protocolVersion() + "'", e);
+        }
+    }
+
+    private record VersionKey(String binding, String version) {
     }
 
     /**
