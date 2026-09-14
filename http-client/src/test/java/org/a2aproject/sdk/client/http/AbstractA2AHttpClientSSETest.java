@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import org.a2aproject.sdk.common.A2AErrorMessages;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,15 @@ public abstract class AbstractA2AHttpClientSSETest {
     private A2AHttpClient client;
 
     protected abstract A2AHttpClient createClient();
+
+    /**
+     * Creates a client with a custom {@link SSEParserConfig}.
+     * Returns {@code null} if the implementation does not support SSEParserConfig,
+     * in which case the SSE config integration tests are skipped.
+     */
+    protected @Nullable A2AHttpClient createClient(SSEParserConfig sseParserConfig) {
+        return null;
+    }
 
     @BeforeEach
     public void setup() {
@@ -376,5 +387,179 @@ public abstract class AbstractA2AHttpClientSSETest {
         assertEquals("result", events.get(0).eventType());
         assertEquals("99", events.get(0).id());
         assertEquals("done", events.get(0).data());
+    }
+
+    @Test
+    public void testCustomSSEParserConfigRejectsOversizedLine() throws Exception {
+        A2AHttpClient configClient = createClient(SSEParserConfig.builder().maxLineLength(50).build());
+        assumeTrue(configClient != null, "Implementation does not support SSEParserConfig");
+
+        // 60-char payload exceeds the 50-char per-line limit
+        String oversizedPayload = "x".repeat(60);
+        mockServer
+                .when(request().withMethod("POST").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: " + oversizedPayload + "\n\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        configClient.createPost()
+                .url(getBaseUrl() + "/sse")
+                .body("{}")
+                .postAsyncSSE(
+                        events::add,
+                        e -> {
+                            error.set(e);
+                            latch.countDown();
+                        },
+                        latch::countDown
+                );
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNotNull(error.get(), "Custom maxLineLength should reject oversized SSE line");
+        assertEquals(0, events.size(), "Oversized event must not be dispatched");
+    }
+
+    @Test
+    public void testCustomSSEParserConfigAcceptsLineWithinLimit() throws Exception {
+        A2AHttpClient configClient = createClient(SSEParserConfig.builder().maxLineLength(200).build());
+        assumeTrue(configClient != null, "Implementation does not support SSEParserConfig");
+
+        // 100-char payload is within the 200-char per-line limit
+        String payload = "x".repeat(100);
+        mockServer
+                .when(request().withMethod("POST").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: " + payload + "\n\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        configClient.createPost()
+                .url(getBaseUrl() + "/sse")
+                .body("{}")
+                .postAsyncSSE(
+                        events::add,
+                        error::set,
+                        latch::countDown
+                );
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get(), "Payload within limit should not trigger an error");
+        assertEquals(1, events.size());
+        assertEquals(payload, events.get(0).data());
+    }
+
+    @Test
+    public void testSSEWithCRLFLineEndings() throws Exception {
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: first\r\n\r\ndata: second\r\n\r\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get(), "CRLF line endings should be handled correctly");
+        assertEquals(2, events.size());
+        assertEquals("first", events.get(0).data());
+        assertEquals("second", events.get(1).data());
+    }
+
+    @Test
+    public void testSSEWithBareCRLineEndings() throws Exception {
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: first\r\rdata: second\r\r"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get(), "Bare CR line endings should be handled correctly");
+        assertEquals(2, events.size());
+        assertEquals("first", events.get(0).data());
+        assertEquals("second", events.get(1).data());
+    }
+
+    @Test
+    public void testSSEWithMixedLineEndings() throws Exception {
+        // Mix of LF, CRLF, and bare CR terminators
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: lf\n\ndata: crlf\r\n\r\ndata: cr\r\r"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get(), "Mixed line endings should be handled correctly");
+        assertEquals(3, events.size());
+        assertEquals("lf", events.get(0).data());
+        assertEquals("crlf", events.get(1).data());
+        assertEquals("cr", events.get(2).data());
+    }
+
+    @Test
+    public void testSSEOversizedLineRejectedBeforeMemoryExhaustion() throws Exception {
+        A2AHttpClient configClient = createClient(SSEParserConfig.builder().maxLineLength(50).build());
+        assumeTrue(configClient != null, "Implementation does not support SSEParserConfig");
+
+        // Valid event followed by an oversized line in the same event block.
+        // The oversized event must be dropped, but the parser should recover.
+        String oversized = "x".repeat(60);
+        String body = "data: good\n\ndata: " + oversized + "\n\ndata: recovered\n\n";
+
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody(body));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+
+        configClient.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, errors::add, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertTrue(errors.size() >= 1, "Error should be reported for oversized line");
+        assertEquals(2, events.size(), "Good and recovered events should be dispatched");
+        assertEquals("good", events.get(0).data());
+        assertEquals("recovered", events.get(1).data());
     }
 }

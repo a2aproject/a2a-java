@@ -86,6 +86,54 @@ public final class A2AHttpClientFactory {
     }
 
     /**
+     * Creates a new A2AHttpClient instance with the given {@link SSEParserConfig} using the
+     * highest available priority provider that honours it.
+     *
+     * <p>Only providers that return {@code true} from {@link A2AHttpClientProvider#supportsSseConfig()}
+     * are considered. This prevents a higher-priority provider (e.g. Vert.x at priority 100 or CDI
+     * at priority 200) from silently ignoring the supplied configuration. If no
+     * SSE-config-aware provider is available the method falls back to any available provider and
+     * logs a warning.
+     *
+     * @param sseParserConfig the SSE parser configuration to apply
+     * @return a new A2AHttpClient instance
+     * @throws IllegalStateException if no provider found or all providers failed to instantiate
+     */
+    public static A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
+        if (sseParserConfig == null) {
+            return create();
+        }
+        // Prefer providers that explicitly support SSE config to avoid silent config loss.
+        List<A2AHttpClientProvider> sseAwareProviders = PROVIDERS.stream()
+                .filter(p -> {
+                    if (!p.supportsSseConfig()) {
+                        LOGGER.warning(() -> "Provider " + p.name()
+                                + " skipped because it does not support SSEParserConfig");
+                        return false;
+                    }
+                    return true;
+                })
+                .toList();
+        List<A2AHttpClientProvider> candidates = sseAwareProviders.isEmpty() ? PROVIDERS : sseAwareProviders;
+        if (sseAwareProviders.isEmpty()) {
+            LOGGER.warning("No A2AHttpClientProvider supports SSEParserConfig; "
+                    + "the supplied configuration may be ignored. "
+                    + "Consider using JdkA2AHttpClient.withSseConfig() directly.");
+        }
+        return candidates.stream()
+                .flatMap(p -> {
+                    try {
+                        return Stream.of(p.createWithSseConfig(sseParserConfig));
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, e, () -> "Provider " + p.name() + " skipped");
+                        return Stream.empty();
+                    }
+                })
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No A2AHttpClientProvider could be instantiated"));
+    }
+
+    /**
      * Creates a new A2AHttpClient instance using a specific provider by name.
      *
      * <p>

@@ -2,6 +2,7 @@ package org.a2aproject.sdk.client.http.android;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
+import org.a2aproject.sdk.client.http.SSEParserConfig;
 
 /**
  * Service provider for {@link AndroidA2AHttpClient}.
@@ -22,6 +23,25 @@ public final class AndroidA2AHttpClientProvider implements A2AHttpClientProvider
                     "Android classes are not available. This provider is only supported on Android.");
         }
         return new AndroidA2AHttpClient();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IllegalStateException if the Android runtime is not available
+     */
+    @Override
+    public A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
+        if (!ANDROID_AVAILABLE) {
+            throw new IllegalStateException(
+                    "Android classes are not available. This provider is only supported on Android.");
+        }
+        return new AndroidA2AHttpClient(sseParserConfig);
+    }
+
+    @Override
+    public boolean supportsSseConfig() {
+        return true;
     }
 
     @Override

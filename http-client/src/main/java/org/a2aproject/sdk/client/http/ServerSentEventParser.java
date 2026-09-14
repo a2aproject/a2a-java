@@ -15,9 +15,9 @@ import org.jspecify.annotations.Nullable;
 public class ServerSentEventParser {
     private static final Logger LOGGER = Logger.getLogger(ServerSentEventParser.class.getName());
 
-    private static final int MAX_BUFFER_SIZE = 1000;
-    private static final int MAX_BUFFER_CHARS = 1024 * 1024; // 1 MB (Java chars, so up to 2 MB in UTF-16; actual UTF-8 bytes may differ)
-    private static final int MAX_LINE_LENGTH = 65536;         // 64 KB
+    private final int maxLineLength;
+    private final int maxBufferLines;
+    private final int maxBufferChars;
 
     private final Consumer<ServerSentEvent> eventConsumer;
     private final @Nullable Consumer<Throwable> errorConsumer;
@@ -35,12 +35,33 @@ public class ServerSentEventParser {
     private boolean skippingCurrentEvent = false;
 
     public ServerSentEventParser(Consumer<ServerSentEvent> eventConsumer) {
-        this(eventConsumer, null);
+        this(eventConsumer, null, SSEParserConfig.DEFAULT);
     }
 
     public ServerSentEventParser(Consumer<ServerSentEvent> eventConsumer, @Nullable Consumer<Throwable> errorConsumer) {
+        this(eventConsumer, errorConsumer, SSEParserConfig.DEFAULT);
+    }
+
+    public ServerSentEventParser(Consumer<ServerSentEvent> eventConsumer, @Nullable Consumer<Throwable> errorConsumer,
+            SSEParserConfig config) {
         this.eventConsumer = eventConsumer;
         this.errorConsumer = errorConsumer;
+        this.maxLineLength = config.maxLineLength();
+        this.maxBufferLines = config.maxBufferLines();
+        this.maxBufferChars = config.maxBufferChars();
+    }
+
+    /**
+     * Signals that the transport layer detected a line exceeding the configured limit
+     * <em>before</em> materialising the full line in memory. This marks the current event
+     * block as corrupt (same as if {@link #processLine} had received an oversized string)
+     * and reports the error, without requiring the caller to allocate a placeholder string.
+     */
+    public void processLineTooLong() {
+        handleError(new IllegalArgumentException("Line exceeds maximum length of " + maxLineLength + " characters"));
+        skippingCurrentEvent = true;
+        dataBuffer.clear();
+        dataBufferChars = 0;
     }
 
     /**
@@ -54,8 +75,8 @@ public class ServerSentEventParser {
         }
 
         // Check line length to prevent DoS; corrupt the current event so it is not dispatched
-        if (line.length() > MAX_LINE_LENGTH) {
-            handleError(new IllegalArgumentException("Line exceeds maximum length of " + MAX_LINE_LENGTH + " characters"));
+        if (maxLineLength > 0 && line.length() > maxLineLength) {
+            handleError(new IllegalArgumentException("Line exceeds maximum length of " + maxLineLength + " characters"));
             skippingCurrentEvent = true;
             dataBuffer.clear();
             dataBufferChars = 0;
@@ -99,16 +120,16 @@ public class ServerSentEventParser {
         switch (field) {
             case "data" -> {
                 // Check line count to prevent DoS; corrupt and skip the rest of this event block
-                if (dataBuffer.size() >= MAX_BUFFER_SIZE) {
-                    handleError(new IllegalStateException("SSE data buffer exceeded maximum size of " + MAX_BUFFER_SIZE + " lines"));
+                if (dataBuffer.size() >= maxBufferLines) {
+                    handleError(new IllegalStateException("SSE data buffer exceeded maximum size of " + maxBufferLines + " lines"));
                     skippingCurrentEvent = true;
                     dataBuffer.clear();
                     dataBufferChars = 0;
                     return;
                 }
                 // Check total char count to prevent OOM on large streams
-                if (dataBufferChars + value.length() > MAX_BUFFER_CHARS) {
-                    handleError(new IllegalStateException("SSE data buffer exceeded maximum size of " + MAX_BUFFER_CHARS + " chars"));
+                if (dataBufferChars + value.length() > maxBufferChars) {
+                    handleError(new IllegalStateException("SSE data buffer exceeded maximum size of " + maxBufferChars + " chars"));
                     skippingCurrentEvent = true;
                     dataBuffer.clear();
                     dataBufferChars = 0;
@@ -146,9 +167,14 @@ public class ServerSentEventParser {
     }
 
     private void dispatchEvent() {
-        // Per SSE spec: update lastEventId before checking data, so ID-only events (e.g. heartbeats) are tracked
-        if (currentEventId != null) {
+        // Per SSE spec §9.2.6: copy currentEventId → lastEventId at dispatch, but only for blocks that
+        // were not skipped. A corrupt/oversized block must not advance the reconnect cursor even if its
+        // id: field was parsed before the violation was detected.
+        if (!skippingCurrentEvent && currentEventId != null) {
             lastEventId = currentEventId;
+        } else if (skippingCurrentEvent) {
+            // Roll back the event ID buffer so the skipped block's id: cannot leak into subsequent events.
+            currentEventId = lastEventId;
         }
 
         String data = String.join("\n", dataBuffer);
