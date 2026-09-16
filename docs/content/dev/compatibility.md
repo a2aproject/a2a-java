@@ -89,32 +89,49 @@ Push notification payloads are automatically formatted to match the protocol ver
 
 ## Client: Communicating with v0.3 Agents
 
-Use `Client_v0_3` to communicate with agents that only support protocol v0.3:
+The normal concrete 1.0 `Client` can communicate with a 0.3-only agent when
+legacy support is explicitly requested during agent-card discovery. The
+compatibility parser and one binding adapter are optional dependencies:
 
 ```xml
 <dependency>
     <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-adapter</artifactId>
     <version>$\{org.a2aproject.sdk.version}</version>
 </dependency>
 <dependency>
     <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-adapter-jsonrpc</artifactId>
     <version>$\{org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
-gRPC and REST transports are also available:
-- `a2a-java-sdk-compat-0.3-client-transport-grpc`
-- `a2a-java-sdk-compat-0.3-client-transport-rest`
+Use `a2a-java-sdk-compat-0.3-client-adapter-rest` for REST or
+`a2a-java-sdk-compat-0.3-client-adapter-grpc` for gRPC instead.
 
 ```java
-// getAgentCard() handles agent card discovery internally
-AgentCard_v0_3 agentCard = A2A_v0_3.getAgentCard("http://localhost:1234");
+AgentCard agentCard = A2A.getAgentCard(
+        "http://localhost:1234", Set.of("1.0", "0.3"));
 
-Client_v0_3 client = Client_v0_3.builder(agentCard)
-        .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
+Client client = Client.builder(agentCard)
+        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()
+                .httpClient(A2AHttpClientFactory.create())
+                .build())
         .build();
 ```
 
-**Note:** `Client_v0_3` exposes only operations available in protocol v0.3. For example, `listTasks()` is not available (it was added in v1.0). Return types use v0.3 domain objects from the `org.a2aproject.sdk.compat03.spec` package.
+The returned card contains a 1.0 `AgentInterface` whose protocol version is
+`"0.3"`, so the ordinary builder selects the matching optional adapter through
+the versioned transport-provider SPI. A 1.0 card remains native when both
+versions are requested.
+
+The adapter rejects 1.0 operations that have no 0.3 equivalent (such as
+`listTasks`), non-empty tenant values, extended-agent-card retrieval, and
+non-default push-configuration pagination before any network request. Generic
+1.0 transport parameters are also unsupported for 0.3 adapters.
+
+If 0.3 is not requested, the optional parser is not used. If it is requested
+but the parser or binding adapter is absent, discovery or client construction
+fails with an actionable error identifying the missing optional artifact.
+Client-only applications do not need to depend on 0.3 domain types, server
+libraries, CDI, Quarkus, or reference-server modules.
