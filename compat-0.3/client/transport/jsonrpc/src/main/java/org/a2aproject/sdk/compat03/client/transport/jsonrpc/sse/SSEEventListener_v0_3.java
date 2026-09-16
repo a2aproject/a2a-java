@@ -42,6 +42,7 @@ public class SSEEventListener_v0_3 {
     }
 
     public void onError(Throwable throwable, Future<Void> future) {
+        completed = true;
         if (errorHandler != null) {
             errorHandler.accept(throwable);
         }
@@ -68,6 +69,7 @@ public class SSEEventListener_v0_3 {
 
     private void handleMessage(JsonObject jsonObject, Future<Void> future) throws JsonProcessingException_v0_3 {
         if (jsonObject.has("error")) {
+            completed = true;
             JSONRPCError_v0_3 error = JsonUtil_v0_3.fromJson(jsonObject.get("error").toString(), JSONRPCError_v0_3.class);
             if (errorHandler != null) {
                 errorHandler.accept(error);
