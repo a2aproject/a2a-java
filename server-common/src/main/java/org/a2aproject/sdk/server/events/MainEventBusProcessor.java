@@ -1,6 +1,9 @@
 package org.a2aproject.sdk.server.events;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.annotation.Nullable;
@@ -74,6 +77,17 @@ public class MainEventBusProcessor implements Runnable {
      * Tests can inject a synchronous executor to ensure deterministic ordering.
      */
     private volatile @Nullable java.util.concurrent.Executor pushNotificationExecutor = null;
+
+    /**
+     * Per-task tail of the push-notification chain. {@link #sendPushNotification} is only ever
+     * called from this class's own single-threaded processing loop, so pushes for a given task
+     * are chained onto this exact sequence rather than submitted independently -- each one only
+     * starts once the previous one for the same task has finished, which is what guarantees they
+     * reach the client in the order they were produced even though delivery itself happens off
+     * this thread. A completed chain removes its own entry (compare-and-remove against the future
+     * it added) so the map does not grow forever.
+     */
+    private final ConcurrentHashMap<String, CompletableFuture<Void>> pushNotificationChains = new ConcurrentHashMap<>();
 
     private MainEventBus eventBus;
 
@@ -371,8 +385,14 @@ public class MainEventBusProcessor implements Runnable {
      * The event will be automatically wrapped in StreamResponse format by JsonUtil.
      * </p>
      * <p>
-     * <b>NOTE:</b> Tests can inject a synchronous executor via setPushNotificationExecutor()
-     * to ensure deterministic ordering of push notifications in the test environment.
+     * <b>Ordering:</b> chained onto {@link #pushNotificationChains this task's own tail future}
+     * rather than submitted independently, so pushes for the same task are always delivered in
+     * the order they were produced, regardless of executor scheduling. Different tasks remain
+     * fully independent -- one task's slow delivery never delays another's.
+     * </p>
+     * <p>
+     * Tests can inject a synchronous executor via setPushNotificationExecutor() to make delivery
+     * itself synchronous too, but ordering does not depend on that.
      * </p>
      *
      * @param taskId the task ID
@@ -393,12 +413,14 @@ public class MainEventBusProcessor implements Runnable {
             }
         };
 
-        // Use custom executor if set (for tests), otherwise use default ForkJoinPool (async)
-        if (pushNotificationExecutor != null) {
-            pushNotificationExecutor.execute(pushTask);
-        } else {
-            CompletableFuture.runAsync(pushTask);
-        }
+        Executor executor = pushNotificationExecutor != null ? pushNotificationExecutor : ForkJoinPool.commonPool();
+
+        pushNotificationChains.compute(taskId, (id, previous) -> {
+            CompletableFuture<Void> previousOrDone = previous != null ? previous : CompletableFuture.completedFuture(null);
+            CompletableFuture<Void> next = previousOrDone.thenRunAsync(pushTask, executor);
+            next.whenComplete((v, t) -> pushNotificationChains.remove(id, next));
+            return next;
+        });
     }
 
     /**
