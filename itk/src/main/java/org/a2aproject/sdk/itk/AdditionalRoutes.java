@@ -12,6 +12,10 @@ public class AdditionalRoutes {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdditionalRoutes.class);
 
     void addPrefixedRoutes(@Observes Router router) {
+        // Ordered ahead of the reroutes below, so the guard sees the path the client asked for:
+        // /rest/extendedAgentCard is rerouted to "/", after which there is nothing to recognise.
+        router.route().order(Integer.MIN_VALUE + 1).handler(ActsAuth::guard);
+
         router.get("/jsonrpc/.well-known/agent-card.json")
                 .handler(ctx -> {
                     LOGGER.info("Rerouting GET /jsonrpc/.well-known/agent-card.json -> /.well-known/agent-card.json");
