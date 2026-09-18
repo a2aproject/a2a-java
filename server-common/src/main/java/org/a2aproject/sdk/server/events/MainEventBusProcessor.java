@@ -149,6 +149,13 @@ public class MainEventBusProcessor implements Runnable {
         this.pushNotificationExecutor = executor;
     }
 
+    /**
+     * Test-only visibility into the per-task chain map, to assert entries don't leak.
+     */
+    int pushNotificationChainCount() {
+        return pushNotificationChains.size();
+    }
+
     @SuppressWarnings("NullAway.Init")
     @PostConstruct
     void start() {
@@ -415,12 +422,15 @@ public class MainEventBusProcessor implements Runnable {
 
         Executor executor = pushNotificationExecutor != null ? pushNotificationExecutor : ForkJoinPool.commonPool();
 
-        pushNotificationChains.compute(taskId, (id, previous) -> {
+        // Registered after compute() returns: with a synchronous executor, next
+        // completes before compute()'s lambda returns, so attaching whenComplete
+        // in there fires the removal before next is even stored -- a no-op that
+        // leaks one entry per task.
+        CompletableFuture<Void> next = pushNotificationChains.compute(taskId, (id, previous) -> {
             CompletableFuture<Void> previousOrDone = previous != null ? previous : CompletableFuture.completedFuture(null);
-            CompletableFuture<Void> next = previousOrDone.thenRunAsync(pushTask, executor);
-            next.whenComplete((v, t) -> pushNotificationChains.remove(id, next));
-            return next;
+            return previousOrDone.thenRunAsync(pushTask, executor);
         });
+        next.whenComplete((v, t) -> pushNotificationChains.remove(taskId, next));
     }
 
     /**

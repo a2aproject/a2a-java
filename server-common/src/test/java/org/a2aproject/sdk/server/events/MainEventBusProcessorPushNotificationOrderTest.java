@@ -141,6 +141,43 @@ public class MainEventBusProcessorPushNotificationOrderTest {
         assertTrue(slowLatch.await(5, TimeUnit.SECONDS), "The slow task's push should eventually complete");
     }
 
+    @Test
+    public void testSynchronousExecutorDoesNotLeakChainEntries() throws InterruptedException {
+        // One entry per DISTINCT task leaks, not repeated pushes for the same one --
+        // a single task's own map slot just gets overwritten each time. Only several
+        // different task IDs reveal growth.
+        int taskCount = 10;
+        CountDownLatch latch = new CountDownLatch(taskCount);
+        PushNotificationSender sender = (event, snapshot) -> latch.countDown();
+
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
+        mainEventBusProcessor.setPushNotificationExecutor(Runnable::run);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        for (int i = 0; i < taskCount; i++) {
+            String taskId = "sync-task-" + i;
+            EventQueue eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                    .taskId(taskId)
+                    .mainEventBus(mainEventBus)
+                    .build().tap();
+            eventQueue.enqueueEvent(Task.builder()
+                    .id(taskId)
+                    .contextId(CONTEXT_ID)
+                    .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                    .build());
+            eventQueue.enqueueEvent(statusEventWithSequence(taskId, 0));
+        }
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS), "All push notifications should complete");
+
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (mainEventBusProcessor.pushNotificationChainCount() != 0 && System.nanoTime() < deadline) {
+            Thread.sleep(10);
+        }
+        assertEquals(0, mainEventBusProcessor.pushNotificationChainCount(),
+                "A completed task's chain entry must not be left in the map");
+    }
+
     private TaskStatusUpdateEvent statusEventWithSequence(String taskId, int sequence) {
         return new TaskStatusUpdateEvent(taskId, new TaskStatus(TaskState.TASK_STATE_WORKING, null, null),
                 CONTEXT_ID, java.util.Map.of("sequence", sequence));
