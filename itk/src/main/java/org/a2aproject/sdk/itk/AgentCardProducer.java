@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.itk;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
@@ -14,6 +15,7 @@ import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Compat03Fields;
+import org.a2aproject.sdk.spec.SecurityScheme;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.quarkus.arc.DefaultBean;
@@ -69,6 +71,14 @@ public class AgentCardProducer {
                         .tags(List.of("itk"))
                         .examples(List.of())
                         .build()));
+
+        // Authentication is not a capability — AgentCapabilities has no member for it — so it is
+        // declared at the top level, where the ACTS authentication precondition reads both of
+        // these. Set only when enforcing, so the card never claims a scheme it does not check.
+        Map<String, SecurityScheme> schemes = ActsAuth.securitySchemes();
+        if (schemes != null) {
+            builder.securitySchemes(schemes).securityRequirements(ActsAuth.securityRequirements());
+        }
 
         Compat03Fields.addCompat03FieldsIfAvailable(builder, interfaces, url, "JSONRPC");
 
