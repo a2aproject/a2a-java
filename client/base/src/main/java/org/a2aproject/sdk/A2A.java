@@ -290,6 +290,11 @@ public class A2A {
         return getAgentCard(A2AHttpClientFactory.create(), agentUrl);
     }
 
+    /**
+     * Retrieves an agent card while explicitly selecting the protocol versions to accept.
+     * The set must be non-empty; v0.3 discovery additionally requires the optional compatibility
+     * parser and a matching binding adapter.
+     */
     public static AgentCard getAgentCard(String agentUrl, Set<String> supportedProtocolVersions)
             throws A2AClientError, A2AClientJSONError {
         return getAgentCard(A2AHttpClientFactory.create(), agentUrl, supportedProtocolVersions);
@@ -321,6 +326,9 @@ public class A2A {
         return getAgentCard(httpClient, agentUrl, null, null);
     }
 
+    /**
+     * Retrieves an agent card with a custom HTTP client and explicit protocol-version policy.
+     */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl,
             Set<String> supportedProtocolVersions) throws A2AClientError, A2AClientJSONError {
         return getAgentCard(httpClient, agentUrl, null, null, supportedProtocolVersions);
@@ -371,6 +379,9 @@ public class A2A {
         return getAgentCard(A2AHttpClientFactory.create(), agentUrl, relativeCardPath, authHeaders);
     }
 
+    /**
+     * Retrieves an agent card with custom endpoint/authentication settings and explicit protocol versions.
+     */
     public static AgentCard getAgentCard(String agentUrl, String relativeCardPath,
             Map<String, String> authHeaders, Set<String> supportedProtocolVersions)
             throws A2AClientError, A2AClientJSONError {
@@ -414,6 +425,9 @@ public class A2A {
         return getAgentCard(httpClient, agentUrl, relativeCardPath, authHeaders, Set.of("1.0"));
     }
 
+    /**
+     * Retrieves an agent card with full HTTP, endpoint, authentication, and protocol-version settings.
+     */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath,
             Map<String, String> authHeaders, Set<String> supportedProtocolVersions)
             throws A2AClientError, A2AClientJSONError  {

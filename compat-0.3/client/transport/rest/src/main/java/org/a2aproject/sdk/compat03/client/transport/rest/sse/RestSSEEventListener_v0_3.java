@@ -29,9 +29,10 @@ public class RestSSEEventListener_v0_3 {
             LOGGER.fine("Streaming message received: " + message);
             org.a2aproject.sdk.compat03.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.compat03.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(message, builder);
-            handleMessage(builder.build());
+            handleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
             errorHandler.accept(RestErrorMapper_v0_3.mapRestError(message, 500));
+            cancel(completableFuture);
         }
     }
 
@@ -44,7 +45,7 @@ public class RestSSEEventListener_v0_3 {
         }
     }
 
-    private void handleMessage(StreamResponse response) {
+    private void handleMessage(StreamResponse response, @Nullable Future<Void> future) {
         StreamingEventKind_v0_3 event;
         switch (response.getPayloadCase()) {
             case MSG ->
@@ -58,10 +59,17 @@ public class RestSSEEventListener_v0_3 {
             default -> {
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                cancel(future);
                 return;
             }
         }
         eventHandler.accept(event);
+    }
+
+    private static void cancel(@Nullable Future<Void> future) {
+        if (future != null) {
+            future.cancel(true);
+        }
     }
 
 }

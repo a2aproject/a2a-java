@@ -209,11 +209,23 @@ public class A2ACardResolver {
             return this;
         }
 
+        /**
+         * Sets the protocol versions this resolver is allowed to discover.
+         *
+         * @param supportedProtocolVersions non-empty set of supported versions, such as {@code 1.0}
+         *                                  or {@code 0.3}; patch forms are normalized
+         * @return this builder
+         * @throws IllegalArgumentException if the set is empty or contains an unsupported version
+         */
         public Builder supportedProtocolVersions(Set<String> supportedProtocolVersions) {
             checkNotNullParam("supportedProtocolVersions", supportedProtocolVersions);
-            this.supportedProtocolVersions = supportedProtocolVersions.stream()
+            Set<String> normalizedVersions = supportedProtocolVersions.stream()
                     .map(A2ACardResolver::normalizeSupportedProtocolVersion)
                     .collect(java.util.stream.Collectors.toUnmodifiableSet());
+            if (normalizedVersions.isEmpty()) {
+                throw new IllegalArgumentException("supportedProtocolVersions must not be empty");
+            }
+            this.supportedProtocolVersions = normalizedVersions;
             return this;
         }
 
@@ -347,19 +359,31 @@ public class A2ACardResolver {
             }
         }
 
-        if (parsedV10Card != null && parsedV10Card.supportedInterfaces().stream()
-                .anyMatch(i -> supportedProtocolVersions.contains(normalizeCardVersion(i.protocolVersion())))) {
-            return filterInterfaces(parsedV10Card);
+        if (parsedV10Card != null) {
+            if (parsedV10Card.supportedInterfaces().stream()
+                    .anyMatch(i -> supportedProtocolVersions.contains(normalizeCardVersion(i.protocolVersion())))) {
+                return filterInterfaces(parsedV10Card);
+            }
+            // A successfully parsed v1 card is authoritative. Do not reinterpret a valid v1 card
+            // as a legacy card merely because it does not advertise a requested version.
+            if (!parsedV10Card.supportedInterfaces().isEmpty()) {
+                throw new A2AClientJSONError("Agent card does not expose a requested protocol version");
+            }
         }
 
         if (supportedProtocolVersions.contains("0.3")) {
+            boolean parserAvailable = false;
             for (AgentCardCompatibilityParser parser : ServiceLoader.load(AgentCardCompatibilityParser.class)) {
                 if ("0.3".equals(normalizeSupportedProtocolVersion(parser.supportedProtocolVersion()))) {
+                    parserAvailable = true;
                     Optional<AgentCard> parsed = parser.parse(body, parsedV10Card, supportedProtocolVersions);
                     if (parsed.isPresent()) {
                         return filterInterfaces(parsed.get());
                     }
                 }
+            }
+            if (parserAvailable) {
+                throw new A2AClientJSONError("Agent card does not expose a requested protocol version");
             }
             throw new A2AClientJSONError(
                     "Agent card requires the optional a2a-java-sdk-compat-0.3-client-adapter artifact");

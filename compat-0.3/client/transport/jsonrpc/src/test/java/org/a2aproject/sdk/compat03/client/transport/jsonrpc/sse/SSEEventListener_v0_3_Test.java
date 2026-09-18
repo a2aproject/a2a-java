@@ -154,7 +154,8 @@ public class SSEEventListener_v0_3_Test {
                 JsonStreamingMessages_v0_3.STREAMING_ERROR_EVENT.indexOf("{"));
         
         // Call onEvent method
-        listener.onMessage(eventData, null);
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onMessage(eventData, future);
 
         // Verify the error was processed correctly
         assertNotNull(receivedError.get());
@@ -163,6 +164,20 @@ public class SSEEventListener_v0_3_Test {
         assertEquals(-32602, jsonrpcError.getCode());
         assertEquals("Invalid parameters", jsonrpcError.getMessage());
         assertEquals("Missing required field", jsonrpcError.getData());
+        assertTrue(future.cancelHandlerCalled);
+    }
+
+    @Test
+    public void testMalformedEventReportsAndCancels() {
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
+                event -> {}, receivedError::set);
+        CancelCapturingFuture future = new CancelCapturingFuture();
+
+        listener.onMessage("{not-json", future);
+
+        assertNotNull(receivedError.get());
+        assertTrue(future.cancelHandlerCalled);
     }
 
     @Test

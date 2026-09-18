@@ -243,6 +243,12 @@ public class A2ACardResolverTest {
     }
 
     @Test
+    public void testSupportedProtocolVersions_rejectsEmptySet() {
+        assertThrows(IllegalArgumentException.class, () -> A2ACardResolver.builder()
+                .supportedProtocolVersions(Set.of()));
+    }
+
+    @Test
     public void testLegacyCardUsesRegisteredParserWithoutSecondFetch() throws Exception {
         TestHttpClient client = createTestClient();
         client.body = "{\"legacy\":true}";
@@ -265,6 +271,17 @@ public class A2ACardResolverTest {
 
         assertEquals("GeoSpatial Route Planner Agent", card.name());
         assertEquals("0.3", card.supportedInterfaces().get(0).protocolVersion());
+    }
+
+    @Test
+    public void testModernCardWithoutRequestedLegacyInterfaceDoesNotUseLegacyParser() {
+        TestHttpClient client = createTestClient();
+        A2AClientJSONError error = assertThrows(A2AClientJSONError.class, () -> A2ACardResolver.builder()
+                .httpClient(client).baseUrl("http://example.com")
+                .supportedProtocolVersions(Set.of("0.3"))
+                .build().getAgentCard());
+
+        assertTrue(error.getMessage().contains("does not expose a requested protocol version"));
     }
 
     @Test

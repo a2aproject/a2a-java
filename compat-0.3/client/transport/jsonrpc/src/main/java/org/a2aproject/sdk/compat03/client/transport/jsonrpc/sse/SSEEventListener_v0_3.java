@@ -29,15 +29,11 @@ public class SSEEventListener_v0_3 {
         try {
             handleMessage(JsonParser.parseString(message).getAsJsonObject(), completableFuture);
         } catch (JsonSyntaxException e) {
-            LOGGER.warning("Failed to parse JSON message: " + message);
+            fail(e, completableFuture);
         } catch (JsonProcessingException_v0_3 e) {
-            LOGGER.warning("Failed to process JSON message: " + message);
+            fail(e, completableFuture);
         } catch (IllegalArgumentException e) {
-            LOGGER.warning("Invalid message format: " + message);
-            if (errorHandler != null) {
-                errorHandler.accept(e);
-            }
-            completableFuture.cancel(true); // close SSE channel
+            fail(e, completableFuture);
         }
     }
 
@@ -74,6 +70,9 @@ public class SSEEventListener_v0_3 {
             if (errorHandler != null) {
                 errorHandler.accept(error);
             }
+            if (future != null) {
+                future.cancel(true); // close SSE channel
+            }
         } else if (jsonObject.has("result")) {
             // result can be a Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent
             String resultJson = jsonObject.get("result").toString();
@@ -84,6 +83,16 @@ public class SSEEventListener_v0_3 {
             }
         } else {
             throw new IllegalArgumentException("Unknown message type");
+        }
+    }
+
+    private void fail(Throwable throwable, Future<Void> future) {
+        completed = true;
+        if (errorHandler != null) {
+            errorHandler.accept(throwable);
+        }
+        if (future != null) {
+            future.cancel(true);
         }
     }
 

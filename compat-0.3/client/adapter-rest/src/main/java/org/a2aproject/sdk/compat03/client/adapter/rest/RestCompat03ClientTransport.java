@@ -41,10 +41,11 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
     public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateMessageSend(request);
         PayloadAndHeaders payload = apply(A2AMethods.SEND_MESSAGE_METHOD,
-                ProtoUtils.ToProto.sendMessageRequest(request), org.a2aproject.sdk.grpc.SendMessageRequest.class, context);
+                org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(request)),
+                org.a2aproject.sdk.grpc.SendMessageRequest.Builder.class, context);
         return Compat03ClientTransportSupport.call(() -> Compat03ClientTransportSupport.toV10(delegate.sendMessage(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.messageSendParams(
-                        (org.a2aproject.sdk.grpc.SendMessageRequest) payload.getPayload())),
+                        ((org.a2aproject.sdk.grpc.SendMessageRequest.Builder) payload.getPayload()).build())),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload)))));
     }
 
@@ -53,10 +54,11 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
             Consumer<Throwable> errors, @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateMessageSend(request);
         PayloadAndHeaders payload = apply(A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
-                ProtoUtils.ToProto.sendMessageRequest(request), org.a2aproject.sdk.grpc.SendMessageRequest.class, context);
+                org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(request)),
+                org.a2aproject.sdk.grpc.SendMessageRequest.Builder.class, context);
         Compat03ClientTransportSupport.run(() -> delegate.sendMessageStreaming(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.messageSendParams(
-                        (org.a2aproject.sdk.grpc.SendMessageRequest) payload.getPayload())),
+                        ((org.a2aproject.sdk.grpc.SendMessageRequest.Builder) payload.getPayload()).build())),
                 event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
                 Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
@@ -65,22 +67,24 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
     @Override
     public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateTaskQuery(request);
-        PayloadAndHeaders payload = apply(A2AMethods.GET_TASK_METHOD, ProtoUtils.ToProto.getTaskRequest(request),
-                org.a2aproject.sdk.grpc.GetTaskRequest.class, context);
+        PayloadAndHeaders payload = apply(A2AMethods.GET_TASK_METHOD,
+                org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder(ProtoUtils.ToProto.getTaskRequest(request)),
+                org.a2aproject.sdk.grpc.GetTaskRequest.Builder.class, context);
         return Compat03ClientTransportSupport.call(() -> TaskMapper_v0_3.INSTANCE.toV10(delegate.getTask(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.taskQueryParams(
-                        (org.a2aproject.sdk.grpc.GetTaskRequest) payload.getPayload())),
+                        ((org.a2aproject.sdk.grpc.GetTaskRequest.Builder) payload.getPayload()).build())),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload)))));
     }
 
     @Override
     public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateCancel(request);
-        PayloadAndHeaders payload = apply(A2AMethods.CANCEL_TASK_METHOD, ProtoUtils.ToProto.cancelTaskRequest(request),
-                org.a2aproject.sdk.grpc.CancelTaskRequest.class, context);
+        PayloadAndHeaders payload = apply(A2AMethods.CANCEL_TASK_METHOD,
+                org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder(ProtoUtils.ToProto.cancelTaskRequest(request)),
+                org.a2aproject.sdk.grpc.CancelTaskRequest.Builder.class, context);
         return Compat03ClientTransportSupport.call(() -> TaskMapper_v0_3.INSTANCE.toV10(delegate.cancelTask(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.cancelTaskParams(
-                        (org.a2aproject.sdk.grpc.CancelTaskRequest) payload.getPayload())),
+                        ((org.a2aproject.sdk.grpc.CancelTaskRequest.Builder) payload.getPayload()).build())),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload)))));
     }
 
@@ -89,10 +93,12 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
             @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validatePushConfig(request);
         PayloadAndHeaders payload = apply(A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-                ProtoUtils.ToProto.taskPushNotificationConfig(request), org.a2aproject.sdk.grpc.TaskPushNotificationConfig.class, context);
+                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(request)),
+                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder.class, context);
         return Compat03ClientTransportSupport.call(() -> Compat03ClientTransportSupport.toV10(
                 delegate.setTaskPushNotificationConfiguration(Compat03ClientTransportSupport.toV03(
-                        ProtoUtils.FromProto.taskPushNotificationConfig((org.a2aproject.sdk.grpc.TaskPushNotificationConfig) payload.getPayload())),
+                        ProtoUtils.FromProto.taskPushNotificationConfig(
+                                ((org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder) payload.getPayload()).build())),
                         Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload)))));
     }
 
@@ -101,10 +107,13 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
             @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateGetPush(request);
         PayloadAndHeaders payload = apply(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-                ProtoUtils.ToProto.getTaskPushNotificationConfigRequest(request), org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.class, context);
+                org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder(
+                        ProtoUtils.ToProto.getTaskPushNotificationConfigRequest(request)),
+                org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder.class, context);
         return Compat03ClientTransportSupport.call(() -> Compat03ClientTransportSupport.toV10(
                 delegate.getTaskPushNotificationConfiguration(Compat03ClientTransportSupport.toV03(
-                        ProtoUtils.FromProto.getTaskPushNotificationConfigParams((org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest) payload.getPayload())),
+                        ProtoUtils.FromProto.getTaskPushNotificationConfigParams(
+                                ((org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder) payload.getPayload()).build())),
                         Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload)))));
     }
 
@@ -113,10 +122,13 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
             ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validatePushList(request);
         PayloadAndHeaders payload = apply(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-                ProtoUtils.ToProto.listTaskPushNotificationConfigsRequest(request), org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.class, context);
+                org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder(
+                        ProtoUtils.ToProto.listTaskPushNotificationConfigsRequest(request)),
+                org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder.class, context);
         return Compat03ClientTransportSupport.call(() -> Compat03ClientTransportSupport.toV10PushList(
                 delegate.listTaskPushNotificationConfigurations(Compat03ClientTransportSupport.toV03(
-                        ProtoUtils.FromProto.listTaskPushNotificationConfigsParams((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest) payload.getPayload())),
+                        ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(
+                                ((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder) payload.getPayload()).build())),
                         Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload)))));
     }
 
@@ -125,10 +137,12 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
             @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateDeletePush(request);
         PayloadAndHeaders payload = apply(A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-                ProtoUtils.ToProto.deleteTaskPushNotificationConfigRequest(request), org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.class, context);
+                org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder(
+                        ProtoUtils.ToProto.deleteTaskPushNotificationConfigRequest(request)),
+                org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder.class, context);
         Compat03ClientTransportSupport.run(() -> delegate.deleteTaskPushNotificationConfigurations(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(
-                        (org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest) payload.getPayload())),
+                        ((org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder) payload.getPayload()).build())),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
     }
 
@@ -137,10 +151,11 @@ public final class RestCompat03ClientTransport extends Compat03ClientTransportBa
             Consumer<Throwable> errors, @Nullable ClientCallContext context) {
         Compat03ClientTransportSupport.validateTenant("subscribeToTask", request.tenant());
         PayloadAndHeaders payload = apply(A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
-                ProtoUtils.ToProto.subscribeToTaskRequest(request), org.a2aproject.sdk.grpc.SubscribeToTaskRequest.class, context);
+                org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder(ProtoUtils.ToProto.subscribeToTaskRequest(request)),
+                org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder.class, context);
         Compat03ClientTransportSupport.run(() -> delegate.resubscribe(
                 Compat03ClientTransportSupport.toV03(ProtoUtils.FromProto.taskIdParams(
-                        (org.a2aproject.sdk.grpc.SubscribeToTaskRequest) payload.getPayload())),
+                        ((org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder) payload.getPayload()).build())),
                 event -> events.accept(Compat03ClientTransportSupport.toV10(event)),
                 Compat03ClientTransportSupport.mapAsyncError(errors),
                 Compat03ClientCallContextMapper.toV03(contextWithHeaders(context, payload))));
