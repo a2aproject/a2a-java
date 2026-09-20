@@ -25,6 +25,7 @@ import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.CDI;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -533,6 +534,27 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         }
     }
 
+    /**
+     * Resolves an HTTP {@code Location} header value against the original request URI.
+     *
+     * <p>Per RFC 9110 10.2.2 (and RFC 7231 before it) a {@code Location} may be a relative
+     * reference such as {@code /collect}; RFC 3986 5 reference resolution turns it into the
+     * effective target URI. An already-absolute {@code Location} is returned unchanged. A
+     * malformed base or location falls back to the raw value so any existing handling still
+     * applies.
+     *
+     * @param requestUri the original (absolute) request URI the redirect responded to
+     * @param location the raw {@code Location} header value
+     * @return the absolute redirect target
+     */
+    private static String resolveRedirectLocation(String requestUri, String location) {
+        try {
+            return URI.create(requestUri).resolve(location).toString();
+        } catch (IllegalArgumentException e) {
+            return location;
+        }
+    }
+
     private class VertxPostBuilder extends VertxBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
 
         private String body = "";
@@ -571,12 +593,15 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 int statusCode = response.status();
                 String location = response.headers().firstValue("Location");
                 if (location != null) {
+                    // RFC 9110 10.2.2 permits a relative Location (e.g. /collect); resolve it
+                    // against the original request URI per RFC 3986 5 before following.
+                    String resolvedLocation = resolveRedirectLocation(url, location);
                     if (statusCode == 301 || statusCode == 302 || statusCode == 303) {
                         // RFC 7231: 301/302/303 redirect POST as GET; 307/308 would preserve the method
-                        return executeSyncRequest(webClient.getAbs(location), headers, null);
+                        return executeSyncRequest(webClient.getAbs(resolvedLocation), headers, null);
                     } else if (statusCode == 307 || statusCode == 308) {
                         // RFC 7538: 307/308 must repeat the request with the original method and body
-                        return executeSyncRequest(webClient.postAbs(location), headers, bodyBuffer);
+                        return executeSyncRequest(webClient.postAbs(resolvedLocation), headers, bodyBuffer);
                     }
                 }
             }
