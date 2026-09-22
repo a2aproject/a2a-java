@@ -10,6 +10,8 @@ import org.a2aproject.sdk.compat03.client.transport.rest.RestErrorMapper_v0_3;
 import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
 import org.jspecify.annotations.Nullable;
 
 public class RestSSEEventListener_v0_3 {
@@ -31,7 +33,9 @@ public class RestSSEEventListener_v0_3 {
             JsonFormat.parser().merge(message, builder);
             handleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
-            errorHandler.accept(RestErrorMapper_v0_3.mapRestError(message, 500));
+            if (errorHandler != null) {
+                errorHandler.accept(RestErrorMapper_v0_3.mapRestError(message, 500));
+            }
             cancel(completableFuture);
         }
     }
@@ -58,12 +62,18 @@ public class RestSSEEventListener_v0_3 {
                 event = ProtoUtils_v0_3.FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
             default -> {
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
-                errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                if (errorHandler != null) {
+                    errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                }
                 cancel(future);
                 return;
             }
         }
         eventHandler.accept(event);
+        if ((event instanceof TaskStatusUpdateEvent_v0_3 statusUpdate && statusUpdate.isFinal())
+                || (event instanceof Task_v0_3 task && task.status().state().isFinal())) {
+            cancel(future);
+        }
     }
 
     private static void cancel(@Nullable Future<Void> future) {

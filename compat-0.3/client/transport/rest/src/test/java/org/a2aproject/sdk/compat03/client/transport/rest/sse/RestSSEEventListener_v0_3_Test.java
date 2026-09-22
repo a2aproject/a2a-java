@@ -38,6 +38,59 @@ class RestSSEEventListener_v0_3_Test {
         assertTrue(future.cancelled);
     }
 
+    @Test
+    void finalStatusUpdateCancels() {
+        RestSSEEventListener_v0_3 listener = new RestSSEEventListener_v0_3(
+                event -> {}, error -> {});
+        CancelCapturingFuture future = new CancelCapturingFuture();
+
+        listener.onMessage("""
+                {
+                  "status_update": {
+                    "task_id": "task-1",
+                    "context_id": "context-1",
+                    "status": {"state": "TASK_STATE_COMPLETED"},
+                    "final": true
+                  }
+                }""", future);
+
+        assertTrue(future.cancelled);
+    }
+
+    @Test
+    void finalTaskCancels() {
+        RestSSEEventListener_v0_3 listener = new RestSSEEventListener_v0_3(
+                event -> {}, error -> {});
+        CancelCapturingFuture future = new CancelCapturingFuture();
+
+        listener.onMessage("""
+                {
+                  "task": {
+                    "id": "task-1",
+                    "contextId": "context-1",
+                    "status": {"state": "TASK_STATE_COMPLETED"}
+                  }
+                }""", future);
+
+        assertTrue(future.cancelled);
+    }
+
+    @Test
+    void malformedEventWithoutErrorHandlerDoesNotThrow() {
+        RestSSEEventListener_v0_3 listener = new RestSSEEventListener_v0_3(
+                event -> {}, null);
+
+        listener.onMessage("{not-json", null);
+    }
+
+    @Test
+    void invalidPayloadWithoutErrorHandlerDoesNotThrow() {
+        RestSSEEventListener_v0_3 listener = new RestSSEEventListener_v0_3(
+                event -> {}, null);
+
+        listener.onMessage("{}", null);
+    }
+
     private static final class CancelCapturingFuture implements Future<Void> {
         private boolean cancelled;
 

@@ -103,7 +103,7 @@ public final class Compat03ClientTransportSupport {
 
     public static void validatePushList(ListTaskPushNotificationConfigsParams request) {
         validateTenant("listTaskPushNotificationConfigurations", request.tenant());
-        if (request.pageSize() != 0 || (request.pageToken() != null && !request.pageToken().isEmpty())) {
+        if (request.pageSize() > 0 || (request.pageToken() != null && !request.pageToken().isEmpty())) {
             throw unsupported("listTaskPushNotificationConfigurations pagination");
         }
     }

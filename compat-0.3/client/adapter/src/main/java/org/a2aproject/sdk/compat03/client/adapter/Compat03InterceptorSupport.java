@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.compat03.client.adapter;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,11 +19,19 @@ public final class Compat03InterceptorSupport {
 
     public static PayloadAndHeaders apply(List<ClientCallInterceptor> interceptors, String method,
             Object payload, AgentCard card, @Nullable ClientCallContext context, Class<?> expectedType) {
-        Map<String, String> headers = context == null ? Map.of() : context.getHeaders();
+        Map<String, String> headers = new HashMap<>();
+        if (context != null) {
+            context.getHeaders().forEach((name, value) -> {
+                if (!A2AHeaders.A2A_VERSION.equalsIgnoreCase(name)) {
+                    headers.put(name, value);
+                }
+            });
+        }
+        ClientCallContext sanitizedContext = context == null ? null
+                : new ClientCallContext(context.getState(), headers);
         PayloadAndHeaders result = new PayloadAndHeaders(payload, headers);
-        validateVersionHeader(result.getHeaders());
         for (ClientCallInterceptor interceptor : interceptors) {
-            result = interceptor.intercept(method, result.getPayload(), result.getHeaders(), card, context);
+            result = interceptor.intercept(method, result.getPayload(), result.getHeaders(), card, sanitizedContext);
             if (result == null || result.getPayload() == null) {
                 throw new A2AClientException("0.3 interceptor returned a forbidden null payload for " + method);
             }

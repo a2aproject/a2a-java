@@ -644,6 +644,9 @@
         <!-- A2A Protocol v0.3 backward compatibility layer -->
         <module>compat-0.3</module>
 
+        <!-- Classpath fixture for optional 0.3 client adapter diagnostics -->
+        <module>tests/client-builder-classpath</module>
+
         <!-- Multiversion reference modules (depend on both v1.0 and v0.3) -->
         <module>reference/multiversion-jsonrpc</module>
         <module>reference/multiversion-rest</module>

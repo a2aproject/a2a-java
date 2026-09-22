@@ -56,6 +56,12 @@ class Compat03ClientTransportSupportTest {
     }
 
     @Test
+    void acceptsNegativeDefaultPushListPageSize() {
+        Compat03ClientTransportSupport.validatePushList(
+                new ListTaskPushNotificationConfigsParams("task", -1, "", null));
+    }
+
+    @Test
     void mapsContextsAndRequestParametersInBothDirections() {
         ClientCallContext context = new ClientCallContext(
                 Map.of("trace", "one"), Map.of("Authorization", "Bearer token"));

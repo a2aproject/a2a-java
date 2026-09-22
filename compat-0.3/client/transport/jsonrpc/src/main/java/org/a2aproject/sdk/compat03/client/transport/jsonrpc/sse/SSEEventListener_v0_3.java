@@ -7,7 +7,9 @@ import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -25,7 +27,7 @@ public class SSEEventListener_v0_3 {
         this.errorHandler = errorHandler;
     }
 
-    public void onMessage(String message, Future<Void> completableFuture) {
+    public void onMessage(String message, @Nullable Future<Void> completableFuture) {
         try {
             handleMessage(JsonParser.parseString(message).getAsJsonObject(), completableFuture);
         } catch (JsonSyntaxException e) {
@@ -34,15 +36,19 @@ public class SSEEventListener_v0_3 {
             fail(e, completableFuture);
         } catch (IllegalArgumentException e) {
             fail(e, completableFuture);
+        } catch (IllegalStateException e) {
+            fail(e, completableFuture);
         }
     }
 
-    public void onError(Throwable throwable, Future<Void> future) {
+    public void onError(Throwable throwable, @Nullable Future<Void> future) {
         completed = true;
         if (errorHandler != null) {
             errorHandler.accept(throwable);
         }
-        future.cancel(true); // close SSE channel
+        if (future != null) {
+            future.cancel(true); // close SSE channel
+        }
     }
 
     public void onComplete() {
@@ -63,7 +69,7 @@ public class SSEEventListener_v0_3 {
         }
     }
 
-    private void handleMessage(JsonObject jsonObject, Future<Void> future) throws JsonProcessingException_v0_3 {
+    private void handleMessage(JsonObject jsonObject, @Nullable Future<Void> future) throws JsonProcessingException_v0_3 {
         if (jsonObject.has("error")) {
             completed = true;
             JSONRPCError_v0_3 error = JsonUtil_v0_3.fromJson(jsonObject.get("error").toString(), JSONRPCError_v0_3.class);
@@ -78,15 +84,18 @@ public class SSEEventListener_v0_3 {
             String resultJson = jsonObject.get("result").toString();
             StreamingEventKind_v0_3 event = JsonUtil_v0_3.fromJson(resultJson, StreamingEventKind_v0_3.class);
             eventHandler.accept(event);
-            if (event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal()) {
-                future.cancel(true); // close SSE channel
+            if ((event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal())
+                    || (event instanceof Task_v0_3 task && task.status().state().isFinal())) {
+                if (future != null) {
+                    future.cancel(true); // close SSE channel
+                }
             }
         } else {
             throw new IllegalArgumentException("Unknown message type");
         }
     }
 
-    private void fail(Throwable throwable, Future<Void> future) {
+    private void fail(Throwable throwable, @Nullable Future<Void> future) {
         completed = true;
         if (errorHandler != null) {
             errorHandler.accept(throwable);

@@ -435,6 +435,14 @@ public class ClientBuilder {
         }
 
         if (matchedInterface == null) {
+            for (AgentInterface iface : serverInterfaces) {
+                String adapter = missingCompatibilityAdapter(iface);
+                if (adapter != null) {
+                    throw new A2AClientException(iface.protocolBinding() + " "
+                            + normalizeInterfaceVersion(iface) + " requires "
+                            + adapter);
+                }
+            }
             throw new A2AClientException("No compatible transport found");
         }
         String version = normalizeInterfaceVersionForClient(matchedInterface);
@@ -461,6 +469,29 @@ public class ClientBuilder {
                 ? transportProviderRegistry.containsKey(agentInterface.protocolBinding())
                 : versionedTransportProviderRegistry.containsKey(
                         new VersionKey(agentInterface.protocolBinding(), version));
+    }
+
+    private @Nullable String missingCompatibilityAdapter(AgentInterface agentInterface) {
+        String version = normalizeInterfaceVersion(agentInterface);
+        if ("1.0".equals(version)
+                || hasTransportProvider(agentInterface)
+                || !isConfiguredBinding(agentInterface.protocolBinding())) {
+            return null;
+        }
+        return switch (agentInterface.protocolBinding()) {
+            case "JSONRPC" -> "a2a-java-sdk-compat-0.3-client-adapter-jsonrpc";
+            case "HTTP+JSON" -> "a2a-java-sdk-compat-0.3-client-adapter-rest";
+            case "GRPC" -> "a2a-java-sdk-compat-0.3-client-adapter-grpc";
+            default -> "a2a-java-sdk-compat-0.3-client-adapter-" + agentInterface.protocolBinding().toLowerCase();
+        };
+    }
+
+    private boolean isConfiguredBinding(String binding) {
+        if (clientTransports.isEmpty() && TransportProtocol.JSONRPC.asString().equals(binding)) {
+            return true;
+        }
+        return clientTransports.keySet().stream()
+                .anyMatch(clazz -> binding.equals(transportProtocolMapping.get(clazz)));
     }
 
     private static String normalizeInterfaceVersionForClient(AgentInterface agentInterface) throws A2AClientException {
