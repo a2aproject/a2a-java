@@ -547,7 +547,8 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * @param location the raw {@code Location} header value
      * @return the absolute redirect target
      */
-    private static String resolveRedirectLocation(String requestUri, String location) {
+    // Package-private for direct unit testing of RFC 3986 reference resolution.
+    static String resolveRedirectLocation(String requestUri, String location) {
         try {
             return URI.create(requestUri).resolve(location).toString();
         } catch (IllegalArgumentException e) {
