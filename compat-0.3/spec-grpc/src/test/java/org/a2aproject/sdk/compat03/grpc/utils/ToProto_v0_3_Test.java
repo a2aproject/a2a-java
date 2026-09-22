@@ -4,6 +4,7 @@ import static org.a2aproject.sdk.compat03.grpc.Role.ROLE_AGENT;
 import static org.a2aproject.sdk.compat03.grpc.Role.ROLE_USER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -195,6 +196,19 @@ public class ToProto_v0_3_Test {
         assertEquals("tell me a joke", result.getContent(0).getText());
         assertEquals(org.a2aproject.sdk.compat03.grpc.FilePart.getDefaultInstance(), result.getContent(0).getFile());
         assertEquals(org.a2aproject.sdk.compat03.grpc.DataPart.getDefaultInstance(), result.getContent(0).getData());
+    }
+
+    @Test
+    public void convertPartMetadata() {
+        TextPart_v0_3 source = new TextPart_v0_3("text", Map.of("key", "value"));
+
+        org.a2aproject.sdk.compat03.grpc.Part proto = ProtoUtils_v0_3.ToProto.part(source);
+
+        assertTrue(proto.hasMetadata());
+        assertEquals("value", proto.getMetadata().getFieldsOrThrow("key").getStringValue());
+
+        TextPart_v0_3 result = (TextPart_v0_3) ProtoUtils_v0_3.FromProto.part(proto);
+        assertEquals(Map.of("key", "value"), result.metadata());
     }
 
     @Test

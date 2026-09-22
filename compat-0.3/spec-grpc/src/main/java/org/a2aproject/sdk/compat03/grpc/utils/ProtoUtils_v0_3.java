@@ -245,10 +245,19 @@ public class ProtoUtils_v0_3 {
             org.a2aproject.sdk.compat03.grpc.Part.Builder builder = org.a2aproject.sdk.compat03.grpc.Part.newBuilder();
             if (part instanceof TextPart_v0_3 textPart) {
                 builder.setText(textPart.text());
+                if (!textPart.metadata().isEmpty()) {
+                    builder.setMetadata(struct(textPart.metadata()));
+                }
             } else if (part instanceof FilePart_v0_3 fp) {
                 builder.setFile(filePart(fp));
+                if (!fp.metadata().isEmpty()) {
+                    builder.setMetadata(struct(fp.metadata()));
+                }
             } else if (part instanceof DataPart_v0_3 dp) {
                 builder.setData(dataPart(dp));
+                if (dp.metadata() != null && !dp.metadata().isEmpty()) {
+                    builder.setMetadata(struct(dp.metadata()));
+                }
             }
             return builder.build();
         }
@@ -915,32 +924,31 @@ public class ProtoUtils_v0_3 {
         }
 
         static Part_v0_3<?> part(org.a2aproject.sdk.compat03.grpc.PartOrBuilder part) {
+            Map<String, Object> metadata = struct(part.getMetadata());
             if (part.hasText()) {
-                return textPart(part.getText());
+                return new TextPart_v0_3(part.getText(), metadata);
             } else if (part.hasFile()) {
-                return filePart(part.getFile());
+                return filePart(part.getFile(), metadata);
             } else if (part.hasData()) {
-                return dataPart(part.getData());
+                return dataPart(part.getData(), metadata);
             }
             throw new InvalidRequestError_v0_3();
         }
 
-        private static TextPart_v0_3 textPart(String text) {
-            return new TextPart_v0_3(text);
-        }
-
-        private static FilePart_v0_3 filePart(org.a2aproject.sdk.compat03.grpc.FilePartOrBuilder filePart) {
+        private static FilePart_v0_3 filePart(org.a2aproject.sdk.compat03.grpc.FilePartOrBuilder filePart,
+                                              @Nullable Map<String, Object> metadata) {
             String name = filePart.getName().isEmpty() ? null : filePart.getName();
             if (filePart.hasFileWithBytes()) {
-                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), name, filePart.getFileWithBytes().toStringUtf8()));
+                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), name, filePart.getFileWithBytes().toStringUtf8()), metadata);
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart_v0_3(new FileWithUri_v0_3(filePart.getMimeType(), name, filePart.getFileWithUri()));
+                return new FilePart_v0_3(new FileWithUri_v0_3(filePart.getMimeType(), name, filePart.getFileWithUri()), metadata);
             }
             throw new InvalidRequestError_v0_3();
         }
 
-        private static DataPart_v0_3 dataPart(org.a2aproject.sdk.compat03.grpc.DataPartOrBuilder dataPart) {
-            return new DataPart_v0_3(struct(dataPart.getData()));
+        private static DataPart_v0_3 dataPart(org.a2aproject.sdk.compat03.grpc.DataPartOrBuilder dataPart,
+                                              @Nullable Map<String, Object> metadata) {
+            return new DataPart_v0_3(struct(dataPart.getData()), metadata);
         }
 
         private static @Nullable TaskStatus_v0_3 taskStatus(org.a2aproject.sdk.compat03.grpc.TaskStatusOrBuilder taskStatus) {
