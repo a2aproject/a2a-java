@@ -340,6 +340,33 @@ public class RestTransportTest {
         assertEquals("jwt", authenticationInfo.scheme());
     }
 
+    @Test
+    public void testGetTaskPushNotificationConfigurationWithOmittedId() throws Exception {
+        assertGetTaskPushNotificationConfigurationWithDefaultId(
+                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64"));
+    }
+
+    @Test
+    public void testGetTaskPushNotificationConfigurationWithEmptyId() throws Exception {
+        assertGetTaskPushNotificationConfigurationWithDefaultId(
+                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", ""));
+    }
+
+    private void assertGetTaskPushNotificationConfigurationWithDefaultId(
+            GetTaskPushNotificationConfigParams params) throws Exception {
+        this.server.when(request()
+                        .withMethod("GET")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+
+        RestTransport client = new RestTransport(CARD);
+        TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(params, null);
+
+        assertEquals("https://example.com/callback", config.url());
+    }
+
     /**
      * Test of listTaskPushNotificationConfigurations method, of class JSONRestTransport.
      */
