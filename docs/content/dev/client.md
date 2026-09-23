@@ -220,7 +220,12 @@ Add distributed tracing and W3C Trace Context propagation to client calls with t
 
 ## Communicating with v0.3 Agents
 
-See [Backward Compatibility](compatibility#client-communicating-with-v03-agents) for using `Client_v0_3` with older protocol agents.
+The SDK supports two client APIs for communicating with v0.3 agents:
+
+- The recommended unified `Client` API uses the normal v1.0 types and an optional v0.3 compatibility adapter. See [Backward Compatibility](compatibility#client-communicating-with-v03-agents) for setup and supported operations.
+- The legacy `Client_v0_3` API remains available for applications that already use v0.3 domain types and transport APIs directly.
+
+New applications should prefer the unified client; existing applications can continue using `Client_v0_3` without migrating immediately.
 
 ## Examples
 

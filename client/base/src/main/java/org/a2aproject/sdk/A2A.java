@@ -3,6 +3,7 @@ package org.a2aproject.sdk;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.a2aproject.sdk.client.http.A2ACardResolver;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
@@ -290,6 +291,16 @@ public class A2A {
     }
 
     /**
+     * Retrieves an agent card while explicitly selecting the protocol versions to accept.
+     * The set must be non-empty; v0.3 discovery additionally requires the optional compatibility
+     * parser and a matching binding adapter.
+     */
+    public static AgentCard getAgentCard(String agentUrl, Set<String> supportedProtocolVersions)
+            throws A2AClientError, A2AClientJSONError {
+        return getAgentCard(A2AHttpClientFactory.create(), agentUrl, supportedProtocolVersions);
+    }
+
+    /**
      * Retrieve the agent card using a custom HTTP client.
      * <p>
      * Use this variant when you need to customize HTTP behavior (timeouts, SSL configuration,
@@ -313,6 +324,14 @@ public class A2A {
      */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl) throws A2AClientError, A2AClientJSONError  {
         return getAgentCard(httpClient, agentUrl, null, null);
+    }
+
+    /**
+     * Retrieves an agent card with a custom HTTP client and explicit protocol-version policy.
+     */
+    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl,
+            Set<String> supportedProtocolVersions) throws A2AClientError, A2AClientJSONError {
+        return getAgentCard(httpClient, agentUrl, null, null, supportedProtocolVersions);
     }
 
     /**
@@ -361,6 +380,16 @@ public class A2A {
     }
 
     /**
+     * Retrieves an agent card with custom endpoint/authentication settings and explicit protocol versions.
+     */
+    public static AgentCard getAgentCard(String agentUrl, String relativeCardPath,
+            Map<String, String> authHeaders, Set<String> supportedProtocolVersions)
+            throws A2AClientError, A2AClientJSONError {
+        return getAgentCard(A2AHttpClientFactory.create(), agentUrl, relativeCardPath, authHeaders,
+                supportedProtocolVersions);
+    }
+
+    /**
      * Retrieve the agent card with full customization options.
      * <p>
      * This is the most flexible variant, allowing customization of:
@@ -393,11 +422,21 @@ public class A2A {
      * @throws org.a2aproject.sdk.spec.A2AClientJSONError if the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError  {
+        return getAgentCard(httpClient, agentUrl, relativeCardPath, authHeaders, Set.of("1.0"));
+    }
+
+    /**
+     * Retrieves an agent card with full HTTP, endpoint, authentication, and protocol-version settings.
+     */
+    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath,
+            Map<String, String> authHeaders, Set<String> supportedProtocolVersions)
+            throws A2AClientError, A2AClientJSONError  {
         A2ACardResolver resolver = A2ACardResolver.builder()
                 .httpClient(httpClient)
                 .baseUrl(agentUrl)
                 .agentCardPath(relativeCardPath)
                 .authHeaders(authHeaders)
+                .supportedProtocolVersions(supportedProtocolVersions)
                 .build();
         return resolver.getAgentCard();
     }

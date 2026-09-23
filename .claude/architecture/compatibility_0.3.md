@@ -16,7 +16,8 @@ The A2A protocol evolved from v0.3 to v1.0 with significant breaking changes. Ex
 
 - Dedicated `compat-0.3` Maven module structure containing **only** 0.3-specific code
 - gRPC code generation from the v0.3 `a2a.proto`
-- Dedicated v0.3 client (`Client_v0_3`) exposing only features available in v0.3
+- Unified v1.0 client compatibility adapters that allow the normal `Client` API to communicate with v0.3 agents
+- Legacy v0.3 client (`Client_v0_3`) exposing only features available in v0.3
 - Server-side conversion layer (`Convert_v0_3_To10RequestHandler`) that accepts v0.3 requests and delegates to v1.0 server-common
 - Server-side transport handlers for v0.3 (JSON-RPC, gRPC, REST)
 - Bidirectional mapping layer between v0.3 and v1.0 domain objects
@@ -30,7 +31,7 @@ The A2A protocol evolved from v0.3 to v1.0 with significant breaking changes. Ex
 ### Out of Scope
 
 - Changes to existing v1.0 modules (no regressions, no API changes)
-- Automatic protocol version detection (client must explicitly choose API version)
+- Implicit protocol downgrade or automatic version selection (the unified client requires the caller to explicitly request supported protocol versions during agent-card discovery)
 - Extras modules (OpenTelemetry, JPA stores, etc.) for v0.3
 - Serving a separate v0.3-format agent card (the v1.0 card is served, with optional v0.3-compatible fields added by the user)
 
@@ -107,13 +108,21 @@ All compat-0.3 classes use a `_v0_3` suffix to avoid naming conflicts with v1.0 
 
 ### Dedicated v0.3 Client
 
-The compat layer exposes a **dedicated `Client_v0_3`** that only provides features available in v0.3:
+The compat layer retains a **dedicated `Client_v0_3`** for applications that already use the v0.3 API directly. It only provides features available in v0.3:
 
 - No `listTasks()` method (absent in v0.3)
 - Method names reflect v0.3 semantics where they differ
 - The client is a standalone API, not a wrapper around the v1.0 `Client`
 
-Users must explicitly check the `protocolVersion` field from the agent card and instantiate the correct client accordingly. No automatic version detection.
+This is the legacy path. New applications should use the unified v1.0 `Client` path below instead.
+
+### Unified v1.0 Client with v0.3 Compatibility
+
+The recommended path for new applications is the normal v1.0 `Client` API with optional v0.3 compatibility artifacts. Applications continue to use v1.0 `AgentCard`, request, response, event, configuration, context, and interceptor types; they do not need to import `Client_v0_3` or v0.3 domain types.
+
+The caller explicitly requests the protocol versions it is willing to use during agent-card discovery. If a v0.3 interface is selected, the compatibility parser projects its card into a v1.0 `AgentCard`, and a version-aware transport adapter converts calls between v1.0 and v0.3. The unified client does not silently downgrade when v0.3 was not requested.
+
+The compatibility parser and the adapter for the selected binding are optional dependencies. The adapter rejects v1.0 operations that have no v0.3 equivalent, such as `listTasks`, before sending a request. If the requested compatibility parser or binding adapter is absent, discovery or client construction reports the missing artifact.
 
 ### Server-Side Conversion Layer
 
@@ -231,9 +240,12 @@ compat-0.3/
 │               └── ListTaskPushNotificationConfigsResultMapper_v0_3.java
 ├── tests/                           # Test infrastructure
 │   └── server-common/               # Shared test base classes (AgentExecutorProducer_v0_3)
-├── client/                          # v0.3-compatible client
-│   ├── base/                        # Client_v0_3 — dedicated 0.3 API
-│   │   └── pom.xml
+├── client/                          # Client compatibility support
+│   ├── base/                        # Client_v0_3 — legacy dedicated 0.3 API
+│   ├── adapter/                     # Unified v1.0 Client compatibility adapter
+│   ├── adapter-jsonrpc/              # Unified JSON-RPC client adapter
+│   ├── adapter-rest/                 # Unified REST client adapter
+│   ├── adapter-grpc/                 # Unified gRPC client adapter
 │   └── transport/
 │       ├── spi/                     # Transport SPI
 │       │   └── pom.xml
@@ -427,7 +439,38 @@ The `server-conversion` module produces a test-jar containing shared test infras
 
 ### Client: Talking to a v0.3 Agent
 
-**1. Add the compat client dependency:**
+New applications should use the unified v1.0 `Client` API. Add the compatibility parser and the adapter for the desired binding:
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-adapter</artifactId>
+</dependency>
+<!-- Use the matching -jsonrpc, -rest, or -grpc adapter. -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-adapter-jsonrpc</artifactId>
+</dependency>
+```
+
+Request the versions explicitly and build the ordinary client:
+
+```java
+AgentCard agentCard = A2A.getAgentCard(
+        "http://localhost:1234", Set.of("1.0", "0.3"));
+
+Client client = Client.builder(agentCard)
+        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()
+                .httpClient(A2AHttpClientFactory.create())
+                .build())
+        .build();
+```
+
+The returned card contains a v1.0 `AgentInterface` marked with protocol version `"0.3"`. The ordinary builder selects the matching compatibility adapter, while a native v1.0 interface continues to use the normal transport.
+
+Existing applications that use v0.3 domain types directly can continue using the legacy API:
+
+**1. Add the legacy compat client dependency:**
 
 ```xml
 <dependency>
@@ -441,7 +484,7 @@ The `server-conversion` module produces a test-jar containing shared test infras
 </dependency>
 ```
 
-**2. Find the v0.3 interface and create the client:**
+**2. Find the v0.3 interface and create the legacy client:**
 
 ```java
 AgentCard card = // ... fetch agent card from /.well-known/agent-card.json
@@ -452,13 +495,13 @@ AgentInterface v03Interface = card.supportedInterfaces().stream()
         .findFirst()
         .orElseThrow();
 
-// Create the v0.3 compatibility client
+// Create the legacy v0.3 client
 Client_v0_3 client = ClientBuilder_v0_3.forUrl(v03Interface.url())
         .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
         .build();
 ```
 
-`Client_v0_3` exposes only operations available in v0.3. Return types are v0.3 `org.a2aproject.sdk.compat03.spec` domain objects.
+`Client_v0_3` exposes only operations available in v0.3, and its return types are v0.3 `org.a2aproject.sdk.compat03.spec` domain objects. This path is useful for existing integrations but requires applications to use the legacy API and types directly.
 
 ### Server: Serving v0.3 Clients
 
@@ -540,7 +583,8 @@ For JSON-RPC and REST, multi-version convenience modules are also available that
 | `Convert_v0_3_To10RequestHandler` | Integration tests | Via transport handler tests using real v1.0 backend |
 | Transport handlers | Unit + Integration | Handler-level tests + end-to-end via reference servers |
 | Client transports | Unit tests | Mocked v0.3 endpoints |
-| `Client_v0_3` | Unit tests | API coverage, absence of v1.0-only methods |
+| Unified v1.0 `Client` compatibility adapters | Unit + integration tests | v1.0 client API against v0.3 endpoints, including synchronous, streaming, resubscription, push configuration, authentication, and error behavior |
+| `Client_v0_3` | Unit + integration tests | Legacy API coverage, absence of v1.0-only methods, and direct v0.3 request/response behavior |
 | Reference servers | Integration tests | Full request/response cycle with v0.3 client |
 | TCK | Conformance tests | Protocol conformance against v0.3 spec |
 

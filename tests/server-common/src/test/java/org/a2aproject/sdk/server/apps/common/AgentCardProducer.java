@@ -24,6 +24,7 @@ import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
 import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.Assertions;
 
@@ -42,6 +43,7 @@ public class AgentCardProducer {
     @Produces
     @PublicAgentCard
     @ExtendedAgentCard
+    @DefaultBean
     public AgentCard agentCard() {
         String port = System.getProperty("test.agent.card.port", "8081");
         String preferredTransport = loadPreferredTransportFromProperties();
@@ -99,4 +101,3 @@ public class AgentCardProducer {
         return preferredTransport;
     }
 }
-

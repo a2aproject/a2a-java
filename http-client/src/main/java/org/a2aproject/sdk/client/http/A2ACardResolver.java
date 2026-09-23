@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
@@ -85,8 +88,11 @@ public class A2ACardResolver {
     private final String cardUrl;
     private final @Nullable String fallbackUrl;
     private final @Nullable Map<String, String> authHeaders;
+    private final Set<String> supportedProtocolVersions;
 
-    private A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String tenant, @Nullable String agentCardPath, @Nullable Map<String, String> authHeaders) throws A2AClientError {
+    private A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String tenant,
+            @Nullable String agentCardPath, @Nullable Map<String, String> authHeaders,
+            Set<String> supportedProtocolVersions) throws A2AClientError {
         checkNotNullParam("httpClient", httpClient);
         checkNotNullParam("baseUrl", baseUrl);
         this.httpClient = httpClient;
@@ -101,6 +107,7 @@ public class A2ACardResolver {
             throw new A2AClientError("Invalid agent URL", e);
         }
         this.authHeaders = authHeaders != null ? Map.copyOf(authHeaders) : null;
+        this.supportedProtocolVersions = Set.copyOf(supportedProtocolVersions);
         LOGGER.debug("Initialized A2ACardResolver with cardUrl={}", cardUrl);
     }
 
@@ -123,6 +130,7 @@ public class A2ACardResolver {
         private @Nullable String tenant;
         private @Nullable String agentCardPath;
         private @Nullable Map<String, String> authHeaders;
+        private Set<String> supportedProtocolVersions = Set.of("1.0");
 
         private Builder() {
         }
@@ -202,6 +210,26 @@ public class A2ACardResolver {
         }
 
         /**
+         * Sets the protocol versions this resolver is allowed to discover.
+         *
+         * @param supportedProtocolVersions non-empty set of supported versions, such as {@code 1.0}
+         *                                  or {@code 0.3}; patch forms are normalized
+         * @return this builder
+         * @throws IllegalArgumentException if the set is empty or contains an unsupported version
+         */
+        public Builder supportedProtocolVersions(Set<String> supportedProtocolVersions) {
+            checkNotNullParam("supportedProtocolVersions", supportedProtocolVersions);
+            Set<String> normalizedVersions = supportedProtocolVersions.stream()
+                    .map(A2ACardResolver::normalizeSupportedProtocolVersion)
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
+            if (normalizedVersions.isEmpty()) {
+                throw new IllegalArgumentException("supportedProtocolVersions must not be empty");
+            }
+            this.supportedProtocolVersions = normalizedVersions;
+            return this;
+        }
+
+        /**
          * Builds the A2ACardResolver instance.
          *
          * @return a new A2ACardResolver
@@ -213,8 +241,19 @@ public class A2ACardResolver {
             if (baseUrl == null) {
                 throw new IllegalArgumentException("baseUrl must not be null");
             }
-            return new A2ACardResolver(client, baseUrl, tenant, agentCardPath, authHeaders);
+            return new A2ACardResolver(client, baseUrl, tenant, agentCardPath, authHeaders, supportedProtocolVersions);
         }
+    }
+
+    public static String normalizeSupportedProtocolVersion(String version) {
+        if (version == null) {
+            throw new IllegalArgumentException("Protocol version must not be null");
+        }
+        return switch (version.trim()) {
+            case "1.0", "1.0.0" -> "1.0";
+            case "0.3", "0.3.0" -> "0.3";
+            default -> throw new IllegalArgumentException("Unsupported protocol version: " + version);
+        };
     }
 
     /**
@@ -309,12 +348,61 @@ public class A2ACardResolver {
             throw new A2AClientError("Failed to obtain agent card", e);
         }
 
+        AgentCard parsedV10Card = null;
         try {
             org.a2aproject.sdk.grpc.AgentCard.Builder agentCardBuilder = org.a2aproject.sdk.grpc.AgentCard.newBuilder();
             JSONRPCUtils.parseJsonString(body, agentCardBuilder, "", true);
-            return ProtoUtils.FromProto.agentCard(agentCardBuilder);
-        } catch (JsonProcessingException e) {
-            throw new A2AClientJSONError("Could not unmarshal agent card response", e);
+            parsedV10Card = ProtoUtils.FromProto.agentCard(agentCardBuilder);
+        } catch (JsonProcessingException | RuntimeException e) {
+            if (supportedProtocolVersions.equals(Set.of("1.0"))) {
+                throw new A2AClientJSONError("Could not unmarshal agent card response", e);
+            }
+        }
+
+        if (parsedV10Card != null) {
+            if (parsedV10Card.supportedInterfaces().stream()
+                    .anyMatch(i -> supportedProtocolVersions.contains(normalizeCardVersion(i.protocolVersion())))) {
+                return filterInterfaces(parsedV10Card);
+            }
+            // A successfully parsed v1 card is authoritative. Do not reinterpret a valid v1 card
+            // as a legacy card merely because it does not advertise a requested version.
+            if (!parsedV10Card.supportedInterfaces().isEmpty()) {
+                throw new A2AClientJSONError("Agent card does not expose a requested protocol version");
+            }
+        }
+
+        if (supportedProtocolVersions.contains("0.3")) {
+            boolean parserAvailable = false;
+            for (AgentCardCompatibilityParser parser : ServiceLoader.load(AgentCardCompatibilityParser.class)) {
+                if ("0.3".equals(normalizeSupportedProtocolVersion(parser.supportedProtocolVersion()))) {
+                    parserAvailable = true;
+                    Optional<AgentCard> parsed = parser.parse(body, parsedV10Card, supportedProtocolVersions);
+                    if (parsed.isPresent()) {
+                        return filterInterfaces(parsed.get());
+                    }
+                }
+            }
+            if (parserAvailable) {
+                throw new A2AClientJSONError("Agent card does not expose a requested protocol version");
+            }
+            throw new A2AClientJSONError(
+                    "Agent card requires the optional a2a-java-sdk-compat-0.3-client-adapter artifact");
+        }
+        throw new A2AClientJSONError("Agent card does not expose a requested protocol version");
+    }
+
+    private AgentCard filterInterfaces(AgentCard card) {
+        return AgentCard.builder(card).supportedInterfaces(card.supportedInterfaces().stream()
+                .filter(i -> supportedProtocolVersions.contains(normalizeCardVersion(i.protocolVersion())))
+                .toList()).build();
+    }
+
+    private static String normalizeCardVersion(@Nullable String version) {
+        if (version == null) return "";
+        try {
+            return normalizeSupportedProtocolVersion(version);
+        } catch (IllegalArgumentException e) {
+            return version;
         }
     }
 }
