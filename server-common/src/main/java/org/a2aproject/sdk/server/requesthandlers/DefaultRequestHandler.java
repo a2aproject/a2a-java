@@ -715,7 +715,8 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     @SuppressWarnings("NullAway")
-    public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
+    public EventKind onMessageSend(MessageSendParams rawParams, ServerCallContext context) throws A2AError {
+        MessageSendParams params = normalizeBlankIds(rawParams);
         LOGGER.debug("onMessageSend - task: {}; context {}", params.message().taskId(), params.message().contextId());
         String msgTaskId = params.message().taskId();
         if (msgTaskId != null) {
@@ -927,7 +928,8 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     @SuppressWarnings("NullAway")
     public Flow.Publisher<StreamingEventKind> onMessageSendStream(
-            MessageSendParams params, ServerCallContext context) throws A2AError {
+            MessageSendParams rawParams, ServerCallContext context) throws A2AError {
+        MessageSendParams params = normalizeBlankIds(rawParams);
         LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}",
                 params.message().taskId(), params.message().contextId(), runningAgents.size());
         String msgTaskId = params.message().taskId();
@@ -1352,6 +1354,38 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
+    /**
+     * Treats a blank {@code taskId}/{@code contextId} on the message the same as absent.
+     * <p>
+     * Proto3 scalar fields have no wire-level presence, so a client that never set these
+     * fields and a client that explicitly set them to {@code ""} are indistinguishable once
+     * the message crosses a transport that always serializes them (see {@code emptyToNull} in
+     * {@code A2ACommonFieldMapper} for the equivalent normalization on the gRPC mapping path).
+     * Without this, a blank {@code taskId} is mistaken for a reference to an existing task
+     * with id {@code ""} instead of a request to start a new task.
+     */
+    private static MessageSendParams normalizeBlankIds(MessageSendParams params) {
+        Message message = params.message();
+        String taskId = message.taskId();
+        String contextId = message.contextId();
+        boolean blankTaskId = taskId != null && taskId.isEmpty();
+        boolean blankContextId = contextId != null && contextId.isEmpty();
+        if (!blankTaskId && !blankContextId) {
+            return params;
+        }
+
+        Message normalizedMessage = Message.builder(message)
+                .taskId(blankTaskId ? null : taskId)
+                .contextId(blankContextId ? null : contextId)
+                .build();
+        return MessageSendParams.builder()
+                .message(normalizedMessage)
+                .configuration(params.configuration())
+                .metadata(params.metadata())
+                .tenant(params.tenant())
+                .build();
+    }
+
     @SuppressWarnings("NullAway") // shouldAddPushInfo guarantees pushConfigStore != null
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
         Task task = authorizeTaskAccess(params, context);
@@ -1406,7 +1440,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context, TaskOperation operation) throws A2AError {
-        if (requestedTaskId == null) {
+        if (requestedTaskId == null || requestedTaskId.isEmpty()) {
             return;
         }
         enforceRead(context, requestedTaskId, operation);

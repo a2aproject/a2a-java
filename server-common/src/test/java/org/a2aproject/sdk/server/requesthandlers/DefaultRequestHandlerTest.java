@@ -846,6 +846,115 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
+     * A blank (empty-string) taskId/contextId must be treated the same as absent (null).
+     * <p>
+     * Proto3 scalar fields have no wire-level presence, so a client that never set
+     * taskId/contextId and one that serialized them as "" are indistinguishable once the
+     * message crosses a JsonFormat-based transport (see {@code JSONRPCUtils}'s use of
+     * {@code alwaysPrintFieldsWithNoPresence()}). Before this fix, a blank taskId was
+     * mistaken for a reference to an existing task with id "", causing a spurious
+     * TaskNotFoundError instead of starting a new task.
+     */
+    @Test
+    void testSendMessage_WithBlankTaskId_TreatedAsNewTask() throws Exception {
+        CountDownLatch agentCompleted = new CountDownLatch(1);
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.complete();
+            agentCompleted.countDown();
+        };
+
+        Message message = Message.builder()
+            .messageId("msg-blank-task-id")
+            .role(Message.Role.ROLE_USER)
+            .taskId("")
+            .contextId("")
+            .parts(new TextPart("hello"))
+            .build();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(message)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+
+        assertInstanceOf(Task.class, result, "A blank taskId should start a new task, not fail lookup");
+        Task task = (Task) result;
+        assertNotNull(task.id());
+        assertFalse(task.id().isEmpty(), "A newly generated taskId must not be blank");
+        assertNotNull(task.contextId());
+        assertFalse(task.contextId().isEmpty(), "A newly generated contextId must not be blank");
+
+        assertTrue(agentCompleted.await(5, TimeUnit.SECONDS), "Agent should have been invoked for a new task");
+        assertNull(taskStore.get(""), "No task should ever be stored under the empty-string id");
+    }
+
+    /**
+     * Streaming counterpart of {@link #testSendMessage_WithBlankTaskId_TreatedAsNewTask()}.
+     */
+    @Test
+    void testSendMessageStream_WithBlankTaskId_TreatedAsNewTask() throws Exception {
+        CountDownLatch agentCompleted = new CountDownLatch(1);
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.complete();
+            agentCompleted.countDown();
+        };
+
+        Message message = Message.builder()
+            .messageId("msg-stream-blank-task-id")
+            .role(Message.Role.ROLE_USER)
+            .taskId("")
+            .contextId("")
+            .parts(new TextPart("hello"))
+            .build();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(message)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        CountDownLatch streamDone = new CountDownLatch(1);
+        AtomicReference<Throwable> errorRef = new AtomicReference<>();
+        AtomicReference<String> taskIdRef = new AtomicReference<>();
+
+        Flow.Publisher<StreamingEventKind> publisher =
+                requestHandler.onMessageSendStream(params, contextWithVersion("1.0"));
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(StreamingEventKind item) {
+                if (item instanceof Task t) {
+                    taskIdRef.set(t.id());
+                } else if (item instanceof TaskStatusUpdateEvent e) {
+                    taskIdRef.set(e.taskId());
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                errorRef.set(t);
+                streamDone.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                streamDone.countDown();
+            }
+        });
+
+        assertTrue(streamDone.await(5, TimeUnit.SECONDS), "Stream should complete");
+        assertNull(errorRef.get(), "A blank taskId should start a new task, not fail lookup: " + errorRef.get());
+        assertTrue(agentCompleted.await(5, TimeUnit.SECONDS), "Agent should have been invoked for a new task");
+        assertNotNull(taskIdRef.get());
+        assertFalse(taskIdRef.get().isEmpty(), "A newly generated taskId must not be blank");
+        assertNull(taskStore.get(""), "No task should ever be stored under the empty-string id");
+    }
+
+    /**
      * Verification for Codex adversarial review finding:
      * When a follow-up message includes taskId but omits contextId,
      * the emitted TaskStatusUpdateEvent should use the task's original
