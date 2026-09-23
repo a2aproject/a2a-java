@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.spi.sse;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -25,6 +26,7 @@ public abstract class AbstractSSEEventListener {
 
     private final Consumer<StreamingEventKind> eventHandler;
     private final @Nullable Consumer<Throwable> errorHandler;
+    private final AtomicBoolean terminalSignaled = new AtomicBoolean(false);
 
     /**
      * Creates a new SSE event listener with the specified handlers.
@@ -73,11 +75,30 @@ public abstract class AbstractSSEEventListener {
      * @param future Optional future for closing the SSE connection
      */
     public void onError(Throwable throwable, @Nullable Future<Void> future) {
-        if (errorHandler != null) {
-            errorHandler.accept(throwable);
-        }
+        signalTerminal(throwable);
         if (future != null) {
             future.cancel(true); // close SSE channel
+        }
+    }
+
+    /**
+     * Delivers exactly one terminal callback for the stream. The first caller to win
+     * the atomic transition delivers its outcome to the error/completion consumer (a
+     * non-null {@code error} is a failure, {@code null} is normal completion); every
+     * later completion, error or post-cancellation signal is dropped, so a single
+     * streaming request yields exactly one terminal callback.
+     *
+     * @param error the failure to report, or {@code null} to signal normal completion
+     */
+    protected void signalTerminal(@Nullable Throwable error) {
+        if (!terminalSignaled.compareAndSet(false, true)) {
+            LOGGER.fine("Terminal callback already delivered, ignoring subsequent signal");
+            return;
+        }
+        if (errorHandler != null) {
+            errorHandler.accept(error);
+        } else if (error != null) {
+            LOGGER.warning("errorHandler is null, cannot report terminal error");
         }
     }
 

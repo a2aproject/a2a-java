@@ -4,12 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -247,6 +253,106 @@ public class SSEEventListenerTest {
         assertTrue(future.cancelHandlerCalled);
     }
 
+
+
+    @Test
+    public void testOnCompleteThenOnErrorDeliversSingleTerminalCallback() {
+        AtomicInteger terminalCount = new AtomicInteger(0);
+        AtomicReference<Throwable> lastArg = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+
+        listener.onComplete();
+        listener.onError(new RuntimeException("late error"), new CancelCapturingFuture());
+
+        assertEquals(1, terminalCount.get());
+        assertNull(lastArg.get());
+    }
+
+    @Test
+    public void testOnErrorThenOnCompleteDeliversSingleTerminalCallback() {
+        AtomicInteger terminalCount = new AtomicInteger(0);
+        AtomicReference<Throwable> lastArg = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+
+        RuntimeException boom = new RuntimeException("first error");
+        listener.onError(boom, new CancelCapturingFuture());
+        listener.onComplete();
+
+        assertEquals(1, terminalCount.get());
+        assertSame(boom, lastArg.get());
+    }
+
+    @Test
+    public void testRepeatedOnCompleteDeliversSingleTerminalCallback() {
+        AtomicInteger terminalCount = new AtomicInteger(0);
+        AtomicReference<Throwable> lastArg = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+
+        listener.onComplete();
+        listener.onComplete();
+        listener.onComplete();
+
+        assertEquals(1, terminalCount.get());
+    }
+
+    @Test
+    public void testConcurrentTerminalSignalsDeliverExactlyOneCallback() throws Exception {
+        AtomicInteger terminalCount = new AtomicInteger(0);
+        AtomicReference<Throwable> lastArg = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+
+        int threads = 32;
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            final boolean complete = (i % 2 == 0);
+            pool.submit(() -> {
+                try {
+                    start.await();
+                    if (complete) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError(new RuntimeException("race"), new CancelCapturingFuture());
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    done.countDown();
+                }
+            });
+        }
+        start.countDown();
+        assertTrue(done.await(10, TimeUnit.SECONDS));
+        pool.shutdownNow();
+
+        assertEquals(1, terminalCount.get());
+    }
+
+    @Test
+    public void testFinalEventThenOnCompleteDeliversSingleTerminalCallback() throws Exception {
+        AtomicInteger terminalCount = new AtomicInteger(0);
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> terminalCount.incrementAndGet());
+
+        String eventData = JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(
+                JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT_FINAL.indexOf("{"));
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onMessage(new ServerSentEvent(eventData), future);
+        listener.onComplete();
+
+        assertTrue(future.cancelHandlerCalled);
+        assertEquals(1, terminalCount.get());
+    }
 
     private static class CancelCapturingFuture implements Future<Void> {
         private boolean cancelHandlerCalled;

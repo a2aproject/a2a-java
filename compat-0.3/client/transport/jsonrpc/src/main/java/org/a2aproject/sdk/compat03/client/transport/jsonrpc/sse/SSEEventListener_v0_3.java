@@ -10,6 +10,7 @@ import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -17,7 +18,7 @@ public class SSEEventListener_v0_3 {
     private static final Logger LOGGER = Logger.getLogger(SSEEventListener_v0_3.class.getName());
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     private final Consumer<Throwable> errorHandler;
-    private volatile boolean completed = false;
+    private final AtomicBoolean terminalSignaled = new AtomicBoolean(false);
 
     public SSEEventListener_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler,
                                  Consumer<Throwable> errorHandler) {
@@ -34,44 +35,37 @@ public class SSEEventListener_v0_3 {
             LOGGER.warning("Failed to process JSON message: " + message);
         } catch (IllegalArgumentException e) {
             LOGGER.warning("Invalid message format: " + message);
-            if (errorHandler != null) {
-                errorHandler.accept(e);
-            }
+            signalTerminal(e);
             completableFuture.cancel(true); // close SSE channel
         }
     }
 
     public void onError(Throwable throwable, Future<Void> future) {
-        if (errorHandler != null) {
-            errorHandler.accept(throwable);
-        }
+        signalTerminal(throwable);
         future.cancel(true); // close SSE channel
     }
 
-    public void onComplete() {
-        // Idempotent: only signal completion once, even if called multiple times
-        if (completed) {
-            LOGGER.fine("SSEEventListener.onComplete() called again - ignoring (already completed)");
+    private void signalTerminal(Throwable error) {
+        if (!terminalSignaled.compareAndSet(false, true)) {
+            LOGGER.fine("Terminal callback already delivered, ignoring subsequent signal");
             return;
         }
-        completed = true;
-
-        // Signal normal stream completion (null error means successful completion)
-        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
         if (errorHandler != null) {
-            LOGGER.fine("Calling errorHandler.accept(null) to signal successful completion");
-            errorHandler.accept(null);
-        } else {
-            LOGGER.warning("errorHandler is null, cannot signal completion");
+            errorHandler.accept(error);
+        } else if (error != null) {
+            LOGGER.warning("errorHandler is null, cannot report terminal error");
         }
+    }
+
+    public void onComplete() {
+        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
+        signalTerminal(null);
     }
 
     private void handleMessage(JsonObject jsonObject, Future<Void> future) throws JsonProcessingException_v0_3 {
         if (jsonObject.has("error")) {
             JSONRPCError_v0_3 error = JsonUtil_v0_3.fromJson(jsonObject.get("error").toString(), JSONRPCError_v0_3.class);
-            if (errorHandler != null) {
-                errorHandler.accept(error);
-            }
+            signalTerminal(error);
         } else if (jsonObject.has("result")) {
             // result can be a Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent
             String resultJson = jsonObject.get("result").toString();
