@@ -4,10 +4,12 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
@@ -166,8 +168,9 @@ public interface A2ACommonFieldMapper {
         if (struct == null || struct.getFieldsCount() == 0) {
             return null;
         }
-        return struct.getFieldsMap().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> valueToObject(e.getValue())));
+        Map<String, Object> map = new HashMap<>();
+        struct.getFieldsMap().forEach((key, value) -> map.put(key, valueToObject(value)));
+        return map;
     }
 
     /**
@@ -182,7 +185,9 @@ public interface A2ACommonFieldMapper {
     @SuppressWarnings("unchecked")
     default Value objectToValue(Object value) {
         Value.Builder valueBuilder = Value.newBuilder();
-        if (value instanceof String) {
+        if (value == null) {
+            valueBuilder.setNullValue(NullValue.NULL_VALUE);
+        } else if (value instanceof String) {
             valueBuilder.setStringValue((String) value);
         } else if (value instanceof Number) {
             valueBuilder.setNumberValue(((Number) value).doubleValue());
