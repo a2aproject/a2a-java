@@ -225,10 +225,10 @@ public record Message(Role role, List<Part<?>> parts,
         /**
          * Sets the conversation context identifier.
          *
-         * @param contextId the context identifier (optional)
+         * @param contextId the context identifier, or {@code null} to clear it (optional)
          * @return this builder for method chaining
          */
-        public Builder contextId(String contextId) {
+        public Builder contextId(@Nullable String contextId) {
             this.contextId = contextId;
             return this;
         }
@@ -236,10 +236,10 @@ public record Message(Role role, List<Part<?>> parts,
         /**
          * Sets the task identifier this message is associated with.
          *
-         * @param taskId the task identifier (optional)
+         * @param taskId the task identifier, or {@code null} to clear it (optional)
          * @return this builder for method chaining
          */
-        public Builder taskId(String taskId) {
+        public Builder taskId(@Nullable String taskId) {
             this.taskId = taskId;
             return this;
         }
