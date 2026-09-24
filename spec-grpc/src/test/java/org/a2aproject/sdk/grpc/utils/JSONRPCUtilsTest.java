@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.grpc.utils;
 
 import static org.a2aproject.sdk.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
@@ -8,11 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collections;
+import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -28,11 +31,15 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConf
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
+import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TextPart;
@@ -40,6 +47,92 @@ import org.a2aproject.sdk.spec.util.ErrorDetail;
 import org.junit.jupiter.api.Test;
 
 public class JSONRPCUtilsTest {
+
+    @Test
+    public void testSendMessage_WithExplicitNulls_RoundTrips() throws JsonProcessingException {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "null-message",
+                  "method": "SendMessage",
+                  "params": {
+                    "message": {
+                      "messageId": "message-null",
+                      "role": "ROLE_USER",
+                      "parts": [{
+                        "data": {"attributeId": null, "source": "ID"},
+                        "metadata": {"partOptional": null}
+                      }],
+                      "metadata": {"messageOptional": null}
+                    },
+                    "metadata": {"requestOptional": null}
+                  }
+                }
+                """;
+
+        SendMessageRequest request = assertInstanceOf(SendMessageRequest.class, JSONRPCUtils.parseRequestBody(json, null));
+        MessageSendParams params = request.getParams();
+        DataPart part = assertInstanceOf(DataPart.class, params.message().parts().get(0));
+        Map<?, ?> data = assertInstanceOf(Map.class, part.data());
+        assertTrue(data.containsKey("attributeId"));
+        assertNull(data.get("attributeId"));
+        assertEquals("ID", data.get("source"));
+        assertEquals(Collections.singletonMap("partOptional", null), part.metadata());
+        assertEquals(Collections.singletonMap("messageOptional", null), params.message().metadata());
+        assertEquals(Collections.singletonMap("requestOptional", null), params.metadata());
+
+        String serialized = JSONRPCUtils.toJsonRPCRequest(assertInstanceOf(String.class, request.getId()), SEND_MESSAGE_METHOD,
+                ProtoUtils.ToProto.sendMessageRequest(params));
+        SendMessageRequest roundTripped = assertInstanceOf(SendMessageRequest.class,
+                JSONRPCUtils.parseRequestBody(serialized, null));
+        assertEquals(params, roundTripped.getParams());
+    }
+
+    @Test
+    public void testGetTask_WithNestedNulls_RoundTrips() throws JsonProcessingException {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "null-task",
+                  "result": {
+                    "id": "task-null",
+                    "contextId": "context-null",
+                    "status": {
+                      "state": "TASK_STATE_COMPLETED",
+                      "timestamp": "2026-09-21T00:00:00Z"
+                    },
+                    "history": [{
+                      "messageId": "message-null",
+                      "role": "ROLE_AGENT",
+                      "parts": [{
+                        "data": {
+                          "nested": {"optional": null},
+                          "items": [null, {"optional": null}, {}, []]
+                        },
+                        "metadata": {"partOptional": null}
+                      }],
+                      "metadata": {"messageOptional": null}
+                    }],
+                    "metadata": {"taskOptional": null}
+                  }
+                }
+                """;
+
+        GetTaskResponse response = assertInstanceOf(GetTaskResponse.class, JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD));
+        Task task = response.getResult();
+        assertNotNull(task);
+        assertEquals(Collections.singletonMap("taskOptional", null), task.metadata());
+        DataPart part = assertInstanceOf(DataPart.class, task.history().get(0).parts().get(0));
+        Map<?, ?> data = assertInstanceOf(Map.class, part.data());
+        assertEquals(Collections.singletonMap("optional", null), data.get("nested"));
+        assertEquals(Collections.singletonMap("partOptional", null), part.metadata());
+        assertEquals(Collections.singletonMap("messageOptional", null), task.history().get(0).metadata());
+
+        String serialized = JSONRPCUtils.toJsonRPCResultResponse(response.getId(), ProtoUtils.ToProto.task(task));
+        GetTaskResponse roundTripped = assertInstanceOf(GetTaskResponse.class,
+                JSONRPCUtils.parseResponseBody(serialized, GET_TASK_METHOD));
+        assertEquals(task, roundTripped.getResult());
+    }
 
     @Test
     public void testParseCreateTaskPushNotificationConfigRequest_ValidProtoFormat() throws JsonProcessingException {

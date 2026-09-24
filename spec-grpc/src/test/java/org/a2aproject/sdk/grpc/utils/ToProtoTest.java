@@ -6,11 +6,17 @@ import static org.a2aproject.sdk.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 
 import org.a2aproject.sdk.grpc.SendMessageConfiguration;
 import org.a2aproject.sdk.spec.AgentCapabilities;
@@ -20,6 +26,7 @@ import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
+import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
@@ -204,6 +211,72 @@ public class ToProtoTest {
         assertEquals(false, result.getParts(0).hasRaw());
         assertEquals(false, result.getParts(0).hasUrl());
         assertEquals(false, result.getParts(0).hasData());
+    }
+
+    @Test
+    public void convertMessageWithExplicitNulls() {
+        Message message = messageWithExplicitNulls();
+
+        org.a2aproject.sdk.grpc.Message result = ProtoUtils.ToProto.message(message);
+
+        assertEquals(Value.KindCase.NULL_VALUE,
+                result.getParts(0).getData().getStructValue().getFieldsOrThrow("attributeId").getKindCase());
+        assertEquals(Value.KindCase.NULL_VALUE,
+                result.getParts(0).getMetadata().getFieldsOrThrow("optional").getKindCase());
+        assertEquals(Value.KindCase.NULL_VALUE,
+                result.getMetadata().getFieldsOrThrow("optional").getKindCase());
+        assertEquals(message, ProtoUtils.FromProto.message(result));
+    }
+
+    @Test
+    public void convertMessageWithAbsentOrEmptyMetadata() {
+        org.a2aproject.sdk.grpc.Message.Builder builder = ProtoUtils.ToProto.message(SIMPLE_MESSAGE)
+                .toBuilder()
+                .clearMetadata();
+
+        assertNull(ProtoUtils.FromProto.message(builder).metadata());
+        builder.setMetadata(Struct.getDefaultInstance());
+        assertEquals(Map.of(), ProtoUtils.FromProto.message(builder).metadata());
+    }
+
+    @Test
+    public void convertTaskWithExplicitNulls() {
+        Message message = messageWithExplicitNulls();
+        Task task = Task.builder()
+                .id("task-null")
+                .contextId("context-null")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, message,
+                        OffsetDateTime.parse("2026-09-21T00:00:00Z")))
+                .history(List.of(message))
+                .artifacts(List.of(Artifact.builder()
+                        .artifactId("artifact-null")
+                        .parts(message.parts())
+                        .metadata(message.metadata())
+                        .build()))
+                .metadata(message.metadata())
+                .build();
+
+        org.a2aproject.sdk.grpc.Task result = ProtoUtils.ToProto.task(task);
+
+        assertEquals(Value.KindCase.NULL_VALUE,
+                result.getMetadata().getFieldsOrThrow("optional").getKindCase());
+        assertEquals(Value.KindCase.NULL_VALUE,
+                result.getArtifacts(0).getMetadata().getFieldsOrThrow("optional").getKindCase());
+        assertEquals(task, ProtoUtils.FromProto.task(result));
+    }
+
+    private Message messageWithExplicitNulls() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("attributeId", null);
+        data.put("items", Arrays.asList(null, Collections.singletonMap("optional", null), Map.of(), List.of()));
+        Map<String, Object> metadata = Collections.singletonMap("optional", null);
+        return Message.builder()
+                .messageId("message-null")
+                .contextId("context-null")
+                .role(Message.Role.ROLE_USER)
+                .parts(List.of(new DataPart(data, metadata)))
+                .metadata(metadata)
+                .build();
     }
 
     @Test
