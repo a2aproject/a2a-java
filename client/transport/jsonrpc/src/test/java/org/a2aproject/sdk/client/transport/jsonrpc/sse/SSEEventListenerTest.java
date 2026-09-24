@@ -354,6 +354,28 @@ public class SSEEventListenerTest {
         assertEquals(1, terminalCount.get());
     }
 
+    @Test
+    public void testFinalEventThenOnErrorDeliversNormalCompletionOnly() {
+        AtomicInteger terminalCount = new AtomicInteger(0);
+        AtomicReference<Throwable> terminalError = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> {
+                    terminalCount.incrementAndGet();
+                    terminalError.set(error);
+                });
+
+        String eventData = JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(
+                JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT_FINAL.indexOf("{"));
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onMessage(new ServerSentEvent(eventData), future);
+        listener.onError(new RuntimeException("cancelled after final event"), future);
+
+        assertTrue(future.cancelHandlerCalled);
+        assertEquals(1, terminalCount.get());
+        assertNull(terminalError.get());
+    }
+
     private static class CancelCapturingFuture implements Future<Void> {
         private boolean cancelHandlerCalled;
 
