@@ -118,6 +118,7 @@ public abstract class AbstractSSEEventListener {
         // This covers late subscriptions to completed tasks and ensures no connection leaks
         if (shouldAutoClose(event) && future != null) {
             LOGGER.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
+            signalTerminal(null);
             future.cancel(true); // close SSE channel
         }
     }

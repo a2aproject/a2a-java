@@ -72,6 +72,7 @@ public class SSEEventListener_v0_3 {
             StreamingEventKind_v0_3 event = JsonUtil_v0_3.fromJson(resultJson, StreamingEventKind_v0_3.class);
             eventHandler.accept(event);
             if (event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal()) {
+                signalTerminal(null);
                 future.cancel(true); // close SSE channel
             }
         } else {
