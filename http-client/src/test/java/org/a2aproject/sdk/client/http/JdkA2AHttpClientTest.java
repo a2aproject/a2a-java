@@ -70,6 +70,21 @@ public class JdkA2AHttpClientTest {
     }
 
     @Test
+    public void testCustomHostHeaderRejectedByJdkHttpClient() {
+        // Documents a JDK-wide restriction (not specific to this SDK): java.net.http.HttpClient
+        // rejects an explicit "Host" header unless the JVM is started with
+        // -Djdk.httpclient.allowRestrictedHeaders=host. Callers who need to send a custom Host
+        // header should use that JVM property or a non-JDK A2AHttpClient implementation, e.g.
+        // VertxA2AHttpClient from the a2a-java-sdk-http-client-vertx extra.
+        JdkA2AHttpClient client = new JdkA2AHttpClient();
+
+        assertThrows(IllegalArgumentException.class, () -> client.createGet()
+                .url("http://localhost:1/unused")
+                .addHeader("Host", "custom.example.com")
+                .get());
+    }
+
+    @Test
     public void testConstructorUsesProvidedHttpClient() throws Exception {
         server = ClientAndServer.startClientAndServer(0);
         server.when(request().withMethod("GET").withPath("/custom"))
