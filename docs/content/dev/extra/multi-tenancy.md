@@ -12,7 +12,9 @@ Lets a single A2A server serve multiple tenants with different agent behavior �
 
 | Artifact ID | Description |
 |-------------|-------------|
-| `a2a-java-extras-multitenancy` | `@Tenant` qualifier, `CdiAgentExecutorRouter`, `CdiAgentCardRouter` |
+| `a2a-java-extras-multitenancy` | `CdiAgentExecutorRouter`, `CdiAgentCardRouter` |
+
+> **Note:** The `@Tenant` qualifier itself lives in the core SDK (`server-common` module, package `org.a2aproject.sdk.server.multitenancy`) so that the transport layer can filter tenant-specific beans when resolving the default card. The extras module provides the CDI routers that dispatch requests to the matching `@Tenant`-qualified beans.
 
 ### Add Dependency
 
@@ -104,16 +106,17 @@ public class MyAgentCards {
         return AgentCard.builder().name("Acme Agent")...build();
     }
 
-    // Tenant-specific public card — no @PublicAgentCard qualifier (see note below)
+    // Tenant-specific public card — @PublicAgentCard is optional but recommended
     @Produces
     @Tenant("acme")
+    @PublicAgentCard
     public AgentCard acmePublicCard() {
         return AgentCard.builder().name("Acme Agent")...build();
     }
 }
 ```
 
-> **Note:** Tenant-specific public cards must **not** carry `@PublicAgentCard` — that qualifier is reserved for the single default public card. Adding it to a `@Tenant` bean causes CDI ambiguity.
+> **Tip:** Tenant-specific public cards may carry `@PublicAgentCard` — the transport layer filters out `@Tenant`-qualified beans when resolving the default card, so there is no CDI ambiguity. Using `@PublicAgentCard` on tenant cards is preferred because it makes the intent explicit and gives them priority over bare `@Tenant` cards in `CdiAgentCardRouter`.
 
 ## Routing Rules
 
@@ -132,7 +135,7 @@ public class MyAgentCards {
 | `getExtendedAgentCard` with no tenant | Default `@ExtendedAgentCard` |
 | `getExtendedAgentCard` with `tenant: "acme"` | `@Tenant("acme") @ExtendedAgentCard`, or default |
 | `GET /.well-known/agent-card.json` | Default `@PublicAgentCard` |
-| `GET /.well-known/acme/agent-card.json` | `@Tenant("acme")` card (no `@PublicAgentCard`), or default |
+| `GET /.well-known/acme/agent-card.json` | `@Tenant("acme") @PublicAgentCard` card (preferred), or bare `@Tenant("acme")` card, or default |
 
 ## Accessing the Tenant in AgentExecutor
 

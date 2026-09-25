@@ -1,4 +1,4 @@
-package org.a2aproject.sdk.extras.multitenancy;
+package org.a2aproject.sdk.server.multitenancy;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

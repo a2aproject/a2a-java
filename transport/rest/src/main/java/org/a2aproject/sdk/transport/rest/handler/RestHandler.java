@@ -860,10 +860,11 @@ public class RestHandler {
                 }
                 return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(card));
             }
-            if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
+            AgentCard extCard = CdiUtils.resolveDefault(extendedAgentCard);
+            if (extCard == null) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
-            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extendedAgentCard.get()));
+            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extCard));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
@@ -940,11 +941,13 @@ public class RestHandler {
                 }
                 LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
             }
-            if (!agentCardInstance.isResolvable()) {
+            AgentCard card = CdiUtils.resolveDefault(agentCardInstance);
+            if (card == null) {
                 return new HTTPRestResponse(404, "text/plain", "Public agent card not configured");
             }
             return new HTTPRestResponse(200, APPLICATION_JSON,
-                    JsonUtil.toJson(AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated)),
+                    JsonUtil.toJson(AgentCardValidator.resolveAndValidateOnce(() -> card, transportValidated,
+                            AgentCardValidator::validateTransportConfiguration)),
                     cacheMetadata.getHttpHeadersMap());
         } catch (TenantNotFoundException e) {
             return new HTTPRestResponse(404, "text/plain", e.getResponseMessage());

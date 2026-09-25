@@ -263,7 +263,8 @@ public class A2AServerRoutes {
                     ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE, "text/plain").end(e.getResponseMessage());
                 } catch (IllegalArgumentException e) {
                     ctx.response().setStatusCode(400).putHeader(CONTENT_TYPE, "text/plain").end(e.getMessage());
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
+                    LOGGER.error("Internal error while resolving agent card", e);
                     ctx.response().setStatusCode(500).putHeader(CONTENT_TYPE, "text/plain").end("Internal Server Error");
                 }
             });

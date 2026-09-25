@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.extras.multitenancy;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
@@ -8,34 +9,39 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
 
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.TextPart;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CdiAgentExecutorRouterTest {
 
     private SeContainer container;
 
-    @BeforeEach
-    void startContainer() {
-        container = SeContainerInitializer.newInstance()
+    private void startContainer(Class<?>... beanClasses) {
+        SeContainerInitializer initializer = SeContainerInitializer.newInstance()
                 .disableDiscovery()
-                .addBeanClasses(CdiAgentExecutorRouter.class, ExecutorProducer.class)
-                .initialize();
+                .addBeanClasses(CdiAgentExecutorRouter.class);
+        for (Class<?> beanClass : beanClasses) {
+            initializer.addBeanClasses(beanClass);
+        }
+        container = initializer.initialize();
     }
 
     @AfterEach
     void closeContainer() {
-        container.close();
+        if (container != null) {
+            container.close();
+        }
     }
 
     @Test
     void knownTenantResolvesToTenantSpecificExecutor() {
+        startContainer(ExecutorProducer.class);
         CdiAgentExecutorRouter router = container.select(CdiAgentExecutorRouter.class).get();
         AgentExecutor resolved = router.resolve("acme");
         assertSame(ExecutorProducer.ACME, resolved);
@@ -43,21 +49,38 @@ class CdiAgentExecutorRouterTest {
 
     @Test
     void unknownTenantFallsBackToDefault() {
+        startContainer(ExecutorProducer.class);
         CdiAgentExecutorRouter router = container.select(CdiAgentExecutorRouter.class).get();
         assertSame(ExecutorProducer.DEFAULT, router.resolve("unknown"));
     }
 
     @Test
     void nullTenantReturnsDefault() {
+        startContainer(ExecutorProducer.class);
         CdiAgentExecutorRouter router = container.select(CdiAgentExecutorRouter.class).get();
         assertSame(ExecutorProducer.DEFAULT, router.resolve(null));
     }
 
     @Test
     void blankTenantReturnsDefault() {
+        startContainer(ExecutorProducer.class);
         CdiAgentExecutorRouter router = container.select(CdiAgentExecutorRouter.class).get();
         assertSame(ExecutorProducer.DEFAULT, router.resolve(""));
         assertSame(ExecutorProducer.DEFAULT, router.resolve("   "));
+    }
+
+    @Test
+    void noDefaultExecutorThrowsOnNullTenant() {
+        startContainer(TenantOnlyExecutorProducer.class);
+        CdiAgentExecutorRouter router = container.select(CdiAgentExecutorRouter.class).get();
+        assertThrows(IllegalStateException.class, () -> router.resolve(null));
+    }
+
+    @Test
+    void noDefaultExecutorThrowsOnUnknownTenant() {
+        startContainer(TenantOnlyExecutorProducer.class);
+        CdiAgentExecutorRouter router = container.select(CdiAgentExecutorRouter.class).get();
+        assertThrows(IllegalStateException.class, () -> router.resolve("unknown"));
     }
 
     static class ExecutorProducer {
@@ -74,6 +97,15 @@ class CdiAgentExecutorRouterTest {
         @Tenant("acme")
         AgentExecutor acmeExecutor() {
             return ACME;
+        }
+    }
+
+    static class TenantOnlyExecutorProducer {
+
+        @Produces
+        @Tenant("acme")
+        AgentExecutor acmeExecutor() {
+            return new LabelExecutor("acme");
         }
     }
 

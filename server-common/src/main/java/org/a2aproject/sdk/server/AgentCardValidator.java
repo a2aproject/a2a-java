@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import jakarta.enterprise.inject.Instance;
 
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.jspecify.annotations.Nullable;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -88,11 +89,15 @@ public class AgentCardValidator {
     public static AgentCard resolveWithFallback(Instance<AgentCard> publicCard,
             @Nullable Instance<AgentCard> extendedCard,
             AtomicBoolean transportValidated) {
-        if (publicCard.isResolvable()) {
-            return resolveAndValidateOnce(publicCard, transportValidated);
+        AgentCard resolved = CdiUtils.resolveDefault(publicCard);
+        if (resolved != null) {
+            return resolveAndValidateOnce(() -> resolved, transportValidated,
+                    AgentCardValidator::validateTransportConfiguration);
         }
-        if (extendedCard != null && extendedCard.isResolvable()) {
-            return resolveAndValidateOnce(extendedCard, transportValidated);
+        AgentCard extResolved = CdiUtils.resolveDefault(extendedCard);
+        if (extResolved != null) {
+            return resolveAndValidateOnce(() -> extResolved, transportValidated,
+                    AgentCardValidator::validateTransportConfiguration);
         }
         throw new IllegalStateException(NO_AGENT_CARD_MESSAGE);
     }

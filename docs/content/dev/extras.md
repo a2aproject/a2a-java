@@ -42,7 +42,7 @@ Replaces the default `InMemoryQueueManager` with event replication across multip
 
 ## [Multi-Tenancy](../extra/multi-tenancy)
 
-Serve multiple tenants from a single A2A server with per-tenant `AgentExecutor` and `AgentCard` routing. The module (`a2a-java-extras-multitenancy`) provides a `@Tenant` CDI qualifier and automatic routing — requests are dispatched to tenant-specific beans based on the `tenant` field in the request payload, with fallback to the default beans for unknown tenants.
+Serve multiple tenants from a single A2A server with per-tenant `AgentExecutor` and `AgentCard` routing. The `@Tenant` CDI qualifier is in the core SDK (`server-common`); the extras module (`a2a-java-extras-multitenancy`) provides automatic routing — requests are dispatched to tenant-specific beans based on the `tenant` field in the request payload, with fallback to the default beans for unknown tenants.
 
 ## [OpenTelemetry](../extra/opentelemetry)
 

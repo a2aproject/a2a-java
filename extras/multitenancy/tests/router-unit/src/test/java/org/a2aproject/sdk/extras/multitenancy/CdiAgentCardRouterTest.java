@@ -2,6 +2,7 @@ package org.a2aproject.sdk.extras.multitenancy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +13,7 @@ import jakarta.enterprise.inject.se.SeContainerInitializer;
 
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -113,6 +115,58 @@ class CdiAgentCardRouterTest {
         assertNull(router.resolvePublicCard("unknown"));
     }
 
+    @Test
+    void publicCardWithPublicQualifierResolvesToTenantSpecific() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, PublicQualifiedTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertEquals("acme-public-qualified", router.resolvePublicCard("acme").name());
+    }
+
+    @Test
+    void publicCardWithBothPublicAndExtendedQualifierResolvesToTenantSpecific() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, PublicAndExtendedTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertEquals("acme-both", router.resolvePublicCard("acme").name());
+    }
+
+    @Test
+    void explicitPublicCardTakesPrecedenceOverBareTenantCard() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, BareAndPublicQualifiedTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertEquals("acme-public-qualified", router.resolvePublicCard("acme").name());
+    }
+
+    @Test
+    void duplicatePublicQualifiedCardsThrows() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, DuplicatePublicQualifiedTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertThrows(IllegalStateException.class, () -> router.resolvePublicCard("acme"));
+    }
+
+    @Test
+    void duplicateBareTenantCardsThrows() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, DuplicateBareTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertThrows(IllegalStateException.class, () -> router.resolvePublicCard("acme"));
+    }
+
+    @Test
+    void duplicateExtendedTenantCardsThrows() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, DuplicateExtendedTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        assertThrows(IllegalStateException.class, () -> router.resolveExtendedCard("acme"));
+    }
+
+    @Test
+    void dualQualifiedCardResolvedByBothPublicAndExtended() {
+        startContainer(DefaultPublicAndExtendedCardProducer.class, PublicAndExtendedTenantCardProducer.class);
+        CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
+        AgentCard publicCard = router.resolvePublicCard("acme");
+        AgentCard extendedCard = router.resolveExtendedCard("acme");
+        assertEquals("acme-both", publicCard.name());
+        assertEquals("acme-both", extendedCard.name());
+    }
+
     private static AgentCard buildCard(String name) {
         return AgentCard.builder()
                 .name(name)
@@ -177,6 +231,107 @@ class CdiAgentCardRouterTest {
         @ExtendedAgentCard
         AgentCard acmeExtendedCard() {
             return buildCard("acme-extended");
+        }
+    }
+
+    static class DefaultPublicAndExtendedCardProducer {
+
+        @Produces
+        @PublicAgentCard
+        AgentCard defaultPublicCard() {
+            return buildCard("default-public");
+        }
+
+        @Produces
+        @ExtendedAgentCard
+        AgentCard defaultExtendedCard() {
+            return buildCard("default-extended");
+        }
+    }
+
+    static class PublicQualifiedTenantCardProducer {
+
+        @Produces
+        @Tenant("acme")
+        @PublicAgentCard
+        AgentCard acmePublicCard() {
+            return buildCard("acme-public-qualified");
+        }
+    }
+
+    static class PublicAndExtendedTenantCardProducer {
+
+        @Produces
+        @Tenant("acme")
+        @PublicAgentCard
+        @ExtendedAgentCard
+        AgentCard acmeBothCard() {
+            return buildCard("acme-both");
+        }
+    }
+
+    static class BareAndPublicQualifiedTenantCardProducer {
+
+        @Produces
+        @Tenant("acme")
+        AgentCard acmeBareCard() {
+            return buildCard("acme-bare");
+        }
+
+        @Produces
+        @Tenant("acme")
+        @PublicAgentCard
+        AgentCard acmePublicCard() {
+            return buildCard("acme-public-qualified");
+        }
+    }
+
+    static class DuplicatePublicQualifiedTenantCardProducer {
+
+        @Produces
+        @Tenant("acme")
+        @PublicAgentCard
+        AgentCard acmePublicCard1() {
+            return buildCard("acme-public-1");
+        }
+
+        @Produces
+        @Tenant("acme")
+        @PublicAgentCard
+        AgentCard acmePublicCard2() {
+            return buildCard("acme-public-2");
+        }
+    }
+
+    static class DuplicateBareTenantCardProducer {
+
+        @Produces
+        @Tenant("acme")
+        AgentCard acmeBareCard1() {
+            return buildCard("acme-bare-1");
+        }
+
+        @Produces
+        @Tenant("acme")
+        AgentCard acmeBareCard2() {
+            return buildCard("acme-bare-2");
+        }
+    }
+
+    static class DuplicateExtendedTenantCardProducer {
+
+        @Produces
+        @Tenant("acme")
+        @ExtendedAgentCard
+        AgentCard acmeExtendedCard1() {
+            return buildCard("acme-extended-1");
+        }
+
+        @Produces
+        @Tenant("acme")
+        @ExtendedAgentCard
+        AgentCard acmeExtendedCard2() {
+            return buildCard("acme-extended-2");
         }
     }
 }

@@ -9,6 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Singleton;
 
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -33,6 +34,45 @@ public final class CdiUtils {
             return instance.get();
         }
         return null;
+    }
+
+    /**
+     * Resolves the default bean from a potentially ambiguous {@link Instance}.
+     * <p>
+     * When the instance is resolvable (exactly one match), returns it directly.
+     * When ambiguous, iterates over all matching beans and returns the single bean
+     * that does not carry a {@link Tenant} qualifier. This allows the default bean
+     * to be resolved even when tenant-specific beans make the injection point ambiguous.
+     *
+     * @param instance the CDI instance to resolve from
+     * @param <T>      the bean type
+     * @return the resolved default bean, or {@code null} if none was found
+     * @throws IllegalStateException if multiple non-tenant beans are found
+     */
+    public static <T> @Nullable T resolveDefault(@Nullable Instance<T> instance) {
+        if (instance == null) {
+            return null;
+        }
+        if (instance.isResolvable()) {
+            return instance.get();
+        }
+        if (!instance.isAmbiguous()) {
+            return null;
+        }
+        T defaultBean = null;
+        for (Instance.Handle<T> handle : instance.handles()) {
+            boolean hasTenant = handle.getBean().getQualifiers().stream()
+                    .anyMatch(Tenant.class::isInstance);
+            if (hasTenant) {
+                continue;
+            }
+            if (defaultBean != null) {
+                throw new IllegalStateException(
+                        "Multiple default beans detected — ensure only one bean without @Tenant qualifier exists");
+            }
+            defaultBean = handle.get();
+        }
+        return defaultBean;
     }
 
     /**

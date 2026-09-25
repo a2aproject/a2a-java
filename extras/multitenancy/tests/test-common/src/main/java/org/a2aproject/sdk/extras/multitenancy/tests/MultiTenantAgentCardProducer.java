@@ -9,7 +9,7 @@ import java.util.Properties;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
 
-import org.a2aproject.sdk.extras.multitenancy.Tenant;
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
@@ -23,8 +23,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * The transport interface stamped onto every card is chosen from the {@code preferred-transport}
  * key in {@code /a2a-requesthandler-test.properties}, so one producer serves every transport module.
  *
- * <p>Router contract: per-tenant public cards carry {@code @Tenant} only (never {@code @PublicAgentCard}),
- * per-tenant extended cards carry {@code @Tenant @ExtendedAgentCard}.
+ * <p>Router contract: per-tenant public cards carry either {@code @Tenant} alone or
+ * {@code @Tenant @PublicAgentCard}; explicitly public cards take precedence. Per-tenant extended
+ * cards carry {@code @Tenant @ExtendedAgentCard}.
  */
 @Singleton
 public class MultiTenantAgentCardProducer {
