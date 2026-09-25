@@ -134,18 +134,12 @@ public class QuarkusGrpcHandler extends GrpcHandler {
 
     @Override
     protected @Nullable AgentCard getAgentCard() {
-        if (!agentCard.isResolvable()) {
-            return null;
-        }
-        return agentCard.get();
+        return CdiUtils.resolveDefault(agentCard);
     }
 
     @Override
     protected AgentCard getExtendedAgentCard() {
-        if (extendedAgentCard != null && extendedAgentCard.isResolvable()) {
-            return extendedAgentCard.get();
-        }
-        return null;
+        return CdiUtils.resolveDefault(extendedAgentCard);
     }
 
     @Override

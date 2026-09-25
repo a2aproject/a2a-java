@@ -772,10 +772,12 @@ public class JSONRPCHandler {
             }
             LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
         }
-        if (!agentCardInstance.isResolvable()) {
+        AgentCard card = CdiUtils.resolveDefault(agentCardInstance);
+        if (card == null) {
             return null;
         }
-        return AgentCardValidator.resolveAndValidateOnce(agentCardInstance, transportValidated);
+        return AgentCardValidator.resolveAndValidateOnce(() -> card, transportValidated,
+                AgentCardValidator::validateTransportConfiguration);
     }
 
     private AgentCard resolveAgentCard() {

@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.a2aproject.sdk.server.util.CdiUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -36,11 +37,25 @@ public class CdiAgentExecutorRouter implements AgentExecutorRouter {
     @Override
     public AgentExecutor resolve(@Nullable String tenant) {
         if (tenant == null || tenant.isBlank()) {
-            return defaultExecutor;
+            return requireDefaultExecutor();
         }
         Instance<AgentExecutor> selected = allExecutors.select(new Tenant.Literal(tenant));
         if (selected.isResolvable()) {
             return selected.get();
+        }
+        return requireDefaultExecutor();
+    }
+
+    /**
+     * Returns the default executor, throwing if none was discovered at startup.
+     *
+     * @return the default executor, never {@code null}
+     * @throws IllegalStateException if no default {@link AgentExecutor} bean exists
+     */
+    private AgentExecutor requireDefaultExecutor() {
+        if (defaultExecutor == null) {
+            throw new IllegalStateException(
+                    "No default AgentExecutor bean found — provide an AgentExecutor bean without @Tenant qualifier");
         }
         return defaultExecutor;
     }

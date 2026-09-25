@@ -93,9 +93,7 @@ public class AgentCardCacheMetadata {
         // 2. Direct constructor: agentCard and config already set
 
         if (agentCard == null && agentCardInstance != null) {
-            // CDI path — in multitenancy setups, multiple @PublicAgentCard beans may exist,
-            // making the injection point ambiguous; getIfResolvable returns null in that case.
-            this.agentCard = CdiUtils.getIfResolvable(agentCardInstance);
+            this.agentCard = CdiUtils.resolveDefault(agentCardInstance);
             this.config = CdiUtils.getIfResolvable(configInstance);
             if (this.agentCard == null || this.config == null) {
                 return;
