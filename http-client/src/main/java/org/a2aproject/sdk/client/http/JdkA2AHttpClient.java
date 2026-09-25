@@ -46,6 +46,18 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
  * {@link org.a2aproject.sdk.client.http.A2AHttpClient.PostBuilder#followRedirects(boolean)
  * followRedirects(true)} on the builder. Both steps are required.
  *
+ * <p><b>{@code Host} header limitation:</b> the underlying JDK {@link HttpClient}
+ * rejects {@code addHeader("Host", ...)} with an {@code IllegalArgumentException}
+ * ("restricted header name") unless the JVM is started with
+ * {@code -Djdk.httpclient.allowRestrictedHeaders=host}. This is a JDK-wide
+ * restriction that cannot be worked around per-client-instance. Applications that
+ * need to send an explicit {@code Host} header (for example, connecting directly to
+ * an instance while presenting the hostname a load balancer normally supplies) should
+ * either set that system property or use an {@link A2AHttpClient} implementation that
+ * does not build on {@code java.net.http.HttpClient}, such as
+ * {@code org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient} (the
+ * {@code a2a-java-sdk-http-client-vertx} extra), which has no such restriction.
+ *
  * <p><b>Provider Priority:</b> 0 (lowest - used as fallback)
  *
  * <p>This implementation is registered via {@link JdkA2AHttpClientProvider}

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
+import org.mockserver.verify.VerificationTimes;
 
 public class VertxA2AHttpClientIntegrationTest {
 
@@ -85,6 +86,28 @@ public class VertxA2AHttpClientIntegrationTest {
 
         assertEquals(204, response.status());
         assertTrue(response.success());
+    }
+
+    @Test
+    public void testCustomHostHeaderOverride() throws Exception {
+        // Unlike the JDK-based client, VertxA2AHttpClient does not build on
+        // java.net.http.HttpClient and so is not subject to its restricted-header
+        // check: callers can override "Host" while still connecting to the URL's
+        // own host:port (e.g. to reach an instance directly while presenting the
+        // hostname a load balancer would normally supply).
+        mockServer
+                .when(request().withMethod("GET").withPath("/test"))
+                .respond(response().withStatusCode(200).withBody("ok"));
+
+        A2AHttpResponse response = client.createGet()
+                .url(getBaseUrl() + "/test")
+                .addHeader("Host", "custom-logical-host.example.com")
+                .get();
+
+        assertEquals(200, response.status());
+        mockServer.verify(
+                request().withPath("/test").withHeader("Host", "custom-logical-host.example.com"),
+                VerificationTimes.once());
     }
 
     @Test

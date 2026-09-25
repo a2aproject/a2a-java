@@ -151,6 +151,34 @@ Client client = Client
         .build();
 ```
 
+### Setting a Custom `Host` Header
+
+The JDK-based `JdkA2AHttpClient` (the default) delegates to `java.net.http.HttpClient`,
+which rejects an explicit `Host` header (`addHeader("Host", ...)`) with an
+`IllegalArgumentException` unless the JVM is started with
+`-Djdk.httpclient.allowRestrictedHeaders=host`. This is a JDK-wide restriction and
+cannot be worked around per-client-instance.
+
+If you need to send a custom `Host` header — for example, connecting directly to an
+instance by IP while presenting the hostname a load balancer would normally supply —
+either set that JVM property, or use the `VertxA2AHttpClient` from the
+`a2a-java-sdk-http-client-vertx` extra, which does not build on `java.net.http.HttpClient`
+and has no such restriction:
+
+```java
+// Both resources are closed separately because Client.close() does not close an injected
+// A2AHttpClient. VertxA2AHttpClient's no-args constructor also owns the Vert.x instance.
+try (VertxA2AHttpClient httpClient = new VertxA2AHttpClient()) {
+    try (Client client = Client
+            .builder(agentCard)
+            .withTransport(JSONRPCTransport.class,
+                    new JSONRPCTransportConfig(httpClient))
+            .build()) {
+        // use client...
+    }
+}
+```
+
 ### REST with a Custom HTTP Client
 
 ```java
