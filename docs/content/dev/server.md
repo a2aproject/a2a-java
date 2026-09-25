@@ -247,4 +247,36 @@ See [Backward Compatibility](compatibility) for multi-version modules, version r
 - **Quarkus** — Reference implementations are Quarkus-based (JSON-RPC, gRPC, REST)
 - **Jakarta EE** — [a2a-jakarta](https://github.com/wildfly-extras/a2a-jakarta) works with any Jakarta EE Web Profile runtime
 
+### Manual Wiring
+
+For example, when wiring the server components as Spring beans, expose the event processor as a bean and pass it to the request handler. The handler starts the processor when it is constructed, including when the processor was created manually:
+
+```java
+@Configuration
+class A2AServerConfiguration {
+
+    @Bean
+    MainEventBus mainEventBus() {
+        return new MainEventBus();
+    }
+
+    @Bean
+    MainEventBusProcessor mainEventBusProcessor(MainEventBus mainEventBus, TaskStore taskStore,
+                                                PushNotificationSender pushSender, QueueManager queueManager) {
+        return new MainEventBusProcessor(mainEventBus, taskStore, pushSender, queueManager);
+    }
+
+    @Bean
+    RequestHandler requestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
+                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
+                                  MainEventBusProcessor mainEventBusProcessor,
+                                  @Qualifier("a2aInternal") Executor executor) {
+        return new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore,
+                mainEventBusProcessor, executor, executor);
+    }
+}
+```
+
+This assumes the other method parameters are also registered as Spring beans. The same executor is passed for agent execution and event consumption, as in this example; applications can provide separate executors when needed.
+
 See [CONTRIBUTING_INTEGRATIONS.md](https://github.com/a2aproject/a2a-java/blob/main/CONTRIBUTING_INTEGRATIONS.md) to submit your own integration.

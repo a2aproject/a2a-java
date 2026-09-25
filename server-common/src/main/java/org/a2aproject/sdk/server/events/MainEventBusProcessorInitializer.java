@@ -27,14 +27,12 @@ public class MainEventBusProcessorInitializer {
 
     /**
      * Observes ApplicationScoped initialization to force eager creation of MainEventBusProcessor.
-     * The injection of MainEventBusProcessor in this bean triggers its creation, and calling
-     * ensureStarted() forces the CDI proxy to be resolved, which ensures @PostConstruct has been
+     * Calling start() forces the CDI proxy to be resolved, which ensures @PostConstruct has been
      * called and the background thread is running.
      */
     void onStart(@Observes @Initialized(ApplicationScoped.class) Object event) {
         if (processor != null) {
-            // Force proxy resolution to ensure @PostConstruct has been called
-            processor.ensureStarted();
+            processor.start();
             LOGGER.info("MainEventBusProcessor initialized and started");
         } else {
             LOGGER.error("MainEventBusProcessor is null - initialization failed!");
