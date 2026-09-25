@@ -187,7 +187,7 @@ public class DefaultRequestHandlerTest {
     }
 
     @Test
-    void testConstructorStartsManuallyConstructedMainEventBusProcessor() throws Exception {
+    void testBuilderStartsManuallyConstructedMainEventBusProcessor() throws Exception {
         InMemoryTaskStore manualTaskStore = new InMemoryTaskStore();
         PushNotificationConfigStore manualPushConfigStore = new InMemoryPushNotificationConfigStore();
         MainEventBus manualMainEventBus = new MainEventBus();
@@ -207,9 +207,16 @@ public class DefaultRequestHandlerTest {
                     throw new AssertionError("Cancel should not be invoked");
                 }
             };
-            DefaultRequestHandler manualRequestHandler = new DefaultRequestHandler(
-                manualAgentExecutor, manualTaskStore, manualQueueManager, manualPushConfigStore,
-                manualProcessor, internalExecutor, internalExecutor);
+            DefaultRequestHandler manualRequestHandler = DefaultRequestHandler.builder()
+                    .agentExecutor(manualAgentExecutor)
+                    .taskStore(manualTaskStore)
+                    .queueManager(manualQueueManager)
+                    .pushConfigStore(manualPushConfigStore)
+                    .mainEventBusProcessor(manualProcessor)
+                    .executor(internalExecutor)
+                    .eventConsumerExecutor(internalExecutor)
+                    .authorizationRequired(false)
+                    .build();
             manualRequestHandler.agentCompletionTimeoutSeconds = 5;
             manualRequestHandler.consumptionCompletionTimeoutSeconds = 2;
             manualRequestHandler.reconciliationTimeoutSeconds = 1;

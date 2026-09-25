@@ -266,17 +266,32 @@ class A2AServerConfiguration {
         return new MainEventBusProcessor(mainEventBus, taskStore, pushSender, queueManager);
     }
 
+    @Bean(destroyMethod = "shutdown")
+    ExecutorService a2aEventConsumerExecutor() {
+        return Executors.newCachedThreadPool();
+    }
+
     @Bean
     RequestHandler requestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
                                   QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
                                   MainEventBusProcessor mainEventBusProcessor,
-                                  @Qualifier("a2aInternal") Executor executor) {
-        return new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore,
-                mainEventBusProcessor, executor, executor);
+                                  TaskAuthorizationProvider authorizationProvider,
+                                  @Qualifier("a2aInternalExecutor") Executor executor,
+                                  @Qualifier("a2aEventConsumerExecutor") Executor eventConsumerExecutor) {
+        return DefaultRequestHandler.builder()
+                .agentExecutor(agentExecutor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .authorizationProvider(authorizationProvider)
+                .executor(executor)
+                .eventConsumerExecutor(eventConsumerExecutor)
+                .build();
     }
 }
 ```
 
-This assumes the other method parameters are also registered as Spring beans. The same executor is passed for agent execution and event consumption, as in this example; applications can provide separate executors when needed.
+Register the remaining dependencies, including an `a2aInternalExecutor` bean and a `TaskAuthorizationProvider`, as Spring beans. Keep the cached event consumer executor separate from the agent executor: blocking event polling can exhaust a bounded pool under load.
 
 See [CONTRIBUTING_INTEGRATIONS.md](https://github.com/a2aproject/a2a-java/blob/main/CONTRIBUTING_INTEGRATIONS.md) to submit your own integration.

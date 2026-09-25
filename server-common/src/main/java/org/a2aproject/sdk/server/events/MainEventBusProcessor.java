@@ -156,6 +156,9 @@ public class MainEventBusProcessor implements Runnable {
         return pushNotificationChains.size();
     }
 
+    /**
+     * Starts the background processor thread if it is not already running.
+     */
     @SuppressWarnings("NullAway.Init")
     @PostConstruct
     public synchronized void start() {
