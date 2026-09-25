@@ -269,7 +269,7 @@ public class A2ACardResolver {
             Utils.validateAbsoluteUrl(cleanBase);
             cardUrl = Utils.buildCardUrl(cleanBase, Utils.DEFAULT_AGENT_CARD_PATH);
         }
-        String fallbackUrl = isSameUrl(cardUrl, originalBase) ? null : cleanBase;
+        String fallbackUrl = isSameUrl(cardUrl, originalBase) ? cleanBase : originalBase;
         return new ResolvedUrls(cardUrl, fallbackUrl);
     }
 
