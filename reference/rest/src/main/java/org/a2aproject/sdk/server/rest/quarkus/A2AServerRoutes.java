@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
+import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
@@ -774,13 +775,14 @@ public class A2AServerRoutes {
     }
 
     /**
-     * Check if the request content type is application/json.
+     * Check if the request content type is application/json or application/a2a+json.
      * @param rc the routing context
-     * @return true if the content type is application/json - false otherwise.
+     * @return true if the content type is one of those - false otherwise.
      */
     private boolean validateContentType(RoutingContext rc) {
         String contentType = rc.request().getHeader(CONTENT_TYPE);
-        if (contentType == null || !contentType.trim().startsWith(APPLICATION_JSON)) {
+        if (contentType == null || !(contentType.trim().startsWith(APPLICATION_JSON)
+                || contentType.trim().startsWith(APPLICATION_A2A_JSON))) {
             sendResponse(rc, jsonRestHandler.createErrorResponse(new ContentTypeNotSupportedError(null, null, null)));
             return false;
         }
