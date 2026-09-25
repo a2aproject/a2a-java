@@ -1697,6 +1697,35 @@ public class DefaultRequestHandlerTest {
 
     @Test
     void interruptedTerminalEnqueueStillReportsAgentFailure() throws Exception {
+        assertInterruptedTerminalEnqueueReportsError(
+                (context, emitter) -> emitter.complete(), InternalError.class, null, true, false);
+    }
+
+    @Test
+    void interruptedProtocolErrorEnqueueStillReportsAgentFailure() throws Exception {
+        CountDownLatch agentReadyToBeInterrupted = new CountDownLatch(1);
+        CountDownLatch agentWait = new CountDownLatch(1);
+        try {
+            assertInterruptedTerminalEnqueueReportsError((context, emitter) -> {
+                agentReadyToBeInterrupted.countDown();
+                try {
+                    agentWait.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new UnsupportedOperationError();
+                }
+            }, UnsupportedOperationError.class, agentReadyToBeInterrupted, false, true);
+        } finally {
+            agentWait.countDown();
+        }
+    }
+
+    private void assertInterruptedTerminalEnqueueReportsError(
+            AgentExecutorMethod agentAction,
+            Class<? extends A2AError> expectedErrorClass,
+            CountDownLatch agentReadyToBeInterrupted,
+            boolean interruptBlockedTerminalEnqueue,
+            boolean returnImmediately) throws Exception {
         EventQueueUtil.stop(mainEventBusProcessor);
         queueManager = new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
             @Override
@@ -1710,7 +1739,8 @@ public class DefaultRequestHandlerTest {
 
         CountDownLatch workingEventProcessing = new CountDownLatch(1);
         CountDownLatch releaseWorkingEvent = new CountDownLatch(1);
-        CountDownLatch fallbackErrorProcessed = new CountDownLatch(1);
+        CountDownLatch reportedErrorProcessed = new CountDownLatch(1);
+        AtomicReference<A2AError> reportedError = new AtomicReference<>();
         mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
             @Override
             public void onEventProcessed(String taskId, Event event) {
@@ -1722,8 +1752,9 @@ public class DefaultRequestHandlerTest {
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
-                } else if (event instanceof InternalError) {
-                    fallbackErrorProcessed.countDown();
+                } else if (event instanceof A2AError error && expectedErrorClass.isInstance(error)) {
+                    reportedError.set(error);
+                    reportedErrorProcessed.countDown();
                 }
             }
 
@@ -1760,7 +1791,7 @@ public class DefaultRequestHandlerTest {
             agentThread.set(Thread.currentThread());
             executorRan.countDown();
             emitter.startWork();
-            emitter.complete();
+            agentAction.invoke(context, emitter);
         };
 
         MessageSendParams params = MessageSendParams.builder()
@@ -1770,7 +1801,7 @@ public class DefaultRequestHandlerTest {
                         .parts(new TextPart("hello"))
                         .build())
                 .configuration(MessageSendConfiguration.builder()
-                        .returnImmediately(false)
+                        .returnImmediately(returnImmediately)
                         .acceptedOutputModes(List.of())
                         .build())
                 .build();
@@ -1783,23 +1814,41 @@ public class DefaultRequestHandlerTest {
                 assertTrue(executorRan.await(5, TimeUnit.SECONDS), "Executor should have run");
                 Thread worker = agentThread.get();
                 assertNotNull(worker);
-                assertTrue(awaitSemaphoreAcquire(worker, false),
-                        "Terminal enqueue should wait while the queue is full");
+                if (interruptBlockedTerminalEnqueue) {
+                    assertTrue(awaitSemaphoreAcquire(worker, false),
+                            "Terminal enqueue should wait while the queue is full");
+                } else {
+                    assertNotNull(agentReadyToBeInterrupted);
+                    assertTrue(agentReadyToBeInterrupted.await(5, TimeUnit.SECONDS),
+                            "Agent should be ready to throw the protocol error");
+                }
 
                 worker.interrupt();
 
                 assertTrue(awaitSemaphoreAcquire(worker, false),
-                        "Fallback enqueue should wait with the interrupt temporarily cleared");
+                        "Error enqueue should wait with the interrupt temporarily cleared");
                 releaseWorkingEvent.countDown();
-                assertTrue(agentFinished.await(5, TimeUnit.SECONDS), "Agent failure reporting should finish");
+                assertTrue(agentFinished.await(5, TimeUnit.SECONDS), "Agent error reporting should finish");
                 return interruptStatusAfterAgent.get();
             });
 
-            assertThrows(InternalError.class,
-                    () -> requestHandler.onMessageSend(params, NULL_CONTEXT));
+            String taskId = "";
+            if (returnImmediately) {
+                Task task = assertInstanceOf(Task.class, requestHandler.onMessageSend(params, NULL_CONTEXT));
+                taskId = task.id();
+            } else {
+                assertThrows(expectedErrorClass,
+                        () -> requestHandler.onMessageSend(params, NULL_CONTEXT));
+            }
 
-            assertTrue(fallbackErrorProcessed.await(5, TimeUnit.SECONDS),
-                    "The fallback InternalError should be processed by the event bus");
+            assertTrue(reportedErrorProcessed.await(5, TimeUnit.SECONDS),
+                    "The agent error should be processed by the event bus");
+            assertInstanceOf(expectedErrorClass, reportedError.get());
+            if (returnImmediately) {
+                Task storedTask = taskStore.get(taskId);
+                assertNotNull(storedTask);
+                assertEquals(TaskState.TASK_STATE_FAILED, storedTask.status().state());
+            }
             assertTrue(interruptWasRestored.get(5, TimeUnit.SECONDS),
                     "The agent worker's interrupt status should be restored after reporting the error");
         } finally {
