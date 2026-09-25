@@ -140,7 +140,20 @@ public class AgentEmitter {
                 .contextId(contextId)
                 .status(new TaskStatus(taskState, message, null))
                 .build();
-        eventQueue.enqueueEvent(event);
+        if (isFinal) {
+            enqueueTerminalEvent(event);
+        } else {
+            eventQueue.enqueueEvent(event);
+        }
+    }
+
+    private void enqueueTerminalEvent(Event event) {
+        try {
+            eventQueue.enqueueEvent(event);
+        } catch (RuntimeException | Error e) {
+            terminalStateReached.compareAndSet(true, false);
+            throw e;
+        }
     }
 
     /**
@@ -284,7 +297,7 @@ public class AgentEmitter {
             throw new IllegalStateException("Cannot update task status - terminal state already reached");
         }
         
-        eventQueue.enqueueEvent(error);
+        enqueueTerminalEvent(error);
         // Status transition happens automatically in MainEventBusProcessor
         // The error event is terminal and will trigger FAILED state transition
     }

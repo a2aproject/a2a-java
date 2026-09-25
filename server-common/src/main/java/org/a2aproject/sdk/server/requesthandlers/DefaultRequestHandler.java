@@ -1261,16 +1261,18 @@ public class DefaultRequestHandler implements RequestHandler {
                     // These are expected business errors but should be tracked
                     LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}",
                         taskId, e.getClass().getSimpleName(), e.getMessage(), e);
-                    emitter.fail(e);
+                    enqueueErrorPreservingInterrupt(emitter, e);
                 } catch (RuntimeException e) {
                     // Log unexpected runtime exceptions at ERROR level
                     // These indicate bugs in agent implementation
                     LOGGER.error("Agent execution threw unexpected RuntimeException for task {}", taskId, e);
-                    emitter.fail(new org.a2aproject.sdk.spec.InternalError("Agent execution failed: " + e.getMessage()));
+                    enqueueErrorPreservingInterrupt(emitter,
+                            new InternalError("Agent execution failed: " + e.getMessage()));
                 } catch (Exception e) {
                     // Log other exceptions at ERROR level
                     LOGGER.error("Agent execution threw unexpected Exception for task {}", taskId, e);
-                    emitter.fail(new org.a2aproject.sdk.spec.InternalError("Agent execution failed: " + e.getMessage()));
+                    enqueueErrorPreservingInterrupt(emitter,
+                            new InternalError("Agent execution failed: " + e.getMessage()));
                 }
                 LOGGER.debug("Agent execution completed for task {}", taskId);
                 // The consumer (running on the Vert.x worker thread) handles queue lifecycle.
@@ -1308,6 +1310,17 @@ public class DefaultRequestHandler implements RequestHandler {
         runningAgents.put(taskId, cf);
         LOGGER.debug("Registered agent for task {}, runningAgents.size() after: {}", taskId, runningAgents.size());
         return runnable;
+    }
+
+    private void enqueueErrorPreservingInterrupt(AgentEmitter emitter, A2AError error) {
+        boolean wasInterrupted = Thread.interrupted();
+        try {
+            emitter.fail(error);
+        } finally {
+            if (wasInterrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private CompletableFuture<Void> cleanupProducer(@Nullable CompletableFuture<Void> agentFuture, @Nullable CompletableFuture<Void> consumptionFuture, String taskId, EventQueue queue, boolean isStreaming) {
