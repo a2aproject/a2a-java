@@ -186,6 +186,51 @@ public class DefaultRequestHandlerTest {
         assertEquals(7, handler.reconciliationTimeoutSeconds);
     }
 
+    @Test
+    void testBuilderStartsManuallyConstructedMainEventBusProcessor() throws Exception {
+        InMemoryTaskStore manualTaskStore = new InMemoryTaskStore();
+        PushNotificationConfigStore manualPushConfigStore = new InMemoryPushNotificationConfigStore();
+        MainEventBus manualMainEventBus = new MainEventBus();
+        InMemoryQueueManager manualQueueManager = new InMemoryQueueManager(manualTaskStore, manualMainEventBus);
+        MainEventBusProcessor manualProcessor = new MainEventBusProcessor(
+            manualMainEventBus, manualTaskStore, NOOP_PUSHNOTIFICATION_SENDER, manualQueueManager);
+
+        try {
+            AgentExecutor manualAgentExecutor = new AgentExecutor() {
+                @Override
+                public void execute(RequestContext context, AgentEmitter agentEmitter) {
+                    agentEmitter.sendMessage("manual lifecycle response");
+                }
+
+                @Override
+                public void cancel(RequestContext context, AgentEmitter agentEmitter) {
+                    throw new AssertionError("Cancel should not be invoked");
+                }
+            };
+            DefaultRequestHandler manualRequestHandler = DefaultRequestHandler.builder()
+                    .agentExecutor(manualAgentExecutor)
+                    .taskStore(manualTaskStore)
+                    .queueManager(manualQueueManager)
+                    .pushConfigStore(manualPushConfigStore)
+                    .mainEventBusProcessor(manualProcessor)
+                    .executor(internalExecutor)
+                    .eventConsumerExecutor(internalExecutor)
+                    .authorizationRequired(false)
+                    .build();
+            manualRequestHandler.agentCompletionTimeoutSeconds = 5;
+            manualRequestHandler.consumptionCompletionTimeoutSeconds = 2;
+            manualRequestHandler.reconciliationTimeoutSeconds = 1;
+
+            EventKind eventKind = manualRequestHandler.onMessageSend(
+                MessageSendParams.builder().message(MESSAGE).build(), NULL_CONTEXT);
+
+            assertInstanceOf(Message.class, eventKind);
+            assertEquals(Message.Role.ROLE_AGENT, ((Message) eventKind).role());
+        } finally {
+            EventQueueUtil.stop(manualProcessor);
+        }
+    }
+
     /**
      * Test 1: Non-streaming AUTH_REQUIRED returns immediately while agent continues.
      * Verifies:

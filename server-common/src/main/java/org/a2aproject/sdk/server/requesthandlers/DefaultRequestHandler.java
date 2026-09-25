@@ -308,6 +308,10 @@ public class DefaultRequestHandler implements RequestHandler {
         this.eventConsumerExecutor = null;
     }
 
+    /**
+     * Constructor used by CDI to create the request handler. Its signature may change between
+     * releases; application code should use {@link #builder()} to configure and create a handler.
+     */
     @Inject
     public DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
@@ -326,6 +330,7 @@ public class DefaultRequestHandler implements RequestHandler {
         //  I am unsure about the correct scope.
         //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false, null);
+        this.mainEventBusProcessor.start();
     }
 
     @SuppressWarnings("NullAway.Init")
