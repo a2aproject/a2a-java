@@ -35,12 +35,14 @@ import org.a2aproject.sdk.server.events.EventQueueUtil;
 import org.a2aproject.sdk.server.events.InMemoryQueueManager;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
+import org.a2aproject.sdk.server.events.MainEventBusProcessorCallback;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.TaskStore;
+import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
@@ -1695,10 +1697,69 @@ public class DefaultRequestHandlerTest {
 
     @Test
     void interruptedTerminalEnqueueStillReportsAgentFailure() throws Exception {
+        EventQueueUtil.stop(mainEventBusProcessor);
+        queueManager = new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
+            @Override
+            public EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
+                return super.createBaseEventQueueBuilder(taskId).queueSize(1);
+            }
+        };
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore,
+                NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        CountDownLatch workingEventProcessing = new CountDownLatch(1);
+        CountDownLatch releaseWorkingEvent = new CountDownLatch(1);
+        CountDownLatch fallbackErrorProcessed = new CountDownLatch(1);
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                if (event instanceof TaskStatusUpdateEvent statusUpdate
+                        && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
+                    workingEventProcessing.countDown();
+                    try {
+                        releaseWorkingEvent.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                } else if (event instanceof InternalError) {
+                    fallbackErrorProcessed.countDown();
+                }
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+            }
+        });
+
+        CountDownLatch agentFinished = new CountDownLatch(1);
+        AtomicReference<Thread> agentThread = new AtomicReference<>();
+        AtomicReference<Boolean> interruptStatusAfterAgent = new AtomicReference<>(false);
+        Executor recordingExecutor = command -> internalExecutor.execute(() -> {
+            try {
+                command.run();
+            } finally {
+                interruptStatusAfterAgent.set(Thread.currentThread().isInterrupted());
+                agentFinished.countDown();
+            }
+        });
+        requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(true)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(recordingExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
+                .build();
+
         CountDownLatch executorRan = new CountDownLatch(1);
         agentExecutorExecute = (context, emitter) -> {
+            agentThread.set(Thread.currentThread());
             executorRan.countDown();
-            Thread.currentThread().interrupt();
+            emitter.startWork();
             emitter.complete();
         };
 
@@ -1708,15 +1769,59 @@ public class DefaultRequestHandlerTest {
                         .role(Message.Role.ROLE_USER)
                         .parts(new TextPart("hello"))
                         .build())
-                .configuration(DEFAULT_CONFIG)
+                .configuration(MessageSendConfiguration.builder()
+                        .returnImmediately(false)
+                        .acceptedOutputModes(List.of())
+                        .build())
                 .build();
 
-        InternalError failure = assertThrows(InternalError.class,
-                () -> requestHandler.onMessageSend(params, NULL_CONTEXT));
+        ExecutorService controller = Executors.newSingleThreadExecutor();
+        try {
+            Future<Boolean> interruptWasRestored = controller.submit(() -> {
+                assertTrue(workingEventProcessing.await(5, TimeUnit.SECONDS),
+                        "Processor should hold the queue capacity after the WORKING event");
+                assertTrue(executorRan.await(5, TimeUnit.SECONDS), "Executor should have run");
+                Thread worker = agentThread.get();
+                assertNotNull(worker);
+                assertTrue(awaitSemaphoreAcquire(worker, false),
+                        "Terminal enqueue should wait while the queue is full");
 
-        assertTrue(executorRan.await(5, TimeUnit.SECONDS), "Executor should have run");
-        assertEquals("Agent execution failed: Unable to acquire the semaphore to enqueue the event",
-                failure.getMessage());
+                worker.interrupt();
+
+                assertTrue(awaitSemaphoreAcquire(worker, false),
+                        "Fallback enqueue should wait with the interrupt temporarily cleared");
+                releaseWorkingEvent.countDown();
+                assertTrue(agentFinished.await(5, TimeUnit.SECONDS), "Agent failure reporting should finish");
+                return interruptStatusAfterAgent.get();
+            });
+
+            assertThrows(InternalError.class,
+                    () -> requestHandler.onMessageSend(params, NULL_CONTEXT));
+
+            assertTrue(fallbackErrorProcessed.await(5, TimeUnit.SECONDS),
+                    "The fallback InternalError should be processed by the event bus");
+            assertTrue(interruptWasRestored.get(5, TimeUnit.SECONDS),
+                    "The agent worker's interrupt status should be restored after reporting the error");
+        } finally {
+            releaseWorkingEvent.countDown();
+            controller.shutdownNow();
+        }
+    }
+
+    private static boolean awaitSemaphoreAcquire(Thread thread, boolean interrupted) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        do {
+            if (thread.getState() == Thread.State.WAITING && thread.isInterrupted() == interrupted) {
+                for (StackTraceElement frame : thread.getStackTrace()) {
+                    if (frame.getClassName().equals("java.util.concurrent.Semaphore")
+                            && frame.getMethodName().equals("acquire")) {
+                        return true;
+                    }
+                }
+            }
+            TimeUnit.MILLISECONDS.sleep(10);
+        } while (System.nanoTime() < deadline);
+        return false;
     }
 
     private DefaultRequestHandler buildHandlerWithRouter(AgentExecutorRouter router) {
