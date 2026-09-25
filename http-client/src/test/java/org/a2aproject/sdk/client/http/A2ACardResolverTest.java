@@ -337,14 +337,16 @@ public class A2ACardResolverTest {
     }
 
     @Test
-    public void testTenantUrl_fullTenantCardUrlProvidedAsBase_noFallback() throws Exception {
-        // No fallback when the provided URL already IS the computed card URL.
+    public void testTenantUrl_fullTenantCardUrlProvidedAsBase_fallsBackToCleanBase() throws Exception {
+        // When the provided URL already IS the computed card URL, fall back to the clean base.
         TestHttpClient client = createTestClient();
-        client.status = 404;
+        client.statusSequence.add(404);
+        client.statusSequence.add(200);
         String tenantCardUrl = "http://example.com/.well-known/acme/agent-card.json";
-        A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl(tenantCardUrl).tenant("acme").build();
-        assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
-        assertEquals(1, client.urlsCalled.size());
+        A2ACardResolver.builder().httpClient(client).baseUrl(tenantCardUrl).tenant("acme").build().getAgentCard();
+        assertEquals(2, client.urlsCalled.size());
+        assertEquals("http://example.com/.well-known/acme/agent-card.json", client.urlsCalled.get(0));
+        assertEquals("http://example.com", client.urlsCalled.get(1));
     }
 
     @Test
@@ -371,16 +373,15 @@ public class A2ACardResolverTest {
     }
 
     @Test
-    public void testGetAgentCard_doubleSlashBaseUrl_fallbackUrlNormalized() throws Exception {
-        // A baseUrl with a double trailing slash must not produce a double-slash fallback URL.
+    public void testGetAgentCard_doubleSlashBaseUrl_fallbackToOriginalUrl() throws Exception {
+        // A baseUrl with a double trailing slash falls back to the originally provided URL.
         TestHttpClient client = createTestClient();
         client.statusSequence.add(404);
         client.statusSequence.add(200);
         A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com//").build().getAgentCard();
         assertEquals(2, client.urlsCalled.size());
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.urlsCalled.get(0));
-        // cleanBase strips one trailing slash from "http://example.com//", yielding "http://example.com/"
-        assertEquals("http://example.com/", client.urlsCalled.get(1));
+        assertEquals("http://example.com//", client.urlsCalled.get(1));
     }
 
     @Test
@@ -448,14 +449,16 @@ public class A2ACardResolverTest {
     }
 
     @Test
-    public void testGetAgentCard_noFallback_whenUrlAlreadyIsCardUrl() throws Exception {
-        // When the provided URL already equals the computed card URL, no fallback.
+    public void testGetAgentCard_fallbackToCleanBase_whenUrlAlreadyIsCardUrl() throws Exception {
+        // When the provided URL already equals the computed card URL, fall back to the clean base.
         TestHttpClient client = createTestClient();
-        client.status = 404;
+        client.statusSequence.add(404);
+        client.statusSequence.add(200);
         String fullCardUrl = "http://example.com" + AGENT_CARD_PATH;
-        A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl(fullCardUrl).build();
-        assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
-        assertEquals(1, client.urlsCalled.size());
+        A2ACardResolver.builder().httpClient(client).baseUrl(fullCardUrl).build().getAgentCard();
+        assertEquals(2, client.urlsCalled.size());
+        assertEquals(fullCardUrl, client.urlsCalled.get(0));
+        assertEquals("http://example.com", client.urlsCalled.get(1));
     }
 
     @Test
