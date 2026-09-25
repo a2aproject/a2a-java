@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.transport.rest.handler;
 
-import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
@@ -703,7 +702,7 @@ public class RestHandler {
         try {
             // Include default value fields to ensure empty arrays, zeros, etc. are present in JSON
             String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
-            return new HTTPRestResponse(statusCode, APPLICATION_A2A_JSON, jsonBody);
+            return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.SEVERE, "Failed to serialize response", e);
             return createErrorResponse(new InternalError("Internal error"));
@@ -723,7 +722,7 @@ public class RestHandler {
 
     private HTTPRestResponse createErrorResponse(int statusCode, A2AError error) {
         String jsonBody = new HTTPRestErrorResponse(error).toJson();
-        return new HTTPRestResponse(statusCode, APPLICATION_A2A_JSON, jsonBody);
+        return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
     }
 
     /**

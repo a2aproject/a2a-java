@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.transport.rest.handler;
 
-import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 
 import java.util.Collections;
@@ -60,13 +59,13 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), 0);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
 
         response = handler.getTask(callContext, "", MINIMAL_TASK.id(), 2);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -99,7 +98,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, null, null);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -141,7 +140,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
     }
 
@@ -176,7 +175,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
         Assertions.assertEquals(422, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
         JsonObject error = body.getAsJsonObject("error");
         Assertions.assertEquals(422, error.get("code").getAsInt());
@@ -212,7 +211,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -254,7 +253,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -278,7 +277,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -298,7 +297,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -316,7 +315,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", null, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -391,7 +390,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
     }
 
@@ -432,11 +431,11 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             }""".formatted(MINIMAL_TASK.id());
         RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", createRequestBody, MINIMAL_TASK.id());
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         // Now get it
         response = handler.getTaskPushNotificationConfiguration(callContext, "", MINIMAL_TASK.id(), "default-config-id");
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
     }
 
     @Test
@@ -455,7 +454,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(callContext, "", MINIMAL_TASK.id(), 0, "");
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
     }
 
@@ -784,7 +783,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         // Should succeed without error
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
     }
 
@@ -985,7 +984,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         // Should succeed without error
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertNotNull(response.getBody());
     }
 
@@ -1071,7 +1070,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, null, null);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -1085,7 +1084,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, null, null);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
@@ -1098,7 +1097,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, null, null);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
 
         String body = response.getBody();
         // Verify all required fields are present (not missing)
@@ -1122,7 +1121,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     private static void assertProblemDetail(RestHandler.HTTPRestResponse response,
                                             int expectedStatus, String expectedReason, String expectedMessage) {
         Assertions.assertEquals(expectedStatus, response.getStatusCode());
-        Assertions.assertEquals(APPLICATION_A2A_JSON, response.getContentType());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
         Assertions.assertTrue(body.has("error"), "error wrapper should be present");
         JsonObject error = body.getAsJsonObject("error");
@@ -1265,7 +1264,6 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
 
         Assertions.assertEquals(200, response.getStatusCode());
-        // The agent card is discovery over plain HTTP, not an A2A protocol response.
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains("acme-card"));
     }
