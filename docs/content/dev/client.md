@@ -166,13 +166,20 @@ either set that JVM property, or use the `VertxA2AHttpClient` from the
 and has no such restriction:
 
 ```java
-A2AHttpClient httpClient = new VertxA2AHttpClient();
-
-Client client = Client
-        .builder(agentCard)
-        .withTransport(JSONRPCTransport.class,
-                new JSONRPCTransportConfig(httpClient))
-        .build();
+// VertxA2AHttpClient is AutoCloseable: its no-args constructor starts and owns a Vert.x
+// instance, and closing the Client does NOT close an injected A2AHttpClient — you own its
+// lifecycle, so close it yourself when you are done with the Client.
+VertxA2AHttpClient httpClient = new VertxA2AHttpClient();
+try {
+    Client client = Client
+            .builder(agentCard)
+            .withTransport(JSONRPCTransport.class,
+                    new JSONRPCTransportConfig(httpClient))
+            .build();
+    // use client...
+} finally {
+    httpClient.close();
+}
 ```
 
 ### REST with a Custom HTTP Client

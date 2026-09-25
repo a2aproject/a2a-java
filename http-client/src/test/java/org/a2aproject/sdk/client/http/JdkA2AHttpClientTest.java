@@ -18,6 +18,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -76,12 +78,25 @@ public class JdkA2AHttpClientTest {
         // -Djdk.httpclient.allowRestrictedHeaders=host. Callers who need to send a custom Host
         // header should use that JVM property or a non-JDK A2AHttpClient implementation, e.g.
         // VertxA2AHttpClient from the a2a-java-sdk-http-client-vertx extra.
+        //
+        // Skip if the JVM running this test already allows a restricted "Host" header: in that
+        // (documented, supported) configuration the JDK client legitimately accepts it instead.
+        assumeFalse(jdkAllowsRestrictedHostHeader(), "JVM allows a restricted Host header "
+                + "via jdk.httpclient.allowRestrictedHeaders; the JDK client no longer rejects it");
+
         JdkA2AHttpClient client = new JdkA2AHttpClient();
 
         assertThrows(IllegalArgumentException.class, () -> client.createGet()
                 .url("http://localhost:1/unused")
                 .addHeader("Host", "custom.example.com")
                 .get());
+    }
+
+    private static boolean jdkAllowsRestrictedHostHeader() {
+        String allowed = System.getProperty("jdk.httpclient.allowRestrictedHeaders", "");
+        return Arrays.stream(allowed.split(","))
+                .map(String::trim)
+                .anyMatch("host"::equalsIgnoreCase);
     }
 
     @Test
