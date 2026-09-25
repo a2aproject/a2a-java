@@ -46,6 +46,7 @@ import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
+import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
@@ -1690,6 +1691,32 @@ public class DefaultRequestHandlerTest {
         }
         assertNotNull(storedTask);
         assertEquals(TaskState.TASK_STATE_FAILED, storedTask.status().state());
+    }
+
+    @Test
+    void interruptedTerminalEnqueueStillReportsAgentFailure() throws Exception {
+        CountDownLatch executorRan = new CountDownLatch(1);
+        agentExecutorExecute = (context, emitter) -> {
+            executorRan.countDown();
+            Thread.currentThread().interrupt();
+            emitter.complete();
+        };
+
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .messageId("msg-interrupted-terminal-enqueue")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("hello"))
+                        .build())
+                .configuration(DEFAULT_CONFIG)
+                .build();
+
+        InternalError failure = assertThrows(InternalError.class,
+                () -> requestHandler.onMessageSend(params, NULL_CONTEXT));
+
+        assertTrue(executorRan.await(5, TimeUnit.SECONDS), "Executor should have run");
+        assertEquals("Agent execution failed: Unable to acquire the semaphore to enqueue the event",
+                failure.getMessage());
     }
 
     private DefaultRequestHandler buildHandlerWithRouter(AgentExecutorRouter router) {

@@ -1266,11 +1266,11 @@ public class DefaultRequestHandler implements RequestHandler {
                     // Log unexpected runtime exceptions at ERROR level
                     // These indicate bugs in agent implementation
                     LOGGER.error("Agent execution threw unexpected RuntimeException for task {}", taskId, e);
-                    emitter.fail(new org.a2aproject.sdk.spec.InternalError("Agent execution failed: " + e.getMessage()));
+                    reportAgentExecutionFailure(emitter, "Agent execution failed: " + e.getMessage());
                 } catch (Exception e) {
                     // Log other exceptions at ERROR level
                     LOGGER.error("Agent execution threw unexpected Exception for task {}", taskId, e);
-                    emitter.fail(new org.a2aproject.sdk.spec.InternalError("Agent execution failed: " + e.getMessage()));
+                    reportAgentExecutionFailure(emitter, "Agent execution failed: " + e.getMessage());
                 }
                 LOGGER.debug("Agent execution completed for task {}", taskId);
                 // The consumer (running on the Vert.x worker thread) handles queue lifecycle.
@@ -1308,6 +1308,17 @@ public class DefaultRequestHandler implements RequestHandler {
         runningAgents.put(taskId, cf);
         LOGGER.debug("Registered agent for task {}, runningAgents.size() after: {}", taskId, runningAgents.size());
         return runnable;
+    }
+
+    private void reportAgentExecutionFailure(AgentEmitter emitter, String message) {
+        boolean wasInterrupted = Thread.interrupted();
+        try {
+            emitter.fail(new InternalError(message));
+        } finally {
+            if (wasInterrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private CompletableFuture<Void> cleanupProducer(@Nullable CompletableFuture<Void> agentFuture, @Nullable CompletableFuture<Void> consumptionFuture, String taskId, EventQueue queue, boolean isStreaming) {

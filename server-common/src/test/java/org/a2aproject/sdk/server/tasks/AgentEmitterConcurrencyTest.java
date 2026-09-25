@@ -2,6 +2,7 @@ package org.a2aproject.sdk.server.tasks;
 
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.events.EventQueue;
+import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.junit.jupiter.api.Test;
 
@@ -217,6 +218,43 @@ public class AgentEmitterConcurrencyTest {
             () -> emitter.fail());
         assertEquals("Cannot update task status - terminal state already reached", 
             exception.getMessage());
+    }
+
+    @Test
+    public void testFailedTerminalStatusEnqueueAllowsErrorFallback() {
+        RequestContext context = mock(RequestContext.class);
+        when(context.getTaskId()).thenReturn("test-task-123");
+        when(context.getContextId()).thenReturn("test-context-456");
+
+        EventQueue eventQueue = mock(EventQueue.class);
+        RuntimeException enqueueFailure = new RuntimeException("queue failure");
+        doThrow(enqueueFailure).doNothing().when(eventQueue).enqueueEvent(any());
+        AgentEmitter emitter = new AgentEmitter(context, eventQueue);
+
+        assertSame(enqueueFailure, assertThrows(RuntimeException.class, emitter::complete));
+
+        emitter.fail(new InternalError("fallback"));
+
+        verify(eventQueue, times(2)).enqueueEvent(any());
+    }
+
+    @Test
+    public void testFailedErrorEnqueueAllowsTerminalStatusRetry() {
+        RequestContext context = mock(RequestContext.class);
+        when(context.getTaskId()).thenReturn("test-task-123");
+        when(context.getContextId()).thenReturn("test-context-456");
+
+        EventQueue eventQueue = mock(EventQueue.class);
+        RuntimeException enqueueFailure = new RuntimeException("queue failure");
+        doThrow(enqueueFailure).doNothing().when(eventQueue).enqueueEvent(any());
+        AgentEmitter emitter = new AgentEmitter(context, eventQueue);
+
+        assertSame(enqueueFailure, assertThrows(RuntimeException.class,
+                () -> emitter.fail(new UnsupportedOperationError())));
+
+        emitter.complete();
+
+        verify(eventQueue, times(2)).enqueueEvent(any());
     }
 
     @Test
