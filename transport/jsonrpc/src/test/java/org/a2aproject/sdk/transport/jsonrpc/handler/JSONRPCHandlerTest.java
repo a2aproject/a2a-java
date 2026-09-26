@@ -1608,7 +1608,17 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testExtendedAgentCardWithRouterReturnsNull() throws Exception {
         AgentCard cardWithExtCapability = AgentCard.builder(CARD)
                 .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
-        AgentCardRouter router = tenant -> null;
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                return null;
+            }
+
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                return cardWithExtCapability;
+            }
+        };
 
         JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(cardWithExtCapability), null,
                 requestHandler, internalExecutor, new FixedInstance<>(router));

@@ -262,10 +262,15 @@ public class DefaultRequestHandler implements RequestHandler {
      */
     int reconciliationTimeoutSeconds;
 
+    // Only used inside initConfig() (CDI lifecycle). In static create() paths this field
+    // remains null and is never accessed, hence the NullAway suppression.
+    @SuppressWarnings("NullAway")
+    private @Nullable Instance<AgentExecutor> agentExecutorInstance;
+
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
     // final, is not proxyable in all runtimes
-    private AgentExecutor agentExecutor;
+    private @Nullable AgentExecutor agentExecutor;
     private TaskStore taskStore;
     private QueueManager queueManager;
     private PushNotificationConfigStore pushConfigStore;
@@ -298,6 +303,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @SuppressWarnings("NullAway")
     protected DefaultRequestHandler() {
         // For CDI proxy creation
+        this.agentExecutorInstance = null;
         this.agentExecutor = null;
         this.taskStore = null;
         this.queueManager = null;
@@ -313,11 +319,33 @@ public class DefaultRequestHandler implements RequestHandler {
      * releases; application code should use {@link #builder()} to configure and create a handler.
      */
     @Inject
-    public DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
+    public DefaultRequestHandler(@Any Instance<AgentExecutor> agentExecutorInstance, TaskStore taskStore,
                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
                                  MainEventBusProcessor mainEventBusProcessor,
                                  @Internal Executor executor,
                                  @EventConsumerExecutor Executor eventConsumerExecutor) {
+        this.agentExecutorInstance = agentExecutorInstance;
+        this.agentExecutor = null;
+        this.taskStore = taskStore;
+        this.queueManager = queueManager;
+        this.pushConfigStore = pushConfigStore;
+        this.mainEventBusProcessor = mainEventBusProcessor;
+        this.executor = executor;
+        this.eventConsumerExecutor = eventConsumerExecutor;
+        this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false, null);
+        this.mainEventBusProcessor.start();
+    }
+
+    /**
+     * Constructor used by the {@link Builder} and tests.
+     * The builder always supplies a concrete executor, so no CDI resolution is needed.
+     */
+    DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
+                           QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
+                           MainEventBusProcessor mainEventBusProcessor,
+                           Executor executor,
+                           Executor eventConsumerExecutor) {
+        this.agentExecutorInstance = null;
         this.agentExecutor = agentExecutor;
         this.taskStore = taskStore;
         this.queueManager = queueManager;
@@ -325,10 +353,6 @@ public class DefaultRequestHandler implements RequestHandler {
         this.mainEventBusProcessor = mainEventBusProcessor;
         this.executor = executor;
         this.eventConsumerExecutor = eventConsumerExecutor;
-        // TODO In Python this is also a constructor parameter defaulting to this SimpleRequestContextBuilder
-        //  implementation if the parameter is null. Skip that for now, since otherwise I get CDI errors, and
-        //  I am unsure about the correct scope.
-        //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false, null);
         this.mainEventBusProcessor.start();
     }
@@ -344,6 +368,9 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS));
         authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
         agentExecutorRouter = CdiUtils.getIfResolvable(agentExecutorRouterInstance);
+        if (agentExecutor == null && agentExecutorInstance != null) {
+            agentExecutor = CdiUtils.resolveDefault(agentExecutorInstance);
+        }
         pushNotificationsEnabled = Boolean.parseBoolean(
                 configProvider.getValue(A2A_PUSH_NOTIFICATIONS_ENABLED));
 
@@ -1436,9 +1463,15 @@ public class DefaultRequestHandler implements RequestHandler {
         return new MessageSendSetup(taskManager, task, requestContext);
     }
 
-    private AgentExecutor resolveAgentExecutor(@Nullable String tenant) {
+    AgentExecutor resolveAgentExecutor(@Nullable String tenant) {
         if (agentExecutorRouter != null) {
             return agentExecutorRouter.resolve(tenant);
+        }
+        if (agentExecutor == null) {
+            throw new IllegalStateException(
+                    "No AgentExecutor available. Either provide an unqualified AgentExecutor "
+                    + "CDI bean, or add the multitenancy extension (a2a-java-sdk-extras-multitenancy) "
+                    + "which provides an AgentExecutorRouter for @Tenant-qualified beans.");
         }
         return agentExecutor;
     }
