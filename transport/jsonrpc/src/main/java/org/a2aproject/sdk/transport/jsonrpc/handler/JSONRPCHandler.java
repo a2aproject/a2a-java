@@ -2,10 +2,10 @@ package org.a2aproject.sdk.transport.jsonrpc.handler;
 
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -149,7 +149,7 @@ public class JSONRPCHandler {
     private @Nullable Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
     private Executor executor;
-    private final AtomicBoolean transportValidated = new AtomicBoolean(false);
+    private final Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
 
     private @Nullable AgentCardRouter agentCardRouter;
 
@@ -244,7 +244,8 @@ public class JSONRPCHandler {
      */
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
-            validateVersionAndExtensions(context);
+            String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+            validateVersionAndExtensions(tenant, context);
             EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (A2AError e) {
@@ -292,7 +293,8 @@ public class JSONRPCHandler {
      */
     public Flow.Publisher<SendStreamingMessageResponse> onMessageSendStream(
             SendStreamingMessageRequest request, ServerCallContext context) {
-        if (!resolveAgentCard().capabilities().streaming()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
@@ -300,7 +302,7 @@ public class JSONRPCHandler {
         }
 
         try {
-            validateVersionAndExtensions(context);
+            validateVersionAndExtensions(tenant, context);
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onMessageSendStream(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
@@ -340,7 +342,8 @@ public class JSONRPCHandler {
      */
     public CancelTaskResponse onCancelTask(CancelTaskRequest request, ServerCallContext context) {
         try {
-            validateVersionAndExtensions(context);
+            String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+            validateVersionAndExtensions(tenant, context);
             Task task = requestHandler.onCancelTask(request.getParams(), context);
             if (task != null) {
                 return new CancelTaskResponse(request.getId(), task);
@@ -389,7 +392,8 @@ public class JSONRPCHandler {
      */
     public Flow.Publisher<SendStreamingMessageResponse> onSubscribeToTask(
             SubscribeToTaskRequest request, ServerCallContext context) throws A2AError {
-        if (!resolveAgentCard().capabilities().streaming()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
@@ -397,7 +401,7 @@ public class JSONRPCHandler {
         }
         requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {
-            validateVersionAndExtensions(context);
+            validateVersionAndExtensions(tenant, context);
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onSubscribeToTask(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
@@ -437,12 +441,13 @@ public class JSONRPCHandler {
      */
     public GetTaskPushNotificationConfigResponse getPushNotificationConfig(
             GetTaskPushNotificationConfigRequest request, ServerCallContext context) {
-        if (!resolveAgentCard().capabilities().pushNotifications()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
             return new GetTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
         try {
-            validateVersionAndExtensions(context);
+            validateVersionAndExtensions(tenant, context);
             TaskPushNotificationConfig config =
                     requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), config);
@@ -480,12 +485,13 @@ public class JSONRPCHandler {
      */
     public CreateTaskPushNotificationConfigResponse setPushNotificationConfig(
             CreateTaskPushNotificationConfigRequest request, ServerCallContext context) {
-        if (!resolveAgentCard().capabilities().pushNotifications()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
         try {
-            validateVersionAndExtensions(context);
+            validateVersionAndExtensions(tenant, context);
             TaskPushNotificationConfig config =
                     requestHandler.onCreateTaskPushNotificationConfig(request.getParams(), context);
             return new CreateTaskPushNotificationConfigResponse(request.getId(), config);
@@ -522,7 +528,8 @@ public class JSONRPCHandler {
      */
     public GetTaskResponse onGetTask(GetTaskRequest request, ServerCallContext context) {
         try {
-            validateVersionAndExtensions(context);
+            String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+            validateVersionAndExtensions(tenant, context);
             Task task = requestHandler.onGetTask(request.getParams(), context);
             return new GetTaskResponse(request.getId(), task);
         } catch (A2AError e) {
@@ -570,7 +577,8 @@ public class JSONRPCHandler {
      */
     public ListTasksResponse onListTasks(ListTasksRequest request, ServerCallContext context) {
         try {
-            validateVersionAndExtensions(context);
+            String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+            validateVersionAndExtensions(tenant, context);
             ListTasksResult result = requestHandler.onListTasks(request.getParams(), context);
             return new ListTasksResponse(request.getId(), result);
         } catch (A2AError e) {
@@ -606,12 +614,13 @@ public class JSONRPCHandler {
      */
     public ListTaskPushNotificationConfigsResponse listPushNotificationConfigs(
             ListTaskPushNotificationConfigsRequest request, ServerCallContext context) {
-        if (!resolveAgentCard().capabilities().pushNotifications()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
         try {
-            validateVersionAndExtensions(context);
+            validateVersionAndExtensions(tenant, context);
             ListTaskPushNotificationConfigsResult result =
                     requestHandler.onListTaskPushNotificationConfigs(request.getParams(), context);
             return new ListTaskPushNotificationConfigsResponse(request.getId(), result);
@@ -649,12 +658,13 @@ public class JSONRPCHandler {
      */
     public DeleteTaskPushNotificationConfigResponse deletePushNotificationConfig(
             DeleteTaskPushNotificationConfigRequest request, ServerCallContext context) {
-        if (!resolveAgentCard().capabilities().pushNotifications()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
         try {
-            validateVersionAndExtensions(context);
+            validateVersionAndExtensions(tenant, context);
             requestHandler.onDeleteTaskPushNotificationConfig(request.getParams(), context);
             return new DeleteTaskPushNotificationConfigResponse(request.getId());
         } catch (A2AError e) {
@@ -690,12 +700,12 @@ public class JSONRPCHandler {
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
     public GetExtendedAgentCardResponse onGetExtendedCardRequest(
             GetExtendedAgentCardRequest request, ServerCallContext context) {
-        if (!resolveAgentCard().capabilities().extendedAgentCard()) {
+        String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        if (!resolveAgentCard(tenant).capabilities().extendedAgentCard()) {
             return new GetExtendedAgentCardResponse(request.getId(), new UnsupportedOperationError());
         }
         try {
-            validateVersionAndExtensions(context);
-            String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+            validateVersionAndExtensions(tenant, context);
             if (agentCardRouter != null) {
                 AgentCard card = agentCardRouter.resolveExtendedCard(tenant);
                 if (card == null) {
@@ -725,8 +735,8 @@ public class JSONRPCHandler {
      * @param context the server call context carrying the requested version and extensions
      * @throws A2AError if the requested version or a required extension is not supported
      */
-    private void validateVersionAndExtensions(ServerCallContext context) throws A2AError {
-        AgentCard agentCard = resolveAgentCard();
+    private void validateVersionAndExtensions(@Nullable String tenant, ServerCallContext context) throws A2AError {
+        AgentCard agentCard = resolveAgentCard(tenant);
         A2AVersionValidator.validateProtocolVersion(agentCard, context);
         A2AExtensions.validateRequiredExtensions(agentCard, context);
     }
@@ -773,15 +783,20 @@ public class JSONRPCHandler {
             LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
         }
         AgentCard card = CdiUtils.resolveDefault(agentCardInstance);
+        if (card == null && agentCardRouter != null) {
+            card = agentCardRouter.resolvePublicCard(tenant);
+        }
         if (card == null) {
             return null;
         }
-        return AgentCardValidator.resolveAndValidateOnce(() -> card, transportValidated,
+        AgentCard validatedCard = card;
+        return AgentCardValidator.resolveAndValidateOnce(() -> validatedCard, validatedCards,
                 AgentCardValidator::validateTransportConfiguration);
     }
 
-    private AgentCard resolveAgentCard() {
-        return AgentCardValidator.resolveWithFallback(agentCardInstance, extendedAgentCard, transportValidated);
+    private AgentCard resolveAgentCard(@Nullable String tenant) {
+        return AgentCardValidator.resolveWithFallback(agentCardInstance, extendedAgentCard,
+                agentCardRouter, tenant, validatedCards);
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(

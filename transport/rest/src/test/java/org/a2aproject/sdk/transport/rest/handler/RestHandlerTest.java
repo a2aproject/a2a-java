@@ -1272,7 +1272,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testExtendedAgentCardWithRouterReturnsNull() {
         AgentCard cardWithExtCapability = AgentCard.builder(CARD)
                 .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
-        AgentCardRouter router = tenant -> null;
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                return null;
+            }
+
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                return cardWithExtCapability;
+            }
+        };
 
         RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
                 createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
