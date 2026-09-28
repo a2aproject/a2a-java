@@ -842,7 +842,17 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testExtendedAgentCardWithRouterReturnsNull() throws Exception {
         AgentCard cardWithExtCapability = AgentCard.builder(AbstractA2ARequestHandlerTest.CARD)
                 .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
-        AgentCardRouter router = tenant -> null;
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                return null;
+            }
+
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                return cardWithExtCapability;
+            }
+        };
 
         GrpcHandler handler = new TestGrpcHandler(cardWithExtCapability, requestHandler, internalExecutor) {
             @Override
@@ -857,6 +867,50 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         handler.getExtendedAgentCard(request, recorder);
 
         assertGrpcError(recorder, Status.Code.FAILED_PRECONDITION);
+    }
+
+    @Test
+    public void testSendMessageReturnsNotFoundForUnknownTenant() throws Exception {
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                return null;
+            }
+
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                return "known".equals(tenant) ? AbstractA2ARequestHandlerTest.CARD : null;
+            }
+        };
+
+        GrpcHandler handler = new TestGrpcHandler(null, requestHandler, internalExecutor) {
+            @Override
+            protected @org.jspecify.annotations.Nullable AgentCard getAgentCard() {
+                return null;
+            }
+
+            @Override
+            protected AgentCard getExtendedAgentCard() {
+                return null;
+            }
+
+            @Override
+            protected AgentCardRouter getAgentCardRouter() {
+                return router;
+            }
+        };
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setMessage(GRPC_MESSAGE)
+                .setTenant("unknown-tenant")
+                .build();
+        StreamRecorder<SendMessageResponse> recorder = StreamRecorder.create();
+        handler.sendMessage(request, recorder);
+
+        Assertions.assertNotNull(recorder.getError());
+        Assertions.assertInstanceOf(StatusRuntimeException.class, recorder.getError());
+        StatusRuntimeException sre = (StatusRuntimeException) recorder.getError();
+        Assertions.assertEquals(Status.Code.NOT_FOUND, sre.getStatus().getCode());
     }
 
     @Test
