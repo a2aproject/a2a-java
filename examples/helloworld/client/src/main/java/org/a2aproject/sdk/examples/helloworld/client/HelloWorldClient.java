@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.examples.helloworld.client;
 
+import static org.a2aproject.sdk.extras.opentelemetry.client.OpenTelemetryClientTransportWrapper.OTEL_METER_KEY;
 import static org.a2aproject.sdk.extras.opentelemetry.client.OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY;
 import static org.a2aproject.sdk.extras.opentelemetry.client.propagation.OpenTelemetryClientPropagatorTransportWrapper.OTEL_OPEN_TELEMETRY_KEY;
 
@@ -34,8 +35,11 @@ import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -136,20 +140,32 @@ public class HelloWorldClient {
     }
 
     static OpenTelemetrySdk initOpenTelemetry() {
+        Resource resource = Resource.getDefault().toBuilder()
+                .put("service.version", "1.0")
+                .put("service.name", "helloworld-client")
+                .build();
+
         SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(
                         OtlpGrpcSpanExporter.builder()
                                 .setEndpoint("http://localhost:5317")
                                 .build()
                 ).build())
-                .setResource(Resource.getDefault().toBuilder()
-                        .put("service.version", "1.0")
-                        .put("service.name", "helloworld-client")
-                        .build())
+                .setResource(resource)
+                .build();
+
+        SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
+                .registerMetricReader(PeriodicMetricReader.builder(
+                        OtlpGrpcMetricExporter.builder()
+                                .setEndpoint("http://localhost:5317")
+                                .build()
+                ).build())
+                .setResource(resource)
                 .build();
 
         return OpenTelemetrySdk.builder()
                 .setTracerProvider(sdkTracerProvider)
+                .setMeterProvider(sdkMeterProvider)
                 .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
                 .build();
     }
@@ -186,6 +202,7 @@ public class HelloWorldClient {
         if (openTelemetrySdk != null) {
             Map<String, Object> parameters = new HashMap<>(transportConfig.getParameters());
             parameters.put(OTEL_TRACER_KEY, openTelemetrySdk.getTracer("helloworld-client"));
+            parameters.put(OTEL_METER_KEY, openTelemetrySdk.getMeter("helloworld-client"));
             parameters.put(OTEL_OPEN_TELEMETRY_KEY, openTelemetrySdk);
             transportConfig.setParameters(parameters);
         }
