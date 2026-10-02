@@ -141,7 +141,7 @@ public class RestTransport implements ClientTransport {
         try {
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, taskQueryParams.tenant()));
             if (taskQueryParams.historyLength() != null && taskQueryParams.historyLength() > 0) {
-                url.append(String.format("/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength()));
+                url.append(String.format("/tasks/%s?historyLength=%d", taskQueryParams.id(), taskQueryParams.historyLength()));
             } else {
                 url.append(String.format("/tasks/%1s", taskQueryParams.id()));
             }
