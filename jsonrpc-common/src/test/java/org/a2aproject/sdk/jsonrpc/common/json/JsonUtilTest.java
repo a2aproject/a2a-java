@@ -3,11 +3,15 @@ package org.a2aproject.sdk.jsonrpc.common.json;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.StringWriter;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class JsonUtilTest {
 
@@ -57,5 +61,28 @@ public class JsonUtilTest {
         Map<String, Object> fromJsonObject = JsonUtil.readMetadata(jsonObject);
 
         assertEquals(fromJsonObject, fromString);
+    }
+
+    // writeJsonRpcId tests
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testWriteJsonRpcIdWritesNullIdAndRestoresSerializeNulls(boolean serializeNulls) throws Exception {
+        StringWriter result = new StringWriter();
+        JsonWriter out = new JsonWriter(result);
+        out.setSerializeNulls(serializeNulls);
+
+        out.beginObject();
+        JsonUtil.writeJsonRpcId(out, null);
+        assertEquals(serializeNulls, out.getSerializeNulls());
+        out.name("other").nullValue();
+        out.endObject();
+        out.close();
+
+        // "id": null is always written; other null members follow the writer's own setting
+        JsonObject json = JsonParser.parseString(result.toString()).getAsJsonObject();
+        assertTrue(json.has("id"));
+        assertTrue(json.get("id").isJsonNull());
+        assertEquals(serializeNulls, json.has("other"));
     }
 }
