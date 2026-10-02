@@ -174,7 +174,13 @@ public class JsonUtil {
     public static void writeJsonRpcId(JsonWriter out, @Nullable Object id) throws java.io.IOException {
         out.name("id");
         if (id == null) {
+            // JSON-RPC 2.0 section 5: "id" is required in a response and must be null when the
+            // request id could not be determined. A JsonWriter that does not serialize nulls would
+            // otherwise drop the member.
+            boolean serializeNulls = out.getSerializeNulls();
+            out.setSerializeNulls(true);
             out.nullValue();
+            out.setSerializeNulls(serializeNulls);
         } else if (id instanceof Number n) {
             if (id instanceof Long || id instanceof Integer || id instanceof Short || id instanceof Byte) {
                 out.value(n.longValue());

@@ -181,6 +181,9 @@ public class JSONRPCUtils {
 
     public static A2ARequest<?> parseRequestBody(String body, @Nullable String tenant) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
+        if (!jelement.isJsonObject()) {
+            throw new JsonMappingException(null, "Invalid JSON-RPC request: the request must be a JSON object.");
+        }
         JsonObject jsonRpc = jelement.getAsJsonObject();
         if (!jsonRpc.has("method")) {
             throw new IdJsonMappingException(
@@ -204,53 +207,55 @@ public class JSONRPCUtils {
         }
     }
 
-    private static A2ARequest<?> parseMethodRequest(String version, Object id, String method, JsonElement paramsNode, @Nullable String tenant) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
+    private static A2ARequest<?> parseMethodRequest(String version, Object id, String method, @Nullable JsonElement paramsNode, @Nullable String tenant) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
+        // JSON-RPC 2.0 allows "params" to be omitted: parse it like an empty params object.
+        JsonElement params = paramsNode == null ? new JsonObject() : paramsNode;
         switch (method) {
             case GET_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new GetTaskRequest(version, id, ProtoUtils.FromProto.taskQueryParams(builder));
             }
             case CANCEL_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.CancelTaskRequest.Builder builder = org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new CancelTaskRequest(version, id, ProtoUtils.FromProto.cancelTaskParams(builder));
             }
             case LIST_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.ListTasksRequest.Builder builder = org.a2aproject.sdk.grpc.ListTasksRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new CreateTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.createTaskPushNotificationConfig(builder));
             }
             case GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new GetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
             }
             case SEND_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new ListTaskPushNotificationConfigsRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
@@ -268,13 +273,13 @@ public class JSONRPCUtils {
             }
             case SEND_STREAMING_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case SUBSCRIBE_TO_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder builder = org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder();
-                parseRequestBody(paramsNode, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SubscribeToTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }

@@ -1,10 +1,16 @@
 package org.a2aproject.sdk.grpc.utils;
 
 import static org.a2aproject.sdk.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
+import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -32,6 +38,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
@@ -45,6 +52,8 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.util.ErrorDetail;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class JSONRPCUtilsTest {
 
@@ -226,6 +235,113 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest, null)
         );
         assertEquals(3, exception.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        GET_TASK_METHOD, CANCEL_TASK_METHOD, LIST_TASK_METHOD, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+        GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, SEND_MESSAGE_METHOD, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+        DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, SEND_STREAMING_MESSAGE_METHOD, SUBSCRIBE_TO_TASK_METHOD
+    })
+    public void testParseOmittedParams_SameAsEmptyParams(String method) {
+        // JSON-RPC 2.0 section 4: "params" MAY be omitted. An omitted "params" must be parsed
+        // like an empty params object instead of escaping parseRequestBody as a NullPointerException.
+        String omittedParamsRequest = """
+            {"jsonrpc": "2.0", "method": "%s", "id": 7}
+            """.formatted(method);
+        String emptyParamsRequest = """
+            {"jsonrpc": "2.0", "method": "%s", "id": 7, "params": {}}
+            """.formatted(method);
+
+        assertEquals(parseOutcome(emptyParamsRequest), parseOutcome(omittedParamsRequest));
+    }
+
+    private static Object parseOutcome(String body) {
+        try {
+            return JSONRPCUtils.parseRequestBody(body, null).getParams();
+        } catch (JsonProcessingException e) {
+            return e.getClass().getName() + ": " + e.getMessage();
+        }
+    }
+
+    @Test
+    public void testParseOmittedParams_ListTasksWithoutParams() throws Exception {
+        // All ListTasks fields are optional, so a request without "params" is valid.
+        String omittedParamsRequest = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": 8
+            }
+            """;
+
+        ListTasksRequest request = assertInstanceOf(ListTasksRequest.class,
+            JSONRPCUtils.parseRequestBody(omittedParamsRequest, null));
+        assertEquals(8, request.getId());
+        assertNotNull(request.getParams());
+    }
+
+    @Test
+    public void testParseExplicitNullParams_IsNotTreatedAsOmitted() {
+        // Only an omitted "params" is normalized to {}. An explicit "params": null keeps its
+        // existing handling, so ListTasks (valid without params) still rejects it.
+        String explicitNullParamsRequest = """
+            {"jsonrpc": "2.0", "method": "ListTasks", "id": 9, "params": null}
+            """;
+
+        assertThrows(
+            JsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(explicitNullParamsRequest, null)
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "{\"jsonrpc\": \"2.0\", \"method\": \"GetExtendedAgentCard\", \"id\": 10}",
+        "{\"jsonrpc\": \"2.0\", \"method\": \"GetExtendedAgentCard\", \"id\": 10, \"params\": null}"
+    })
+    public void testParseGetExtendedAgentCard_AbsentParamsUnchanged(String body) throws Exception {
+        // GetExtendedAgentCard keeps its own handling of absent params.
+        GetExtendedAgentCardRequest request = assertInstanceOf(GetExtendedAgentCardRequest.class,
+            JSONRPCUtils.parseRequestBody(body, null));
+        assertEquals(10, request.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {SEND_MESSAGE_METHOD, SEND_STREAMING_MESSAGE_METHOD})
+    public void testParseOmittedParams_RequiredFieldsMissing_ThrowsInvalidParams(String method) {
+        // "message" is required, and the existing validation rejects "params": {} with Invalid params
+        // (-32602). An omitted "params" must hit the same validation and keep the request id,
+        // instead of failing with an internal error.
+        String omittedParamsRequest = """
+            {"jsonrpc": "2.0", "method": "%s", "id": 7}
+            """.formatted(method);
+
+        InvalidParamsJsonMappingException exception = assertThrows(
+            InvalidParamsJsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(omittedParamsRequest, null)
+        );
+        assertEquals(7, exception.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "[]",
+        "[{\"jsonrpc\": \"2.0\", \"method\": \"GetTask\", \"id\": 1, \"params\": {\"id\": \"task-1\"}}]",
+        "\"GetTask\"",
+        "42",
+        "true",
+        "null"
+    })
+    public void testParseNonObjectBody_ThrowsJsonMappingException(String body) {
+        // JSON-RPC 2.0 section 5.1: a body that is valid JSON but not a Request object
+        // (an array, including a batch, or a primitive) must yield InvalidRequest (-32600),
+        // which the server routes derive from a plain JsonMappingException.
+        JsonMappingException exception = assertThrows(
+            JsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(body, null)
+        );
+        assertEquals(JsonMappingException.class, exception.getClass());
     }
 
     @Test
