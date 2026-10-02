@@ -16,8 +16,10 @@ import static java.util.Collections.singletonList;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -28,6 +30,9 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import jakarta.enterprise.inject.Instance;
 
@@ -43,6 +48,9 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
@@ -69,6 +77,8 @@ import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -726,6 +736,79 @@ public class A2AServerRoutesTest {
 
         // Assert
         verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    }
+
+    @Test
+    public void testOmittedParams_ReturnsInvalidParamsError() {
+        // Arrange - "params" is omitted, which JSON-RPC 2.0 allows
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": 1,
+             "method": "SendMessage"
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert - missing message is reported as Invalid params, not as an internal error,
+        // and the response keeps the request id
+        JsonObject response = captureResponse();
+        assertEquals(-32602, response.getAsJsonObject("error").get("code").getAsInt());
+        assertEquals(1, response.get("id").getAsInt());
+    }
+
+    @Test
+    public void testOmittedParams_ListTasksIsDispatched() {
+        // Arrange - "params" is omitted and every ListTasks field is optional
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": 1,
+             "method": "ListTasks"
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+        when(mockJsonRpcHandler.onListTasks(any(ListTasksRequest.class), any(ServerCallContext.class)))
+                .thenReturn(new ListTasksResponse(1, new ListTasksResult(Collections.emptyList())));
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert - the request reaches the handler and the response carries no error
+        verify(mockJsonRpcHandler).onListTasks(any(ListTasksRequest.class), any(ServerCallContext.class));
+        JsonObject response = captureResponse();
+        assertFalse(response.has("error"));
+        assertEquals(1, response.get("id").getAsInt());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "[]",
+        "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"GetTask\", \"params\": {\"id\": \"task-1\"}}]",
+        "\"SendMessage\"",
+        "1",
+        "true",
+        "null"
+    })
+    public void testNonObjectBody_ReturnsInvalidRequestError(String jsonRpcRequest) {
+        // Arrange - valid JSON, but not a JSON-RPC request object
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert - Invalid Request, and "id": null because no request id can be read
+        JsonObject response = captureResponse();
+        assertEquals(-32600, response.getAsJsonObject("error").get("code").getAsInt());
+        assertTrue(response.has("id"));
+        assertTrue(response.get("id").isJsonNull());
+    }
+
+    private JsonObject captureResponse() {
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpResponse).end(bodyCaptor.capture());
+        return JsonParser.parseString(bodyCaptor.getValue()).getAsJsonObject();
     }
 
     @Test
