@@ -3,6 +3,7 @@ package org.a2aproject.sdk.extras.opentelemetry.client;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportWrapper;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 
 /**
@@ -26,11 +27,19 @@ public class OpenTelemetryClientTransportWrapper implements ClientTransportWrapp
      */
     public static final String OTEL_TRACER_KEY = "org.a2aproject.sdk.extras.opentelemetry.Tracer";
 
+    /**
+     * Configuration key for the OpenTelemetry Meter instance.
+     * Value must be of type {@link Meter}.
+     */
+    public static final String OTEL_METER_KEY = "org.a2aproject.sdk.extras.opentelemetry.Meter";
+
     @Override
     public ClientTransport wrap(ClientTransport transport, ClientTransportConfig<?> config) {
         Object tracerObj = config.getParameters().get(OTEL_TRACER_KEY);
         if (tracerObj != null && tracerObj instanceof Tracer tracer) {
-            return new OpenTelemetryClientTransport(transport, tracer);
+            Object meterObj = config.getParameters().get(OTEL_METER_KEY);
+            Meter meter = (meterObj instanceof Meter m) ? m : null;
+            return new OpenTelemetryClientTransport(transport, tracer, meter);
         }
         // No tracer configured, return unwrapped transport
         return transport;
