@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Generate Roq Site
-        uses: quarkiverse/quarkus-roq@v1.1
+        uses: quarkiverse/quarkus-roq@d0bdb4255f4dcc3ddd218c83f9dd19faa823ac31 # v1.1
         with:
           site-directory: ./docs/
           github-pages: 'false'

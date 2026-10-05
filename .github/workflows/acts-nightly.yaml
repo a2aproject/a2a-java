@@ -19,27 +19,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
 
       - name: Clone a2a-itk
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: a2aproject/a2a-itk
           ref: main
           path: itk/a2a-itk
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Build itk_service image (GHA layer cache)
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: itk/a2a-itk
           tags: itk_service:latest
@@ -48,7 +48,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=itk_service
 
       - name: Cache launcher peer-SDK checkouts + build outputs
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/a2a-itk-launcher
           key: itk-launcher-${{ runner.os }}-${{ github.sha }}
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload ACTS reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: acts-reports-java-nightly
           path: itk/acts-report-*.json
@@ -81,7 +81,7 @@ jobs:
           retention-days: 30
 
       - name: Upload ACTS Results to Rolling Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           # The conformance counterpart of `itk_java.json`, on the same
           # permanent tag: `process_acts_results.py` fetches
