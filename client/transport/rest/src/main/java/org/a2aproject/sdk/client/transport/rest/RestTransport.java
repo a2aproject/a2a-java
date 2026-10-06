@@ -16,9 +16,12 @@ import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -67,6 +70,8 @@ public class RestTransport implements ClientTransport {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
+    private final Set<CompletableFuture<Void>> activeStreams = new HashSet<>();
+    private boolean closed;
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
     private final AgentCard agentCard;
@@ -117,12 +122,12 @@ public class RestTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream", payloadAndHeaders);
-            ref.set(postBuilder.postAsyncSSE(
+            ref.set(trackStream(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // We don't need to do anything special on completion
-                    }));
+                    })));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -377,12 +382,12 @@ public class RestTransport implements ClientTransport {
         try {
             String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
-            ref.set(postBuilder.postAsyncSSE(
+            ref.set(trackStream(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // We don't need to do anything special on completion
-                    }));
+                    })));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -414,7 +419,38 @@ public class RestTransport implements ClientTransport {
 
     @Override
     public void close() {
-        // no-op
+        List<CompletableFuture<Void>> streams;
+        synchronized (activeStreams) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            streams = new ArrayList<>(activeStreams);
+            activeStreams.clear();
+        }
+        for (CompletableFuture<Void> stream : streams) {
+            stream.cancel(true);
+        }
+    }
+
+    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream) {
+        boolean cancel;
+        synchronized (activeStreams) {
+            cancel = closed;
+            if (!cancel) {
+                activeStreams.add(stream);
+            }
+        }
+        stream.whenComplete((result, error) -> {
+            synchronized (activeStreams) {
+                activeStreams.remove(stream);
+            }
+        });
+        if (cancel) {
+            // close() can run while the HTTP client is setting up the stream.
+            stream.cancel(true);
+        }
+        return stream;
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, @Nullable MessageOrBuilder payload,
