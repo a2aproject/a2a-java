@@ -140,7 +140,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         try {
             String url;
             if (taskQueryParams.historyLength() > 0) {
-                url = agentUrl + String.format("/v1/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength());
+                url = agentUrl + String.format("/v1/tasks/%s?historyLength=%d", taskQueryParams.id(), taskQueryParams.historyLength());
             } else {
                 url = agentUrl + String.format("/v1/tasks/%1s", taskQueryParams.id());
             }

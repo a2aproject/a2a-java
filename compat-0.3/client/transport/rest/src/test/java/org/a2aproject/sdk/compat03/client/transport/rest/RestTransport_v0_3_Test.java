@@ -188,6 +188,7 @@ public class RestTransport_v0_3_Test {
                 request()
                         .withMethod("GET")
                         .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .withQueryStringParameter("historyLength", "5")
         )
                 .respond(
                         response()
@@ -195,7 +196,7 @@ public class RestTransport_v0_3_Test {
                                 .withBody(GET_TASK_TEST_RESPONSE)
                 );
         ClientCallContext_v0_3 context = null;
-        TaskQueryParams_v0_3 request = new TaskQueryParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64", 10);
+        TaskQueryParams_v0_3 request = new TaskQueryParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64", 5);
         RestTransport_v0_3 instance = new RestTransport_v0_3(CARD);
         Task_v0_3 task = instance.getTask(request, context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
