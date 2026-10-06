@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import java.time.Instant;
 
 import org.a2aproject.sdk.spec.util.Utils;
