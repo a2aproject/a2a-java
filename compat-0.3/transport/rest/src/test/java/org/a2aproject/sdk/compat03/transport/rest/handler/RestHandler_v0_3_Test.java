@@ -1,24 +1,24 @@
 package org.a2aproject.sdk.compat03.transport.rest.handler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.HashSet;
 import java.util.Map;
 
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
-import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
+import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test suite for v0.3 RestHandler with v1.0 backend.
@@ -39,6 +39,23 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     // ========================================
     // GetTask Tests
     // ========================================
+
+    @Test
+    public void testSetPushNotificationConfigWithSchemaBody() throws Exception {
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+        taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
+        String body = """
+                {"pushNotificationConfig":{"id":"body-id","url":"https://example.com/callback"}}
+                """;
+        RestHandler_v0_3.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(
+                MINIMAL_TASK.id(), body, "requested-id", callContext);
+        assertEquals(201, response.getStatusCode(), response.toString());
+        assertNotNull(response.getBody());
+        var json = com.google.gson.JsonParser.parseString(response.getBody()).getAsJsonObject();
+        assertEquals("tasks/" + MINIMAL_TASK.id() + "/pushNotificationConfigs/requested-id", json.get("name").getAsString());
+        assertEquals("requested-id", json.getAsJsonObject("pushNotificationConfig").get("id").getAsString());
+        assertEquals("application/json", response.getContentType());
+    }
 
     @Test
     public void testGetTaskSuccess() {

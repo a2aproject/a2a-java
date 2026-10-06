@@ -3,6 +3,7 @@ package org.a2aproject.sdk.compat03.client.transport.grpc;
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -319,7 +320,8 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
                         metadata.put(AUTHORIZATION_METADATA_KEY, headerValue);
                     } else {
                         // Create a metadata key dynamically for API keys and other custom headers
-                        Metadata.Key<String> metadataKey = Metadata.Key.of(headerName, Metadata.ASCII_STRING_MARSHALLER);
+                        Metadata.Key<String> metadataKey = Metadata.Key.of(
+                                headerName.toLowerCase(Locale.ROOT), Metadata.ASCII_STRING_MARSHALLER);
                         metadata.put(metadataKey, headerValue);
                     }
                 }
@@ -360,17 +362,10 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
     }
 
     private String getTaskPushNotificationConfigName(String taskId, @Nullable String pushNotificationConfigId) {
-        StringBuilder name = new StringBuilder();
-        name.append("tasks/");
-        name.append(taskId);
-        if (pushNotificationConfigId != null) {
-            name.append("/pushNotificationConfigs/");
-            name.append(pushNotificationConfigId);
+        if (pushNotificationConfigId == null) {
+            return "tasks/" + taskId;
         }
-        //name.append("/pushNotificationConfigs/");
-        // Use taskId as default config ID if none provided
-        //name.append(pushNotificationConfigId != null ? pushNotificationConfigId : taskId);
-        return name.toString();
+        return "tasks/" + taskId + "/pushNotificationConfigs/" + pushNotificationConfigId;
     }
 
     private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, Object payload,

@@ -173,7 +173,11 @@ public class A2ATestRoutes_v0_3 {
 
     public void ensureTaskQueue(String taskId, RoutingContext rc) {
         try {
-            testUtilsBean.ensureQueue(taskId);
+            if (Boolean.parseBoolean(rc.request().getParam("withoutConsumer"))) {
+                testUtilsBean.ensureQueueWithoutConsumer(taskId);
+            } else {
+                testUtilsBean.ensureQueue(taskId);
+            }
             rc.response()
                     .setStatusCode(200)
                     .end();

@@ -5,25 +5,23 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.google.gson.JsonObject;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-
-import com.google.gson.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
+import org.a2aproject.sdk.compat03.server.rest.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.server.common.quarkus.VersionRouter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.rest.quarkus.A2AServerRoutes;
-import org.a2aproject.sdk.compat03.server.rest.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
-
-import io.quarkus.security.ForbiddenException;
-import io.quarkus.security.UnauthorizedException;
 
 @Singleton
 public class MultiVersionRestRoutes {
@@ -72,6 +70,16 @@ public class MultiVersionRestRoutes {
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 (body, ctx) -> v10Routes.cancelTask(body, ctx),
                 (body, ctx) -> v03Routes.cancelTask(ctx)), false);
+
+        // GET /v1/tasks/{taskId}:subscribe for the 0.3 HTTP binding.
+        router.getWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+):subscribe$")
+            .order(-1)
+            .blockingHandler(versionDispatchNoBody(true,
+                ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
+                ctx -> {
+                    throw new VersionNotSupportedError(null, "GET task subscription is only supported by A2A 0.3", null);
+                },
+                ctx -> v03Routes.resubscribeTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}:subscribe (deferred CDI context destruction)
         router.postWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+):subscribe$")

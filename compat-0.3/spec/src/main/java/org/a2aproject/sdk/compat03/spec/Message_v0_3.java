@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -42,7 +43,7 @@ public record Message_v0_3(
         this.contextId = contextId;
         this.taskId = taskId;
         this.referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
-        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.metadata = metadata != null ? Utils_v0_3.copyJsonMap(metadata) : null;
         this.extensions = extensions != null ? List.copyOf(extensions) : null;
     }
 

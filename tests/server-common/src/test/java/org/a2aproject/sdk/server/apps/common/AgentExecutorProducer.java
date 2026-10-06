@@ -3,6 +3,7 @@ package org.a2aproject.sdk.server.apps.common;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,6 +20,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
+import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -45,6 +47,9 @@ public class AgentExecutorProducer {
     @Inject
     RequestScopedBean requestScopedBean;
 
+    @Inject
+    TaskStore taskStore;
+
     @Produces
     public AgentExecutor agentExecutor() {
         return new AgentExecutor() {
@@ -52,6 +57,28 @@ public class AgentExecutorProducer {
             public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
                 String taskId = context.getTaskId();
                 String input = context.getMessage() != null ? extractTextFromMessage(context.getMessage()) : "";
+
+                if (input.startsWith("compat-hold:")) {
+                    agentEmitter.startWork();
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(60);
+                    while (System.nanoTime() < deadline) {
+                        Task task = taskStore.get(taskId);
+                        if (task == null) {
+                            throw new InternalError("Held compatibility task was removed");
+                        }
+                        if (taskStore.get(taskId + "-release") != null) {
+                            agentEmitter.complete();
+                            return;
+                        }
+                        try {
+                            Thread.sleep(25);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new InternalError("Held compatibility task interrupted");
+                        }
+                    }
+                    throw new InternalError("Held compatibility task was not released");
+                }
 
                 // Agent-to-agent communication test (routed by message content prefix)
                 if (input.startsWith("delegate:") || input.startsWith("a2a-local:")) {

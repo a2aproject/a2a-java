@@ -7,6 +7,8 @@ import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
+import org.a2aproject.sdk.client.transport.spi.ClientTransport;
+import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfig;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
@@ -76,6 +78,16 @@ public class ClientBuilderTest {
                         .build());
 
         Assertions.assertTrue(exception.getMessage() != null && exception.getMessage().startsWith("Missing required TransportConfig for"));
+    }
+
+    @Test
+    public void shouldRejectUnregisteredTransportAtConfigurationTime() {
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
+                () -> Client.builder(card).withTransport(UnregisteredTransport.class,
+                        new ClientTransportConfig<UnregisteredTransport>() { }));
+
+        Assertions.assertTrue(exception.getMessage().contains(UnregisteredTransport.class.getName()));
+        Assertions.assertTrue(exception.getMessage().contains("No ClientTransportProvider is registered"));
     }
 
     @Test
@@ -171,5 +183,8 @@ public class ClientBuilderTest {
         AgentInterface selectedInterface = builder.findBestClientTransport();
 
         Assertions.assertNull(selectedInterface.tenant());
+    }
+
+    private abstract static class UnregisteredTransport implements ClientTransport {
     }
 }

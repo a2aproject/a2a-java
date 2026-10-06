@@ -6,10 +6,10 @@ import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.GET_TASK_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
+import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_TEST_RESPONSE;
-import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
@@ -17,11 +17,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3;
+import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentSkill_v0_3;
@@ -33,29 +47,21 @@ import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Part_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3.Kind;
+import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -227,7 +233,7 @@ public class RestTransport_v0_3_Test {
         assertEquals(Kind.FILE, part.kind());
         assertEquals("text/plain", part.file().mimeType());
         assertEquals("greeting.txt", part.file().name());
-        assertEquals("hello", ((FileWithBytes_v0_3) part.file()).bytes());
+        assertEquals("aGVsbG8=", ((FileWithBytes_v0_3) part.file()).bytes());
         assertNull(history.metadata());
         assertNull(history.referenceTaskIds());
     }
@@ -293,7 +299,8 @@ public class RestTransport_v0_3_Test {
                 request()
                         .withMethod("POST")
                         .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
-                        .withBody(JsonBody.json(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
+                        .withQueryStringParameter("configId", "de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .withBody(JsonBody.json(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.STRICT))
         )
                 .respond(
                         response()
@@ -401,6 +408,49 @@ public class RestTransport_v0_3_Test {
         instance.deleteTaskPushNotificationConfigurations(new DeleteTaskPushNotificationConfigParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64", "10"), context);
     }
 
+    @Test
+    public void testJdkAuthenticationFailuresRetainResponseDetails() {
+        for (int code : List.of(401, 403)) {
+            String taskId = "auth-" + code;
+            server.when(request().withMethod("GET").withPath("/v1/tasks/" + taskId))
+                    .respond(response().withStatusCode(code).withBody("unauthorized")
+                            .withHeader("WWW-Authenticate", "Bearer"));
+            var client = new RestTransport_v0_3(CARD);
+            var exception = assertThrows(A2AClientException_v0_3.class,
+                    () -> client.getTask(new TaskQueryParams_v0_3(taskId), null));
+            var io = assertInstanceOf(IOException.class, exception.getCause());
+            var cause = assertInstanceOf(A2AClientHTTPError.class, io.getCause());
+            assertEquals(code, cause.getCode());
+            assertEquals("unauthorized", cause.getResponseBody());
+            assertEquals(List.of("Bearer"), cause.getResponseHeaders().get("www-authenticate"));
+        }
+    }
+
+    @Test
+    public void testSetPushConfigPreservesIdAndImmutableInterceptorPayload() throws Exception {
+        String body = """
+                {"name":"tasks/task/pushNotificationConfigs/config-1",
+                 "pushNotificationConfig":{"id":"config-1","url":"https://example.com/callback"}}
+                """;
+        server.when(request().withMethod("POST").withPath("/v1/tasks/task/pushNotificationConfigs")
+                .withQueryStringParameter("configId", "config-1")
+                .withHeader("X-Trace", "trace")
+                .withBody(JsonBody.json(body, MatchType.STRICT)))
+                .respond(response().withStatusCode(201).withBody(body));
+        ClientCallInterceptor_v0_3 interceptor = new ClientCallInterceptor_v0_3() {
+            @Override
+            public PayloadAndHeaders_v0_3 intercept(String method, Object payload, java.util.Map<String, String> headers,
+                    AgentCard_v0_3 card, ClientCallContext_v0_3 context) {
+                var builder = (org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder) payload;
+                return new PayloadAndHeaders_v0_3(builder.build(), java.util.Map.of("X-Trace", "trace"));
+            }
+        };
+        var client = new RestTransport_v0_3(null, CARD, CARD.url(), List.of(interceptor));
+        var result = client.setTaskPushNotificationConfiguration(new TaskPushNotificationConfig_v0_3("task",
+                new PushNotificationConfig_v0_3.Builder().id("config-1").url("https://example.com/callback").build()), null);
+        assertEquals("config-1", result.pushNotificationConfig().id());
+    }
+
     /**
      * Test of resubscribe method, of class JSONRestTransport.
      */
@@ -408,11 +458,14 @@ public class RestTransport_v0_3_Test {
     public void testResubscribe() throws Exception {
         LOGGER.info("Testing resubscribe");
         
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/v1/tasks/task-1234:subscribe")
-                )
+        this.server.when(request()
+                        .withMethod("GET")
+                        .withPath("/v1/tasks/task-1234:subscribe"))
+                .respond(response().withStatusCode(405));
+        this.server.when(request()
+                        .withMethod("POST")
+                        .withPath("/v1/tasks/task-1234:subscribe")
+                        .withBody(JsonBody.json("{\"name\":\"tasks/task-1234\"}", MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
@@ -429,10 +482,15 @@ public class RestTransport_v0_3_Test {
             receivedEvent.set(event);
             latch.countDown();
         };
-        Consumer<Throwable> errorHandler = error -> {};
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        Consumer<Throwable> errorHandler = error -> {
+            failure.set(error);
+            latch.countDown();
+        };
         client.resubscribe(taskIdParams, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
+        assertNull(failure.get());
         assertTrue(eventReceived);
 
         StreamingEventKind_v0_3 eventKind = receivedEvent.get();;

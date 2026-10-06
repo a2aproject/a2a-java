@@ -20,16 +20,16 @@ import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.junit.jupiter.api.Test;
 
@@ -296,7 +296,7 @@ public class ToProto_v0_3_Test {
         assertEquals(true, proto.hasFile());
         assertEquals("image/png", proto.getFile().getMimeType());
         assertEquals("photo.png", proto.getFile().getName());
-        assertEquals("aGVsbG8=", proto.getFile().getFileWithBytes().toStringUtf8());
+        assertEquals("hello", proto.getFile().getFileWithBytes().toStringUtf8());
         FilePart_v0_3 roundTripped = (FilePart_v0_3) ProtoUtils_v0_3.FromProto.part(proto);
         FileWithBytes_v0_3 fileContent = (FileWithBytes_v0_3) roundTripped.file();
         assertEquals("image/png", fileContent.mimeType());

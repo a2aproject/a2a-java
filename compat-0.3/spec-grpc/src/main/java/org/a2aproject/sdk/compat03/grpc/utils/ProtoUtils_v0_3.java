@@ -1,23 +1,25 @@
 package org.a2aproject.sdk.compat03.grpc.utils;
 
 
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.spec.APIKeySecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCardSignature_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentExtension_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentInterface_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentProvider_v0_3;
@@ -37,9 +39,9 @@ import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.ImplicitOAuthFlow_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MutualTLSSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.OAuth2SecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.OAuthFlows_v0_3;
@@ -50,14 +52,14 @@ import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.jspecify.annotations.Nullable;
 
@@ -163,6 +165,9 @@ public class ProtoUtils_v0_3 {
             if (message.parts() != null) {
                 builder.addAllContent(message.parts().stream().map(ToProto::part).collect(Collectors.toList()));
             }
+            if (message.extensions() != null) {
+                builder.addAllExtensions(message.extensions());
+            }
             builder.setMetadata(struct(message.metadata()));
             return builder.build();
         }
@@ -266,7 +271,7 @@ public class ProtoUtils_v0_3 {
             org.a2aproject.sdk.compat03.grpc.FilePart.Builder builder = org.a2aproject.sdk.compat03.grpc.FilePart.newBuilder();
             FileContent_v0_3 fileContent = filePart.file();
             if (fileContent instanceof FileWithBytes_v0_3) {
-                builder.setFileWithBytes(ByteString.copyFrom(((FileWithBytes_v0_3) fileContent).bytes(), StandardCharsets.UTF_8));
+                builder.setFileWithBytes(ByteString.copyFrom(Base64.getDecoder().decode(((FileWithBytes_v0_3) fileContent).bytes())));
             } else if (fileContent instanceof FileWithUri_v0_3) {
                 builder.setFileWithUri(((FileWithUri_v0_3) fileContent).uri());
             }
@@ -636,9 +641,11 @@ public class ProtoUtils_v0_3 {
             return structBuilder.build();
         }
 
-        private static Value value(Object value) {
+        private static Value value(@Nullable Object value) {
             Value.Builder valueBuilder = Value.newBuilder();
-            if (value instanceof String) {
+            if (value == null) {
+                valueBuilder.setNullValue(NullValue.NULL_VALUE);
+            } else if (value instanceof String) {
                 valueBuilder.setStringValue((String) value);
             } else if (value instanceof Number) {
                 valueBuilder.setNumberValue(((Number) value).doubleValue());
@@ -939,7 +946,7 @@ public class ProtoUtils_v0_3 {
                                               @Nullable Map<String, Object> metadata) {
             String name = filePart.getName().isEmpty() ? null : filePart.getName();
             if (filePart.hasFileWithBytes()) {
-                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), name, filePart.getFileWithBytes().toStringUtf8()), metadata);
+                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), name, Base64.getEncoder().encodeToString(filePart.getFileWithBytes().toByteArray())), metadata);
             } else if (filePart.hasFileWithUri()) {
                 return new FilePart_v0_3(new FileWithUri_v0_3(filePart.getMimeType(), name, filePart.getFileWithUri()), metadata);
             }
@@ -948,7 +955,7 @@ public class ProtoUtils_v0_3 {
 
         private static DataPart_v0_3 dataPart(org.a2aproject.sdk.compat03.grpc.DataPartOrBuilder dataPart,
                                               @Nullable Map<String, Object> metadata) {
-            return new DataPart_v0_3(struct(dataPart.getData()), metadata);
+            return new DataPart_v0_3(dataStruct(dataPart.getData()), metadata);
         }
 
         private static @Nullable TaskStatus_v0_3 taskStatus(org.a2aproject.sdk.compat03.grpc.TaskStatusOrBuilder taskStatus) {
@@ -1009,14 +1016,19 @@ public class ProtoUtils_v0_3 {
             if (struct == null || struct.getFieldsCount() == 0) {
                 return null;
             }
-            return struct.getFieldsMap().entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> value(e.getValue())));
+            return dataStruct(struct);
+        }
+
+        private static Map<String, Object> dataStruct(Struct struct) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            struct.getFieldsMap().forEach((key, field) -> result.put(key, value(field)));
+            return result;
         }
 
         private static @Nullable Object value(Value value) {
             switch (value.getKindCase()) {
                 case STRUCT_VALUE:
-                    return struct(value.getStructValue());
+                    return dataStruct(value.getStructValue());
                 case LIST_VALUE:
                     return value.getListValue().getValuesList().stream()
                             .map(FromProto::value)
@@ -1028,6 +1040,7 @@ public class ProtoUtils_v0_3 {
                 case STRING_VALUE:
                     return value.getStringValue();
                 case NULL_VALUE:
+                    return null;
                 default:
                     throw new InvalidRequestError_v0_3();
             }

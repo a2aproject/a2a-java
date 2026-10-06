@@ -1,19 +1,19 @@
 package org.a2aproject.sdk.client.http;
 
-import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpResponse.BodySubscribers;
+import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -23,10 +23,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import org.jspecify.annotations.Nullable;
 
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Default HTTP client implementation using JDK 11+ {@link HttpClient}.
@@ -367,11 +367,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
                         new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, response.headers().map()));
+                                response.body(), response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
                 throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
                         new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, response.headers().map()));
+                                response.body(), response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -400,11 +400,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
                         new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, response.headers().map()));
+                                response.body(), response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
                 throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
                         new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, response.headers().map()));
+                                response.body(), response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -468,11 +468,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
                         new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, response.headers().map()));
+                                response.body(), response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
                 throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
                         new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, response.headers().map()));
+                                response.body(), response.headers().map()));
             }
 
             return new JdkHttpResponse(response);

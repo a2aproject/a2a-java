@@ -6,18 +6,17 @@ import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
+import org.a2aproject.sdk.compat03.server.apps.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.apps.common.TestUtilsBean;
 import org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes;
-import org.a2aproject.sdk.compat03.server.apps.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
@@ -164,7 +163,11 @@ public class A2ATestRoutes {
 
     public void ensureTaskQueue(String taskId, RoutingContext rc) {
         try {
-            testUtilsBean.ensureQueue(taskId);
+            if (Boolean.parseBoolean(rc.request().getParam("withoutConsumer"))) {
+                testUtilsBean.ensureQueueWithoutConsumer(taskId);
+            } else {
+                testUtilsBean.ensureQueue(taskId);
+            }
             rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
