@@ -3,7 +3,6 @@ package org.a2aproject.sdk.transport.grpc.context;
 
 import static java.util.Locale.ROOT;
 
-import java.util.Locale;
 import java.util.Map;
 
 import org.a2aproject.sdk.common.A2AHeaders;
@@ -61,21 +60,21 @@ public final class GrpcContextKeys {
      * Context key for storing the complete gRPC Metadata object.
      * Provides access to all request headers and metadata.
      */
-    public static final Context.Key<io.grpc.Metadata> METADATA_KEY = 
+    public static final Context.Key<io.grpc.Metadata> METADATA_KEY =
         Context.key("grpc-metadata");
 
     /**
      * Context key for storing the method name being called.
      * Equivalent to Python's context.method() functionality.
      */
-    public static final Context.Key<String> GRPC_METHOD_NAME_KEY = 
+    public static final Context.Key<String> GRPC_METHOD_NAME_KEY =
         Context.key("grpc-method-name");
-    
+
     /**
      * Context key for storing the method name being called.
      * Equivalent to Python's context.method() functionality.
      */
-    public static final Context.Key<String> METHOD_NAME_KEY = 
+    public static final Context.Key<String> METHOD_NAME_KEY =
             Context.key("method");
 
     /**

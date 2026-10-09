@@ -321,7 +321,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
             Throwable error = errorRef.get();
             if (error instanceof IOException) {
                 throw (IOException) error;
-            } 
+            }
             if (error instanceof InterruptedException) {
                 throw (InterruptedException) error;
             }

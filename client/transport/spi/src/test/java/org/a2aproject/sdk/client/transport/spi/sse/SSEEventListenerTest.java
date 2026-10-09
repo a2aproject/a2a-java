@@ -224,7 +224,7 @@ public class SSEEventListenerTest {
         TestSSEEventListener listener = createBasicListener();
         Task task = createTask(finalState);
 
-        assertTrue(listener.shouldAutoClose(task), 
+        assertTrue(listener.shouldAutoClose(task),
                 "Task with state " + finalState + " should trigger auto-close");
     }
 
@@ -234,7 +234,7 @@ public class SSEEventListenerTest {
         TestSSEEventListener listener = createBasicListener();
         Task task = createTask(nonFinalState);
 
-        assertFalse(listener.shouldAutoClose(task), 
+        assertFalse(listener.shouldAutoClose(task),
                 "Task with state " + nonFinalState + " should not trigger auto-close");
     }
 

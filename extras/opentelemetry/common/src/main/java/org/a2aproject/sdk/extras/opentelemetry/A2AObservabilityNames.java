@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.extras.opentelemetry;
 
 public interface A2AObservabilityNames {
-    
+
     String EXTRACT_REQUEST_SYS_PROPERTY = "org.a2aproject.sdk.server.extract.request";
     String EXTRACT_RESPONSE_SYS_PROPERTY = "org.a2aproject.sdk.server.extract.response";
 

@@ -47,7 +47,7 @@ public class SSEEventListenerTest {
         // Parse the task event JSON
         String eventData = JsonStreamingMessages.STREAMING_TASK_EVENT.substring(
                 JsonStreamingMessages.STREAMING_TASK_EVENT.indexOf("{"));
-        
+
         // Call the onEvent method directly
         listener.onMessage(new ServerSentEvent(eventData), null);
 
@@ -72,7 +72,7 @@ public class SSEEventListenerTest {
         // Parse the message event JSON
         String eventData = JsonStreamingMessages.STREAMING_MESSAGE_EVENT.substring(
                 JsonStreamingMessages.STREAMING_MESSAGE_EVENT.indexOf("{"));
-        
+
         // Call onEvent method
         listener.onMessage(new ServerSentEvent(eventData), null);
 
@@ -158,7 +158,7 @@ public class SSEEventListenerTest {
         // Parse the error event JSON
         String eventData = JsonStreamingMessages.STREAMING_ERROR_EVENT.substring(
                 JsonStreamingMessages.STREAMING_ERROR_EVENT.indexOf("{"));
-        
+
         // Call onEvent method
         listener.onMessage(new ServerSentEvent(eventData), null);
 

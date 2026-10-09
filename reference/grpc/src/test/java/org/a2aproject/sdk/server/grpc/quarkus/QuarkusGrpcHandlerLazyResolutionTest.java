@@ -11,7 +11,6 @@ import org.a2aproject.sdk.server.TestInstances;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
-import org.a2aproject.sdk.transport.grpc.handler.CallContextFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

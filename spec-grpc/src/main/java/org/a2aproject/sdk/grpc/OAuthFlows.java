@@ -954,7 +954,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.AuthorizationCodeOAuthFlow, org.a2aproject.sdk.grpc.AuthorizationCodeOAuthFlow.Builder, org.a2aproject.sdk.grpc.AuthorizationCodeOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.grpc.AuthorizationCodeOAuthFlow, org.a2aproject.sdk.grpc.AuthorizationCodeOAuthFlow.Builder, org.a2aproject.sdk.grpc.AuthorizationCodeOAuthFlowOrBuilder>
         internalGetAuthorizationCodeFieldBuilder() {
       if (authorizationCodeBuilder_ == null) {
         if (!(flowCase_ == 1)) {
@@ -1132,7 +1132,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.ClientCredentialsOAuthFlow, org.a2aproject.sdk.grpc.ClientCredentialsOAuthFlow.Builder, org.a2aproject.sdk.grpc.ClientCredentialsOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.grpc.ClientCredentialsOAuthFlow, org.a2aproject.sdk.grpc.ClientCredentialsOAuthFlow.Builder, org.a2aproject.sdk.grpc.ClientCredentialsOAuthFlowOrBuilder>
         internalGetClientCredentialsFieldBuilder() {
       if (clientCredentialsBuilder_ == null) {
         if (!(flowCase_ == 2)) {
@@ -1314,7 +1314,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.ImplicitOAuthFlow, org.a2aproject.sdk.grpc.ImplicitOAuthFlow.Builder, org.a2aproject.sdk.grpc.ImplicitOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.grpc.ImplicitOAuthFlow, org.a2aproject.sdk.grpc.ImplicitOAuthFlow.Builder, org.a2aproject.sdk.grpc.ImplicitOAuthFlowOrBuilder>
         internalGetImplicitFieldBuilder() {
       if (implicitBuilder_ == null) {
         if (!(flowCase_ == 3)) {
@@ -1496,7 +1496,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.PasswordOAuthFlow, org.a2aproject.sdk.grpc.PasswordOAuthFlow.Builder, org.a2aproject.sdk.grpc.PasswordOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.grpc.PasswordOAuthFlow, org.a2aproject.sdk.grpc.PasswordOAuthFlow.Builder, org.a2aproject.sdk.grpc.PasswordOAuthFlowOrBuilder>
         internalGetPasswordFieldBuilder() {
       if (passwordBuilder_ == null) {
         if (!(flowCase_ == 4)) {
@@ -1674,7 +1674,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.DeviceCodeOAuthFlow, org.a2aproject.sdk.grpc.DeviceCodeOAuthFlow.Builder, org.a2aproject.sdk.grpc.DeviceCodeOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.grpc.DeviceCodeOAuthFlow, org.a2aproject.sdk.grpc.DeviceCodeOAuthFlow.Builder, org.a2aproject.sdk.grpc.DeviceCodeOAuthFlowOrBuilder>
         internalGetDeviceCodeFieldBuilder() {
       if (deviceCodeBuilder_ == null) {
         if (!(flowCase_ == 5)) {

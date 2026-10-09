@@ -18,9 +18,9 @@ class ServerCallContextTest {
     void testDefaultConstructor() {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
-        
+
         ServerCallContext context = new ServerCallContext(user, state, new HashSet<>());
-        
+
         assertEquals(user, context.getUser());
         assertEquals(state, context.getState());
         assertTrue(context.getRequestedExtensions().isEmpty());
@@ -32,9 +32,9 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         assertEquals(user, context.getUser());
         assertEquals(state, context.getState());
         assertEquals(requestedExtensions, context.getRequestedExtensions());
@@ -47,10 +47,10 @@ class ServerCallContextTest {
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         // Manually activate extensions since they start empty
         context.activateExtension("foo");
-        
+
         assertEquals(user, context.getUser());
         assertEquals(state, context.getState());
         assertEquals(requestedExtensions, context.getRequestedExtensions());
@@ -62,23 +62,23 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         // Initially no extensions are activated
         assertFalse(context.isExtensionActivated("foo"));
         assertFalse(context.isExtensionActivated("bar"));
-        
+
         // Activate an extension
         context.activateExtension("foo");
         assertTrue(context.isExtensionActivated("foo"));
         assertFalse(context.isExtensionActivated("bar"));
-        
+
         // Activate another extension
         context.activateExtension("bar");
         assertTrue(context.isExtensionActivated("foo"));
         assertTrue(context.isExtensionActivated("bar"));
-        
+
         // Deactivate an extension
         context.deactivateExtension("foo");
         assertFalse(context.isExtensionActivated("foo"));
@@ -90,9 +90,9 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         assertTrue(context.isExtensionRequested("foo"));
         assertTrue(context.isExtensionRequested("bar"));
         assertFalse(context.isExtensionRequested("baz"));
@@ -103,14 +103,14 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         // Modifying returned sets should not affect the context
         Set<String> returnedRequested = context.getRequestedExtensions();
         returnedRequested.add("baz");
         assertFalse(context.isExtensionRequested("baz"));
-        
+
         context.activateExtension("foo");
         Set<String> returnedActivated = context.getActivatedExtensions();
         returnedActivated.add("bar");

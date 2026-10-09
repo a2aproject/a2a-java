@@ -809,7 +809,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.Task task = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.Task, org.a2aproject.sdk.compat03.grpc.Task.Builder, org.a2aproject.sdk.compat03.grpc.TaskOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.Task, org.a2aproject.sdk.compat03.grpc.Task.Builder, org.a2aproject.sdk.compat03.grpc.TaskOrBuilder>
         internalGetTaskFieldBuilder() {
       if (taskBuilder_ == null) {
         if (!(payloadCase_ == 1)) {
@@ -951,7 +951,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.Message, org.a2aproject.sdk.compat03.grpc.Message.Builder, org.a2aproject.sdk.compat03.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.Message, org.a2aproject.sdk.compat03.grpc.Message.Builder, org.a2aproject.sdk.compat03.grpc.MessageOrBuilder>
         internalGetMsgFieldBuilder() {
       if (msgBuilder_ == null) {
         if (!(payloadCase_ == 2)) {
@@ -1093,7 +1093,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent, org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.Builder, org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEventOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent, org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.Builder, org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEventOrBuilder>
         internalGetStatusUpdateFieldBuilder() {
       if (statusUpdateBuilder_ == null) {
         if (!(payloadCase_ == 3)) {
@@ -1235,7 +1235,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent, org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.Builder, org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEventOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent, org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.Builder, org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEventOrBuilder>
         internalGetArtifactUpdateFieldBuilder() {
       if (artifactUpdateBuilder_ == null) {
         if (!(payloadCase_ == 4)) {

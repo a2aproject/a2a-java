@@ -256,12 +256,12 @@ public class AgentCardValidator {
         Set<String> agentCardTransports = getAgentCardTransports(agentCard);
         Set<String> filteredAvailableTransports = filterSkippedTransports(availableTransports);
         Set<String> filteredAgentCardTransports = filterSkippedTransports(agentCardTransports);
-        
+
         // Check for missing transports (warn if AgentCard doesn't include all available transports)
         Set<String> missingTransports = filteredAvailableTransports.stream()
                 .filter(transport -> !filteredAgentCardTransports.contains(transport))
                 .collect(Collectors.toSet());
-        
+
         if (!missingTransports.isEmpty()) {
             LOGGER.warning(String.format(
                 "AgentCard does not include all available transports. Missing: %s. " +
@@ -271,12 +271,12 @@ public class AgentCardValidator {
                 formatTransports(filteredAgentCardTransports)
             ));
         }
-        
+
         // Check for unsupported transports (error if AgentCard specifies unavailable transports)
         Set<String> unsupportedTransports = filteredAgentCardTransports.stream()
                 .filter(transport -> !filteredAvailableTransports.contains(transport))
                 .collect(Collectors.toSet());
-        
+
         if (!unsupportedTransports.isEmpty()) {
             String errorMessage = String.format(
                 "AgentCard specifies transport interfaces for unavailable transports: %s. " +
@@ -285,7 +285,7 @@ public class AgentCardValidator {
                 formatTransports(filteredAvailableTransports)
             );
             LOGGER.severe(errorMessage);
-            
+
             // Following the GitHub issue suggestion to use an error instead of warning
             throw new IllegalStateException(errorMessage);
         }
@@ -293,7 +293,7 @@ public class AgentCardValidator {
         // Validation no longer needed - supportedInterfaces is now the single source of truth
         // The first entry in supportedInterfaces is the preferred interface
     }
-    
+
     /**
      * Extracts all transport protocols specified in the AgentCard.
      *
@@ -311,13 +311,13 @@ public class AgentCardValidator {
                 }
             }
         }
-        
+
         return new HashSet<>(transportStrings);
     }
-    
+
     /**
      * Formats a set of transport protocols for logging.
-     * 
+     *
      * @param transports the transport protocols to format
      * @return formatted string representation
      */
@@ -325,7 +325,7 @@ public class AgentCardValidator {
         return transports.stream()
                 .collect(Collectors.joining(", ", "[", "]"));
     }
-    
+
     /**
      * Filters out transports that have been configured to skip validation.
      *
@@ -358,7 +358,7 @@ public class AgentCardValidator {
     /**
      * Discovers available transport endpoints using ServiceLoader.
      * This searches the classpath for implementations of TransportMetadata.
-     * 
+     *
      * @return set of available transport protocols
      */
     private static Set<String> getAvailableTransports() {

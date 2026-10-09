@@ -11,7 +11,6 @@ import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
-import org.a2aproject.sdk.client.ClientEvent;
 import org.a2aproject.sdk.client.TaskEvent;
 import org.a2aproject.sdk.client.TaskUpdateEvent;
 import org.a2aproject.sdk.server.PublicAgentCard;
@@ -24,7 +23,6 @@ import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.Task;

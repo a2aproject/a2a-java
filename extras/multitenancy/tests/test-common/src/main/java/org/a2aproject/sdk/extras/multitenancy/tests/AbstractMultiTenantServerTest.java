@@ -30,7 +30,6 @@ import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.Task;
-import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;

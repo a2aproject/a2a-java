@@ -643,7 +643,7 @@ public class A2AServerRoutes {
         try {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else if (configId == null || configId.isEmpty()) { 
+            } else if (configId == null || configId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad configuration id"));
             }else {
                 response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);

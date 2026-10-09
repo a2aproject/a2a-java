@@ -638,7 +638,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.Message, org.a2aproject.sdk.compat03.grpc.Message.Builder, org.a2aproject.sdk.compat03.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.Message, org.a2aproject.sdk.compat03.grpc.Message.Builder, org.a2aproject.sdk.compat03.grpc.MessageOrBuilder>
         internalGetRequestFieldBuilder() {
       if (requestBuilder_ == null) {
         requestBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -759,7 +759,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration, org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration.Builder, org.a2aproject.sdk.compat03.grpc.SendMessageConfigurationOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration, org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration.Builder, org.a2aproject.sdk.compat03.grpc.SendMessageConfigurationOrBuilder>
         internalGetConfigurationFieldBuilder() {
       if (configurationBuilder_ == null) {
         configurationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -880,7 +880,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>
         internalGetMetadataFieldBuilder() {
       if (metadataBuilder_ == null) {
         metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<

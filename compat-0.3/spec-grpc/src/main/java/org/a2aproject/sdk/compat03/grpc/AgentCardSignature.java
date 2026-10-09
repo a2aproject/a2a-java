@@ -74,7 +74,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       protected_ = s;
@@ -95,7 +95,7 @@ private static final long serialVersionUID = 0L;
       getProtectedBytes() {
     java.lang.Object ref = protected_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       protected_ = b;
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       signature_ = s;
@@ -142,7 +142,7 @@ private static final long serialVersionUID = 0L;
       getSignatureBytes() {
     java.lang.Object ref = signature_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       signature_ = b;
@@ -597,7 +597,7 @@ private static final long serialVersionUID = 0L;
         getProtectedBytes() {
       java.lang.Object ref = protected_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         protected_ = b;
@@ -692,7 +692,7 @@ private static final long serialVersionUID = 0L;
         getSignatureBytes() {
       java.lang.Object ref = signature_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         signature_ = b;
@@ -895,7 +895,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct header = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>
         internalGetHeaderFieldBuilder() {
       if (headerBuilder_ == null) {
         headerBuilder_ = new com.google.protobuf.SingleFieldBuilder<

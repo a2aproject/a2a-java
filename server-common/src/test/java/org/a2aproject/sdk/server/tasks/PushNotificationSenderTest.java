@@ -167,7 +167,7 @@ public class PushNotificationSenderTest {
 
         // Set up the configuration in the store
         configStore.setInfo(config);
-        
+
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 

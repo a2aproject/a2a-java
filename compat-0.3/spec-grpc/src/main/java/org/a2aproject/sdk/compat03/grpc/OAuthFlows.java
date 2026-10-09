@@ -785,7 +785,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow, org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow, org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlowOrBuilder>
         internalGetAuthorizationCodeFieldBuilder() {
       if (authorizationCodeBuilder_ == null) {
         if (!(flowCase_ == 1)) {
@@ -927,7 +927,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow, org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow, org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlowOrBuilder>
         internalGetClientCredentialsFieldBuilder() {
       if (clientCredentialsBuilder_ == null) {
         if (!(flowCase_ == 2)) {
@@ -1069,7 +1069,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow, org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow, org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlowOrBuilder>
         internalGetImplicitFieldBuilder() {
       if (implicitBuilder_ == null) {
         if (!(flowCase_ == 3)) {
@@ -1211,7 +1211,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow, org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlowOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow, org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.Builder, org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlowOrBuilder>
         internalGetPasswordFieldBuilder() {
       if (passwordBuilder_ == null) {
         if (!(flowCase_ == 4)) {

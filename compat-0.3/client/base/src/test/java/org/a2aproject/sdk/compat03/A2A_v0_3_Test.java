@@ -19,7 +19,7 @@ public class A2A_v0_3_Test {
     public void testToUserMessage() {
         String text = "Hello, world!";
         Message_v0_3 message = A2A_v0_3.toUserMessage(text);
-        
+
         assertEquals(Message_v0_3.Role.USER, message.role());
         assertEquals(1, message.parts().size());
         assertEquals(text, ((TextPart_v0_3) message.parts().get(0)).text());
@@ -33,7 +33,7 @@ public class A2A_v0_3_Test {
         String text = "Hello, world!";
         String messageId = "test-message-id";
         Message_v0_3 message = A2A_v0_3.toUserMessage(text, messageId);
-        
+
         assertEquals(Message_v0_3.Role.USER, message.role());
         assertEquals(messageId, message.messageId());
     }
@@ -42,7 +42,7 @@ public class A2A_v0_3_Test {
     public void testToAgentMessage() {
         String text = "Hello, I'm an agent!";
         Message_v0_3 message = A2A_v0_3.toAgentMessage(text);
-        
+
         assertEquals(Message_v0_3.Role.AGENT, message.role());
         assertEquals(1, message.parts().size());
         assertEquals(text, ((TextPart_v0_3) message.parts().get(0)).text());
@@ -54,7 +54,7 @@ public class A2A_v0_3_Test {
         String text = "Hello, I'm an agent!";
         String messageId = "agent-message-id";
         Message_v0_3 message = A2A_v0_3.toAgentMessage(text, messageId);
-        
+
         assertEquals(Message_v0_3.Role.AGENT, message.role());
         assertEquals(messageId, message.messageId());
     }
@@ -64,9 +64,9 @@ public class A2A_v0_3_Test {
         String text = "User message with context";
         String contextId = "context-123";
         String taskId = "task-456";
-        
+
         Message_v0_3 message = A2A_v0_3.createUserTextMessage(text, contextId, taskId);
-        
+
         assertEquals(Message_v0_3.Role.USER, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
@@ -80,9 +80,9 @@ public class A2A_v0_3_Test {
     @Test
     public void testCreateUserTextMessageWithNullParams() {
         String text = "Simple user message";
-        
+
         Message_v0_3 message = A2A_v0_3.createUserTextMessage(text, null, null);
-        
+
         assertEquals(Message_v0_3.Role.USER, message.role());
         assertNull(message.contextId());
         assertNull(message.taskId());
@@ -95,9 +95,9 @@ public class A2A_v0_3_Test {
         String text = "Agent message with context";
         String contextId = "context-789";
         String taskId = "task-012";
-        
+
         Message_v0_3 message = A2A_v0_3.createAgentTextMessage(text, contextId, taskId);
-        
+
         assertEquals(Message_v0_3.Role.AGENT, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
@@ -114,9 +114,9 @@ public class A2A_v0_3_Test {
         );
         String contextId = "context-parts";
         String taskId = "task-parts";
-        
+
         Message_v0_3 message = A2A_v0_3.createAgentPartsMessage(parts, contextId, taskId);
-        
+
         assertEquals(Message_v0_3.Role.AGENT, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());

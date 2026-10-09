@@ -68,7 +68,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       scheme_ = s;
@@ -90,7 +90,7 @@ private static final long serialVersionUID = 0L;
       getSchemeBytes() {
     java.lang.Object ref = scheme_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       scheme_ = b;
@@ -117,7 +117,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       credentials_ = s;
@@ -137,7 +137,7 @@ private static final long serialVersionUID = 0L;
       getCredentialsBytes() {
     java.lang.Object ref = credentials_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       credentials_ = b;
@@ -506,7 +506,7 @@ private static final long serialVersionUID = 0L;
         getSchemeBytes() {
       java.lang.Object ref = scheme_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         scheme_ = b;
@@ -604,7 +604,7 @@ private static final long serialVersionUID = 0L;
         getCredentialsBytes() {
       java.lang.Object ref = credentials_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         credentials_ = b;

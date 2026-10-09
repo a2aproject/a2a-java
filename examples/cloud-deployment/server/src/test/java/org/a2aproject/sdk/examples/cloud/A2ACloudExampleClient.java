@@ -269,7 +269,7 @@ public class A2ACloudExampleClient {
 
         int messageCount = 0;
         int maxMessages = CI_MODE ? MAX_MESSAGES_UNTIL_TWO_PODS : PROCESS_MESSAGE_COUNT;
-        
+
         while (messageCount < maxMessages) {
             messageCount++;
             final int messageNum = messageCount;
@@ -297,7 +297,7 @@ public class A2ACloudExampleClient {
                 });
 
                 Thread.sleep(MESSAGE_INTERVAL_MS);
-                
+
                 // In CI mode, check if we've observed 2 pods and can exit early
                 if (CI_MODE && observedPods.size() >= 2) {
                     System.out.println();

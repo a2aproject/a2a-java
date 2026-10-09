@@ -66,7 +66,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
                 return;
             }
         }
-        
+
         // Delegate to base class for common event handling and auto-close logic
         handleEvent(event, future);
     }

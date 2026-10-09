@@ -67,7 +67,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       description_ = s;
@@ -87,7 +87,7 @@ private static final long serialVersionUID = 0L;
       getDescriptionBytes() {
     java.lang.Object ref = description_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       description_ = b;
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       oauth2MetadataUrl_ = s;
@@ -174,7 +174,7 @@ private static final long serialVersionUID = 0L;
       getOauth2MetadataUrlBytes() {
     java.lang.Object ref = oauth2MetadataUrl_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       oauth2MetadataUrl_ = b;
@@ -584,7 +584,7 @@ private static final long serialVersionUID = 0L;
         getDescriptionBytes() {
       java.lang.Object ref = description_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         description_ = b;
@@ -787,7 +787,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.OAuthFlows, org.a2aproject.sdk.grpc.OAuthFlows.Builder, org.a2aproject.sdk.grpc.OAuthFlowsOrBuilder> 
+        org.a2aproject.sdk.grpc.OAuthFlows, org.a2aproject.sdk.grpc.OAuthFlows.Builder, org.a2aproject.sdk.grpc.OAuthFlowsOrBuilder>
         internalGetFlowsFieldBuilder() {
       if (flowsBuilder_ == null) {
         flowsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -835,7 +835,7 @@ private static final long serialVersionUID = 0L;
         getOauth2MetadataUrlBytes() {
       java.lang.Object ref = oauth2MetadataUrl_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         oauth2MetadataUrl_ = b;

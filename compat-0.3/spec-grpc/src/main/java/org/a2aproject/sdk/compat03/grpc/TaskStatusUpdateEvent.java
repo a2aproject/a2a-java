@@ -73,7 +73,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       taskId_ = s;
@@ -93,7 +93,7 @@ private static final long serialVersionUID = 0L;
       getTaskIdBytes() {
     java.lang.Object ref = taskId_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       taskId_ = b;
@@ -120,7 +120,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       contextId_ = s;
@@ -140,7 +140,7 @@ private static final long serialVersionUID = 0L;
       getContextIdBytes() {
     java.lang.Object ref = contextId_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       contextId_ = b;
@@ -708,7 +708,7 @@ private static final long serialVersionUID = 0L;
         getTaskIdBytes() {
       java.lang.Object ref = taskId_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         taskId_ = b;
@@ -800,7 +800,7 @@ private static final long serialVersionUID = 0L;
         getContextIdBytes() {
       java.lang.Object ref = contextId_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         contextId_ = b;
@@ -1003,7 +1003,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.TaskStatus, org.a2aproject.sdk.compat03.grpc.TaskStatus.Builder, org.a2aproject.sdk.compat03.grpc.TaskStatusOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.TaskStatus, org.a2aproject.sdk.compat03.grpc.TaskStatus.Builder, org.a2aproject.sdk.compat03.grpc.TaskStatusOrBuilder>
         internalGetStatusFieldBuilder() {
       if (statusBuilder_ == null) {
         statusBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1204,7 +1204,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>
         internalGetMetadataFieldBuilder() {
       if (metadataBuilder_ == null) {
         metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<

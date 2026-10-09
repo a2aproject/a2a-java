@@ -407,7 +407,7 @@ public class ClientBuilder {
         if (wrappers.isEmpty()) {
             LOGGER.debug("No client transport wrappers found via ServiceLoader");
             return transport;
-        } 
+        }
         LOGGER.debug(wrappers.size() + " client transport wrappers found via ServiceLoader");
 
         // Reverse to apply lowest priority first (building stack with highest priority outermost)

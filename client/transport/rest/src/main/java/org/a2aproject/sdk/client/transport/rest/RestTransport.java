@@ -239,7 +239,7 @@ public class RestTransport implements ClientTransport {
         }
     }
 
-    
+
     private String buildListTasksQueryString(ListTasksParams request) {
         java.util.List<String> queryParts = new java.util.ArrayList<>();
         if (request.contextId() != null) {

@@ -76,7 +76,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       id_ = s;
@@ -96,7 +96,7 @@ private static final long serialVersionUID = 0L;
       getIdBytes() {
     java.lang.Object ref = id_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       id_ = b;
@@ -123,7 +123,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       name_ = s;
@@ -143,7 +143,7 @@ private static final long serialVersionUID = 0L;
       getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       name_ = b;
@@ -170,7 +170,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       description_ = s;
@@ -190,7 +190,7 @@ private static final long serialVersionUID = 0L;
       getDescriptionBytes() {
     java.lang.Object ref = description_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       description_ = b;
@@ -434,7 +434,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
       getSecurityRequirementsOrBuilderList() {
     return securityRequirements_;
   }
@@ -944,7 +944,7 @@ private static final long serialVersionUID = 0L;
             securityRequirementsBuilder_ = null;
             securityRequirements_ = other.securityRequirements_;
             bitField0_ = (bitField0_ & ~0x00000080);
-            securityRequirementsBuilder_ = 
+            securityRequirementsBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSecurityRequirementsFieldBuilder() : null;
           } else {
@@ -1080,7 +1080,7 @@ private static final long serialVersionUID = 0L;
         getIdBytes() {
       java.lang.Object ref = id_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         id_ = b;
@@ -1172,7 +1172,7 @@ private static final long serialVersionUID = 0L;
         getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         name_ = b;
@@ -1264,7 +1264,7 @@ private static final long serialVersionUID = 0L;
         getDescriptionBytes() {
       java.lang.Object ref = description_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         description_ = b;
@@ -2166,7 +2166,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
          getSecurityRequirementsOrBuilderList() {
       if (securityRequirementsBuilder_ != null) {
         return securityRequirementsBuilder_.getMessageOrBuilderList();
@@ -2204,12 +2204,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement.Builder>
          getSecurityRequirementsBuilderList() {
       return internalGetSecurityRequirementsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.SecurityRequirement, org.a2aproject.sdk.grpc.SecurityRequirement.Builder, org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+        org.a2aproject.sdk.grpc.SecurityRequirement, org.a2aproject.sdk.grpc.SecurityRequirement.Builder, org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
         internalGetSecurityRequirementsFieldBuilder() {
       if (securityRequirementsBuilder_ == null) {
         securityRequirementsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<

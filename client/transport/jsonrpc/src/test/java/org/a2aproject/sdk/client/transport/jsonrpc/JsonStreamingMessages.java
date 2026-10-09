@@ -118,7 +118,7 @@ public class JsonStreamingMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -127,7 +127,7 @@ public class JsonStreamingMessages {
                   ]
                 },
                 "metadata":{
-                  
+
                 }
               }
             }""";
@@ -136,14 +136,14 @@ public class JsonStreamingMessages {
             """
             event: message
             data: {"jsonrpc":"2.0","id":1,"result":{"task":{"id":"2","contextId":"context-1234","status":{"state":"TASK_STATE_COMPLETED"},"artifacts":[{"artifactId":"artifact-1","name":"joke","parts":[{"text":"Why did the chicken cross the road? To get to the other side!"}]}],"metadata":{}}}}
-            
+
             """;
 
     static final String TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE =
             """
             event: message
             data: {"jsonrpc":"2.0","id":1,"result":{"task":{"id":"2","contextId":"context-1234","status":{"state":"TASK_STATE_COMPLETED"},"artifacts":[{"artifactId":"artifact-1","name":"joke","parts":[{"text":"Why did the chicken cross the road? To get to the other side!"}]}],"metadata":{}}}}
-            
+
             """;
 
     public static final String TASK_SUBSCRIPTION_TEST_REQUEST = """

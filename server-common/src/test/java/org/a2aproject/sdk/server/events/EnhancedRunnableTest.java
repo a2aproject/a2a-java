@@ -22,21 +22,21 @@ public class EnhancedRunnableTest {
                 // Empty
             }
         };
-        
+
         // Add callback before start - should succeed
         AtomicBoolean called = new AtomicBoolean(false);
         runnable.addDoneCallback((r) -> called.set(true));
-        
+
         // Mark as started
         runnable.markStarted();
-        
+
         // Try to add callback after start - should fail
         IllegalStateException exception = assertThrows(IllegalStateException.class,
             () -> runnable.addDoneCallback((r) -> {}));
-        
+
         assertTrue(exception.getMessage().contains("Cannot add callback after runnable has started"));
     }
-    
+
     @Test
     public void testCallbacksInvokedAfterCompletion() throws Exception {
         EnhancedRunnable runnable = new EnhancedRunnable() {
@@ -45,18 +45,18 @@ public class EnhancedRunnableTest {
                 // Empty
             }
         };
-        
+
         AtomicBoolean callback1Called = new AtomicBoolean(false);
         AtomicBoolean callback2Called = new AtomicBoolean(false);
-        
+
         runnable.addDoneCallback((r) -> callback1Called.set(true));
         runnable.addDoneCallback((r) -> callback2Called.set(true));
         runnable.markStarted();
-        
+
         CompletableFuture.runAsync(runnable, Executors.newSingleThreadExecutor())
             .thenRun(runnable::invokeDoneCallbacks)
             .get();
-        
+
         assertTrue(callback1Called.get());
         assertTrue(callback2Called.get());
     }
@@ -69,17 +69,17 @@ public class EnhancedRunnableTest {
                 // Empty
             }
         };
-        
+
         // Should be able to add multiple callbacks before start
         assertDoesNotThrow(() -> {
             runnable.addDoneCallback((r) -> {});
             runnable.addDoneCallback((r) -> {});
             runnable.addDoneCallback((r) -> {});
         });
-        
+
         // Mark as started
         runnable.markStarted();
-        
+
         // Now adding should fail
         assertThrows(IllegalStateException.class,
             () -> runnable.addDoneCallback((r) -> {}));
@@ -93,22 +93,22 @@ public class EnhancedRunnableTest {
                 throw new RuntimeException("Test error");
             }
         };
-        
+
         AtomicBoolean callbackInvoked = new AtomicBoolean(false);
         runnable.addDoneCallback((r) -> {
             callbackInvoked.set(true);
             assertNotNull(r.getError());
             assertEquals("Test error", r.getError().getMessage());
         });
-        
+
         runnable.markStarted();
-        
+
         try {
             runnable.run();
         } catch (RuntimeException e) {
             runnable.setError(e);
         }
-        
+
         runnable.invokeDoneCallbacks();
         assertTrue(callbackInvoked.get());
     }
@@ -121,14 +121,14 @@ public class EnhancedRunnableTest {
                 // Empty
             }
         };
-        
+
         // Should be able to call markStarted multiple times
         assertDoesNotThrow(() -> {
             runnable.markStarted();
             runnable.markStarted();
             runnable.markStarted();
         });
-        
+
         // But callbacks should still be blocked
         assertThrows(IllegalStateException.class,
             () -> runnable.addDoneCallback((r) -> {}));
