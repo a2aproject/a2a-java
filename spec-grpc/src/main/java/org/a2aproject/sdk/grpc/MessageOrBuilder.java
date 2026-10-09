@@ -96,7 +96,7 @@ public interface MessageOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.Part> 
+  java.util.List<org.a2aproject.sdk.grpc.Part>
       getPartsList();
   /**
    * <pre>
@@ -121,7 +121,7 @@ public interface MessageOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.PartOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.PartOrBuilder>
       getPartsOrBuilderList();
   /**
    * <pre>

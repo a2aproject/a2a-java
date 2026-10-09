@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;

@@ -73,7 +73,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       id_ = s;
@@ -94,7 +94,7 @@ private static final long serialVersionUID = 0L;
       getIdBytes() {
     java.lang.Object ref = id_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       id_ = b;
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       contextId_ = s;
@@ -143,7 +143,7 @@ private static final long serialVersionUID = 0L;
       getContextIdBytes() {
     java.lang.Object ref = contextId_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       contextId_ = b;
@@ -213,7 +213,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.ArtifactOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.ArtifactOrBuilder>
       getArtifactsOrBuilderList() {
     return artifacts_;
   }
@@ -276,7 +276,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.MessageOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.MessageOrBuilder>
       getHistoryOrBuilderList() {
     return history_;
   }
@@ -779,7 +779,7 @@ private static final long serialVersionUID = 0L;
             artifactsBuilder_ = null;
             artifacts_ = other.artifacts_;
             bitField0_ = (bitField0_ & ~0x00000008);
-            artifactsBuilder_ = 
+            artifactsBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetArtifactsFieldBuilder() : null;
           } else {
@@ -805,7 +805,7 @@ private static final long serialVersionUID = 0L;
             historyBuilder_ = null;
             history_ = other.history_;
             bitField0_ = (bitField0_ & ~0x00000010);
-            historyBuilder_ = 
+            historyBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetHistoryFieldBuilder() : null;
           } else {
@@ -944,7 +944,7 @@ private static final long serialVersionUID = 0L;
         getIdBytes() {
       java.lang.Object ref = id_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         id_ = b;
@@ -1041,7 +1041,7 @@ private static final long serialVersionUID = 0L;
         getContextIdBytes() {
       java.lang.Object ref = contextId_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         contextId_ = b;
@@ -1247,7 +1247,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.TaskStatus, org.a2aproject.sdk.grpc.TaskStatus.Builder, org.a2aproject.sdk.grpc.TaskStatusOrBuilder> 
+        org.a2aproject.sdk.grpc.TaskStatus, org.a2aproject.sdk.grpc.TaskStatus.Builder, org.a2aproject.sdk.grpc.TaskStatusOrBuilder>
         internalGetStatusFieldBuilder() {
       if (statusBuilder_ == null) {
         statusBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1515,7 +1515,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.ArtifactOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.ArtifactOrBuilder>
          getArtifactsOrBuilderList() {
       if (artifactsBuilder_ != null) {
         return artifactsBuilder_.getMessageOrBuilderList();
@@ -1553,12 +1553,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.Artifact.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.Artifact.Builder>
          getArtifactsBuilderList() {
       return internalGetArtifactsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.Artifact, org.a2aproject.sdk.grpc.Artifact.Builder, org.a2aproject.sdk.grpc.ArtifactOrBuilder> 
+        org.a2aproject.sdk.grpc.Artifact, org.a2aproject.sdk.grpc.Artifact.Builder, org.a2aproject.sdk.grpc.ArtifactOrBuilder>
         internalGetArtifactsFieldBuilder() {
       if (artifactsBuilder_ == null) {
         artifactsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -1842,7 +1842,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.MessageOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.MessageOrBuilder>
          getHistoryOrBuilderList() {
       if (historyBuilder_ != null) {
         return historyBuilder_.getMessageOrBuilderList();
@@ -1883,12 +1883,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.Message.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.Message.Builder>
          getHistoryBuilderList() {
       return internalGetHistoryFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder>
         internalGetHistoryFieldBuilder() {
       if (historyBuilder_ == null) {
         historyBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -2055,7 +2055,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>
         internalGetMetadataFieldBuilder() {
       if (metadataBuilder_ == null) {
         metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<

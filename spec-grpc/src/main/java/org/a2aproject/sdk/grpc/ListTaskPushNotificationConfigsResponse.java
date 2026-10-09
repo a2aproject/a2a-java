@@ -72,7 +72,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder>
       getConfigsOrBuilderList() {
     return configs_;
   }
@@ -128,7 +128,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       nextPageToken_ = s;
@@ -148,7 +148,7 @@ private static final long serialVersionUID = 0L;
       getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       nextPageToken_ = b;
@@ -455,7 +455,7 @@ private static final long serialVersionUID = 0L;
             configsBuilder_ = null;
             configs_ = other.configs_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            configsBuilder_ = 
+            configsBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetConfigsFieldBuilder() : null;
           } else {
@@ -784,7 +784,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder>
          getConfigsOrBuilderList() {
       if (configsBuilder_ != null) {
         return configsBuilder_.getMessageOrBuilderList();
@@ -822,12 +822,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder>
          getConfigsBuilderList() {
       return internalGetConfigsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.TaskPushNotificationConfig, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder, org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder> 
+        org.a2aproject.sdk.grpc.TaskPushNotificationConfig, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder, org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder>
         internalGetConfigsFieldBuilder() {
       if (configsBuilder_ == null) {
         configsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -874,7 +874,7 @@ private static final long serialVersionUID = 0L;
         getNextPageTokenBytes() {
       java.lang.Object ref = nextPageToken_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         nextPageToken_ = b;

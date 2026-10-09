@@ -28,7 +28,7 @@ public class TckAgentCardProducer {
         String sutJsonRpcUrl = String.format("http://%s", HOST);
         String sutRestUrl = sutJsonRpcUrl;
         String sutGrpcUrl = GRPC_HOST;
-        
+
         return AgentCard.builder()
                 .name("A2A Java SDK System Under Test (SUT)")
                 .description("Auto-generated System Under Test for A2A TCK conformance")

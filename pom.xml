@@ -49,7 +49,7 @@
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <maven-checkstyle-plugin.version>3.5.0</maven-checkstyle-plugin.version>
-        <checkstyle.failOnViolation>false</checkstyle.failOnViolation>
+        <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
         <checkstyle.version>9.3</checkstyle.version>
         <gmavenplus-plugin.version>5.1.0</gmavenplus-plugin.version>
         <sonatype-central-publishing-plugin.version>0.11.0</sonatype-central-publishing-plugin.version>

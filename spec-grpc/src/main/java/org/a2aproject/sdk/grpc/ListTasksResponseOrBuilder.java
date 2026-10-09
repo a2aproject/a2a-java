@@ -17,7 +17,7 @@ public interface ListTasksResponseOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.Task> 
+  java.util.List<org.a2aproject.sdk.grpc.Task>
       getTasksList();
   /**
    * <pre>
@@ -42,7 +42,7 @@ public interface ListTasksResponseOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.TaskOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.TaskOrBuilder>
       getTasksOrBuilderList();
   /**
    * <pre>

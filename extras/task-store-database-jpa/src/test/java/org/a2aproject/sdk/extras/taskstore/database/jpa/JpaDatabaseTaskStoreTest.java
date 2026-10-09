@@ -58,7 +58,7 @@ public class JpaDatabaseTaskStoreTest {
 
         // Retrieve the task
         Task retrieved = taskStore.get("test-task-1");
-        
+
         assertNotNull(retrieved);
         assertEquals("test-task-1", retrieved.id());
         assertEquals("test-context-1", retrieved.contextId());
@@ -107,7 +107,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("test-context-3")
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
-        
+
         taskStore.save(initialTask, false);
 
         // Update the task
@@ -116,12 +116,12 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("test-context-3")
                 .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
-        
+
         taskStore.save(updatedTask, false);
 
         // Retrieve and verify the update
         Task retrieved = taskStore.get("test-task-3");
-        
+
         assertNotNull(retrieved);
         assertEquals("test-task-3", retrieved.id());
         assertEquals(TaskState.TASK_STATE_COMPLETED, retrieved.status().state());
@@ -143,7 +143,7 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("test-context-4")
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
-        
+
         taskStore.save(task, false);
 
         // Verify it exists
@@ -171,7 +171,7 @@ public class JpaDatabaseTaskStoreTest {
         metadata.put("key1", "value1");
         metadata.put("key2", 42);
         metadata.put("key3", true);
-        
+
         Task task = Task.builder()
                 .id("test-task-5")
                 .contextId("test-context-5")
@@ -182,7 +182,7 @@ public class JpaDatabaseTaskStoreTest {
         // Save and retrieve
         taskStore.save(task, false);
         Task retrieved = taskStore.get("test-task-5");
-        
+
         assertNotNull(retrieved);
         assertEquals("test-task-5", retrieved.id());
         assertNotNull(retrieved.metadata());
@@ -200,13 +200,13 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
-        
+
         taskStore.save(task, false);
-        
+
         // Task should be active (not in final state)
         JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
         boolean isActive = jpaDatabaseTaskStore.isTaskActive("test-task-active-1");
-        
+
         assertEquals(true, isActive, "Non-final task should be active");
     }
 
@@ -219,22 +219,22 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
-        
+
         taskStore.save(task, false);
-        
+
         // Update to final state
         Task finalTask = Task.builder()
                 .id("test-task-active-2")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
-        
+
         taskStore.save(finalTask, false);
-        
+
         // Task should be active (within grace period - default 15 seconds)
         JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
         boolean isActive = jpaDatabaseTaskStore.isTaskActive("test-task-active-2");
-        
+
         assertEquals(true, isActive, "Final task within grace period should be active");
     }
 
@@ -247,28 +247,28 @@ public class JpaDatabaseTaskStoreTest {
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
-        
+
         taskStore.save(task, false);
-        
+
         // Directly update the finalizedAt timestamp to 20 seconds in the past
         // (beyond the default 15-second grace period)
         JpaTask jpaTask = entityManager.find(JpaTask.class, "test-task-active-3");
         assertNotNull(jpaTask);
-        
+
         // Manually set finalizedAt to 20 seconds in the past
         java.time.Instant pastTime = java.time.Instant.now().minusSeconds(20);
         entityManager.createQuery("UPDATE JpaTask j SET j.finalizedAt = :finalizedAt WHERE j.id = :id")
                 .setParameter("finalizedAt", pastTime)
                 .setParameter("id", "test-task-active-3")
                 .executeUpdate();
-        
+
         entityManager.flush();
         entityManager.clear(); // Clear persistence context to force fresh read
-        
+
         // Task should be inactive (beyond grace period)
         JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
         boolean isActive = jpaDatabaseTaskStore.isTaskActive("test-task-active-3");
-        
+
         assertEquals(false, isActive, "Final task beyond grace period should be inactive");
     }
 

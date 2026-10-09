@@ -74,7 +74,7 @@ class InMemoryPushNotificationConfigStoreTest {
         verify(mockPostBuilder).post();
         // Verify that addHeader was never called for authentication token
         verify(mockPostBuilder, never()).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, expectedToken);
-        
+
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
@@ -332,7 +332,7 @@ class InMemoryPushNotificationConfigStoreTest {
         // Verify that the token is included in request headers as X-A2A-Notification-Token
         verify(mockPostBuilder).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, config.token());
         verify(mockPostBuilder).post();
-        
+
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));

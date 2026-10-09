@@ -173,7 +173,7 @@ public record APIKeySecurityScheme(Location location, String name, @Nullable
          * @throws IllegalArgumentException if location or name is null
          */
         public APIKeySecurityScheme build() {
-            return new APIKeySecurityScheme(Assert.checkNotNullParam("location", location), 
+            return new APIKeySecurityScheme(Assert.checkNotNullParam("location", location),
                     Assert.checkNotNullParam("name", name), description);
         }
     }

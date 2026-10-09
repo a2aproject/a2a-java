@@ -868,7 +868,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.Task, org.a2aproject.sdk.grpc.Task.Builder, org.a2aproject.sdk.grpc.TaskOrBuilder> 
+        org.a2aproject.sdk.grpc.Task, org.a2aproject.sdk.grpc.Task.Builder, org.a2aproject.sdk.grpc.TaskOrBuilder>
         internalGetTaskFieldBuilder() {
       if (taskBuilder_ == null) {
         if (!(payloadCase_ == 1)) {
@@ -1046,7 +1046,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder>
         internalGetMessageFieldBuilder() {
       if (messageBuilder_ == null) {
         if (!(payloadCase_ == 2)) {
@@ -1224,7 +1224,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.TaskStatusUpdateEvent, org.a2aproject.sdk.grpc.TaskStatusUpdateEvent.Builder, org.a2aproject.sdk.grpc.TaskStatusUpdateEventOrBuilder> 
+        org.a2aproject.sdk.grpc.TaskStatusUpdateEvent, org.a2aproject.sdk.grpc.TaskStatusUpdateEvent.Builder, org.a2aproject.sdk.grpc.TaskStatusUpdateEventOrBuilder>
         internalGetStatusUpdateFieldBuilder() {
       if (statusUpdateBuilder_ == null) {
         if (!(payloadCase_ == 3)) {
@@ -1402,7 +1402,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent, org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent.Builder, org.a2aproject.sdk.grpc.TaskArtifactUpdateEventOrBuilder> 
+        org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent, org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent.Builder, org.a2aproject.sdk.grpc.TaskArtifactUpdateEventOrBuilder>
         internalGetArtifactUpdateFieldBuilder() {
       if (artifactUpdateBuilder_ == null) {
         if (!(payloadCase_ == 4)) {

@@ -687,7 +687,7 @@ public class RestHandler {
             validate(body);
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
+            LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})",
                     body != null ? body.length() : 0);
             LOGGER.log(Level.SEVERE, "Parse error details", e);
             throw new InvalidParamsError("Failed to parse request body: " + e.getMessage());

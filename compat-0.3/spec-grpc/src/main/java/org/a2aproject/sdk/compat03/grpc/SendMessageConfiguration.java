@@ -879,7 +879,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.PushNotificationConfig, org.a2aproject.sdk.compat03.grpc.PushNotificationConfig.Builder, org.a2aproject.sdk.compat03.grpc.PushNotificationConfigOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.PushNotificationConfig, org.a2aproject.sdk.compat03.grpc.PushNotificationConfig.Builder, org.a2aproject.sdk.compat03.grpc.PushNotificationConfigOrBuilder>
         internalGetPushNotificationFieldBuilder() {
       if (pushNotificationBuilder_ == null) {
         pushNotificationBuilder_ = new com.google.protobuf.SingleFieldBuilder<

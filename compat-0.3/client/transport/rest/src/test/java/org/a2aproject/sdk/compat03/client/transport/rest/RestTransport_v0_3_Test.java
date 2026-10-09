@@ -128,7 +128,7 @@ public class RestTransport_v0_3_Test {
                 );
         MessageSendParams_v0_3 messageSendParams = new MessageSendParams_v0_3(message, null, null);
         ClientCallContext_v0_3 context = null;
-        
+
         RestTransport_v0_3 instance = new RestTransport_v0_3(CARD);
         EventKind_v0_3 result = instance.sendMessage(messageSendParams, context);
         assertEquals("task", result.kind());
@@ -408,7 +408,7 @@ public class RestTransport_v0_3_Test {
     @Test
     public void testResubscribe() throws Exception {
         LOGGER.info("Testing resubscribe");
-        
+
         this.server.when(
                         request()
                                 .withMethod("POST")

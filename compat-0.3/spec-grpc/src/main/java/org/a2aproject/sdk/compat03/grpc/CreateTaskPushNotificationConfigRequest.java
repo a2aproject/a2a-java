@@ -69,7 +69,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       parent_ = s;
@@ -90,7 +90,7 @@ private static final long serialVersionUID = 0L;
       getParentBytes() {
     java.lang.Object ref = parent_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       parent_ = b;
@@ -113,7 +113,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       configId_ = s;
@@ -129,7 +129,7 @@ private static final long serialVersionUID = 0L;
       getConfigIdBytes() {
     java.lang.Object ref = configId_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       configId_ = b;
@@ -567,7 +567,7 @@ private static final long serialVersionUID = 0L;
         getParentBytes() {
       java.lang.Object ref = parent_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         parent_ = b;
@@ -654,7 +654,7 @@ private static final long serialVersionUID = 0L;
         getConfigIdBytes() {
       java.lang.Object ref = configId_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         configId_ = b;
@@ -809,7 +809,7 @@ private static final long serialVersionUID = 0L;
      * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder> 
+        org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder>
         internalGetConfigFieldBuilder() {
       if (configBuilder_ == null) {
         configBuilder_ = new com.google.protobuf.SingleFieldBuilder<

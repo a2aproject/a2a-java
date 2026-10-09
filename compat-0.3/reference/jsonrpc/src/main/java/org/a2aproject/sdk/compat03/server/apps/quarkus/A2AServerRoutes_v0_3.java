@@ -30,7 +30,6 @@ import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;

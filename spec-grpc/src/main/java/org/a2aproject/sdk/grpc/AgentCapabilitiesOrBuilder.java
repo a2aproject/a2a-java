@@ -55,7 +55,7 @@ public interface AgentCapabilitiesOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.AgentExtension> 
+  java.util.List<org.a2aproject.sdk.grpc.AgentExtension>
       getExtensionsList();
   /**
    * <pre>
@@ -80,7 +80,7 @@ public interface AgentCapabilitiesOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.AgentExtensionOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.AgentExtensionOrBuilder>
       getExtensionsOrBuilderList();
   /**
    * <pre>

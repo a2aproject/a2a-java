@@ -25,7 +25,7 @@ import org.a2aproject.sdk.spec.Task;
  * client.addConsumer((event, agentCard) -> {
  *     if (event instanceof TaskEvent te) {
  *         Task task = te.getTask();
- *         
+ *
  *         // Check task state
  *         TaskState state = task.status().state();
  *         switch (state) {

@@ -77,7 +77,7 @@ public interface ArtifactOrBuilder extends
    *
    * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.Part> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.Part>
       getPartsList();
   /**
    * <pre>
@@ -102,7 +102,7 @@ public interface ArtifactOrBuilder extends
    *
    * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.PartOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.PartOrBuilder>
       getPartsOrBuilderList();
   /**
    * <pre>

@@ -3,7 +3,6 @@ package org.a2aproject.sdk.compat03.conversion;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.quarkus.test.junit.QuarkusTestProfile;
 
 public class TaskAuthorizationTestProfile_v0_3 extends AuthTestProfile_v0_3 {
 

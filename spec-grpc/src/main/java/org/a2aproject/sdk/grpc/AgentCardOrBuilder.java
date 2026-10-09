@@ -63,7 +63,7 @@ public interface AgentCardOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.AgentInterface> 
+  java.util.List<org.a2aproject.sdk.grpc.AgentInterface>
       getSupportedInterfacesList();
   /**
    * <pre>
@@ -88,7 +88,7 @@ public interface AgentCardOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder>
       getSupportedInterfacesOrBuilderList();
   /**
    * <pre>
@@ -266,7 +266,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement> 
+  java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement>
       getSecurityRequirementsList();
   /**
    * <pre>
@@ -291,7 +291,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
       getSecurityRequirementsOrBuilderList();
   /**
    * <pre>
@@ -402,7 +402,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.AgentSkill> 
+  java.util.List<org.a2aproject.sdk.grpc.AgentSkill>
       getSkillsList();
   /**
    * <pre>
@@ -433,7 +433,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.AgentSkillOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.AgentSkillOrBuilder>
       getSkillsOrBuilderList();
   /**
    * <pre>
@@ -454,7 +454,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.AgentCardSignature> 
+  java.util.List<org.a2aproject.sdk.grpc.AgentCardSignature>
       getSignaturesList();
   /**
    * <pre>
@@ -479,7 +479,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder>
       getSignaturesOrBuilderList();
   /**
    * <pre>

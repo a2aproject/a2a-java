@@ -21,7 +21,7 @@ public class ResourceNameParser {
     /**
      * Define the task name form its taskId as in "tasks/{taskId}".
      *
-     * @param taskId the taskId 
+     * @param taskId the taskId
      * @return the task name
      */
     public static String defineTaskName(String taskId) {

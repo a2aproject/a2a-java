@@ -31,7 +31,6 @@ import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
-import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.testutils.docker.RequiresDocker;
@@ -83,14 +82,14 @@ public class MultiInstanceReplicationTest {
     public static void setup() {
         // Create a shared network for all containers
         network = Network.newNetwork();
-        
+
         // Start Kafka container
         kafka = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE))
                 .withNetwork(network)
                 .withNetworkAliases("kafka")
                 .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
         kafka.start();
-        
+
         // Start PostgreSQL container
         postgres = new PostgreSQLContainer<>(DockerImageName.parse(POSTGRES_IMAGE))
                 .withNetwork(network)

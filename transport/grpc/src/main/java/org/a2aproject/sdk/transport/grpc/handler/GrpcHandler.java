@@ -697,14 +697,14 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             // This provides proper equivalence to Python's ServicerContext for metadata access
             // Note: StreamObserver is still stored for response handling
             state.put("grpc_response_observer", responseObserver);
-            
+
             // Add rich gRPC context information if available (set by interceptor)
             // This provides equivalent functionality to Python's grpc.aio.ServicerContext
             try {
                 Context currentContext = Context.current();
                 if (currentContext != null) {
                     state.put("grpc_context", currentContext);
-                    
+
                     // Add specific context information for easy access
                     io.grpc.Metadata grpcMetadata = GrpcContextKeys.METADATA_KEY.get(currentContext);
                     if (grpcMetadata != null) {
@@ -719,7 +719,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                     if (methodName != null) {
                         state.put("grpc_method_name", methodName);
                     }
-                    
+
                     String peerInfo = GrpcContextKeys.PEER_INFO_KEY.get(currentContext);
                     if (peerInfo != null) {
                         state.put("grpc_peer_info", peerInfo);
@@ -729,7 +729,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 // Context not available - continue without it
                 LOGGER.fine(() -> "Error getting data from current context" + e);
             }
-            
+
             // Extract requested protocol version from gRPC context (set by interceptor)
             // Default to current version since gRPC only handles 1.0 protocol
             String requestedVersion = getVersionFromContext();
@@ -1019,10 +1019,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * Utility methods for accessing gRPC context information.
      * These provide equivalent functionality to Python's grpc.aio.ServicerContext methods.
      */
-    
+
     /**
      * Generic helper method to safely access gRPC context values.
-     * 
+     *
      * @param key the context key to retrieve
      * @return the context value, or null if not available
      */
@@ -1034,31 +1034,31 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             return null;
         }
     }
-    
+
     /**
      * Gets the complete gRPC metadata from the current context.
      * Equivalent to Python's context.invocation_metadata.
-     * 
+     *
      * @return the gRPC Metadata object, or null if not available
      */
     protected static io.grpc.@Nullable Metadata getCurrentMetadata() {
         return getFromContext(GrpcContextKeys.METADATA_KEY);
     }
-    
+
     /**
      * Gets the current gRPC method name.
      * Equivalent to Python's context.method().
-     * 
+     *
      * @return the method name, or null if not available
      */
     protected static @Nullable String getCurrentMethodName() {
         return getFromContext(GrpcContextKeys.GRPC_METHOD_NAME_KEY);
     }
-    
+
     /**
      * Gets the peer information for the current gRPC call.
      * Equivalent to Python's context.peer().
-     * 
+     *
      * @return the peer information, or null if not available
      */
     protected static @Nullable String getCurrentPeerInfo() {

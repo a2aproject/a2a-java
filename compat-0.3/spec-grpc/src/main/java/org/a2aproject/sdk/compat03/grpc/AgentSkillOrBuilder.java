@@ -263,7 +263,7 @@ public interface AgentSkillOrBuilder extends
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.Security> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.Security>
       getSecurityList();
   /**
    * <pre>
@@ -300,7 +300,7 @@ public interface AgentSkillOrBuilder extends
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.SecurityOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.SecurityOrBuilder>
       getSecurityOrBuilderList();
   /**
    * <pre>

@@ -308,13 +308,13 @@ class ReplicatedQueueManagerTest {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(numThreads);
-        
+
         // Use CyclicBarrier for better thread synchronization
         // This ensures all threads start their work at approximately the same time
         java.util.concurrent.CyclicBarrier barrier = new java.util.concurrent.CyclicBarrier(numThreads);
 
         // Track processed events for better diagnostics on failure
-        java.util.concurrent.CopyOnWriteArrayList<org.a2aproject.sdk.spec.Event> processedEvents = 
+        java.util.concurrent.CopyOnWriteArrayList<org.a2aproject.sdk.spec.Event> processedEvents =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 
         // Set up callback to wait for ALL events to be processed by MainEventBusProcessor
@@ -394,11 +394,11 @@ class ReplicatedQueueManagerTest {
         startLatch.countDown();
 
         // Wait for all threads to complete with explicit timeout
-        assertTrue(doneLatch.await(10, TimeUnit.SECONDS), 
+        assertTrue(doneLatch.await(10, TimeUnit.SECONDS),
                 "All " + numThreads + " threads should complete within 10 seconds");
 
         executor.shutdown();
-        assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS), 
+        assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS),
                 "Executor should shutdown within 5 seconds");
 
         // Wait for MainEventBusProcessor to process all events
