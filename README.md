@@ -67,6 +67,7 @@ Community contributed integrations with various Java runtimes:
 
 * **Quarkus** — This project contains the reference implementations for JSON-RPC, gRPC, and HTTP+JSON (REST) transports.
 * **Jakarta EE** — [a2a-jakarta](https://github.com/wildfly-extras/a2a-jakarta) works with any runtime supporting the [Jakarta EE Web Profile](https://jakarta.ee/specifications/webprofile/).
+* **Spring Boot (Erupt)** — [Erupt](https://github.com/erupts/erupt) exposes A2A server agents from Spring Boot 3 applications, registering AgentCards and AgentExecutors from `@Erupt` / `@AiToolbox` annotations, with an admin UI for managing agents and tool permissions.
 
 To contribute an integration, see [CONTRIBUTING_INTEGRATIONS.md](CONTRIBUTING_INTEGRATIONS.md).
 
