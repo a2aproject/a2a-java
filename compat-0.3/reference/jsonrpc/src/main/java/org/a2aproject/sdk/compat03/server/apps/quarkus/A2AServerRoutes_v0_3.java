@@ -17,7 +17,6 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.ForbiddenException;
@@ -30,23 +29,18 @@ import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
-import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
-import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCErrorResponse_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCMessage_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.NonStreamingJSONRPCRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
@@ -55,6 +49,7 @@ import org.a2aproject.sdk.compat03.spec.StreamingJSONRPCRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
 import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3;
+import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCRequestDecoder_v0_3;
 import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -131,7 +126,7 @@ public class A2AServerRoutes_v0_3 {
     }
 
     @Authenticated
-    public void invokeJSONRPCHandler(String body, RoutingContext rc) {
+    public void invokeJSONRPCHandler(@Nullable String body, RoutingContext rc) {
         boolean streaming = false;
         ServerCallContext context = createCallContext(rc);
         JSONRPCResponse_v0_3<?> nonStreamingResponse = null;
@@ -139,48 +134,23 @@ public class A2AServerRoutes_v0_3 {
         JSONRPCErrorResponse_v0_3 error = null;
         Object requestId = null;
         try {
-            com.google.gson.JsonObject node;
-            try {
-                node = JsonParser.parseString(body).getAsJsonObject();
-            } catch (Exception e) {
-                throw new JSONParseError_v0_3(e.getMessage());
+            JSONRPCRequestDecoder_v0_3.DecodeResult result = JSONRPCRequestDecoder_v0_3.decode(body);
+            if (result instanceof JSONRPCRequestDecoder_v0_3.DecodeFailure failure) {
+                requestId = failure.requestId();
+                if (failure.methodName() != null) {
+                    context.getState().put(METHOD_NAME_KEY, failure.methodName());
+                }
+                throw failure.error();
             }
-
-            // Extract id field early so error responses can include it
-            com.google.gson.JsonElement idElement = node.get("id");
-            if (idElement != null && !idElement.isJsonNull() && !idElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: 'id' must be a string, number, or null");
-            }
-            if (idElement != null && !idElement.isJsonNull() && idElement.isJsonPrimitive()) {
-                com.google.gson.JsonPrimitive idPrimitive = idElement.getAsJsonPrimitive();
-                requestId = idPrimitive.isNumber() ? idPrimitive.getAsLong() : idPrimitive.getAsString();
-            }
-
-            // Validate jsonrpc field
-            com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
-            if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
-                    || !JSONRPCMessage_v0_3.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
-            }
-
-            // Validate method field
-            com.google.gson.JsonElement methodElement = node.get("method");
-            if (methodElement == null || !methodElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'method' field");
-            }
-
-            String methodName = methodElement.getAsString();
-            context.getState().put(METHOD_NAME_KEY, methodName);
-
-            streaming = SendStreamingMessageRequest_v0_3.METHOD.equals(methodName)
-                    || TaskResubscriptionRequest_v0_3.METHOD.equals(methodName);
-
-            if (streaming) {
-                StreamingJSONRPCRequest_v0_3<?> request = deserializeStreamingRequest(body, methodName);
+            JSONRPCRequestDecoder_v0_3.DecodedRequest decoded = (JSONRPCRequestDecoder_v0_3.DecodedRequest) result;
+            requestId = decoded.requestId();
+            context.getState().put(METHOD_NAME_KEY, decoded.methodName());
+            if (decoded.request() instanceof StreamingJSONRPCRequest_v0_3<?> request) {
+                streaming = true;
                 streamingResponse = processStreamingRequest(request, context);
             } else {
-                NonStreamingJSONRPCRequest_v0_3<?> request = deserializeNonStreamingRequest(body, methodName);
-                nonStreamingResponse = processNonStreamingRequest(request, context);
+                nonStreamingResponse = processNonStreamingRequest(
+                        (NonStreamingJSONRPCRequest_v0_3<?>) decoded.request(), context);
             }
         } catch (JSONRPCError_v0_3 e) {
             error = new JSONRPCErrorResponse_v0_3(requestId, e);
@@ -210,40 +180,6 @@ public class A2AServerRoutes_v0_3 {
 
     private static String formatSseEvent(Object data, long id) {
         return "data: " + Utils_v0_3.toJsonString(data) + "\nid: " + id + "\n\n";
-    }
-
-    private NonStreamingJSONRPCRequest_v0_3<?> deserializeNonStreamingRequest(String body, String methodName) {
-        try {
-            return switch (methodName) {
-                case GetTaskRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, GetTaskRequest_v0_3.class);
-                case CancelTaskRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, CancelTaskRequest_v0_3.class);
-                case SendMessageRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, SendMessageRequest_v0_3.class);
-                case SetTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, SetTaskPushNotificationConfigRequest_v0_3.class);
-                case GetTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, GetTaskPushNotificationConfigRequest_v0_3.class);
-                case ListTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, ListTaskPushNotificationConfigRequest_v0_3.class);
-                case DeleteTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, DeleteTaskPushNotificationConfigRequest_v0_3.class);
-                case GetAuthenticatedExtendedCardRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, GetAuthenticatedExtendedCardRequest_v0_3.class);
-                default -> throw new MethodNotFoundError_v0_3();
-            };
-        } catch (JSONRPCError_v0_3 e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvalidParamsError_v0_3(e.getMessage());
-        }
-    }
-
-    private StreamingJSONRPCRequest_v0_3<?> deserializeStreamingRequest(String body, String methodName) {
-        try {
-            return switch (methodName) {
-                case SendStreamingMessageRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, SendStreamingMessageRequest_v0_3.class);
-                case TaskResubscriptionRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, TaskResubscriptionRequest_v0_3.class);
-                default -> throw new MethodNotFoundError_v0_3();
-            };
-        } catch (JSONRPCError_v0_3 e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvalidParamsError_v0_3(e.getMessage());
-        }
     }
 
     private JSONRPCResponse_v0_3<?> processNonStreamingRequest(

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
-import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
@@ -37,13 +37,14 @@ import org.a2aproject.sdk.server.events.InMemoryQueueManager;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
 import org.a2aproject.sdk.server.events.MainEventBusProcessorCallback;
+import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
-import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
+import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
@@ -51,24 +52,23 @@ import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
-import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
+import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
-import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
-import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1959,4 +1959,15 @@ public class DefaultRequestHandlerTest {
                 () -> handlerNoPush.onCreateTaskPushNotificationConfig(pushConfig, NULL_CONTEXT),
                 "CreateTaskPushNotificationConfig should throw UnsupportedOperationError when push is disabled");
     }
+    @Test
+    public void testListTasksFutureTimestampValidation() {
+        Instant future = Instant.now().plusSeconds(60);
+        ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(future).build();
+        InvalidParamsError error = assertThrows(InvalidParamsError.class,
+                () -> requestHandler.onListTasks(params, NULL_CONTEXT));
+        assertEquals("Invalid params", error.getMessage());
+        assertEquals(Map.of("parameter", "statusTimestampAfter", "reason", "Timestamp cannot be in the future"),
+                error.getDetails());
+    }
+
 }

@@ -1,20 +1,20 @@
 package org.a2aproject.sdk.server.apps.quarkus;
 
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static java.util.Collections.singletonList;
+import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
-import static java.util.Collections.singletonList;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,13 +31,19 @@ import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import jakarta.enterprise.inject.Instance;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.RequestBody;
+import io.vertx.ext.web.RoutingContext;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
@@ -55,8 +61,6 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -70,11 +74,6 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RequestBody;
-import io.vertx.ext.web.RoutingContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -840,4 +839,42 @@ public class A2AServerRoutesTest {
             throw new RuntimeException("Failed to set field: " + fieldName, e);
         }
     }
+    @Test
+    public void testEmptyMessageIdDecodeErrorRetainsId() {
+        routes.invokeJSONRPCHandler("""
+                {"jsonrpc":"2.0","id":"empty-message","method":"SendMessage","params":{
+                  "message":{"messageId":"","role":"ROLE_USER","parts":[{"text":"hello"}]}}}
+                """, mockRoutingContext);
+        verify(mockHttpResponse).setStatusCode(200);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpResponse).end(body.capture());
+        assertEquals(JsonParser.parseString("""
+                {"jsonrpc":"2.0","id":"empty-message","error":{"code":-32602,
+                 "message":"Required field cannot be null or empty","data":[{
+                 "@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_PARAMS",
+                 "domain":"a2a-protocol.org","metadata":{}}]}}
+                """), JsonParser.parseString(body.getValue()));
+        org.mockito.Mockito.verifyNoInteractions(mockJsonRpcHandler);
+    }
+
+    @Test
+    public void testMalformedProtobufParamsDecodeErrorHasNullId() {
+        routes.invokeJSONRPCHandler("""
+                {"jsonrpc":"2.0","id":"protobuf-error","method":"GetTask",
+                 "params":{"id":"task","historyLength":"bad"}}
+                """, mockRoutingContext);
+        verify(mockHttpResponse).setStatusCode(200);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpResponse).end(body.capture());
+        assertEquals(JsonParser.parseString("""
+                {"jsonrpc":"2.0","id":null,"error":{"code":-32600,
+                "message":"Invalid request content: Not an int32 value: \\"bad\\". Please verify the request matches the expected schema for this method.",
+                "data":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_REQUEST",
+                "domain":"a2a-protocol.org","metadata":{}}]}}
+                """), JsonParser.parseString(body.getValue()));
+        org.mockito.Mockito.verifyNoInteractions(mockJsonRpcHandler);
+    }
+
 }
