@@ -38,6 +38,9 @@
 
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.outputTimestamp>2026-06-30T10:56:39Z</project.build.outputTimestamp>
+
         <grpc.version>1.81.0</grpc.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
