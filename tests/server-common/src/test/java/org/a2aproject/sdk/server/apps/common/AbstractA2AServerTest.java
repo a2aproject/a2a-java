@@ -1932,9 +1932,10 @@ public abstract class AbstractA2AServerTest {
     public void testInputRequiredWorkflow() throws Exception {
         AtomicBoolean taskCreated = new AtomicBoolean(false);
         AtomicReference<String> inputRequiredTaskIdRef = new AtomicReference<>();
+        AtomicReference<Task> inputRequiredTaskRef = new AtomicReference<>();
         try {
-            // 1. Send initial message without taskId - server generates one
-            // Routing is by message content prefix "input-required:"
+            // 1. Send the initial message without taskId or contextId - the server generates both.
+            // Routing is by message content prefix "input-required:".
             Message initialMessage = Message.builder(MESSAGE)
                     .parts(new TextPart("input-required:Initial request"))
                     .build();
@@ -1949,8 +1950,10 @@ public abstract class AbstractA2AServerTest {
                     return;
                 }
                 if (event instanceof TaskEvent te) {
-                    inputRequiredTaskIdRef.compareAndSet(null, te.getTask().id());
-                    TaskState state = te.getTask().status().state();
+                    Task task = te.getTask();
+                    inputRequiredTaskRef.compareAndSet(null, task);
+                    inputRequiredTaskIdRef.compareAndSet(null, task.id());
+                    TaskState state = task.status().state();
                     initialState.set(state);
                     // Only count down when we receive INPUT_REQUIRED, not intermediate states like WORKING
                     if (state == TaskState.TASK_STATE_INPUT_REQUIRED) {
@@ -1970,15 +1973,21 @@ public abstract class AbstractA2AServerTest {
 
             String inputRequiredTaskId = inputRequiredTaskIdRef.get();
             assertNotNull(inputRequiredTaskId, "Should have captured server-generated taskId");
+            Task inputRequiredTask = inputRequiredTaskRef.get();
+            assertNotNull(inputRequiredTask, "Should have captured the input-required task");
+            assertNotNull(inputRequiredTask.contextId(), "Server should generate a contextId for the task");
 
-            // 2. Send input message - AgentExecutor will complete the task
+            // 2. Send a follow-up message with both identifiers from the first response.
             Message inputMessage = Message.builder(MESSAGE)
+                    .messageId("input-response-" + UUID.randomUUID())
+                    .contextId(inputRequiredTask.contextId())
                     .taskId(inputRequiredTaskId)
                     .parts(new TextPart("input-required:User input"))
                     .build();
 
             CountDownLatch completionLatch = new CountDownLatch(1);
             AtomicReference<TaskState> completedState = new AtomicReference<>();
+            AtomicReference<Task> completedTaskRef = new AtomicReference<>();
             AtomicBoolean completionUnexpectedEvent = new AtomicBoolean(false);
 
             BiConsumer<ClientEvent, AgentCard> completionConsumer = (event, agentCard) -> {
@@ -1987,7 +1996,9 @@ public abstract class AbstractA2AServerTest {
                     return;
                 }
                 if (event instanceof TaskEvent te) {
-                    TaskState state = te.getTask().status().state();
+                    Task completedTask = te.getTask();
+                    completedTaskRef.set(completedTask);
+                    TaskState state = completedTask.status().state();
                     completedState.set(state);
                     // Only count down when we receive COMPLETED, not intermediate states like WORKING
                     if (state == TaskState.TASK_STATE_COMPLETED) {
@@ -2003,6 +2014,10 @@ public abstract class AbstractA2AServerTest {
             assertTrue(completionLatch.await(10, TimeUnit.SECONDS));
             assertFalse(completionUnexpectedEvent.get());
             assertEquals(TaskState.TASK_STATE_COMPLETED, completedState.get());
+            Task completedTask = completedTaskRef.get();
+            assertNotNull(completedTask, "Should have received the completed task");
+            assertEquals(inputRequiredTask.id(), completedTask.id());
+            assertEquals(inputRequiredTask.contextId(), completedTask.contextId());
 
         } finally {
             if (taskCreated.get()) {
