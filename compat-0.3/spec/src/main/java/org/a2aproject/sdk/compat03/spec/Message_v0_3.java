@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -44,7 +43,7 @@ public record Message_v0_3(
         this.contextId = contextId;
         this.taskId = taskId;
         this.referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
-        this.metadata = metadata != null ? Collections.unmodifiableMap(new HashMap<>(metadata)) : null;
+        this.metadata = Utils_v0_3.unmodifiableNullableShallowMap(metadata);
         this.extensions = extensions != null ? List.copyOf(extensions) : null;
     }
 

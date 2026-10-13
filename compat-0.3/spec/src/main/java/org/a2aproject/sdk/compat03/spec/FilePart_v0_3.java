@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -21,7 +20,7 @@ public record FilePart_v0_3(FileContent_v0_3 file, Map<String, Object> metadata,
             throw new IllegalArgumentException("Invalid FilePart kind: " + kind);
         }
         this.file = file;
-        this.metadata = metadata == null ? Map.of() : Collections.unmodifiableMap(new HashMap<>(metadata));
+        this.metadata = metadata == null ? Map.of() : Utils_v0_3.unmodifiableShallowMap(metadata);
         this.kind = kind;
     }
 
