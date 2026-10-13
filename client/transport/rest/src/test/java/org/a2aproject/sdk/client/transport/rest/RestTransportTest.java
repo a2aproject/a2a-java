@@ -285,6 +285,48 @@ public class RestTransportTest {
     }
 
     /**
+     * A non-final SSE body still has to report normal completion when the connection ends.
+     * JSON-RPC already does this. REST used to drop the callback.
+     */
+    @Test
+    public void testSendMessageStreamingSignalsNormalCompletion() throws Exception {
+        String streamResponseBody = "event: message\n"
+                + "data: {\"task\":{\"id\":\"2\",\"contextId\":\"context-open\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\"}}}\n\n";
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/message:stream")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(streamResponseBody)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        Message message = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("still working")))
+                .contextId("context-open")
+                .messageId("message-open")
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(message)
+                .build();
+
+        AtomicReference<Throwable> terminal = new AtomicReference<>(new RuntimeException("unset"));
+        CountDownLatch latch = new CountDownLatch(1);
+        client.sendMessageStreaming(params, event -> { }, error -> {
+            terminal.set(error);
+            latch.countDown();
+        }, null);
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS));
+        assertNull(terminal.get());
+    }
+
+    /**
      * Test of CreateTaskPushNotificationConfiguration method, of class JSONRestTransport.
      */
     @Test
