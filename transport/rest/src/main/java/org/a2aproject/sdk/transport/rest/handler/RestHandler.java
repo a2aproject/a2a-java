@@ -348,12 +348,12 @@ public class RestHandler {
      * @see org.a2aproject.sdk.server.agentexecution.AgentExecutor#cancel
      */
     @SuppressWarnings("unchecked")
-    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, String taskId) {
+    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, @Nullable String taskId) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
-            if (taskId == null || taskId.isEmpty()) {
-                throw new InvalidParamsError();
-            }
             Map<String, Object> metadata = JsonUtil.readMetadata(body);
             CancelTaskParams params = CancelTaskParams.builder().id(taskId).tenant(tenant).metadata(metadata).build();
             Task task = requestHandler.onCancelTask(params, context);
@@ -377,7 +377,10 @@ public class RestHandler {
      * @param taskId the ID of the task
      * @return the HTTP response containing the created configuration
      */
-    public HTTPRestResponse createTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String body, String taskId) {
+    public HTTPRestResponse createTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String body, @Nullable String taskId) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
             if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
@@ -433,7 +436,10 @@ public class RestHandler {
      * @see RequestHandler#onSubscribeToTask(TaskIdParams, ServerCallContext)
      * @see #sendStreamingMessage(ServerCallContext, String, String)
      */
-    public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
+    public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, @Nullable String taskId) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
             if (!resolveAgentCard(tenant).capabilities().streaming()) {
@@ -463,10 +469,21 @@ public class RestHandler {
      * @param historyLength the maximum number of history entries to include
      * @return the HTTP response containing the task
      */
-    public HTTPRestResponse getTask(ServerCallContext context, String tenant, String taskId, @Nullable Integer historyLength) {
+    public HTTPRestResponse getTask(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String historyLength) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
+        Integer parsedHistoryLength = null;
+        try {
+            if (historyLength != null) {
+                parsedHistoryLength = Integer.valueOf(historyLength);
+            }
+        } catch (NumberFormatException e) {
+            return createErrorResponse(new InvalidParamsError("bad historyLength"));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
-            TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
+            TaskQueryParams params = new TaskQueryParams(taskId, parsedHistoryLength, tenant);
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, org.a2aproject.sdk.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -523,9 +540,30 @@ public class RestHandler {
      */
     public HTTPRestResponse listTasks(ServerCallContext context, String tenant,
             @Nullable String contextId, @Nullable String status,
-            @Nullable Integer pageSize, @Nullable String pageToken,
-            @Nullable Integer historyLength, @Nullable String statusTimestampAfter,
-            @Nullable Boolean includeArtifacts) {
+            @Nullable String pageSize, @Nullable String pageToken,
+            @Nullable String historyLength, @Nullable String statusTimestampAfter,
+            @Nullable String includeArtifacts) {
+        Integer parsedPageSize = null;
+        Integer parsedHistoryLength = null;
+        Boolean parsedIncludeArtifacts = null;
+        try {
+            if (status != null && !status.isEmpty()) {
+                status = status.toUpperCase();
+            }
+            if (pageSize != null && !pageSize.isEmpty()) {
+                parsedPageSize = Integer.valueOf(pageSize);
+            }
+            if (historyLength != null && !historyLength.isEmpty()) {
+                parsedHistoryLength = Integer.valueOf(historyLength);
+            }
+            if (includeArtifacts != null && !includeArtifacts.isEmpty()) {
+                parsedIncludeArtifacts = Boolean.valueOf(includeArtifacts);
+            }
+        } catch (NumberFormatException e) {
+            return createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
             // Build params
@@ -550,14 +588,14 @@ public class RestHandler {
 
                 paramsBuilder.status(taskState);
             }
-            if (pageSize != null) {
-                paramsBuilder.pageSize(pageSize);
+            if (parsedPageSize != null) {
+                paramsBuilder.pageSize(parsedPageSize);
             }
             if (pageToken != null) {
                 paramsBuilder.pageToken(pageToken);
             }
-            if (historyLength != null) {
-                paramsBuilder.historyLength(historyLength);
+            if (parsedHistoryLength != null) {
+                paramsBuilder.historyLength(parsedHistoryLength);
             }
             paramsBuilder.tenant(tenant);
             if (statusTimestampAfter != null) {
@@ -570,8 +608,8 @@ public class RestHandler {
                     throw new InvalidParamsError(null, "Invalid params", errorData);
                 }
             }
-            if (includeArtifacts != null) {
-                paramsBuilder.includeArtifacts(includeArtifacts);
+            if (parsedIncludeArtifacts != null) {
+                paramsBuilder.includeArtifacts(parsedIncludeArtifacts);
             }
             ListTasksParams params = paramsBuilder.build();
 
@@ -593,7 +631,13 @@ public class RestHandler {
      * @param configId the ID of the configuration to retrieve
      * @return the HTTP response containing the configuration
      */
-    public HTTPRestResponse getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String configId) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
+        if (configId == null || configId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad configuration id"));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
             if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
@@ -619,13 +663,25 @@ public class RestHandler {
      * @param pageToken the token for pagination
      * @return the HTTP response containing the list of configurations
      */
-    public HTTPRestResponse listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, String taskId, int pageSize, String pageToken) {
+    public HTTPRestResponse listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String pageSize, @Nullable String pageToken) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
+        int parsedPageSize = 0;
+        try {
+            if (pageSize != null) {
+                parsedPageSize = Integer.parseInt(pageSize);
+            }
+        } catch (NumberFormatException e) {
+            return createErrorResponse(new InvalidParamsError("bad pageSize"));
+        }
+        String normalizedPageToken = Utils.defaultIfNull(pageToken, "");
         try {
             validateVersionAndExtensions(tenant, context);
             if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, pageSize, pageToken, tenant);
+            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, parsedPageSize, normalizedPageToken, tenant);
             ListTaskPushNotificationConfigsResult result = requestHandler.onListTaskPushNotificationConfigs(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(result)));
         } catch (A2AError e) {
@@ -644,7 +700,13 @@ public class RestHandler {
      * @param configId the ID of the configuration to delete
      * @return the HTTP response with no content on success
      */
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String configId) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad task id"));
+        }
+        if (configId == null || configId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError("bad config id"));
+        }
         try {
             validateVersionAndExtensions(tenant, context);
             if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {

@@ -121,10 +121,10 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse cancelTask(String taskId, ServerCallContext context) {
+    public HTTPRestResponse cancelTask(@Nullable String taskId, ServerCallContext context) {
         try {
             if (taskId == null || taskId.isEmpty()) {
-                throw new InvalidParamsError_v0_3();
+                throw new InvalidParamsError_v0_3("bad task id");
             }
             TaskIdParams_v0_3 params = new TaskIdParams_v0_3(taskId);
             Task_v0_3 task = requestHandler.onCancelTask(params, context);
@@ -141,8 +141,11 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, ServerCallContext context) {
+    public HTTPRestResponse setTaskPushNotificationConfiguration(@Nullable String taskId, String body, ServerCallContext context) {
         try {
+            if (taskId == null || taskId.isEmpty()) {
+                throw new InvalidParamsError_v0_3("bad task id");
+            }
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
@@ -159,7 +162,10 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse resubscribeTask(String taskId, ServerCallContext context) {
+    public HTTPRestResponse resubscribeTask(@Nullable String taskId, ServerCallContext context) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
+        }
         try {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError_v0_3("Streaming is not supported by the agent"));
@@ -176,7 +182,25 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse getTask(String taskId, int historyLength, ServerCallContext context) {
+    public HTTPRestResponse getTask(@Nullable String taskId, @Nullable String historyLengthSnakeCase,
+            @Nullable String historyLengthCamelCase, ServerCallContext context) {
+        if (taskId == null || taskId.isEmpty()) {
+            return createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
+        }
+        if (historyLengthSnakeCase != null && historyLengthCamelCase != null) {
+            return createErrorResponse(new InvalidParamsError_v0_3(
+                    "Only one of 'history_length' or 'historyLength' may be specified"));
+        }
+        int historyLength = 0;
+        try {
+            if (historyLengthSnakeCase != null) {
+                historyLength = Integer.parseInt(historyLengthSnakeCase);
+            } else if (historyLengthCamelCase != null) {
+                historyLength = Integer.parseInt(historyLengthCamelCase);
+            }
+        } catch (NumberFormatException e) {
+            return createErrorResponse(new InvalidParamsError_v0_3("bad history_length or historyLength"));
+        }
         try {
             TaskQueryParams_v0_3 params = new TaskQueryParams_v0_3(taskId, historyLength);
             Task_v0_3 task = requestHandler.onGetTask(params, context);
@@ -193,8 +217,11 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, ServerCallContext context) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(@Nullable String taskId, @Nullable String configId, ServerCallContext context) {
         try {
+            if (taskId == null || taskId.isEmpty()) {
+                throw new InvalidParamsError_v0_3("bad task id");
+            }
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
@@ -210,8 +237,11 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse listTaskPushNotificationConfigurations(String taskId, ServerCallContext context) {
+    public HTTPRestResponse listTaskPushNotificationConfigurations(@Nullable String taskId, ServerCallContext context) {
         try {
+            if (taskId == null || taskId.isEmpty()) {
+                throw new InvalidParamsError_v0_3("bad task id");
+            }
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
@@ -227,8 +257,14 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(String taskId, String configId, ServerCallContext context) {
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(@Nullable String taskId, @Nullable String configId, ServerCallContext context) {
         try {
+            if (taskId == null || taskId.isEmpty()) {
+                throw new InvalidParamsError_v0_3("bad task id");
+            }
+            if (configId == null || configId.isEmpty()) {
+                throw new InvalidParamsError_v0_3("bad config id");
+            }
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
