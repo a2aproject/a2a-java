@@ -776,7 +776,7 @@ public abstract class EventQueue implements AutoCloseable {
                 // a narrow residual race remains for graceful close but is harmless for
                 // non-final events (they'd land in the draining queue) and impossible for
                 // final events (submittedFinalEvents prevents close while one is in flight).
-                if (child.isClosed()) {
+                if (child.isClosed() && !child.isAwaitingFinalEvent()) {
                     LOGGER.debug("MainQueue[{}]: Skipping closed child queue for event {}",
                             taskId, item.getEvent().getClass().getSimpleName());
                     return;
