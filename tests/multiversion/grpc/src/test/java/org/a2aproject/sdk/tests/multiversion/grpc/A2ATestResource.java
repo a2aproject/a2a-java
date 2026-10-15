@@ -15,10 +15,10 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import org.a2aproject.sdk.compat03.transport.grpc.handler.GrpcHandler_v0_3;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.apps.common.TestUtilsBean;
@@ -80,8 +80,13 @@ public class A2ATestResource {
 
     @POST
     @Path("/queue/ensure/{taskId}")
-    public Response ensureQueue(@PathParam("taskId") String taskId) {
-        testUtilsBean.ensureQueue(taskId);
+    public Response ensureQueue(@PathParam("taskId") String taskId,
+            @QueryParam("withoutConsumer") boolean withoutConsumer) {
+        if (withoutConsumer) {
+            testUtilsBean.ensureQueueWithoutConsumer(taskId);
+        } else {
+            testUtilsBean.ensureQueue(taskId);
+        }
         return Response.ok().build();
     }
 

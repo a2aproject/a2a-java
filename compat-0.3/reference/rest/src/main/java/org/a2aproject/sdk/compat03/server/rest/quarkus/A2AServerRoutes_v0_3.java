@@ -12,12 +12,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
@@ -26,6 +20,11 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
@@ -40,9 +39,9 @@ import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
-import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3;
 import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3.HTTPRestResponse;
 import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3.HTTPRestStreamingResponse;
+import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
@@ -94,6 +93,11 @@ public class A2AServerRoutes_v0_3 {
         router.postWithRegex("^\\/v1\\/tasks\\/([^/]+):cancel$")
             .order(1)
             .blockingHandler(authenticated(this::cancelTask), false);
+
+        // GET /v1/tasks/{id}:subscribe (0.3 HTTP binding)
+        router.getWithRegex("^\\/v1\\/tasks\\/([^/]+):subscribe$")
+            .order(0)
+            .blockingHandler(authenticatedStreaming(this::resubscribeTask), false);
 
         // POST /v1/tasks/{id}:subscribe
         router.postWithRegex("^\\/v1\\/tasks\\/([^/]+):subscribe$")
@@ -308,7 +312,7 @@ public class A2AServerRoutes_v0_3 {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
             } else {
-                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
+                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, rc.request().getParam("configId"), context);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));

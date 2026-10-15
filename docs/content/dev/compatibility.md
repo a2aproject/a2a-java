@@ -89,32 +89,69 @@ Push notification payloads are automatically formatted to match the protocol ver
 
 ## Client: Communicating with v0.3 Agents
 
-Use `Client_v0_3` to communicate with agents that only support protocol v0.3:
+The normal concrete 1.0 `Client` can communicate with a 0.3-only agent when
+legacy support is explicitly requested during agent-card discovery. The
+compatibility parser and one binding adapter are optional dependencies:
 
 ```xml
 <dependency>
     <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-adapter</artifactId>
     <version>$\{org.a2aproject.sdk.version}</version>
 </dependency>
 <dependency>
     <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-adapter-jsonrpc</artifactId>
     <version>$\{org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
-gRPC and REST transports are also available:
-- `a2a-java-sdk-compat-0.3-client-transport-grpc`
-- `a2a-java-sdk-compat-0.3-client-transport-rest`
+Use `a2a-java-sdk-compat-0.3-client-adapter-rest` for REST or
+`a2a-java-sdk-compat-0.3-client-adapter-grpc` for gRPC instead.
 
 ```java
-// getAgentCard() handles agent card discovery internally
-AgentCard_v0_3 agentCard = A2A_v0_3.getAgentCard("http://localhost:1234");
+AgentCard agentCard = A2A.getAgentCard(
+        "http://localhost:1234", Set.of("1.0", "0.3"));
 
-Client_v0_3 client = Client_v0_3.builder(agentCard)
-        .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
+Client client = Client.builder(agentCard)
+        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()
+                .httpClient(A2AHttpClientFactory.create())
+                .build())
         .build();
 ```
 
-**Note:** `Client_v0_3` exposes only operations available in protocol v0.3. For example, `listTasks()` is not available (it was added in v1.0). Return types use v0.3 domain objects from the `org.a2aproject.sdk.compat03.spec` package.
+The returned card contains a 1.0 `AgentInterface` whose protocol version is
+`"0.3"`, so the ordinary builder selects the matching optional adapter through
+the versioned transport-provider SPI. With the default server preference,
+the builder selects the first usable interface in the card's order. Requesting
+both versions does not give 1.0 priority over an earlier 0.3 interface. With
+client transport preference enabled, the builder first restricts selection to
+usable 1.0 interfaces if any configured binding provides one, then applies
+configured binding order. It considers 0.3 only when no such 1.0 interface is
+available.
+
+The adapter rejects 1.0 operations that have no 0.3 equivalent (such as
+`listTasks`), non-empty tenant values, extended-agent-card retrieval, and
+non-default push-configuration pagination before any network request. Generic
+1.0 transport parameters are also unsupported for 0.3 adapters. REST and gRPC
+also reject non-empty `Message.referenceTaskIds` and cancellation metadata,
+which the 0.3 protobuf schema cannot represent. JSON-RPC preserves these fields.
+Validation also applies to requests modified by interceptors.
+
+JSON-RPC retains the original JSON numbers in fields whose protobuf values
+interceptors leave unchanged. Interceptors see protobuf doubles. Fields with
+identical protobuf values are treated as unchanged, including replacements or
+reordering of numbers with the same double representation. Such mutations are
+unsupported; use a string for
+an identifier that must be edited with exact precision. If an interceptor edits
+an array containing numbers that protobuf cannot represent exactly, the adapter
+rejects the request unless both the original and modified array contain a single
+element. This also applies to message parts and arrays in data or metadata.
+Unchanged arrays retain their original values. REST and gRPC use protobuf
+numeric precision throughout.
+
+If 0.3 is not requested, the optional parser is not used. If it is requested
+but the parser or binding adapter is absent, discovery or client construction
+fails with an actionable error identifying the missing optional artifact.
+Client-only applications do not need to depend on 0.3 domain types, server
+libraries, CDI, Quarkus, or reference-server modules.

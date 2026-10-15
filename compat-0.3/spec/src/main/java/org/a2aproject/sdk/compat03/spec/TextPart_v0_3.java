@@ -2,6 +2,7 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -18,7 +19,7 @@ public record TextPart_v0_3(String text, Map<String, Object> metadata, Kind kind
             throw new IllegalArgumentException("Invalid TextPart kind: " + kind);
         }
         this.text = text;
-        this.metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+        this.metadata = metadata == null ? Map.of() : Utils_v0_3.copyJsonMap(metadata);
         this.kind = kind;
     }
 

@@ -2,13 +2,12 @@ package org.a2aproject.sdk.server.apps.common;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.server.events.QueueManager;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.Event;
-import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 
 /**
  * Contains utilities to interact with the server side for the tests.
@@ -44,6 +43,11 @@ public class TestUtilsBean {
 
     public void ensureQueue(String taskId) {
         queueManager.createOrTap(taskId);
+    }
+
+    public void ensureQueueWithoutConsumer(String taskId) {
+        // Release the setup child so queue lifecycle assertions observe only real subscribers.
+        queueManager.createOrTap(taskId).close();
     }
 
     public void enqueueEvent(String taskId, Event event) {

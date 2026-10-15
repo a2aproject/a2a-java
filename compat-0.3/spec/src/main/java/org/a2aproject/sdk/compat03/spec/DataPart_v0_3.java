@@ -2,6 +2,7 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -17,8 +18,8 @@ public record DataPart_v0_3(Map<String, Object> data, @Nullable Map<String, Obje
         if (kind != Kind.DATA) {
             throw new IllegalArgumentException("Invalid DataPart kind: " + kind);
         }
-        this.data = Map.copyOf(data);
-        this.metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+        this.data = Utils_v0_3.copyJsonMap(data);
+        this.metadata = metadata == null ? Map.of() : Utils_v0_3.copyJsonMap(metadata);
         this.kind = kind;
     }
 

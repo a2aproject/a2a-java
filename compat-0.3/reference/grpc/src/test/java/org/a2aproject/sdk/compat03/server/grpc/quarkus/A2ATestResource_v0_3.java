@@ -14,6 +14,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -81,8 +82,13 @@ public class A2ATestResource_v0_3 {
 
     @POST
     @Path("/queue/ensure/{taskId}")
-    public Response ensureQueue(@PathParam("taskId") String taskId) {
-        testUtilsBean.ensureQueue(taskId);
+    public Response ensureQueue(@PathParam("taskId") String taskId,
+            @QueryParam("withoutConsumer") boolean withoutConsumer) {
+        if (withoutConsumer) {
+            testUtilsBean.ensureQueueWithoutConsumer(taskId);
+        } else {
+            testUtilsBean.ensureQueue(taskId);
+        }
         return Response.ok().build();
     }
 
