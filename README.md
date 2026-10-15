@@ -67,6 +67,7 @@ Community contributed integrations with various Java runtimes:
 
 * **Quarkus** — This project contains the reference implementations for JSON-RPC, gRPC, and HTTP+JSON (REST) transports.
 * **Jakarta EE** — [a2a-jakarta](https://github.com/wildfly-extras/a2a-jakarta) works with any runtime supporting the [Jakarta EE Web Profile](https://jakarta.ee/specifications/webprofile/).
+* **Spring Boot** — [a2a-spring](https://github.com/soheilqalamkari/a2a-spring) provides Spring MVC JSON-RPC hosting for the official A2A Java SDK.
 
 To contribute an integration, see [CONTRIBUTING_INTEGRATIONS.md](CONTRIBUTING_INTEGRATIONS.md).
 
