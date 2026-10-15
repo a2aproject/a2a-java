@@ -31,7 +31,6 @@ import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
-import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.testutils.docker.RequiresDocker;
@@ -40,12 +39,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -62,7 +61,7 @@ import org.testcontainers.utility.DockerImageName;
 @RequiresDocker
 public class MultiInstanceReplicationTest {
 
-    private static final String KAFKA_IMAGE = "confluentinc/cp-kafka:7.6.1";
+    private static final String KAFKA_IMAGE = "mirror.gcr.io/apache/kafka:4.2.0";
     private static final String POSTGRES_IMAGE = "postgres:16-alpine";
 
     private static Network network;
@@ -83,14 +82,14 @@ public class MultiInstanceReplicationTest {
     public static void setup() {
         // Create a shared network for all containers
         network = Network.newNetwork();
-        
+
         // Start Kafka container
-        kafka = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE))
+        kafka = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE)
+                .asCompatibleSubstituteFor("apache/kafka"))
                 .withNetwork(network)
-                .withNetworkAliases("kafka")
-                .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
+                .withListener("kafka:19092");
         kafka.start();
-        
+
         // Start PostgreSQL container
         postgres = new PostgreSQLContainer<>(DockerImageName.parse(POSTGRES_IMAGE))
                 .withNetwork(network)
@@ -101,8 +100,7 @@ public class MultiInstanceReplicationTest {
         postgres.start();
 
         // Get Kafka bootstrap servers for app configuration
-        // Kafka is accessible within the Docker network as "kafka:9092"
-        String kafkaBootstrapServers = "kafka:9092";
+        String kafkaBootstrapServers = "kafka:19092";
 
         // PostgreSQL connection details for apps (using network alias)
         String dbUrl = "jdbc:postgresql://postgres:5432/a2adb";
