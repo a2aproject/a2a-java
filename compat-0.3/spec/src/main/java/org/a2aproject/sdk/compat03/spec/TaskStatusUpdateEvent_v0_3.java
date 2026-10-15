@@ -3,6 +3,7 @@ package org.a2aproject.sdk.compat03.spec;
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -34,7 +35,7 @@ public record TaskStatusUpdateEvent_v0_3(
         this.status = status;
         this.contextId = contextId;
         this.isFinal = isFinal;
-        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.metadata = Utils_v0_3.unmodifiableNullableShallowMap(metadata);
     }
 
     public TaskStatusUpdateEvent_v0_3(String taskId, TaskStatus_v0_3 status, String contextId, boolean isFinal,

@@ -2,6 +2,7 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -35,7 +36,7 @@ public record TaskArtifactUpdateEvent_v0_3(
         this.lastChunk = lastChunk;
         this.artifact = artifact;
         this.contextId = contextId;
-        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.metadata = Utils_v0_3.unmodifiableNullableShallowMap(metadata);
     }
 
     public TaskArtifactUpdateEvent_v0_3(String taskId, Artifact_v0_3 artifact, String contextId,

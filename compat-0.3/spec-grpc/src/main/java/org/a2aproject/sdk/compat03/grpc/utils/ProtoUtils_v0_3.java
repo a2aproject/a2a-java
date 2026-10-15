@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -1009,8 +1010,9 @@ public class ProtoUtils_v0_3 {
             if (struct == null || struct.getFieldsCount() == 0) {
                 return null;
             }
-            return struct.getFieldsMap().entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> value(e.getValue())));
+            Map<String, Object> map = new HashMap<>();
+            struct.getFieldsMap().forEach((key, value) -> map.put(key, value(value)));
+            return map;
         }
 
         private static @Nullable Object value(Value value) {
@@ -1029,7 +1031,7 @@ public class ProtoUtils_v0_3 {
                     return value.getStringValue();
                 case NULL_VALUE:
                 default:
-                    throw new InvalidRequestError_v0_3();
+                    return null;
             }
         }
     }
