@@ -12,10 +12,34 @@ import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENA
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_REQUEST;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_RESPONSE;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_ROLE;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_STREAMING_DURATION;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_SYSTEM;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_SYSTEM_VALUE;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_TASK_ID;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
+import jakarta.decorator.Decorator;
+import jakarta.decorator.Delegate;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Flow;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AMethods;
@@ -27,23 +51,11 @@ import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.MessageSendParams;
-import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
-import jakarta.annotation.Priority;
-import jakarta.decorator.Decorator;
-import jakarta.decorator.Delegate;
-import jakarta.enterprise.inject.Any;
-import jakarta.inject.Inject;
-import java.util.concurrent.Flow;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +70,7 @@ import org.slf4j.LoggerFactory;
  *   <li>Response data as span attributes</li>
  *   <li>Errors and exceptions with proper status codes</li>
  *   <li>Timing information for performance monitoring</li>
+ *   <li>Streaming operation duration via {@code gen_ai.agent.a2a.streaming.duration} histogram</li>
  * </ul>
  * <p>
  * To enable this decorator, add it to your beans.xml:
@@ -81,6 +94,12 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     @Inject
     private Tracer tracer;
 
+    @Inject
+    private Instance<Meter> meterInstance;
+
+    @Nullable
+    private DoubleHistogram streamingDurationHistogram;
+
     /**
      * Default constructor for CDI.
      */
@@ -88,14 +107,44 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     /**
-     * Constructor for testing.
+     * Constructor for testing without metrics.
      *
      * @param delegate the delegate request handler
      * @param tracer the tracer to use
      */
     public OpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer) {
+        this(delegate, tracer, null);
+    }
+
+    /**
+     * Constructor for testing with metrics.
+     *
+     * @param delegate the delegate request handler
+     * @param tracer the tracer to use
+     * @param meter optional meter for streaming duration histogram; null disables metrics
+     */
+    public OpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer, @Nullable Meter meter) {
         this.delegate = delegate;
         this.tracer = tracer;
+        this.streamingDurationHistogram = buildStreamingDurationHistogram(meter);
+    }
+
+    @PostConstruct
+    void initMetrics() {
+        if (streamingDurationHistogram == null && meterInstance != null && meterInstance.isResolvable()) {
+            streamingDurationHistogram = buildStreamingDurationHistogram(meterInstance.get());
+        }
+    }
+
+    @Nullable
+    private static DoubleHistogram buildStreamingDurationHistogram(@Nullable Meter meter) {
+        if (meter == null) {
+            return null;
+        }
+        return meter.histogramBuilder(GENAI_STREAMING_DURATION)
+                .setUnit("s")
+                .setDescription("Duration of A2A streaming operations from initiation to last event")
+                .build();
     }
 
     @Override
@@ -282,7 +331,10 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
             }
 
             span.setStatus(StatusCode.OK);
-            return result;
+            SpanContext spanContext = span.getSpanContext();
+            long startNanos = System.nanoTime();
+            return new OpenTelemetryStreamPublisher(result, tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD, spanContext, streamingDurationHistogram, startNanos);
         } catch (A2AError error) {
             span.setAttribute(ERROR_TYPE, error.getMessage());
             span.setStatus(StatusCode.ERROR, error.getMessage());
@@ -387,7 +439,10 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
             }
 
             span.setStatus(StatusCode.OK);
-            return result;
+            SpanContext spanContext = span.getSpanContext();
+            long startNanos = System.nanoTime();
+            return new OpenTelemetryStreamPublisher(result, tracer,
+                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD, spanContext, streamingDurationHistogram, startNanos);
         } catch (A2AError error) {
             span.setAttribute(ERROR_TYPE, error.getMessage());
             span.setStatus(StatusCode.ERROR, error.getMessage());
@@ -470,5 +525,121 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
 
     private boolean extractResponse() {
         return Boolean.getBoolean(EXTRACT_RESPONSE_SYS_PROPERTY);
+    }
+
+    private static class OpenTelemetryStreamPublisher implements Flow.Publisher<StreamingEventKind> {
+
+        private final Flow.Publisher<StreamingEventKind> delegate;
+        private final Tracer tracer;
+        private final String spanName;
+        private final SpanContext parentSpanContext;
+        @Nullable private final DoubleHistogram streamingDurationHistogram;
+        private final long startNanos;
+
+        OpenTelemetryStreamPublisher(Flow.Publisher<StreamingEventKind> delegate, Tracer tracer,
+                String spanName, SpanContext parentSpanContext,
+                @Nullable DoubleHistogram streamingDurationHistogram, long startNanos) {
+            this.delegate = delegate;
+            this.tracer = tracer;
+            this.spanName = spanName;
+            this.parentSpanContext = parentSpanContext;
+            this.streamingDurationHistogram = streamingDurationHistogram;
+            this.startNanos = startNanos;
+        }
+
+        @Override
+        public void subscribe(Flow.Subscriber<? super StreamingEventKind> subscriber) {
+            delegate.subscribe(new OpenTelemetryStreamSubscriber(subscriber, tracer, spanName,
+                    parentSpanContext, streamingDurationHistogram, startNanos));
+        }
+    }
+
+    private static class OpenTelemetryStreamSubscriber implements Flow.Subscriber<StreamingEventKind> {
+
+        private final Flow.Subscriber<? super StreamingEventKind> delegate;
+        private final Tracer tracer;
+        private final String spanName;
+        private final SpanContext parentSpanContext;
+        @Nullable private final DoubleHistogram streamingDurationHistogram;
+        private final long startNanos;
+        private final List<PendingEvent> pendingEvents = new ArrayList<>();
+
+        OpenTelemetryStreamSubscriber(Flow.Subscriber<? super StreamingEventKind> delegate, Tracer tracer,
+                String spanName, SpanContext parentSpanContext,
+                @Nullable DoubleHistogram streamingDurationHistogram, long startNanos) {
+            this.delegate = delegate;
+            this.tracer = tracer;
+            this.spanName = spanName;
+            this.parentSpanContext = parentSpanContext;
+            this.streamingDurationHistogram = streamingDurationHistogram;
+            this.startNanos = startNanos;
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            delegate.onSubscribe(subscription);
+        }
+
+        @Override
+        public void onNext(StreamingEventKind item) {
+            pendingEvents.add(new PendingEvent(spanName + "-event",
+                    Attributes.builder()
+                            .put("gen_ai.agent.a2a.streaming-event", item.toString())
+                            .put("gen_ai.agent.a2a.status.code", StatusCode.OK.name())
+                            .build()));
+            delegate.onNext(item);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            recordStreamingDuration(false);
+            Span closingSpan = tracer.spanBuilder(spanName + "-end")
+                    .setSpanKind(SpanKind.SERVER)
+                    .addLink(parentSpanContext)
+                    .startSpan();
+            try {
+                for (PendingEvent event : pendingEvents) {
+                    closingSpan.addEvent(event.name(), event.attributes());
+                }
+                closingSpan.setStatus(StatusCode.ERROR, throwable.getMessage());
+            } finally {
+                closingSpan.end();
+                delegate.onError(throwable);
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            recordStreamingDuration(true);
+            Span closingSpan = tracer.spanBuilder(spanName + "-end")
+                    .setSpanKind(SpanKind.SERVER)
+                    .addLink(parentSpanContext)
+                    .startSpan();
+            try {
+                for (PendingEvent event : pendingEvents) {
+                    closingSpan.addEvent(event.name(), event.attributes());
+                }
+                closingSpan.setStatus(StatusCode.OK);
+            } finally {
+                closingSpan.end();
+                delegate.onComplete();
+            }
+        }
+
+        private void recordStreamingDuration(boolean success) {
+            if (streamingDurationHistogram == null) {
+                return;
+            }
+            double seconds = (System.nanoTime() - startNanos) / 1_000_000_000.0;
+            AttributesBuilder builder = Attributes.builder()
+                    .put(GENAI_OPERATION_NAME, spanName)
+                    .put(GENAI_SYSTEM, GENAI_SYSTEM_VALUE);
+            if (!success) {
+                builder.put(ERROR_TYPE, "error");
+            }
+            streamingDurationHistogram.record(seconds, builder.build());
+        }
+
+        private record PendingEvent(String name, Attributes attributes) {}
     }
 }

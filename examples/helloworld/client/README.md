@@ -161,11 +161,11 @@ The Java client (`HelloWorldClient.java`) performs the following actions:
 
 ## Enable OpenTelemetry (Optional)
 
-The client includes support for distributed tracing with OpenTelemetry. To enable it:
+The client includes support for distributed tracing and metrics with OpenTelemetry. To enable it:
 
 ### Prerequisites
 
-**IMPORTANT**: The client expects an OpenTelemetry collector to be ready and accepting traces. You have two options:
+**IMPORTANT**: The client expects an OpenTelemetry collector to be ready and accepting traces and metrics. You have two options:
 
 #### Option 1: Use the Java Server Example (Recommended)
 

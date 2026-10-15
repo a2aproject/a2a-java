@@ -20,4 +20,13 @@ public interface A2AObservabilityNames {
     String GENAI_RESPONSE = GENAI_PREFIX + ".response"; // gen_ai.output.messages ?
     String GENAI_ROLE = GENAI_PREFIX + ".role";
     String GENAI_TASK_ID = GENAI_PREFIX + ".task_id";
+
+    // Push notification
+    String PUSH_NOTIFICATION_EVENT_KIND = GENAI_PREFIX + ".push_notification.event_kind";
+
+    // Metrics
+    String GENAI_CLIENT_OPERATION_DURATION = "gen_ai.client.operation.duration";
+    String GENAI_STREAMING_DURATION = GENAI_PREFIX + ".streaming.duration";
+    String GENAI_SYSTEM = "gen_ai.system";
+    String GENAI_SYSTEM_VALUE = "a2a";
 }

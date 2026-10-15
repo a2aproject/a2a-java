@@ -14,6 +14,7 @@ Adds distributed tracing and context propagation to A2A servers and clients usin
 - **Context Propagation**: OpenTelemetry trace context propagation across async operations
 - **Request/Response Logging**: Optional extraction of request and response data into spans
 - **Error Tracking**: Automatic error status and error type attributes on failures
+- **Metrics**: `gen_ai.client.operation.duration` histogram on the client side; `gen_ai.agent.a2a.streaming.duration` histogram for full streaming lifecycle on the server side
 
 ## Modules
 
@@ -65,6 +66,74 @@ Async agent execution (maintains trace context)
 Response (with trace headers)
 ```
 
+### Streaming Span Lifecycle
+
+Streaming methods (`message/stream` and `tasks/resubscribe`) follow a two-span model to correctly represent the full duration of a streaming response.
+
+**Span 1 — method span** is created when the request arrives and ended as soon as the publisher is returned to the transport layer. It captures request attributes and the initial outcome (success or synchronous error).
+
+**Span 2 — end span** (`<method>-end`) is created when the stream terminates — either on completion or error. It carries a [link](https://opentelemetry.io/docs/concepts/signals/traces/#span-links) to Span 1 for correlation, and records every A2A event that was published as a [span event](https://opentelemetry.io/docs/concepts/signals/traces/#span-events).
+
+<pre class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant D as OTel Decorator
+    participant H as RequestHandler
+    participant W as WrappedPublisher
+
+    C->>D: onMessageSendStream(params)
+    D->>D: create Span₁ (SERVER)
+    D->>H: onMessageSendStream(params)
+    H-->>D: publisher
+    D->>D: capture Span₁.context
+    D->>D: Span₁.setStatus(OK) · Span₁.end()
+    D-->>C: WrappedPublisher
+
+    note over D: Span₁ closed immediately
+
+    loop for each streaming event
+        W-->>C: onNext(event)
+        W->>W: collect PendingEvent(name, attributes)
+    end
+
+    alt stream completes normally
+        W->>W: create Span₂ (SERVER, link→Span₁)
+        W->>W: addEvent per PendingEvent
+        W->>W: Span₂.setStatus(OK) · Span₂.end()
+        W-->>C: onComplete()
+    else stream errors
+        W->>W: create Span₂ (SERVER, link→Span₁)
+        W->>W: addEvent per PendingEvent
+        W->>W: Span₂.setStatus(ERROR) · Span₂.end()
+        W-->>C: onError(throwable)
+    end
+</pre>
+
+Each span event on Span₂ carries:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.streaming-event` | `toString()` of the published `StreamingEventKind` |
+| `gen_ai.agent.a2a.status.code` | `OK` |
+
+### Metrics
+
+The server decorator records the following histogram instruments:
+
+| Instrument | Type | Unit | Description |
+|------------|------|------|-------------|
+| `gen_ai.agent.a2a.streaming.duration` | Histogram | `s` | Duration from stream initiation to last event, for `message/stream` and `tasks/resubscribe` |
+
+Attributes on `gen_ai.agent.a2a.streaming.duration`:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.operation.name` | A2A method name (`message/stream` or `tasks/resubscribe`) |
+| `gen_ai.system` | `a2a` |
+| `error.type` | `error` (only on stream failure) |
+
+Meter injection uses CDI `Instance<Meter>`, so the histogram is silently skipped if no `Meter` bean is available in the container.
+
 ### Context-Aware Async Executor
 
 > **Note:** The `AsyncManagedExecutorProducer` is provided by the **Quarkus reference server** ([`reference/common`](https://github.com/a2aproject/a2a-java/blob/main/reference/common/src/main/java/org/a2aproject/sdk/server/common/quarkus/AsyncManagedExecutorProducer.java)), not the OpenTelemetry module. It is documented here because it enables context propagation (including trace context) across async boundaries.
@@ -106,6 +175,19 @@ The following attributes are automatically added to spans (defined in `A2AObserv
 | `gen_ai.agent.a2a.response` | Full response data (only if extraction enabled) |
 | `error.type` | Error message (on failures) |
 
+### Push Notification Delivery Tracing
+
+When the server delivers a push notification to a client webhook, `OpenTelemetryPushNotificationSenderDecorator` creates a `CLIENT` span named `SendPushNotification`. This span is independent of the original request span but carries the `gen_ai.agent.a2a.task_id` attribute, allowing correlation by task ID in your observability tool.
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.agent.a2a.operation.name` | `SendPushNotification` |
+| `gen_ai.agent.a2a.task_id` | Task identifier |
+| `gen_ai.agent.a2a.context_id` | Context identifier (when available) |
+| `gen_ai.agent.a2a.push_notification.event_kind` | The type of streaming event delivered (e.g. `TaskStatusUpdateEvent`) |
+| `gen_ai.agent.a2a.response` | Full event payload (only if extraction enabled) |
+| `error.type` | Error message (on delivery failure) |
+
 ### Request/Response Extraction
 
 Enable request and response data extraction in spans using JVM system properties:
@@ -124,7 +206,7 @@ Enable request and response data extraction in spans using JVM system properties
 
 ### Instrumentation
 
-Adds OpenTelemetry spans to A2A client operations:
+Adds OpenTelemetry spans and metrics to A2A client operations:
 
 ```xml
 <dependency>
@@ -132,6 +214,27 @@ Adds OpenTelemetry spans to A2A client operations:
     <artifactId>a2a-java-sdk-opentelemetry-client</artifactId>
 </dependency>
 ```
+
+To also enable `gen_ai.client.operation.duration` metrics, pass a `Meter` via the transport config:
+
+```java
+config.setParameters(Map.of(
+    OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY, openTelemetry.getTracer("my-service"),
+    OpenTelemetryClientTransportWrapper.OTEL_METER_KEY,  openTelemetry.getMeter("my-service")
+));
+```
+
+| Instrument | Type | Unit | Description |
+|------------|------|------|-------------|
+| `gen_ai.client.operation.duration` | Histogram | `s` | Duration of each A2A client operation call |
+
+Attributes on `gen_ai.client.operation.duration`:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.operation.name` | A2A method name (e.g. `message/send`) |
+| `gen_ai.system` | `a2a` |
+| `error.type` | `error` (only on failure) |
 
 ### Context Propagation
 
