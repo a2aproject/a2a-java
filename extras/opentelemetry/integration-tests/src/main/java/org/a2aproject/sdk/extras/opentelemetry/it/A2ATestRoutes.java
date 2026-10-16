@@ -1,7 +1,5 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
-
-
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import com.google.gson.Gson;
@@ -12,6 +10,7 @@ import com.google.gson.JsonObject;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -27,6 +26,9 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +41,11 @@ public class A2ATestRoutes {
     private static final String APPLICATION_JSON = "application/json";
     private static final String TEXT_PLAIN = "text/plain";
     private static final Gson gson = new GsonBuilder().create();
+
+    /**
+     * Captured webhook requests, each entry is a map of header name to value.
+     */
+    private final List<Map<String, String>> webhookRequests = new CopyOnWriteArrayList<>();
 
     @Inject
     TestUtilsBean testUtilsBean;
@@ -75,6 +82,26 @@ public class A2ATestRoutes {
         router.get("/test/queue/childCount/:taskId")
             .produces(TEXT_PLAIN)
             .handler(ctx -> getChildQueueCount(ctx.pathParam("taskId"), ctx));
+
+        router.post("/test/pushconfig/:taskId")
+            .consumes(APPLICATION_JSON)
+            .handler(BodyHandler.create())
+            .blockingHandler(ctx -> savePushNotificationConfig(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+
+        router.delete("/test/pushconfig/:taskId/:configId")
+            .blockingHandler(ctx -> deletePushNotificationConfig(
+                    ctx.pathParam("taskId"), ctx.pathParam("configId"), ctx));
+
+        router.post("/test/webhook")
+            .handler(BodyHandler.create())
+            .handler(ctx -> captureWebhook(ctx));
+
+        router.get("/test/webhook/requests")
+            .produces(APPLICATION_JSON)
+            .handler(ctx -> getWebhookRequests(ctx));
+
+        router.delete("/test/webhook/requests")
+            .handler(ctx -> clearWebhookRequests(ctx));
 
         router.get("/hello")
             .produces(TEXT_PLAIN)
@@ -178,6 +205,48 @@ public class A2ATestRoutes {
         rc.response()
                 .setStatusCode(200)
                 .end(String.valueOf(count));
+    }
+
+    public void savePushNotificationConfig(String taskId, String body, RoutingContext rc) {
+        try {
+            TaskPushNotificationConfig config = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
+            testUtilsBean.savePushNotificationConfig(taskId, config);
+            rc.response()
+                    .setStatusCode(200)
+                    .end();
+        } catch (Throwable t) {
+            errorResponse(t, rc);
+        }
+    }
+
+    public void deletePushNotificationConfig(String taskId, String configId, RoutingContext rc) {
+        try {
+            testUtilsBean.deletePushNotificationConfig(taskId, configId);
+            rc.response()
+                    .setStatusCode(200)
+                    .end();
+        } catch (Throwable t) {
+            errorResponse(t, rc);
+        }
+    }
+
+    private void captureWebhook(RoutingContext rc) {
+        Map<String, String> headers = new ConcurrentHashMap<>();
+        rc.request().headers().forEach(entry -> headers.put(entry.getKey(), entry.getValue()));
+        webhookRequests.add(headers);
+        rc.response().setStatusCode(200).end();
+    }
+
+    private void getWebhookRequests(RoutingContext rc) {
+        rc.response()
+                .setStatusCode(200)
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .end(gson.toJson(webhookRequests));
+    }
+
+    private void clearWebhookRequests(RoutingContext rc) {
+        webhookRequests.clear();
+        rc.response().setStatusCode(200).end();
     }
 
     public void hello(RoutingContext rc) {
