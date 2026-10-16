@@ -106,6 +106,21 @@ The following attributes are automatically added to spans (defined in `A2AObserv
 | `gen_ai.agent.a2a.response` | Full response data (only if extraction enabled) |
 | `error.type` | Error message (on failures) |
 
+### Push Notification Delivery Tracing
+
+When the server delivers a push notification to a client webhook, `OpenTelemetryPushNotificationSenderDecorator` creates a `CLIENT` span named `SendPushNotification`. This span is independent of the original request span but carries the `gen_ai.agent.a2a.task_id` attribute, allowing correlation by task ID in your observability tool.
+
+The module also provides **W3C trace-context propagation** for outbound push notification HTTP requests. When the OpenTelemetry server module is on the classpath, the `OpenTelemetryHttpClientProducer` CDI bean wraps the HTTP client used by `BasePushNotificationSender` with `OpenTelemetryA2AHttpClient`, which injects `traceparent` and `tracestate` headers into every push notification delivery. It also produces a context-propagating `Executor` (via `Context.taskWrapping()`) that ensures the OTel trace context survives the async boundary when push notifications are dispatched to multiple recipients in parallel. This allows the receiving webhook to join the distributed trace.
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.agent.a2a.operation.name` | `SendPushNotification` |
+| `gen_ai.agent.a2a.task_id` | Task identifier |
+| `gen_ai.agent.a2a.context_id` | Context identifier (when available) |
+| `gen_ai.agent.a2a.push_notification.event_kind` | The type of streaming event delivered (e.g. `TaskStatusUpdateEvent`) |
+| `gen_ai.agent.a2a.response` | Full event payload (only if extraction enabled) |
+| `error.type` | Error message (on delivery failure) |
+
 ### Request/Response Extraction
 
 Enable request and response data extraction in spans using JVM system properties:
@@ -124,7 +139,7 @@ Enable request and response data extraction in spans using JVM system properties
 
 ### Instrumentation
 
-Adds OpenTelemetry spans to A2A client operations:
+Adds OpenTelemetry spans and metrics to A2A client operations:
 
 ```xml
 <dependency>
@@ -132,6 +147,27 @@ Adds OpenTelemetry spans to A2A client operations:
     <artifactId>a2a-java-sdk-opentelemetry-client</artifactId>
 </dependency>
 ```
+
+To also enable `gen_ai.client.operation.duration` metrics, pass a `Meter` via the transport config:
+
+```java
+config.setParameters(Map.of(
+    OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY, openTelemetry.getTracer("my-service"),
+    OpenTelemetryClientTransportWrapper.OTEL_METER_KEY,  openTelemetry.getMeter("my-service")
+));
+```
+
+| Instrument | Type | Unit | Description |
+|------------|------|------|-------------|
+| `gen_ai.client.operation.duration` | Histogram | `s` | Duration of each A2A client operation call |
+
+Attributes on `gen_ai.client.operation.duration`:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.operation.name` | A2A method name (e.g. `message/send`) |
+| `gen_ai.system` | `a2a` |
+| `error.type` | `error` (only on failure) |
 
 ### Context Propagation
 
