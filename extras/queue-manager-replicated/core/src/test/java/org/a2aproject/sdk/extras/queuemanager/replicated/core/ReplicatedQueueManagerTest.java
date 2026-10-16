@@ -43,7 +43,7 @@ class ReplicatedQueueManagerTest {
     private StreamingEventKind testEvent;
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> true;
 
     @BeforeEach
     void setUp() {

@@ -67,6 +67,7 @@ public class MainEventBusProcessorPushNotificationOrderTest {
             }
             deliveryOrder.add(index);
             latch.countDown();
+            return true;
         };
 
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
@@ -115,6 +116,7 @@ public class MainEventBusProcessorPushNotificationOrderTest {
                 fastDeliveredWhileSlowBlocked.set(slowLatch.getCount() > 0 ? 1 : 0);
                 fastLatch.countDown();
             }
+            return true;
         };
 
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
@@ -157,7 +159,10 @@ public class MainEventBusProcessorPushNotificationOrderTest {
         //   3. Assert on the captured count, not a fresh read.
         int taskCount = 10;
         CountDownLatch latch = new CountDownLatch(taskCount * 2);
-        PushNotificationSender sender = (event, snapshot) -> latch.countDown();
+        PushNotificationSender sender = (event, snapshot) -> {
+            latch.countDown();
+            return true;
+        };
 
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
         mainEventBusProcessor.setPushNotificationExecutor(Runnable::run);

@@ -55,9 +55,10 @@ import org.jspecify.annotations.Nullable;
  *     KafkaProducer<String, StreamingEventKind> producer;
  *
  *     @Override
- *     public void sendNotification(StreamingEventKind event, Task taskSnapshot) {
+ *     public boolean sendNotification(StreamingEventKind event, Task taskSnapshot) {
  *         String taskId = extractTaskId(event);
  *         producer.send("task-updates", taskId, event);
+ *         return true;
  *     }
  * }
  * }</pre>
@@ -65,7 +66,8 @@ import org.jspecify.annotations.Nullable;
  * <h2>Error Handling</h2>
  * Implementations should handle errors gracefully:
  * <ul>
- *   <li>Log failures but don't throw exceptions (notifications are best-effort)</li>
+ *   <li>Return {@code false} on delivery failure rather than throwing exceptions
+ *       (notifications are best-effort)</li>
  *   <li>Don't block on network I/O - execute asynchronously if needed</li>
  *   <li>Circuit breaker patterns for repeatedly failing endpoints</li>
  * </ul>
@@ -113,6 +115,8 @@ public interface PushNotificationSender {
      * @param taskSnapshot the current state of the task after the event has been applied.
      *                     Used by formatters for older protocol versions that require
      *                     the full task state in notifications.
+     * @return {@code true} if all notifications were delivered successfully,
+     *         {@code false} if one or more deliveries failed
      */
-    void sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot);
+    boolean sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot);
 }

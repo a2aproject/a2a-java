@@ -71,7 +71,7 @@ public class AbstractA2ARequestHandlerTest {
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
     private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> true;
 
     protected AgentExecutor executor;
     protected TaskStore taskStore;

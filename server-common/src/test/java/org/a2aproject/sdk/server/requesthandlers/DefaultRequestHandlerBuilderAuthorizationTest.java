@@ -57,7 +57,7 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             .acceptedOutputModes(List.of())
             .build();
 
-    private static final PushNotificationSender NOOP_PUSH_SENDER = (event, snapshot) -> {};
+    private static final PushNotificationSender NOOP_PUSH_SENDER = (event, snapshot) -> true;
 
     private InMemoryTaskStore taskStore;
     private InMemoryQueueManager queueManager;

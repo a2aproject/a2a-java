@@ -7,6 +7,7 @@ import static org.a2aproject.sdk.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
@@ -38,6 +41,13 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasePushNotificationSender.class);
     public static final int DEFAULT_PAGE_SIZE = 100;
 
+    /**
+     * Named qualifier for the optional {@link Executor} used to dispatch push notifications
+     * asynchronously. When an OpenTelemetry context-propagating executor is produced under
+     * this name, trace context is automatically carried across the async boundary.
+     */
+    public static final String DISPATCH_EXECUTOR_NAME = "a2a.pushNotificationDispatch";
+
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
     // final, is not proxyable in all runtimes
@@ -45,6 +55,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private PushNotificationConfigStore configStore;
     private Map<String, PushNotificationPayloadFormatter> formattersByVersion;
     private PushNotificationUrlValidator urlValidator;
+    private Executor dispatchExecutor = ForkJoinPool.commonPool();
 
 
     /**
@@ -74,11 +85,14 @@ public class BasePushNotificationSender implements PushNotificationSender {
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore,
                                        Instance<PushNotificationPayloadFormatter> formatters,
-                                       PushNotificationUrlValidator urlValidator) {
-        this.httpClient = A2AHttpClientFactory.create();
+                                       PushNotificationUrlValidator urlValidator,
+                                       Instance<A2AHttpClient> httpClient,
+                                       @Named(DISPATCH_EXECUTOR_NAME) Instance<Executor> dispatchExecutor) {
+        this.httpClient = httpClient.isResolvable() ? httpClient.get() : A2AHttpClientFactory.create();
         this.configStore = configStore;
         this.formattersByVersion = toFormatterMap(formatters);
         this.urlValidator = urlValidator;
+        this.dispatchExecutor = dispatchExecutor.isResolvable() ? dispatchExecutor.get() : ForkJoinPool.commonPool();
     }
 
     public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
@@ -108,11 +122,11 @@ public class BasePushNotificationSender implements PushNotificationSender {
     }
 
     @Override
-    public void sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot) {
+    public boolean sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot) {
         String taskId = extractTaskId(event);
         if (taskId == null) {
             LOGGER.warn("Cannot send push notification: event does not contain taskId");
-            return;
+            return false;
         }
 
         List<TaskPushNotificationConfig> configs = new ArrayList<>();
@@ -140,8 +154,10 @@ public class BasePushNotificationSender implements PushNotificationSender {
             if (!allSent) {
                 LOGGER.warn("Some push notifications failed to send for taskId: " + taskId);
             }
+            return allSent;
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.warn("Some push notifications failed to send for taskId " + taskId + ": {}", e.getMessage(), e);
+            return false;
         }
     }
 
@@ -171,7 +187,8 @@ public class BasePushNotificationSender implements PushNotificationSender {
                                                  @Nullable Task taskSnapshot,
                                                  TaskPushNotificationConfig pushInfo,
                                                  Map<String, String> versionsByConfigId) {
-        return CompletableFuture.supplyAsync(() -> dispatchNotification(event, taskSnapshot, pushInfo, versionsByConfigId));
+        return CompletableFuture.supplyAsync(
+                () -> dispatchNotification(event, taskSnapshot, pushInfo, versionsByConfigId), dispatchExecutor);
     }
 
     private boolean dispatchNotification(StreamingEventKind event,

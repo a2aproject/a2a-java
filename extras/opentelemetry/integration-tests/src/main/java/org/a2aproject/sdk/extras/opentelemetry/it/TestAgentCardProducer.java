@@ -31,7 +31,7 @@ public class TestAgentCardProducer {
                 .documentationUrl("http://example.com/test")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
-                        .pushNotifications(false)
+                        .pushNotifications(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))

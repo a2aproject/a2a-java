@@ -85,7 +85,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
             .parts(new TextPart_v0_3("test message"))
             .build();
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> true;
 
     // V1.0 backend infrastructure
     protected AgentExecutor agentExecutor;
