@@ -23,8 +23,9 @@ public class MockPushNotificationSender implements PushNotificationSender {
     private final Queue<StreamingEventKind> capturedEvents = new ConcurrentLinkedQueue<>();
 
     @Override
-    public void sendNotification(StreamingEventKind event, Task taskSnapshot) {
+    public boolean sendNotification(StreamingEventKind event, Task taskSnapshot) {
         capturedEvents.add(event);
+        return true;
     }
 
     public Queue<StreamingEventKind> getCapturedEvents() {

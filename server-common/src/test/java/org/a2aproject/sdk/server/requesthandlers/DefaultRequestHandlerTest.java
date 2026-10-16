@@ -96,7 +96,7 @@ public class DefaultRequestHandlerTest {
         .parts(new TextPart("test message"))
         .build();
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> true;
 
     // Test infrastructure components
     protected AgentExecutor executor;

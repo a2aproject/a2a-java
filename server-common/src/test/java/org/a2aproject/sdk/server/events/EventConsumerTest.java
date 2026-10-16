@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 
 public class EventConsumerTest {
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> true;
     private static final String TASK_ID = "123";  // Must match MINIMAL_TASK id
 
     private EventQueue eventQueue;
