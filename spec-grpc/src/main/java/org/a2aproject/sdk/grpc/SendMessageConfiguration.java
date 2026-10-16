@@ -920,7 +920,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.TaskPushNotificationConfig, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder, org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder> 
+        org.a2aproject.sdk.grpc.TaskPushNotificationConfig, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder, org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder>
         internalGetTaskPushNotificationConfigFieldBuilder() {
       if (taskPushNotificationConfigBuilder_ == null) {
         taskPushNotificationConfigBuilder_ = new com.google.protobuf.SingleFieldBuilder<

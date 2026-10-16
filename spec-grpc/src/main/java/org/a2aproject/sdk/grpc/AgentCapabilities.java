@@ -125,7 +125,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentExtensionOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentExtensionOrBuilder>
       getExtensionsOrBuilderList() {
     return extensions_;
   }
@@ -547,7 +547,7 @@ private static final long serialVersionUID = 0L;
             extensionsBuilder_ = null;
             extensions_ = other.extensions_;
             bitField0_ = (bitField0_ & ~0x00000004);
-            extensionsBuilder_ = 
+            extensionsBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetExtensionsFieldBuilder() : null;
           } else {
@@ -996,7 +996,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentExtensionOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentExtensionOrBuilder>
          getExtensionsOrBuilderList() {
       if (extensionsBuilder_ != null) {
         return extensionsBuilder_.getMessageOrBuilderList();
@@ -1034,12 +1034,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.AgentExtension.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.AgentExtension.Builder>
          getExtensionsBuilderList() {
       return internalGetExtensionsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.AgentExtension, org.a2aproject.sdk.grpc.AgentExtension.Builder, org.a2aproject.sdk.grpc.AgentExtensionOrBuilder> 
+        org.a2aproject.sdk.grpc.AgentExtension, org.a2aproject.sdk.grpc.AgentExtension.Builder, org.a2aproject.sdk.grpc.AgentExtensionOrBuilder>
         internalGetExtensionsFieldBuilder() {
       if (extensionsBuilder_ == null) {
         extensionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<

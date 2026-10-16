@@ -94,7 +94,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       name_ = s;
@@ -115,7 +115,7 @@ private static final long serialVersionUID = 0L;
       getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       name_ = b;
@@ -144,7 +144,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       description_ = s;
@@ -166,7 +166,7 @@ private static final long serialVersionUID = 0L;
       getDescriptionBytes() {
     java.lang.Object ref = description_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       description_ = b;
@@ -198,7 +198,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder>
       getSupportedInterfacesOrBuilderList() {
     return supportedInterfaces_;
   }
@@ -293,7 +293,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       version_ = s;
@@ -314,7 +314,7 @@ private static final long serialVersionUID = 0L;
       getVersionBytes() {
     java.lang.Object ref = version_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       version_ = b;
@@ -353,7 +353,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       documentationUrl_ = s;
@@ -373,7 +373,7 @@ private static final long serialVersionUID = 0L;
       getDocumentationUrlBytes() {
     java.lang.Object ref = documentationUrl_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       documentationUrl_ = b;
@@ -427,7 +427,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, org.a2aproject.sdk.grpc.SecurityScheme> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, org.a2aproject.sdk.grpc.SecurityScheme>newDefaultInstance(
-                org.a2aproject.sdk.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_SecuritySchemesEntry_descriptor, 
+                org.a2aproject.sdk.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_SecuritySchemesEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.MESSAGE,
@@ -538,7 +538,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
    * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
       getSecurityRequirementsOrBuilderList() {
     return securityRequirements_;
   }
@@ -717,7 +717,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
    * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentSkillOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentSkillOrBuilder>
       getSkillsOrBuilderList() {
     return skills_;
   }
@@ -784,7 +784,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
    * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder>
       getSignaturesOrBuilderList() {
     return signatures_;
   }
@@ -852,7 +852,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       iconUrl_ = s;
@@ -872,7 +872,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
       getIconUrlBytes() {
     java.lang.Object ref = iconUrl_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       iconUrl_ = b;
@@ -1507,7 +1507,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
             supportedInterfacesBuilder_ = null;
             supportedInterfaces_ = other.supportedInterfaces_;
             bitField0_ = (bitField0_ & ~0x00000004);
-            supportedInterfacesBuilder_ = 
+            supportedInterfacesBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSupportedInterfacesFieldBuilder() : null;
           } else {
@@ -1552,7 +1552,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
             securityRequirementsBuilder_ = null;
             securityRequirements_ = other.securityRequirements_;
             bitField0_ = (bitField0_ & ~0x00000100);
-            securityRequirementsBuilder_ = 
+            securityRequirementsBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSecurityRequirementsFieldBuilder() : null;
           } else {
@@ -1598,7 +1598,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
             skillsBuilder_ = null;
             skills_ = other.skills_;
             bitField0_ = (bitField0_ & ~0x00000800);
-            skillsBuilder_ = 
+            skillsBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSkillsFieldBuilder() : null;
           } else {
@@ -1624,7 +1624,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
             signaturesBuilder_ = null;
             signatures_ = other.signatures_;
             bitField0_ = (bitField0_ & ~0x00001000);
-            signaturesBuilder_ = 
+            signaturesBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSignaturesFieldBuilder() : null;
           } else {
@@ -1827,7 +1827,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
         getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         name_ = b;
@@ -1926,7 +1926,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
         getDescriptionBytes() {
       java.lang.Object ref = description_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         description_ = b;
@@ -2246,7 +2246,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder>
          getSupportedInterfacesOrBuilderList() {
       if (supportedInterfacesBuilder_ != null) {
         return supportedInterfacesBuilder_.getMessageOrBuilderList();
@@ -2284,12 +2284,12 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.AgentInterface.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.AgentInterface.Builder>
          getSupportedInterfacesBuilderList() {
       return internalGetSupportedInterfacesFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.AgentInterface, org.a2aproject.sdk.grpc.AgentInterface.Builder, org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder> 
+        org.a2aproject.sdk.grpc.AgentInterface, org.a2aproject.sdk.grpc.AgentInterface.Builder, org.a2aproject.sdk.grpc.AgentInterfaceOrBuilder>
         internalGetSupportedInterfacesFieldBuilder() {
       if (supportedInterfacesBuilder_ == null) {
         supportedInterfacesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -2447,7 +2447,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.AgentProvider, org.a2aproject.sdk.grpc.AgentProvider.Builder, org.a2aproject.sdk.grpc.AgentProviderOrBuilder> 
+        org.a2aproject.sdk.grpc.AgentProvider, org.a2aproject.sdk.grpc.AgentProvider.Builder, org.a2aproject.sdk.grpc.AgentProviderOrBuilder>
         internalGetProviderFieldBuilder() {
       if (providerBuilder_ == null) {
         providerBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -2495,7 +2495,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
         getVersionBytes() {
       java.lang.Object ref = version_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         version_ = b;
@@ -2601,7 +2601,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
         getDocumentationUrlBytes() {
       java.lang.Object ref = documentationUrl_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         documentationUrl_ = b;
@@ -2804,7 +2804,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.AgentCapabilities, org.a2aproject.sdk.grpc.AgentCapabilities.Builder, org.a2aproject.sdk.grpc.AgentCapabilitiesOrBuilder> 
+        org.a2aproject.sdk.grpc.AgentCapabilities, org.a2aproject.sdk.grpc.AgentCapabilities.Builder, org.a2aproject.sdk.grpc.AgentCapabilitiesOrBuilder>
         internalGetCapabilitiesFieldBuilder() {
       if (capabilitiesBuilder_ == null) {
         capabilitiesBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -3259,7 +3259,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
          getSecurityRequirementsOrBuilderList() {
       if (securityRequirementsBuilder_ != null) {
         return securityRequirementsBuilder_.getMessageOrBuilderList();
@@ -3297,12 +3297,12 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement.Builder>
          getSecurityRequirementsBuilderList() {
       return internalGetSecurityRequirementsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.SecurityRequirement, org.a2aproject.sdk.grpc.SecurityRequirement.Builder, org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+        org.a2aproject.sdk.grpc.SecurityRequirement, org.a2aproject.sdk.grpc.SecurityRequirement.Builder, org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
         internalGetSecurityRequirementsFieldBuilder() {
       if (securityRequirementsBuilder_ == null) {
         securityRequirementsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -3913,7 +3913,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentSkillOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentSkillOrBuilder>
          getSkillsOrBuilderList() {
       if (skillsBuilder_ != null) {
         return skillsBuilder_.getMessageOrBuilderList();
@@ -3957,12 +3957,12 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.AgentSkill.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.AgentSkill.Builder>
          getSkillsBuilderList() {
       return internalGetSkillsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.AgentSkill, org.a2aproject.sdk.grpc.AgentSkill.Builder, org.a2aproject.sdk.grpc.AgentSkillOrBuilder> 
+        org.a2aproject.sdk.grpc.AgentSkill, org.a2aproject.sdk.grpc.AgentSkill.Builder, org.a2aproject.sdk.grpc.AgentSkillOrBuilder>
         internalGetSkillsFieldBuilder() {
       if (skillsBuilder_ == null) {
         skillsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -4231,7 +4231,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder>
          getSignaturesOrBuilderList() {
       if (signaturesBuilder_ != null) {
         return signaturesBuilder_.getMessageOrBuilderList();
@@ -4269,12 +4269,12 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
      *
      * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.AgentCardSignature.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.AgentCardSignature.Builder>
          getSignaturesBuilderList() {
       return internalGetSignaturesFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.AgentCardSignature, org.a2aproject.sdk.grpc.AgentCardSignature.Builder, org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder> 
+        org.a2aproject.sdk.grpc.AgentCardSignature, org.a2aproject.sdk.grpc.AgentCardSignature.Builder, org.a2aproject.sdk.grpc.AgentCardSignatureOrBuilder>
         internalGetSignaturesFieldBuilder() {
       if (signaturesBuilder_ == null) {
         signaturesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -4332,7 +4332,7 @@ org.a2aproject.sdk.grpc.SecurityScheme defaultValue) {
         getIconUrlBytes() {
       java.lang.Object ref = iconUrl_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         iconUrl_ = b;

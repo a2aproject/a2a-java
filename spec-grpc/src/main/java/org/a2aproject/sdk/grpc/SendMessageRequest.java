@@ -66,7 +66,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       tenant_ = s;
@@ -86,7 +86,7 @@ private static final long serialVersionUID = 0L;
       getTenantBytes() {
     java.lang.Object ref = tenant_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       tenant_ = b;
@@ -662,7 +662,7 @@ private static final long serialVersionUID = 0L;
         getTenantBytes() {
       java.lang.Object ref = tenant_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         tenant_ = b;
@@ -865,7 +865,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder>
         internalGetMessageFieldBuilder() {
       if (messageBuilder_ == null) {
         messageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1022,7 +1022,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.SendMessageConfiguration, org.a2aproject.sdk.grpc.SendMessageConfiguration.Builder, org.a2aproject.sdk.grpc.SendMessageConfigurationOrBuilder> 
+        org.a2aproject.sdk.grpc.SendMessageConfiguration, org.a2aproject.sdk.grpc.SendMessageConfiguration.Builder, org.a2aproject.sdk.grpc.SendMessageConfigurationOrBuilder>
         internalGetConfigurationFieldBuilder() {
       if (configurationBuilder_ == null) {
         configurationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1179,7 +1179,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>
         internalGetMetadataFieldBuilder() {
       if (metadataBuilder_ == null) {
         metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<

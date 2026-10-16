@@ -28,257 +28,257 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
   }
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SendMessageConfiguration_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SendMessageConfiguration_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_Task_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_Task_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_TaskStatus_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_TaskStatus_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_Part_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_Part_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_Message_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_Message_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_Artifact_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_Artifact_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_TaskStatusUpdateEvent_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_TaskStatusUpdateEvent_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_TaskArtifactUpdateEvent_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_TaskArtifactUpdateEvent_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AuthenticationInfo_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AuthenticationInfo_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentInterface_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentInterface_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentCard_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentCard_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentCard_SecuritySchemesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentCard_SecuritySchemesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentProvider_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentProvider_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentCapabilities_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentCapabilities_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentExtension_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentExtension_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentSkill_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentSkill_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AgentCardSignature_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AgentCardSignature_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_TaskPushNotificationConfig_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_TaskPushNotificationConfig_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_StringList_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_StringList_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SecurityRequirement_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SecurityRequirement_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SecurityRequirement_SchemesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SecurityRequirement_SchemesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SecurityScheme_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SecurityScheme_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_APIKeySecurityScheme_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_APIKeySecurityScheme_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_OAuth2SecurityScheme_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_OAuth2SecurityScheme_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_OpenIdConnectSecurityScheme_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_OpenIdConnectSecurityScheme_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_MutualTlsSecurityScheme_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_MutualTlsSecurityScheme_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_OAuthFlows_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_OAuthFlows_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_ScopesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_ScopesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_ScopesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_ScopesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ImplicitOAuthFlow_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ImplicitOAuthFlow_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ImplicitOAuthFlow_ScopesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ImplicitOAuthFlow_ScopesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_PasswordOAuthFlow_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_PasswordOAuthFlow_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_PasswordOAuthFlow_ScopesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_ScopesEntry_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_ScopesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SendMessageRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SendMessageRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_GetTaskRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_GetTaskRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ListTasksRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ListTasksRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ListTasksResponse_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ListTasksResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_CancelTaskRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_CancelTaskRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_DeleteTaskPushNotificationConfigRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_DeleteTaskPushNotificationConfigRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SendMessageResponse_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_SendMessageResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_StreamResponse_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_StreamResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_fieldAccessorTable;
 

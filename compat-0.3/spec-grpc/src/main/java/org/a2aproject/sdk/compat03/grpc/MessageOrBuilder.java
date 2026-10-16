@@ -103,7 +103,7 @@ public interface MessageOrBuilder extends
    *
    * <code>repeated .a2a.v1.Part content = 5;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.Part> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.Part>
       getContentList();
   /**
    * <pre>
@@ -131,7 +131,7 @@ public interface MessageOrBuilder extends
    *
    * <code>repeated .a2a.v1.Part content = 5;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.PartOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.PartOrBuilder>
       getContentOrBuilderList();
   /**
    * <pre>

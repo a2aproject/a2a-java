@@ -118,7 +118,7 @@ import org.jspecify.annotations.Nullable;
  *             case FAILED -> System.err.println("Task failed: " +
  *                 tue.getTask().status().message());
  *         }
- *         
+ *
  *         // Check for new artifacts
  *         if (tue.getUpdateEvent() instanceof TaskArtifactUpdateEvent update) {
  *             Artifact artifact = update.artifact();

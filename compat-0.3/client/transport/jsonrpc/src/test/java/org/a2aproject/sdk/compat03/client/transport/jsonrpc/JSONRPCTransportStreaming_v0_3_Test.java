@@ -171,4 +171,4 @@ public class JSONRPCTransportStreaming_v0_3_Test {
         assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
     }
-} 
+}

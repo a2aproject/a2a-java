@@ -126,7 +126,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       if (contentCase_ == 1) {
@@ -150,7 +150,7 @@ private static final long serialVersionUID = 0L;
       ref = content_;
     }
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       if (contentCase_ == 1) {
@@ -219,7 +219,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       if (contentCase_ == 3) {
@@ -243,7 +243,7 @@ private static final long serialVersionUID = 0L;
       ref = content_;
     }
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       if (contentCase_ == 3) {
@@ -353,7 +353,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       filename_ = s;
@@ -373,7 +373,7 @@ private static final long serialVersionUID = 0L;
       getFilenameBytes() {
     java.lang.Object ref = filename_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       filename_ = b;
@@ -401,7 +401,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       mediaType_ = s;
@@ -422,7 +422,7 @@ private static final long serialVersionUID = 0L;
       getMediaTypeBytes() {
     java.lang.Object ref = mediaType_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       mediaType_ = b;
@@ -1003,7 +1003,7 @@ private static final long serialVersionUID = 0L;
         ref = content_;
       }
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         if (contentCase_ == 1) {
@@ -1178,7 +1178,7 @@ private static final long serialVersionUID = 0L;
         ref = content_;
       }
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         if (contentCase_ == 3) {
@@ -1401,7 +1401,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Value data = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Value, com.google.protobuf.Value.Builder, com.google.protobuf.ValueOrBuilder> 
+        com.google.protobuf.Value, com.google.protobuf.Value.Builder, com.google.protobuf.ValueOrBuilder>
         internalGetDataFieldBuilder() {
       if (dataBuilder_ == null) {
         if (!(contentCase_ == 4)) {
@@ -1563,7 +1563,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>
         internalGetMetadataFieldBuilder() {
       if (metadataBuilder_ == null) {
         metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1609,7 +1609,7 @@ private static final long serialVersionUID = 0L;
         getFilenameBytes() {
       java.lang.Object ref = filename_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         filename_ = b;
@@ -1703,7 +1703,7 @@ private static final long serialVersionUID = 0L;
         getMediaTypeBytes() {
       java.lang.Object ref = mediaType_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         mediaType_ = b;

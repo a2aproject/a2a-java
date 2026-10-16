@@ -54,7 +54,7 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         ClientConfig clientConfig = new ClientConfig.Builder()
             .setStreaming(false)
             .build();
-            
+
         client = Client.builder(agentCard)
             .clientConfig(clientConfig)
             .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())

@@ -13,7 +13,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
   /**
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig>
       getConfigsList();
   /**
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
@@ -26,7 +26,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
   /**
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder>
       getConfigsOrBuilderList();
   /**
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>

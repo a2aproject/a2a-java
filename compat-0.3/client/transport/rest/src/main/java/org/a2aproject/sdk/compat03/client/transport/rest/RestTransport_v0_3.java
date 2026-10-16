@@ -9,7 +9,6 @@ import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.compat03.client.http.A2ACardResolver_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.sse.RestSSEEventListener_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;

@@ -329,7 +329,7 @@ public class TaskManagerTest {
     public void testAddingTaskWithDifferentIdFails() {
         // Test that adding a task with a different id from the taskmanager's taskId fails
         TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
-        
+
         Task differentTask = Task.builder()
                 .id("different-task-id")
                 .contextId("session-xyz")
@@ -345,7 +345,7 @@ public class TaskManagerTest {
     public void testAddingTaskWithDifferentIdViaStatusUpdateFails() {
         // Test that adding a status update with different taskId fails
         TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
-        
+
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("different-task-id")
                 .contextId("session-xyz")
@@ -361,7 +361,7 @@ public class TaskManagerTest {
     public void testAddingTaskWithDifferentIdViaArtifactUpdateFails() {
         // Test that adding an artifact update with different taskId fails
         TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
-        
+
         Artifact artifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
@@ -380,16 +380,16 @@ public class TaskManagerTest {
 
     @Test
     public void testTaskWithNoMessageUsesInitialMessage() throws A2AServerException {
-        // Test that adding a task with no message, and there is a TaskManager.initialMessage, 
+        // Test that adding a task with no message, and there is a TaskManager.initialMessage,
         // the initialMessage gets used
         Message initialMessage = Message.builder()
                 .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
                 .build();
-        
+
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
-        
+
         // Use a status update event instead of a Task to trigger createTask
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
@@ -418,15 +418,15 @@ public class TaskManagerTest {
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
                 .build();
-        
+
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
-        
+
         Message taskMessage = Message.builder()
                 .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
                 .build();
-        
+
         // Use TaskStatusUpdateEvent to trigger the creation of a task, which will check if the initialMessage is used.
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
@@ -443,7 +443,7 @@ public class TaskManagerTest {
         assertNotNull(retrieved.history());
         assertEquals(1, retrieved.history().size());
         assertEquals("initial message", ((TextPart) retrieved.history().get(0).parts().get(0)).text());
-        
+
         // The message in the current state should be taskMessage
         assertNotNull(retrieved.status().message());
         assertEquals("task message", ((TextPart) retrieved.status().message().parts().get(0)).text());
@@ -523,15 +523,15 @@ public class TaskManagerTest {
 
         Task updatedTask = taskManager.getTask();
         assertEquals(2, updatedTask.artifacts().size());
-        
+
         // Verify both artifacts are present
         List<Artifact> artifacts = updatedTask.artifacts();
         assertTrue(artifacts.stream()
-                .anyMatch(a -> "artifact-id-1".equals(a.artifactId()) 
+                .anyMatch(a -> "artifact-id-1".equals(a.artifactId())
                         && "content 1".equals(((TextPart) a.parts().get(0)).text()))
                 , "Artifact 1 should be present");
         assertTrue(artifacts.stream()
-                .anyMatch(a -> "artifact-id-2".equals(a.artifactId()) 
+                .anyMatch(a -> "artifact-id-2".equals(a.artifactId())
                 && "content 2".equals(((TextPart) a.parts().get(0)).text()))
                 , "Artifact 2 should be present");
     }
@@ -594,7 +594,7 @@ public class TaskManagerTest {
         // Test that metadata update merges with existing metadata
         Map<String, Object> originalMetadata = new HashMap<>();
         originalMetadata.put("original_key", "original_value");
-        
+
         Task taskWithMetadata = Task.builder(minimalTask)
                 .metadata(originalMetadata)
                 .build();
@@ -681,7 +681,7 @@ public class TaskManagerTest {
     public void testSaveTaskInternal() throws A2AServerException {
         // Test equivalent of _save_task functionality through saveTaskEvent
         TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
-        
+
         Task newTask = Task.builder()
                 .id("test-task-id")
                 .contextId("test-context")

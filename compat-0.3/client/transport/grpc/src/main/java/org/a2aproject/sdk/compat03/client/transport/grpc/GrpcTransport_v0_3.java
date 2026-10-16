@@ -296,14 +296,14 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
      */
     private Metadata createGrpcMetadata(@Nullable ClientCallContext_v0_3 context, @Nullable PayloadAndHeaders_v0_3 payloadAndHeaders) {
         Metadata metadata = new Metadata();
-        
+
         if (context != null && context.getHeaders() != null) {
             // Set X-A2A-Extensions header if present
             String extensionsHeader = context.getHeaders().get("X-A2A-Extensions");
             if (extensionsHeader != null) {
                 metadata.put(EXTENSIONS_KEY, extensionsHeader);
             }
-            
+
             // Add other headers as needed in the future
             // For now, we only handle X-A2A-Extensions
         }
@@ -312,7 +312,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
             for (Map.Entry<String, String> headerEntry : payloadAndHeaders.getHeaders().entrySet()) {
                 String headerName = headerEntry.getKey();
                 String headerValue = headerEntry.getValue();
-                
+
                 if (headerValue != null) {
                     // Use static key for common Authorization header, create dynamic keys for others
                     if (AuthInterceptor_v0_3.AUTHORIZATION.equals(headerName)) {
@@ -325,7 +325,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
                 }
             }
         }
-        
+
         return metadata;
     }
 

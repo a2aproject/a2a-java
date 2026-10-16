@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.sut;
 
 import java.util.List;
-import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
@@ -15,7 +14,6 @@ import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.FileWithBytes;
 import org.a2aproject.sdk.spec.FileWithUri;
 import org.a2aproject.sdk.spec.FilePart;
-import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TextPart;
 
 /**

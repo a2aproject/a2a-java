@@ -124,7 +124,7 @@ public interface AgentCardOrBuilder extends
    *
    * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.AgentInterface> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.AgentInterface>
       getAdditionalInterfacesList();
   /**
    * <pre>
@@ -152,7 +152,7 @@ public interface AgentCardOrBuilder extends
    *
    * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.AgentInterfaceOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.AgentInterfaceOrBuilder>
       getAdditionalInterfacesOrBuilderList();
   /**
    * <pre>
@@ -335,7 +335,7 @@ org.a2aproject.sdk.compat03.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.Security> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.Security>
       getSecurityList();
   /**
    * <pre>
@@ -399,7 +399,7 @@ org.a2aproject.sdk.compat03.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.SecurityOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.SecurityOrBuilder>
       getSecurityOrBuilderList();
   /**
    * <pre>
@@ -523,7 +523,7 @@ org.a2aproject.sdk.compat03.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.AgentSkill> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.AgentSkill>
       getSkillsList();
   /**
    * <pre>
@@ -554,7 +554,7 @@ org.a2aproject.sdk.compat03.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.AgentSkillOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.AgentSkillOrBuilder>
       getSkillsOrBuilderList();
   /**
    * <pre>
@@ -587,7 +587,7 @@ org.a2aproject.sdk.compat03.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.AgentCardSignature> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.AgentCardSignature>
       getSignaturesList();
   /**
    * <pre>
@@ -612,7 +612,7 @@ org.a2aproject.sdk.compat03.grpc.SecurityScheme defaultValue);
    *
    * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.AgentCardSignatureOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.AgentCardSignatureOrBuilder>
       getSignaturesOrBuilderList();
   /**
    * <pre>

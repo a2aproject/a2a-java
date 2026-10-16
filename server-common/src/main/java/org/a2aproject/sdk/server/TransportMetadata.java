@@ -6,10 +6,10 @@ package org.a2aproject.sdk.server;
  * This is used by the validation system to discover available transports on the classpath.
  */
 public interface TransportMetadata {
-    
+
     /**
      * Returns the transport protocol this endpoint supports.
-     * 
+     *
      * @return the transport protocol
      */
     String getTransportProtocol();

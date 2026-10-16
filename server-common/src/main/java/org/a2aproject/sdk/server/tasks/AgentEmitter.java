@@ -128,7 +128,7 @@ public class AgentEmitter {
         if (terminalStateReached.get()) {
             throw new IllegalStateException("Cannot update task status - terminal state already reached");
         }
-        
+
         // Claim the terminal transition atomically without holding a lock during queue backpressure.
         if (isFinal && !terminalStateReached.compareAndSet(false, true)) {
             throw new IllegalStateException("Cannot update task status - terminal state already reached");

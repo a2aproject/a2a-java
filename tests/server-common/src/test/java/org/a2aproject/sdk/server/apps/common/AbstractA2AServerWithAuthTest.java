@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.server.apps.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,8 +10,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
-import java.util.Map;
 
 
 import io.restassured.RestAssured;
@@ -25,12 +22,7 @@ import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.apps.common.A2AGsonObjectMapper;
 import org.a2aproject.sdk.spec.A2AClientException;
-import org.a2aproject.sdk.spec.A2AClientHTTPError;
-import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
-import org.a2aproject.sdk.spec.AgentInterface;
-import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
-import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;

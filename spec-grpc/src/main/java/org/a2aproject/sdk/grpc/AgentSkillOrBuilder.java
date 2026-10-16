@@ -241,7 +241,7 @@ public interface AgentSkillOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement> 
+  java.util.List<org.a2aproject.sdk.grpc.SecurityRequirement>
       getSecurityRequirementsList();
   /**
    * <pre>
@@ -266,7 +266,7 @@ public interface AgentSkillOrBuilder extends
    *
    * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.grpc.SecurityRequirementOrBuilder>
       getSecurityRequirementsOrBuilderList();
   /**
    * <pre>

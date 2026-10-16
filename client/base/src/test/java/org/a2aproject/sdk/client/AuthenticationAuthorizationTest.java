@@ -45,7 +45,7 @@ import org.mockserver.integration.ClientAndServer;
 /**
  * Tests for handling HTTP 401 (Unauthorized) and 403 (Forbidden) responses
  * when the client sends streaming and non-streaming messages.
- * 
+ *
  * These tests verify that the client properly fails when the server returns
  * authentication or authorization errors.
  */
@@ -71,7 +71,7 @@ public class AuthenticationAuthorizationTest {
                 .contextId("context-1234")
                 .messageId("message-1234")
                 .build();
-        
+
         grpcServerName = InProcessServerBuilder.generateName();
 
         agentCard = AgentCard.builder()

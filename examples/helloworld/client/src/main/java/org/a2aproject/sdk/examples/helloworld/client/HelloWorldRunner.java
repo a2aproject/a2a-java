@@ -16,14 +16,14 @@
 /**
  * JBang script to run the A2A HelloWorldClient example.
  * This script automatically handles the dependencies and runs the client.
- * 
+ *
  * Prerequisites:
  * - JBang installed (see https://www.jbang.dev/documentation/guide/latest/installation.html)
  * - A running A2A server (see README.md for instructions on setting up the Python server)
- * 
- * Usage: 
+ *
+ * Usage:
  * $ jbang HelloWorldRunner.java
- * 
+ *
  * The script will communicate with the A2A server at http://localhost:9999
  */
 public class HelloWorldRunner {

@@ -18,15 +18,15 @@ import org.a2aproject.sdk.spec.Message;
  * client.addConsumer((event, agentCard) -> {
  *     if (event instanceof MessageEvent me) {
  *         Message msg = me.getMessage();
- *         
+ *
  *         // Extract text content
  *         String text = msg.parts().stream()
  *             .filter(p -> p instanceof TextPart)
  *             .map(p -> ((TextPart) p).text())
  *             .collect(Collectors.joining());
- *         
+ *
  *         System.out.println("Agent response: " + text);
- *         
+ *
  *         // Check for images
  *         msg.parts().stream()
  *             .filter(p -> p instanceof ImagePart)

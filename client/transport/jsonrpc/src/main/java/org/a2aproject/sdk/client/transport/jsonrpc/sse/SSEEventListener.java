@@ -46,7 +46,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
         try {
             StreamResponse response = JSONRPCUtils.parseResponseEvent(message);
             StreamingEventKind event = ProtoUtils.FromProto.streamingEventKind(response);
-            
+
             // Delegate to base class for common event handling and auto-close logic
             handleEvent(event, future);
         } catch (A2AError error) {

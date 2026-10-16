@@ -417,7 +417,7 @@ public class JSONRPCUtilsTest {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }
@@ -448,7 +448,7 @@ public class JSONRPCUtilsTest {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }

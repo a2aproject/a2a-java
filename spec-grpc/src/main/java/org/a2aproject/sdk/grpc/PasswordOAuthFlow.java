@@ -79,7 +79,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       tokenUrl_ = s;
@@ -100,7 +100,7 @@ private static final long serialVersionUID = 0L;
       getTokenUrlBytes() {
     java.lang.Object ref = tokenUrl_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       tokenUrl_ = b;
@@ -128,7 +128,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       refreshUrl_ = s;
@@ -149,7 +149,7 @@ private static final long serialVersionUID = 0L;
       getRefreshUrlBytes() {
     java.lang.Object ref = refreshUrl_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       refreshUrl_ = b;
@@ -165,7 +165,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, java.lang.String> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, java.lang.String>newDefaultInstance(
-                org.a2aproject.sdk.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor, 
+                org.a2aproject.sdk.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.STRING,
@@ -676,7 +676,7 @@ java.lang.String defaultValue) {
         getTokenUrlBytes() {
       java.lang.Object ref = tokenUrl_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         tokenUrl_ = b;
@@ -773,7 +773,7 @@ java.lang.String defaultValue) {
         getRefreshUrlBytes() {
       java.lang.Object ref = refreshUrl_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         refreshUrl_ = b;

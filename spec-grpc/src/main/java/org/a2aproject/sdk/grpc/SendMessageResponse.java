@@ -712,7 +712,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.Task, org.a2aproject.sdk.grpc.Task.Builder, org.a2aproject.sdk.grpc.TaskOrBuilder> 
+        org.a2aproject.sdk.grpc.Task, org.a2aproject.sdk.grpc.Task.Builder, org.a2aproject.sdk.grpc.TaskOrBuilder>
         internalGetTaskFieldBuilder() {
       if (taskBuilder_ == null) {
         if (!(payloadCase_ == 1)) {
@@ -890,7 +890,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder>
         internalGetMessageFieldBuilder() {
       if (messageBuilder_ == null) {
         if (!(payloadCase_ == 2)) {

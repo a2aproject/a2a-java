@@ -748,7 +748,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder> 
+        org.a2aproject.sdk.grpc.Message, org.a2aproject.sdk.grpc.Message.Builder, org.a2aproject.sdk.grpc.MessageOrBuilder>
         internalGetMessageFieldBuilder() {
       if (messageBuilder_ == null) {
         messageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -914,7 +914,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
+        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>
         internalGetTimestampFieldBuilder() {
       if (timestampBuilder_ == null) {
         timestampBuilder_ = new com.google.protobuf.SingleFieldBuilder<

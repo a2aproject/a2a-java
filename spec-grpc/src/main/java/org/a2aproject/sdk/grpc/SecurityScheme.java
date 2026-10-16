@@ -950,7 +950,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.APIKeySecurityScheme, org.a2aproject.sdk.grpc.APIKeySecurityScheme.Builder, org.a2aproject.sdk.grpc.APIKeySecuritySchemeOrBuilder> 
+        org.a2aproject.sdk.grpc.APIKeySecurityScheme, org.a2aproject.sdk.grpc.APIKeySecurityScheme.Builder, org.a2aproject.sdk.grpc.APIKeySecuritySchemeOrBuilder>
         internalGetApiKeySecuritySchemeFieldBuilder() {
       if (apiKeySecuritySchemeBuilder_ == null) {
         if (!(schemeCase_ == 1)) {
@@ -1128,7 +1128,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.HTTPAuthSecurityScheme, org.a2aproject.sdk.grpc.HTTPAuthSecurityScheme.Builder, org.a2aproject.sdk.grpc.HTTPAuthSecuritySchemeOrBuilder> 
+        org.a2aproject.sdk.grpc.HTTPAuthSecurityScheme, org.a2aproject.sdk.grpc.HTTPAuthSecurityScheme.Builder, org.a2aproject.sdk.grpc.HTTPAuthSecuritySchemeOrBuilder>
         internalGetHttpAuthSecuritySchemeFieldBuilder() {
       if (httpAuthSecuritySchemeBuilder_ == null) {
         if (!(schemeCase_ == 2)) {
@@ -1306,7 +1306,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.OAuth2SecurityScheme, org.a2aproject.sdk.grpc.OAuth2SecurityScheme.Builder, org.a2aproject.sdk.grpc.OAuth2SecuritySchemeOrBuilder> 
+        org.a2aproject.sdk.grpc.OAuth2SecurityScheme, org.a2aproject.sdk.grpc.OAuth2SecurityScheme.Builder, org.a2aproject.sdk.grpc.OAuth2SecuritySchemeOrBuilder>
         internalGetOauth2SecuritySchemeFieldBuilder() {
       if (oauth2SecuritySchemeBuilder_ == null) {
         if (!(schemeCase_ == 3)) {
@@ -1484,7 +1484,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.OpenIdConnectSecurityScheme, org.a2aproject.sdk.grpc.OpenIdConnectSecurityScheme.Builder, org.a2aproject.sdk.grpc.OpenIdConnectSecuritySchemeOrBuilder> 
+        org.a2aproject.sdk.grpc.OpenIdConnectSecurityScheme, org.a2aproject.sdk.grpc.OpenIdConnectSecurityScheme.Builder, org.a2aproject.sdk.grpc.OpenIdConnectSecuritySchemeOrBuilder>
         internalGetOpenIdConnectSecuritySchemeFieldBuilder() {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
         if (!(schemeCase_ == 4)) {
@@ -1662,7 +1662,7 @@ private static final long serialVersionUID = 0L;
      * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        org.a2aproject.sdk.grpc.MutualTlsSecurityScheme, org.a2aproject.sdk.grpc.MutualTlsSecurityScheme.Builder, org.a2aproject.sdk.grpc.MutualTlsSecuritySchemeOrBuilder> 
+        org.a2aproject.sdk.grpc.MutualTlsSecurityScheme, org.a2aproject.sdk.grpc.MutualTlsSecurityScheme.Builder, org.a2aproject.sdk.grpc.MutualTlsSecuritySchemeOrBuilder>
         internalGetMtlsSecuritySchemeFieldBuilder() {
       if (mtlsSecuritySchemeBuilder_ == null) {
         if (!(schemeCase_ == 5)) {

@@ -17,7 +17,7 @@ public class A2AExtensions {
         if (values == null) {
             return extensions;
         }
-        
+
         for (String value : values) {
             if (value != null) {
                 // Split by comma and trim whitespace
@@ -30,7 +30,7 @@ public class A2AExtensions {
                 }
             }
         }
-        
+
         return extensions;
     }
 

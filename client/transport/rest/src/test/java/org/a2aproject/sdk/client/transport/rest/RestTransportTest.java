@@ -129,7 +129,7 @@ public class RestTransportTest {
                 );
         MessageSendParams messageSendParams = new MessageSendParams(message, null, null, "");
         ClientCallContext context = null;
-        
+
         RestTransport instance = new RestTransport(CARD);
         EventKind result = instance.sendMessage(messageSendParams, context);
         assertEquals("task", result.kind());

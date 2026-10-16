@@ -31,7 +31,7 @@ public class A2AGsonObjectMapper implements ObjectMapper {
          try {
              return JsonUtil.toJson(context.getObjectToSerialize());
          } catch (JsonProcessingException ex) {
-             
+
              throw new RuntimeException(ex);
          }
     }

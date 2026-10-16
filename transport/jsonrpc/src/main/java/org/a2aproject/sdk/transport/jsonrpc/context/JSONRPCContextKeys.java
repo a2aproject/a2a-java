@@ -19,7 +19,7 @@ package org.a2aproject.sdk.transport.jsonrpc.context;
  * @see org.a2aproject.sdk.server.ServerCallContext
  */
 public final class JSONRPCContextKeys {
-    
+
     /**
      * Context key for storing the headers.
      */

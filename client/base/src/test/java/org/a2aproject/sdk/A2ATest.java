@@ -19,7 +19,7 @@ public class A2ATest {
     public void testToUserMessage() {
         String text = "Hello, world!";
         Message message = A2A.toUserMessage(text);
-        
+
         assertEquals(Message.Role.ROLE_USER, message.role());
         assertEquals(1, message.parts().size());
         assertEquals(text, ((TextPart) message.parts().get(0)).text());
@@ -33,7 +33,7 @@ public class A2ATest {
         String text = "Hello, world!";
         String messageId = "test-message-id";
         Message message = A2A.toUserMessage(text, messageId);
-        
+
         assertEquals(Message.Role.ROLE_USER, message.role());
         assertEquals(messageId, message.messageId());
     }
@@ -42,7 +42,7 @@ public class A2ATest {
     public void testToAgentMessage() {
         String text = "Hello, I'm an agent!";
         Message message = A2A.toAgentMessage(text);
-        
+
         assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(1, message.parts().size());
         assertEquals(text, ((TextPart) message.parts().get(0)).text());
@@ -54,7 +54,7 @@ public class A2ATest {
         String text = "Hello, I'm an agent!";
         String messageId = "agent-message-id";
         Message message = A2A.toAgentMessage(text, messageId);
-        
+
         assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(messageId, message.messageId());
     }
@@ -64,9 +64,9 @@ public class A2ATest {
         String text = "User message with context";
         String contextId = "context-123";
         String taskId = "task-456";
-        
+
         Message message = A2A.createUserTextMessage(text, contextId, taskId);
-        
+
         assertEquals(Message.Role.ROLE_USER, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
@@ -80,9 +80,9 @@ public class A2ATest {
     @Test
     public void testCreateUserTextMessageWithNullParams() {
         String text = "Simple user message";
-        
+
         Message message = A2A.createUserTextMessage(text, null, null);
-        
+
         assertEquals(Message.Role.ROLE_USER, message.role());
         assertNull(message.contextId());
         assertNull(message.taskId());
@@ -95,9 +95,9 @@ public class A2ATest {
         String text = "Agent message with context";
         String contextId = "context-789";
         String taskId = "task-012";
-        
+
         Message message = A2A.createAgentTextMessage(text, contextId, taskId);
-        
+
         assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
@@ -114,9 +114,9 @@ public class A2ATest {
         );
         String contextId = "context-parts";
         String taskId = "task-parts";
-        
+
         Message message = A2A.createAgentPartsMessage(parts, contextId, taskId);
-        
+
         assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());

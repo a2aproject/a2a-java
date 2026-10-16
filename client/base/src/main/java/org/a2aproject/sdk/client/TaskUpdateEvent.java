@@ -36,12 +36,12 @@ import org.a2aproject.sdk.spec.UpdateEvent;
  *     if (event instanceof TaskUpdateEvent tue) {
  *         Task currentTask = tue.getTask();
  *         UpdateEvent update = tue.getUpdateEvent();
- *         
+ *
  *         // Handle status changes
  *         if (update instanceof TaskStatusUpdateEvent statusUpdate) {
  *             TaskState newState = currentTask.status().state();
  *             System.out.println("Task " + currentTask.id() + " → " + newState);
- *             
+ *
  *             if (newState == TaskState.COMPLETED) {
  *                 System.out.println("Final result: " +
  *                     currentTask.artifact().parts());
@@ -50,12 +50,12 @@ import org.a2aproject.sdk.spec.UpdateEvent;
  *                     currentTask.status().message());
  *             }
  *         }
- *         
+ *
  *         // Handle new content
  *         if (update instanceof TaskArtifactUpdateEvent artifactUpdate) {
  *             Artifact newContent = artifactUpdate.artifact();
  *             System.out.println("New content received: " + newContent.parts());
- *             
+ *
  *             // For streaming text generation
  *             newContent.parts().stream()
  *                 .filter(p -> p instanceof TextPart)

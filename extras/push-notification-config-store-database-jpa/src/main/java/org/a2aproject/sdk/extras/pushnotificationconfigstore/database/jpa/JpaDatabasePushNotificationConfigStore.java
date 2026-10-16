@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 @Alternative
 @Priority(50)
 public class JpaDatabasePushNotificationConfigStore implements PushNotificationConfigStore {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabasePushNotificationConfigStore.class);
 
     private static final Instant NULL_TIMESTAMP_SENTINEL = Instant.EPOCH;

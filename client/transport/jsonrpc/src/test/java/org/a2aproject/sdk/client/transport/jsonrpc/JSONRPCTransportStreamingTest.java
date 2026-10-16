@@ -168,4 +168,4 @@ public class JSONRPCTransportStreamingTest {
         assertTrue(part instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
-} 
+}

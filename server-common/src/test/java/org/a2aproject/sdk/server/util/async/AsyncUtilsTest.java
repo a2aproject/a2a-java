@@ -690,5 +690,5 @@ public class AsyncUtilsTest {
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(6, results.size());
     }
-    
+
 }

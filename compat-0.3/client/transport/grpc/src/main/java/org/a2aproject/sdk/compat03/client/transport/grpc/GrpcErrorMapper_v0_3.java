@@ -52,7 +52,7 @@ public class GrpcErrorMapper_v0_3 {
     }
 
     private static A2AClientException_v0_3 mapGrpcErrorInternal(Status.Code code, @org.jspecify.annotations.Nullable String description, @org.jspecify.annotations.Nullable Throwable cause, String errorPrefix) {
-        
+
         // Extract the actual error type from the description if possible
         // (using description because the same code can map to multiple errors -
         // see GrpcHandler#handleError)
@@ -79,7 +79,7 @@ public class GrpcErrorMapper_v0_3 {
                 return new A2AClientException_v0_3(errorPrefix + description, new InvalidAgentResponseError_v0_3(null, description, null));
             }
         }
-        
+
         // Fall back to mapping based on status code
         String message = description != null ? description : (cause != null ? cause.getMessage() : "Unknown error");
         switch (code) {

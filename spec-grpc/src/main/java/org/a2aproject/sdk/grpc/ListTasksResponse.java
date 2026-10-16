@@ -71,7 +71,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
-  public java.util.List<? extends org.a2aproject.sdk.grpc.TaskOrBuilder> 
+  public java.util.List<? extends org.a2aproject.sdk.grpc.TaskOrBuilder>
       getTasksOrBuilderList() {
     return tasks_;
   }
@@ -127,7 +127,7 @@ private static final long serialVersionUID = 0L;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       nextPageToken_ = s;
@@ -147,7 +147,7 @@ private static final long serialVersionUID = 0L;
       getNextPageTokenBytes() {
     java.lang.Object ref = nextPageToken_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       nextPageToken_ = b;
@@ -513,7 +513,7 @@ private static final long serialVersionUID = 0L;
             tasksBuilder_ = null;
             tasks_ = other.tasks_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            tasksBuilder_ = 
+            tasksBuilder_ =
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetTasksFieldBuilder() : null;
           } else {
@@ -858,7 +858,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public java.util.List<? extends org.a2aproject.sdk.grpc.TaskOrBuilder> 
+    public java.util.List<? extends org.a2aproject.sdk.grpc.TaskOrBuilder>
          getTasksOrBuilderList() {
       if (tasksBuilder_ != null) {
         return tasksBuilder_.getMessageOrBuilderList();
@@ -896,12 +896,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public java.util.List<org.a2aproject.sdk.grpc.Task.Builder> 
+    public java.util.List<org.a2aproject.sdk.grpc.Task.Builder>
          getTasksBuilderList() {
       return internalGetTasksFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        org.a2aproject.sdk.grpc.Task, org.a2aproject.sdk.grpc.Task.Builder, org.a2aproject.sdk.grpc.TaskOrBuilder> 
+        org.a2aproject.sdk.grpc.Task, org.a2aproject.sdk.grpc.Task.Builder, org.a2aproject.sdk.grpc.TaskOrBuilder>
         internalGetTasksFieldBuilder() {
       if (tasksBuilder_ == null) {
         tasksBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -948,7 +948,7 @@ private static final long serialVersionUID = 0L;
         getNextPageTokenBytes() {
       java.lang.Object ref = nextPageToken_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         nextPageToken_ = b;

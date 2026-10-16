@@ -95,7 +95,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }
@@ -124,7 +124,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }
@@ -194,7 +194,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -204,7 +204,7 @@ public class JsonMessages {
                   "returnImmediately":false
                 },
                 "metadata":{
-                  
+
                 }
               }
             }""";
@@ -272,7 +272,7 @@ public class JsonMessages {
                   }
                 ],
                 "metadata":{
-                  
+
                 }
               }
             }
@@ -299,7 +299,7 @@ public class JsonMessages {
                     "state":"TASK_STATE_CANCELED"
                   },
                   "metadata":{
-                    
+
                   }
               }
             }
@@ -378,7 +378,7 @@ public class JsonMessages {
                      }
                    ],
                    "metadata":{
-                     
+
                    }
                  },
                  "configuration":{
@@ -388,7 +388,7 @@ public class JsonMessages {
                    "returnImmediately":false
                  },
                  "metadata":{
-                   
+
                  }
                }
              }""";
@@ -445,7 +445,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -455,7 +455,7 @@ public class JsonMessages {
                   "returnImmediately":false
                 },
                 "metadata":{
-                  
+
                 }
               }
             }""";
@@ -483,7 +483,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }
@@ -516,7 +516,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -526,7 +526,7 @@ public class JsonMessages {
                   "returnImmediately":false
                 },
                 "metadata":{
-                  
+
                 }
               }
             }""";
@@ -554,7 +554,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }

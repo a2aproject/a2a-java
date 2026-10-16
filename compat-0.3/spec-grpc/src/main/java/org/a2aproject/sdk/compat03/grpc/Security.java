@@ -66,7 +66,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, org.a2aproject.sdk.compat03.grpc.StringList> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, org.a2aproject.sdk.compat03.grpc.StringList>newDefaultInstance(
-                org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_SchemesEntry_descriptor, 
+                org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_SchemesEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.MESSAGE,

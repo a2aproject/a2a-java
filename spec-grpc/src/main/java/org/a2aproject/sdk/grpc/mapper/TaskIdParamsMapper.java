@@ -26,7 +26,7 @@ public interface TaskIdParamsMapper {
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
     @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
     CancelTaskParams fromProtoCancelTaskRequest(org.a2aproject.sdk.grpc.CancelTaskRequest proto);
-    
+
      /**
      * Converts proto CancelTaskRequest to domain TaskIdParams.
      * Extracts task ID from the resource name.

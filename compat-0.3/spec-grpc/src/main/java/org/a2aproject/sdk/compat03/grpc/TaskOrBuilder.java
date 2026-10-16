@@ -86,7 +86,7 @@ public interface TaskOrBuilder extends
    *
    * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.Artifact> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.Artifact>
       getArtifactsList();
   /**
    * <pre>
@@ -111,7 +111,7 @@ public interface TaskOrBuilder extends
    *
    * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.ArtifactOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.ArtifactOrBuilder>
       getArtifactsOrBuilderList();
   /**
    * <pre>
@@ -131,7 +131,7 @@ public interface TaskOrBuilder extends
    *
    * <code>repeated .a2a.v1.Message history = 5;</code>
    */
-  java.util.List<org.a2aproject.sdk.compat03.grpc.Message> 
+  java.util.List<org.a2aproject.sdk.compat03.grpc.Message>
       getHistoryList();
   /**
    * <pre>
@@ -159,7 +159,7 @@ public interface TaskOrBuilder extends
    *
    * <code>repeated .a2a.v1.Message history = 5;</code>
    */
-  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.MessageOrBuilder> 
+  java.util.List<? extends org.a2aproject.sdk.compat03.grpc.MessageOrBuilder>
       getHistoryOrBuilderList();
   /**
    * <pre>

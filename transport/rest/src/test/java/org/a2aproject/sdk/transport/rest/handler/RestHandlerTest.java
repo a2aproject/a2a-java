@@ -674,14 +674,14 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         // Streaming responses embed errors in the stream with status 200
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
-        
+
         // Subscribe to publisher and verify error in stream
         RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
         Flow.Publisher<String> publisher = streamingResponse.getPublisher();
-        
+
         AtomicBoolean errorFound = new AtomicBoolean(false);
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         publisher.subscribe(new Flow.Subscriber<String>() {
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
