@@ -33,6 +33,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -111,6 +112,9 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
         }
 
+        // Structured payload logging with trace correlation (DEBUG level, respects config)
+        ServerPayloadLoggingHelper.logTaskRequest(A2AMethods.GET_TASK_METHOD, params, params.id(), null);
+
         Span span = spanBuilder.startSpan();
 
         try (Scope scope = span.makeCurrent()) {
@@ -118,6 +122,9 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
 
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
+            }
+            if (result != null) {
+                ServerPayloadLoggingHelper.logTaskResult(result, result.id());
             }
 
             span.setStatus(StatusCode.OK);

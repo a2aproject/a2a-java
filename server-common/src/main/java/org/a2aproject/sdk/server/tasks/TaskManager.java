@@ -22,6 +22,7 @@ import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,7 @@ public class TaskManager {
                 && task.status() != null && task.status().state() != null) {
             validateStateTransition(current.status().state(), task.status().state(), task.id());
         }
+        ServerPayloadLoggingHelper.logTaskResult(task, task.id());
         Task savedTask = saveTask(task, isReplicated);
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);
@@ -117,6 +119,7 @@ public class TaskManager {
         }
 
         task = builder.build();
+        ServerPayloadLoggingHelper.logStateChange(event, event.taskId(), newState != null ? newState.name() : null);
         Task savedTask = saveTask(task, isReplicated);
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);
@@ -138,6 +141,7 @@ public class TaskManager {
             throw new IllegalStateException("taskId should not be null after checkIdsAndUpdateIfNecessary");
         }
         task = appendArtifactToTask(task, event, nonNullTaskId);
+        ServerPayloadLoggingHelper.logArtifact(event, event.taskId(), event.artifact() != null ? event.artifact().artifactId() : null);
         Task savedTask = saveTask(task, isReplicated);
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);

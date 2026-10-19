@@ -15,6 +15,7 @@ import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENA
 
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
+import org.a2aproject.sdk.jsonrpc.common.logging.JsonPayloadLoggingHelper;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AMethods;
@@ -92,12 +93,14 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         }
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
+            JsonPayloadLoggingHelper.logTaskRequest(A2AMethods.SEND_MESSAGE_METHOD, request, request.message() != null ? request.message().taskId() : null, request.message() != null ? request.message().contextId() : null);
             EventKind result = delegate.sendMessage(request, clientContext);
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
             }
             if (result != null) {
                 span.setStatus(StatusCode.OK);
+                JsonPayloadLoggingHelper.logTaskResult(result, result instanceof Task t ? t.id() : result instanceof org.a2aproject.sdk.spec.Message m ? m.taskId() : null);
             }
             return result;
         } catch (Exception ex) {
@@ -450,7 +453,11 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             spanBuilder.setAttribute("gen_ai.agent.a2a.streaming-event", t.toString());
             spanBuilder.addLink(context);
             Span span = spanBuilder.startSpan();
-            try {
+            try (io.opentelemetry.context.Scope scope = span.makeCurrent()) {
+                String taskId = t instanceof Task task ? task.id() : t instanceof org.a2aproject.sdk.spec.Message m ? m.taskId()
+                        : t instanceof org.a2aproject.sdk.spec.TaskStatusUpdateEvent tue ? tue.taskId()
+                        : t instanceof org.a2aproject.sdk.spec.TaskArtifactUpdateEvent taue ? taue.taskId() : null;
+                JsonPayloadLoggingHelper.logStreamingEvent(t, taskId, t != null ? t.getClass().getSimpleName() : null);
                 delegate.accept(t);
                 span.setStatus(StatusCode.OK);
             } finally {

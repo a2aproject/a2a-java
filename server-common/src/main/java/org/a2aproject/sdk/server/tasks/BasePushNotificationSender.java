@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
@@ -179,11 +180,15 @@ public class BasePushNotificationSender implements PushNotificationSender {
                                           TaskPushNotificationConfig pushInfo,
                                           Map<String, String> versionsByConfigId) {
         String url = pushInfo.url();
+        String taskId = extractTaskId(event);
+        // Log subscription delivery attempt with payload (will be masked/truncated)
+        ServerPayloadLoggingHelper.logPushDelivery(taskId, url, event, true);
 
         try {
             urlValidator.validate(url);
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
+            ServerPayloadLoggingHelper.logPushDelivery(taskId, url, event, false);
             return false;
         }
 
@@ -242,17 +247,22 @@ public class BasePushNotificationSender implements PushNotificationSender {
             }
         }
 
+        boolean success;
         try {
             postBuilder
                     .url(url)
                     .addHeader(CONTENT_TYPE, APPLICATION_JSON)
                     .body(body)
                     .post();
+            success = true;
         } catch (IOException | InterruptedException e) {
             LOGGER.debug("Error pushing data to " + url + ": {}", e.getMessage(), e);
+            ServerPayloadLoggingHelper.logPushDelivery(taskId, url, event, false);
             return false;
         }
-        return true;
+        // Log successful delivery with body (already masked via helper)
+        ServerPayloadLoggingHelper.logPushDelivery(taskId, url, event, success);
+        return success;
     }
 
     /**

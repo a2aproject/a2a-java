@@ -47,3 +47,7 @@ Serve multiple tenants from a single A2A server with per-tenant `AgentExecutor` 
 ## [OpenTelemetry](../extra/opentelemetry)
 
 Distributed tracing, metrics, and context propagation for A2A servers and clients using OpenTelemetry. The server module (`a2a-java-sdk-opentelemetry-server`) adds automatic span creation for all protocol methods with context propagation across async boundaries. Client modules (`a2a-java-sdk-opentelemetry-client`, `a2a-java-sdk-opentelemetry-client-propagation`) instrument A2A client operations.
+
+## [Structured Payload Logging](../extra/payload-logging)
+
+DEBUG-level structured logs for every A2A payload (task requests, state changes, artifacts, auth decisions, push notifications) with 4KB truncation, sensitive-field masking, and `trace_id`/`span_id` correlation. Enable via `a2a.logging.payload.enabled=true` and `org.a2aproject.sdk.payload` logger at DEBUG.

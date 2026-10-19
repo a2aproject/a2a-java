@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.a2aproject.sdk.server.events.EventQueue;
@@ -139,6 +140,7 @@ public class AgentEmitter {
                 .contextId(contextId)
                 .status(new TaskStatus(taskState, message, null))
                 .build();
+        ServerPayloadLoggingHelper.logStateChange(event, taskId, taskState.name());
         if (isFinal) {
             enqueueTerminalEvent(event);
         } else {
@@ -232,6 +234,7 @@ public class AgentEmitter {
                 .append(append)
                 .lastChunk(lastChunk)
                 .build();
+        ServerPayloadLoggingHelper.logArtifact(event, taskId, artifactId);
         eventQueue.enqueueEvent(event);
     }
 
@@ -316,6 +319,7 @@ public class AgentEmitter {
         if (!terminalStateReached.compareAndSet(false, true)) {
             return false;
         }
+        ServerPayloadLoggingHelper.logTaskResult(error, taskId);
         enqueueTerminalEvent(error);
         // Status transition happens automatically in MainEventBusProcessor
         return true;
@@ -333,6 +337,7 @@ public class AgentEmitter {
         if (!terminalStateReached.compareAndSet(false, true)) {
             return false;
         }
+        ServerPayloadLoggingHelper.logTaskResult(error, taskId);
         enqueueTerminalEvent(error, timeout, unit);
         return true;
     }
@@ -532,6 +537,7 @@ public class AgentEmitter {
      */
     public void sendMessage(List<Part<?>> parts, @Nullable Map<String, Object> metadata) {
         Message message = newAgentMessage(parts, metadata);
+        ServerPayloadLoggingHelper.logTaskRequest("message", message, taskId, contextId);
         eventQueue.enqueueEvent(message);
     }
 
@@ -566,6 +572,7 @@ public class AgentEmitter {
             LOGGER.error("Message contextId mismatch: expected={}, actual={}", contextId, message.contextId());
             throw new IllegalArgumentException("Message contextId does not match the emitter's contextId");
         }
+        ServerPayloadLoggingHelper.logTaskRequest("message", message, taskId, contextId);
         eventQueue.enqueueEvent(message);
     }
 
@@ -596,6 +603,7 @@ public class AgentEmitter {
      * @since 1.0.0
      */
     public void addTask(Task task) {
+        ServerPayloadLoggingHelper.logTaskResult(task, task.id());
         eventQueue.enqueueEvent(task);
     }
 
@@ -624,6 +632,16 @@ public class AgentEmitter {
      * @since 1.0.0
      */
     public void emitEvent(Event event) {
+        // Log based on event type
+        if (event instanceof TaskStatusUpdateEvent tue) {
+            ServerPayloadLoggingHelper.logStateChange(event, tue.taskId(), tue.status() != null ? tue.status().state().name() : null);
+        } else if (event instanceof TaskArtifactUpdateEvent taue) {
+            ServerPayloadLoggingHelper.logArtifact(event, taue.taskId(), taue.artifact() != null ? taue.artifact().artifactId() : null);
+        } else if (event instanceof Task t) {
+            ServerPayloadLoggingHelper.logTaskResult(event, t.id());
+        } else if (event instanceof Message m) {
+            ServerPayloadLoggingHelper.logTaskRequest("message", event, m.taskId(), m.contextId());
+        }
         eventQueue.enqueueEvent(event);
     }
 
