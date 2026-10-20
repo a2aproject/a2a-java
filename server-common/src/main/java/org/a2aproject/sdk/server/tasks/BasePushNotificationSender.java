@@ -28,6 +28,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -242,6 +243,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
             }
         }
 
+        ServerPayloadLoggingHelper.logPushDelivery(url, true, event);
         try {
             postBuilder
                     .url(url)
@@ -250,6 +252,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
                     .post();
         } catch (IOException | InterruptedException e) {
             LOGGER.debug("Error pushing data to " + url + ": {}", e.getMessage(), e);
+            ServerPayloadLoggingHelper.logPushDelivery(url, false, event);
             return false;
         }
         return true;

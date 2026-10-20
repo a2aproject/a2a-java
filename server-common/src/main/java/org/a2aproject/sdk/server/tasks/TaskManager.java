@@ -22,6 +22,7 @@ import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +91,7 @@ public class TaskManager {
 
     boolean saveTaskEvent(TaskStatusUpdateEvent event, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
+        ServerPayloadLoggingHelper.logStateChange(event);
         checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
         Task task = ensureTask(event.taskId(), event.contextId());
 
@@ -130,6 +132,7 @@ public class TaskManager {
 
     boolean saveTaskEvent(TaskArtifactUpdateEvent event, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
+        ServerPayloadLoggingHelper.logArtifact(event);
         checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
         Task task = ensureTask(event.taskId(), event.contextId());
         // taskId is guaranteed to be non-null after checkIdsAndUpdateIfNecessary

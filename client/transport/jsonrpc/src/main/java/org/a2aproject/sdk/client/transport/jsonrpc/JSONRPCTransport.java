@@ -66,6 +66,7 @@ import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.jsonrpc.common.logging.JsonPayloadLoggingHelper;
 import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransport implements ClientTransport {
@@ -94,12 +95,14 @@ public class JSONRPCTransport implements ClientTransport {
     @Override
     public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        JsonPayloadLoggingHelper.logTaskRequest(SEND_MESSAGE_METHOD, request);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SEND_MESSAGE_METHOD, ProtoUtils.ToProto.sendMessageRequest(request),
                 agentCard, context);
 
         try {
             String httpResponseBody = sendPostRequest(agentInterface.url(), payloadAndHeaders, SEND_MESSAGE_METHOD);
             SendMessageResponse response = unmarshalResponse(httpResponseBody, SEND_MESSAGE_METHOD);
+            JsonPayloadLoggingHelper.logTaskResult(SEND_MESSAGE_METHOD, response.getResult());
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
