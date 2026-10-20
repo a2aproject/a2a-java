@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.a2aproject.sdk.server.events.EventQueue;
@@ -139,6 +140,7 @@ public class AgentEmitter {
                 .contextId(contextId)
                 .status(new TaskStatus(taskState, message, null))
                 .build();
+        ServerPayloadLoggingHelper.logStateChange(event);
         if (isFinal) {
             enqueueTerminalEvent(event);
         } else {
@@ -232,6 +234,7 @@ public class AgentEmitter {
                 .append(append)
                 .lastChunk(lastChunk)
                 .build();
+        ServerPayloadLoggingHelper.logArtifact(event);
         eventQueue.enqueueEvent(event);
     }
 

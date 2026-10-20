@@ -75,6 +75,7 @@ import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.server.logging.ServerPayloadLoggingHelper;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -503,6 +504,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public Task onGetTask(TaskQueryParams params, ServerCallContext context) throws A2AError {
+        ServerPayloadLoggingHelper.logTaskRequest("tasks/get", params);
         LOGGER.debug("onGetTask {}", params.id());
         enforceRead(context, params.id(), TaskOperation.GET_TASK);
         Task task = taskStore.get(params.id());
@@ -542,37 +544,40 @@ public class DefaultRequestHandler implements RequestHandler {
     private void enforceRead(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError {
         if (authorizationProvider == null) {
             if (authorizationRequired) {
+                ServerPayloadLoggingHelper.logAuth(operation.name(), false, "no provider - deny");
                 throw new TaskNotFoundError();
             }
             return;
         }
-        if (!authorizationProvider.checkRead(context, taskId, operation)) {
-            throw new TaskNotFoundError();
-        }
+        boolean allowed = authorizationProvider.checkRead(context, taskId, operation);
+        ServerPayloadLoggingHelper.logAuth(operation.name(), allowed, allowed ? "allow" : "deny read " + taskId);
+        if (!allowed) throw new TaskNotFoundError();
     }
 
     private void enforceWrite(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError {
         if (authorizationProvider == null) {
             if (authorizationRequired) {
+                ServerPayloadLoggingHelper.logAuth(operation.name(), false, "no provider - deny");
                 throw new TaskNotFoundError();
             }
             return;
         }
-        if (!authorizationProvider.checkWrite(context, taskId, operation)) {
-            throw new TaskNotFoundError();
-        }
+        boolean allowed = authorizationProvider.checkWrite(context, taskId, operation);
+        ServerPayloadLoggingHelper.logAuth(operation.name(), allowed, allowed ? "allow" : "deny write " + taskId);
+        if (!allowed) throw new TaskNotFoundError();
     }
 
     private void enforceCreate(ServerCallContext context, TaskOperation operation) throws A2AError {
         if (authorizationProvider == null) {
             if (authorizationRequired) {
+                ServerPayloadLoggingHelper.logAuth(operation.name(), false, "no provider - deny create");
                 throw new TaskNotFoundError();
             }
             return;
         }
-        if (!authorizationProvider.checkCreate(context, operation)) {
-            throw new TaskNotFoundError();
-        }
+        boolean allowed = authorizationProvider.checkCreate(context, operation);
+        ServerPayloadLoggingHelper.logAuth(operation.name(), allowed, allowed ? "allow create" : "deny create");
+        if (!allowed) throw new TaskNotFoundError();
     }
 
     private void enforceListRead(ServerCallContext context) throws A2AError {
@@ -609,6 +614,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
+        ServerPayloadLoggingHelper.logTaskRequest("tasks/list", params);
         enforceListRead(context);
         LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, statusTimestampAfter={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.statusTimestampAfter());
@@ -634,6 +640,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         ListTasksResult result = taskStore.list(params, context);
+        ServerPayloadLoggingHelper.logTaskResult("tasks/list", result);
         // Post-filter per-task read authorization at the handler level.
         // On the CDI path this is redundant (store already filters), but on the builder
         // path the store may not have the provider, so the handler must be authoritative.
@@ -652,6 +659,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
+        ServerPayloadLoggingHelper.logTaskRequest("tasks/cancel", params);
         enforceWrite(context, params.id(), TaskOperation.CANCEL_TASK);
         // Serialize check-then-act per task so two concurrent cancels (or a cancel racing
         // a concurrent completion) cannot both act on the pre-transition state.
@@ -751,6 +759,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     @SuppressWarnings("NullAway")
     public EventKind onMessageSend(MessageSendParams rawParams, ServerCallContext context) throws A2AError {
+        ServerPayloadLoggingHelper.logTaskRequest("message/send", rawParams);
         MessageSendParams params = normalizeBlankIds(rawParams);
         LOGGER.debug("onMessageSend - task: {}; context {}", params.message().taskId(), params.message().contextId());
         String msgTaskId = params.message().taskId();
@@ -1129,6 +1138,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
             TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
+        ServerPayloadLoggingHelper.logPushSub("tasks/pushNotificationConfig/create", params);
         if (pushConfigStore == null || !pushNotificationsEnabled) {
             throw new UnsupportedOperationError();
         }
