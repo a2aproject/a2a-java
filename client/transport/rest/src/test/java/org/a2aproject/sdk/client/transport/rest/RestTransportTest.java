@@ -35,10 +35,10 @@ import java.util.logging.Logger;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
-import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
@@ -652,7 +652,7 @@ public class RestTransportTest {
         ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
             @Override
             public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, org.a2aproject.sdk.spec.AgentCard agentCard,
+                    java.util.Map<String, String> headers, AgentCard agentCard,
                     ClientCallContext clientCallContext) {
                 capturedPayload.set(payload);
                 return new PayloadAndHeaders(payload, headers);
@@ -688,7 +688,7 @@ public class RestTransportTest {
         ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
             @Override
             public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, org.a2aproject.sdk.spec.AgentCard agentCard,
+                    java.util.Map<String, String> headers, AgentCard agentCard,
                     ClientCallContext clientCallContext) {
                 capturedPayload.set(payload);
                 return new PayloadAndHeaders(payload, headers);

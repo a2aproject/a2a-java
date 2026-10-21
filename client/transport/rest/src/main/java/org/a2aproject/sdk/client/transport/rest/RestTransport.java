@@ -247,7 +247,7 @@ public class RestTransport implements ClientTransport {
 
     
     private String buildListTasksQueryString(ListTasksParams request) {
-        List<String> queryParts = new java.util.ArrayList<>();
+        java.util.List<String> queryParts = new java.util.ArrayList<>();
         if (request.contextId() != null) {
             queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
         }
@@ -274,7 +274,7 @@ public class RestTransport implements ClientTransport {
     }
 
     private String buildListPushNotificationConfigsQueryString(ListTaskPushNotificationConfigsParams request) {
-        List<String> queryParts = new java.util.ArrayList<>();
+        java.util.List<String> queryParts = new java.util.ArrayList<>();
         if (request.pageSize() > 0) {
             queryParts.add("pageSize=" + request.pageSize());
         }
