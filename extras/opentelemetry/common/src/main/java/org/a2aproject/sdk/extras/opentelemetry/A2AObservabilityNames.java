@@ -42,4 +42,8 @@ public interface A2AObservabilityNames {
     String GENAI_STREAMING_DURATION = GENAI_PREFIX + ".streaming.duration";
     String GENAI_SYSTEM = "gen_ai.system";
     String GENAI_SYSTEM_VALUE = "a2a";
+
+    // Push notification
+    String PUSH_NOTIFICATION_EVENT_KIND = GENAI_PREFIX + ".push_notification.event_kind";
+    String PUSH_NOTIFICATION_DELIVERY_FAILED = "delivery_failed";
 }

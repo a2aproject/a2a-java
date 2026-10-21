@@ -30,7 +30,6 @@ import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
-import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.PushNotificationUrlValidator;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
@@ -84,8 +83,6 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
             .role(Message_v0_3.Role.AGENT)
             .parts(new TextPart_v0_3("test message"))
             .build();
-
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
 
     // V1.0 backend infrastructure
     protected AgentExecutor agentExecutor;

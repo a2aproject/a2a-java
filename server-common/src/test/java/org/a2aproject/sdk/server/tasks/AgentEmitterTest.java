@@ -43,7 +43,6 @@ public class AgentEmitterTest {
 
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
     public static final int WAIT_MILLI_SECONDS = 5000;
 
     EventQueue eventQueue;
@@ -59,7 +58,7 @@ public class AgentEmitterTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)

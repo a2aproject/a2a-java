@@ -55,9 +55,10 @@ import org.jspecify.annotations.Nullable;
  *     KafkaProducer<String, StreamingEventKind> producer;
  *
  *     @Override
- *     public void sendNotification(StreamingEventKind event, Task taskSnapshot) {
+ *     public boolean sendNotification(StreamingEventKind event, Task taskSnapshot) {
  *         String taskId = extractTaskId(event);
  *         producer.send("task-updates", taskId, event);
+ *         return true;
  *     }
  * }
  * }</pre>
@@ -65,12 +66,18 @@ import org.jspecify.annotations.Nullable;
  * <h2>Error Handling</h2>
  * Implementations should handle errors gracefully:
  * <ul>
- *   <li>Log failures but don't throw exceptions (notifications are best-effort)</li>
+ *   <li>Return {@code false} on <b>delivery failures</b> (network errors, HTTP
+ *       errors, unreachable endpoints) rather than throwing exceptions —
+ *       notifications are best-effort</li>
+ *   <li>Throw {@link IllegalArgumentException} or {@link IllegalStateException}
+ *       for <b>precondition violations</b> (e.g. an event without a task ID, or
+ *       an unsupported event type) — these indicate caller bugs, not delivery
+ *       problems</li>
  *   <li>Don't block on network I/O - execute asynchronously if needed</li>
  *   <li>Circuit breaker patterns for repeatedly failing endpoints</li>
  * </ul>
- * Throwing exceptions from this method will not fail the client request, but will
- * be logged as errors.
+ * Exceptions thrown from this method will not fail the client request — callers
+ * catch and log them as errors.
  *
  * <h2>Thread Safety</h2>
  * May be called from multiple threads concurrently for different tasks.
@@ -81,6 +88,12 @@ import org.jspecify.annotations.Nullable;
  * @see org.a2aproject.sdk.spec.TaskPushNotificationConfig
  */
 public interface PushNotificationSender {
+
+    /**
+     * A no-op sender that always reports success. Useful in tests and
+     * configurations where push notifications are not needed.
+     */
+    PushNotificationSender NOOP = (event, taskSnapshot) -> true;
 
     /**
      * Sends a push notification containing a streaming event.
@@ -105,14 +118,20 @@ public interface PushNotificationSender {
      *   <li>{@link org.a2aproject.sdk.spec.TaskArtifactUpdateEvent}</li>
      * </ul>
      * <p>
-     * <b>Error Handling:</b> Log errors but don't throw exceptions. Notifications are
-     * best-effort and should not fail the primary request.
+     * <b>Error Handling:</b> Return {@code false} on delivery failures (network
+     * errors, HTTP errors). Throwing is reserved for precondition violations such
+     * as a missing task ID or an unsupported event type — these signal caller bugs.
+     * Callers catch all exceptions so neither case fails the client request.
      * </p>
      *
      * @param event the streaming event to send.
      * @param taskSnapshot the current state of the task after the event has been applied.
      *                     Used by formatters for older protocol versions that require
      *                     the full task state in notifications.
+     * @return {@code true} if all notifications were delivered successfully,
+     *         {@code false} if one or more deliveries failed
+     * @throws IllegalArgumentException if the event does not contain a task ID
+     * @throws IllegalStateException if the event type is not recognized
      */
-    void sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot);
+    boolean sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot);
 }

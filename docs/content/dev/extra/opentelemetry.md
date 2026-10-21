@@ -177,6 +177,70 @@ The following attributes are automatically added to spans (defined in `A2AObserv
 | `gen_ai.agent.a2a.response` | Full response data (only if extraction enabled) |
 | `error.type` | Error message (on failures) |
 
+### Push Notification Delivery Tracing
+
+When the server delivers a push notification to a client webhook, `OpenTelemetryPushNotificationSenderDecorator` creates a `CLIENT` span named `SendPushNotification`. This span is independent of the original request span but carries the `gen_ai.agent.a2a.task_id` attribute, allowing correlation by task ID in your observability tool. The span status reflects the actual delivery outcome: `OK` when all notifications succeed, `ERROR` when one or more deliveries fail (with `error.type` set to `delivery_failed`) or when an exception is thrown.
+
+The module also provides **W3C trace-context propagation** for outbound push notification HTTP requests via the `@Instrumented` CDI qualifier and `OpenTelemetryHttpClientProducer`.
+
+#### How it works
+
+The `OpenTelemetryHttpClientProducer` CDI bean produces an `@Instrumented A2AHttpClient` — a wrapper that injects `traceparent` and `tracestate` headers into every outbound HTTP request. `BasePushNotificationSender` resolves the HTTP client in this order:
+
+1. An `@Instrumented A2AHttpClient` bean (if available — e.g. the one produced by this module)
+2. An unqualified `A2AHttpClient` bean (if the application provides one)
+3. `A2AHttpClientFactory.create()` as last resort
+
+The `@Instrumented` qualifier (defined in `server-common`) marks HTTP client beans that have been wrapped with observability instrumentation. It ensures the instrumented client does not compete with the application's own `A2AHttpClient` bean in default CDI resolution — the two coexist, and the instrumented variant wraps the application's bean as its delegate.
+
+#### Custom HTTP client compatibility
+
+If your application provides a custom `A2AHttpClient` CDI bean (e.g. for mTLS, proxy, or custom timeouts), the OpenTelemetry wrapper **preserves that configuration** by delegating to your bean rather than replacing it. No additional annotations or configuration are needed — just produce your bean as usual:
+
+```java
+@Produces
+@ApplicationScoped
+public A2AHttpClient myHttpClient() {
+    // your custom client (mTLS, proxy, auth, etc.)
+}
+```
+
+The OpenTelemetry module automatically wraps it with trace-context injection.
+
+#### Context-propagating executor
+
+The producer also creates an `@Instrumented Executor` (via `Context.taskWrapping()`) that ensures the OTel trace context survives the async boundary when push notifications are dispatched to multiple recipients in parallel. This allows the receiving webhook to join the distributed trace.
+
+`BasePushNotificationSender` resolves the dispatch executor in this order:
+
+1. An `@Instrumented Executor` bean (if available — e.g. the one produced by this module)
+2. A `@Named("a2a.pushNotificationDispatch") Executor` bean (if the application provides one)
+3. `ForkJoinPool.commonPool()` as last resort
+
+#### Custom dispatch executor compatibility
+
+If your application provides a custom `@Named("a2a.pushNotificationDispatch") Executor` CDI bean (e.g. for custom thread pool sizing), the OpenTelemetry module **preserves that configuration** by wrapping it with `Context.taskWrapping()` rather than replacing it. Just produce your bean as usual:
+
+```java
+@Produces
+@ApplicationScoped
+@Named("a2a.pushNotificationDispatch")
+public Executor myDispatchExecutor() {
+    // your custom thread pool
+}
+```
+
+The OpenTelemetry module automatically wraps it with context propagation.
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.agent.a2a.operation.name` | `SendPushNotification` |
+| `gen_ai.agent.a2a.task_id` | Task identifier |
+| `gen_ai.agent.a2a.context_id` | Context identifier (when available) |
+| `gen_ai.agent.a2a.push_notification.event_kind` | The type of streaming event delivered (e.g. `TaskStatusUpdateEvent`) |
+| `gen_ai.agent.a2a.response` | Full event payload (only if extraction enabled) |
+| `error.type` | `delivery_failed` when one or more deliveries fail, or the exception message when an exception is thrown |
+
 ### Request/Response Extraction
 
 Enable request and response data extraction in spans using JVM system properties:
@@ -195,7 +259,7 @@ Enable request and response data extraction in spans using JVM system properties
 
 ### Instrumentation
 
-Adds OpenTelemetry spans to A2A client operations:
+Adds OpenTelemetry spans and metrics to A2A client operations:
 
 ```xml
 <dependency>
@@ -206,11 +270,20 @@ Adds OpenTelemetry spans to A2A client operations:
 
 ### Metrics
 
-The client transport records the following histogram:
+The client transport wrapper is auto-discovered via ServiceLoader — just adding the dependency enables tracing. To also enable `gen_ai.client.operation.duration` metrics, pass a `Meter` via the transport config:
+
+```java
+config.setParameters(Map.of(
+    OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY, openTelemetry.getTracer("my-service"),
+    OpenTelemetryClientTransportWrapper.OTEL_METER_KEY,  openTelemetry.getMeter("my-service")
+));
+```
+
+If no `Meter` is provided, the histogram is silently skipped.
 
 | Instrument | Type | Unit | Description |
 |------------|------|------|-------------|
-| `gen_ai.client.operation.duration` | Histogram | `s` | Duration of A2A client operations from invocation to completion or error |
+| `gen_ai.client.operation.duration` | Histogram | `s` | Duration of each A2A client operation call |
 
 Attributes on `gen_ai.client.operation.duration`:
 
@@ -219,14 +292,6 @@ Attributes on `gen_ai.client.operation.duration`:
 | `gen_ai.agent.a2a.operation.name` | A2A method name (e.g., `message/send`, `tasks/get`) |
 | `gen_ai.system` | `a2a` |
 | `error.type` | `error` (only on failure) |
-
-Metrics require passing a `Meter` to the constructor:
-
-```java
-OpenTelemetryClientTransport transport = new OpenTelemetryClientTransport(delegate, tracer, meter);
-```
-
-If `meter` is `null`, the histogram is silently skipped.
 
 ### Context Propagation
 

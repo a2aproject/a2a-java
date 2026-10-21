@@ -410,7 +410,10 @@ public class MainEventBusProcessor implements Runnable {
             try {
                 if (event != null) {
                     LOGGER.debug("Sending push notification for task {}", taskId);
-                    pushSender.sendNotification(event, taskSnapshot);
+                    boolean sent = pushSender.sendNotification(event, taskSnapshot);
+                    if (!sent) {
+                        LOGGER.warn("One or more push notification deliveries failed for task {}", taskId);
+                    }
                 } else {
                     LOGGER.debug("Skipping push notification - event is null for task {}", taskId);
                 }

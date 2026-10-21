@@ -45,7 +45,6 @@ import ch.qos.logback.core.read.ListAppender;
  */
 public class MainEventBusProcessorExceptionTest {
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
     private static final String TASK_ID = "test-task-123";
 
     private MainEventBus mainEventBus;
@@ -64,7 +63,7 @@ public class MainEventBusProcessorExceptionTest {
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(null, mainEventBus); // null TaskStateProvider for tests
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, mockTaskStore,
-                                                          NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+                                                          PushNotificationSender.NOOP, queueManager);
 
         // Set up log capture for verifying error messages
         Logger logger = (Logger) LoggerFactory.getLogger(MainEventBusProcessor.class);

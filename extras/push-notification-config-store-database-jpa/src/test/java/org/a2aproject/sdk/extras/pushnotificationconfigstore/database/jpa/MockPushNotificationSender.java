@@ -22,9 +22,15 @@ public class MockPushNotificationSender implements PushNotificationSender {
 
     private final Queue<StreamingEventKind> capturedEvents = new ConcurrentLinkedQueue<>();
 
+    /**
+     * Captures the event for later assertion and always returns {@code true}.
+     * The return value is not meaningful in this test double — it exists only to satisfy
+     * the {@link org.a2aproject.sdk.server.tasks.PushNotificationSender} contract.
+     */
     @Override
-    public void sendNotification(StreamingEventKind event, Task taskSnapshot) {
+    public boolean sendNotification(StreamingEventKind event, Task taskSnapshot) {
         capturedEvents.add(event);
+        return true;
     }
 
     public Queue<StreamingEventKind> getCapturedEvents() {

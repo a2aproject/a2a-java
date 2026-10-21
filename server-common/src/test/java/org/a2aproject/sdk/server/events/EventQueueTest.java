@@ -67,15 +67,13 @@ public class EventQueueTest {
             }
             """;
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
-
     @BeforeEach
     public void init() {
         // Set up MainEventBus and processor for production-like test environment
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)

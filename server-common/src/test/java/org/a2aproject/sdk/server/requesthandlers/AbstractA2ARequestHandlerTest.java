@@ -34,7 +34,6 @@ import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
-import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.PushNotificationUrlValidator;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
@@ -70,8 +69,6 @@ public class AbstractA2ARequestHandlerTest {
             .build();
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
     private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
-
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
 
     protected AgentExecutor executor;
     protected TaskStore taskStore;

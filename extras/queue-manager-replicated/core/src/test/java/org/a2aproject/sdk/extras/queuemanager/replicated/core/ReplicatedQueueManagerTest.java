@@ -43,8 +43,6 @@ class ReplicatedQueueManagerTest {
     private StreamingEventKind testEvent;
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
-
     @BeforeEach
     void setUp() {
         // Create MainEventBus first
@@ -59,7 +57,7 @@ class ReplicatedQueueManagerTest {
         );
 
         // Create MainEventBusProcessor with QueueManager
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         testEvent = TaskStatusUpdateEvent.builder()

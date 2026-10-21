@@ -266,3 +266,9 @@ public class MyHttpClientProducer {
 | 0 | JDK | Always (fallback) |
 
 If the CDI container is active but no `A2AHttpClient` bean is registered, this provider is skipped and the next available provider is used.
+
+### Compatibility with OpenTelemetry
+
+When the [OpenTelemetry server module](opentelemetry.md) is on the classpath alongside a custom `A2AHttpClient` CDI bean, the OpenTelemetry module wraps your bean with trace-context propagation rather than replacing it. Your custom configuration (mTLS, proxy, authentication, timeouts, etc.) is preserved for push notification delivery while `traceparent` and `tracestate` headers are injected automatically.
+
+This works through the `@Instrumented` CDI qualifier (defined in `server-common`): the OpenTelemetry module produces an `@Instrumented A2AHttpClient` that delegates to your unqualified bean. `BasePushNotificationSender` prefers the `@Instrumented` variant when available, so both your custom configuration and the trace-context headers are present on outbound requests. No changes to your producer code are required.

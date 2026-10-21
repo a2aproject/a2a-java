@@ -96,8 +96,6 @@ public class DefaultRequestHandlerTest {
         .parts(new TextPart("test message"))
         .build();
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
-
     // Test infrastructure components
     protected AgentExecutor executor;
     protected TaskStore taskStore;
@@ -139,7 +137,7 @@ public class DefaultRequestHandlerTest {
         // Create MainEventBus and MainEventBusProcessor
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(inMemoryTaskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         // Create DefaultRequestHandler
@@ -197,7 +195,7 @@ public class DefaultRequestHandlerTest {
         MainEventBus manualMainEventBus = new MainEventBus();
         InMemoryQueueManager manualQueueManager = new InMemoryQueueManager(manualTaskStore, manualMainEventBus);
         MainEventBusProcessor manualProcessor = new MainEventBusProcessor(
-            manualMainEventBus, manualTaskStore, NOOP_PUSHNOTIFICATION_SENDER, manualQueueManager);
+            manualMainEventBus, manualTaskStore, PushNotificationSender.NOOP, manualQueueManager);
 
         try {
             AgentExecutor manualAgentExecutor = new AgentExecutor() {
@@ -1735,7 +1733,7 @@ public class DefaultRequestHandlerTest {
             }
         };
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore,
-                NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+                PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         CountDownLatch workingEventProcessing = new CountDownLatch(1);

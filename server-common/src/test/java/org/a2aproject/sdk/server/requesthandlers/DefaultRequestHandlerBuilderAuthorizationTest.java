@@ -57,8 +57,6 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             .acceptedOutputModes(List.of())
             .build();
 
-    private static final PushNotificationSender NOOP_PUSH_SENDER = (event, snapshot) -> {};
-
     private InMemoryTaskStore taskStore;
     private InMemoryQueueManager queueManager;
     private MainEventBusProcessor mainEventBusProcessor;
@@ -73,7 +71,7 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
         taskStore = new InMemoryTaskStore();
         MainEventBus mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSH_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         executor = Executors.newCachedThreadPool();
