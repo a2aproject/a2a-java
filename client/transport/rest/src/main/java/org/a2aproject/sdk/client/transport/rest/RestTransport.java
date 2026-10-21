@@ -204,6 +204,12 @@ public class RestTransport implements ClientTransport {
         if (request.includeArtifacts() != null && request.includeArtifacts()) {
             builder.setIncludeArtifacts(true);
         }
+        if (request.statusTimestampAfter() != null) {
+            builder.setStatusTimestampAfter(com.google.protobuf.Timestamp.newBuilder()
+                    .setSeconds(request.statusTimestampAfter().getEpochSecond())
+                    .setNanos(request.statusTimestampAfter().getNano())
+                    .build());
+        }
 
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_METHOD, builder, agentCard, context);
 
@@ -246,7 +252,7 @@ public class RestTransport implements ClientTransport {
             queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
         }
         if (request.status() != null) {
-            queryParts.add("status=" + request.status());
+            queryParts.add("status=" + URLEncoder.encode(request.status().toString(), StandardCharsets.UTF_8));
         }
         if (request.pageSize() != null) {
             queryParts.add("pageSize=" + request.pageSize());
@@ -337,6 +343,12 @@ public class RestTransport implements ClientTransport {
         org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder
                 = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
         builder.setTaskId(request.id());
+        if (request.pageSize() > 0) {
+            builder.setPageSize(request.pageSize());
+        }
+        if (request.pageToken() != null && !request.pageToken().isEmpty()) {
+            builder.setPageToken(request.pageToken());
+        }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {

@@ -33,6 +33,9 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
+import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -635,6 +638,83 @@ public class RestTransportTest {
         VersionNotSupportedError versionError = (VersionNotSupportedError) clientException.getCause();
         assertTrue(versionError.getMessage().contains("2.0"));
         assertTrue(versionError.getMessage().contains("1.0"));
+    }
+
+    /**
+     * Regression test for #1233: listTasks proto builder must set statusTimestampAfter so
+     * interceptors (auth, tracing, etc.) see the complete request.
+     */
+    @Test
+    public void testListTasksProtoBuilderIncludesStatusTimestampAfter() throws Exception {
+        Instant cutoff = Instant.parse("2026-10-01T00:00:00Z");
+        AtomicReference<Object> capturedPayload = new AtomicReference<>();
+
+        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
+            @Override
+            public PayloadAndHeaders intercept(String methodName, Object payload,
+                    java.util.Map<String, String> headers, org.a2aproject.sdk.spec.AgentCard agentCard,
+                    ClientCallContext clientCallContext) {
+                capturedPayload.set(payload);
+                return new PayloadAndHeaders(payload, headers);
+            }
+        };
+
+        this.server.when(
+                request().withMethod("GET").withPath("/tasks")
+        ).respond(response().withStatusCode(200).withBody(LIST_TASKS_TEST_RESPONSE));
+
+        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
+        RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+
+        ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(cutoff).build();
+        client.listTasks(params, null);
+
+        assertNotNull(capturedPayload.get());
+        org.a2aproject.sdk.grpc.ListTasksRequest proto =
+                ((org.a2aproject.sdk.grpc.ListTasksRequest.Builder) capturedPayload.get()).build();
+        assertTrue(proto.hasStatusTimestampAfter(), "proto builder must set statusTimestampAfter");
+        assertEquals(cutoff.getEpochSecond(), proto.getStatusTimestampAfter().getSeconds());
+        assertEquals(cutoff.getNano(), proto.getStatusTimestampAfter().getNanos());
+    }
+
+    /**
+     * Regression test for #1233: listTaskPushNotificationConfigurations proto builder must set
+     * pageSize and pageToken so interceptors see the complete request.
+     */
+    @Test
+    public void testListTaskPushNotificationConfigurationsProtoBuilderIncludesPagination() throws Exception {
+        AtomicReference<Object> capturedPayload = new AtomicReference<>();
+
+        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
+            @Override
+            public PayloadAndHeaders intercept(String methodName, Object payload,
+                    java.util.Map<String, String> headers, org.a2aproject.sdk.spec.AgentCard agentCard,
+                    ClientCallContext clientCallContext) {
+                capturedPayload.set(payload);
+                return new PayloadAndHeaders(payload, headers);
+            }
+        };
+
+        this.server.when(
+                request().withMethod("GET")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+        ).respond(response().withStatusCode(200).withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+
+        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
+        RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+
+        ListTaskPushNotificationConfigsParams params = ListTaskPushNotificationConfigsParams.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .pageSize(10)
+                .pageToken("next-page-token")
+                .build();
+        client.listTaskPushNotificationConfigurations(params, null);
+
+        assertNotNull(capturedPayload.get());
+        org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest proto =
+                ((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder) capturedPayload.get()).build();
+        assertEquals(10, proto.getPageSize(), "proto builder must set pageSize");
+        assertEquals("next-page-token", proto.getPageToken(), "proto builder must set pageToken");
     }
 
     /**
