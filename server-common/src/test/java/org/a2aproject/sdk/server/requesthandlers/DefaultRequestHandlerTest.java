@@ -23,6 +23,7 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -1705,7 +1706,8 @@ public class DefaultRequestHandlerTest {
     @Test
     void blockingSendStillReturnsCompletedTaskWhenFinalEventArrivesLate() throws Exception {
         CountDownLatch agentReturned = new CountDownLatch(1);
-        holdEventsAfterWorkingUntilAgentReturned(agentReturned);
+        AtomicBoolean agentReturnedInTime = new AtomicBoolean();
+        holdEventsAfterWorkingUntilAgentReturned(agentReturned, agentReturnedInTime);
         agentExecutorExecute = (context, emitter) -> {
             emitter.startWork();
             emitter.complete();
@@ -1714,11 +1716,12 @@ public class DefaultRequestHandlerTest {
 
         EventKind result = requestHandler.onMessageSend(blockingParams("msg-blocking-final-event"), NULL_CONTEXT);
 
+        assertTrue(agentReturnedInTime.get(), "the agent did not return while its next event was held");
         Task task = assertInstanceOf(Task.class, result);
         assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
     }
 
-    private void holdEventsAfterWorkingUntilAgentReturned(CountDownLatch agentReturned) {
+    private void holdEventsAfterWorkingUntilAgentReturned(CountDownLatch agentReturned, AtomicBoolean agentReturnedInTime) {
         mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
             @Override
             public void onEventProcessed(String taskId, Event event) {
@@ -1726,7 +1729,7 @@ public class DefaultRequestHandlerTest {
                         && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
                     try {
                         // Hold the agent's next event in the bus until the handler has closed the queue
-                        assertTrue(agentReturned.await(5, TimeUnit.SECONDS));
+                        agentReturnedInTime.set(agentReturned.await(5, TimeUnit.SECONDS));
                         Thread.sleep(200);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();

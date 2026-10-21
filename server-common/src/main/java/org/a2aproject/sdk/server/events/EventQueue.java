@@ -769,13 +769,13 @@ public abstract class EventQueue implements AutoCloseable {
                         taskId, item.getEvent().getClass().getSimpleName(), childCount);
             }
             children.forEach(child -> {
-                // Skip children that have already been closed. CopyOnWriteArrayList gives
-                // snapshot semantics, so a child removed by closeIfNotAwaitingFinalEvent()
-                // may still appear in this iteration. Checking isClosed() here narrows the
-                // TOCTOU window to the time between the check and internalEnqueueItem();
-                // a narrow residual race remains for graceful close but is harmless for
-                // non-final events (they'd land in the draining queue) and impossible for
-                // final events (submittedFinalEvents prevents close while one is in flight).
+                // Skip children that have already been closed, unless a child is still awaiting
+                // a final event. CopyOnWriteArrayList gives snapshot semantics, so a child removed
+                // by closeIfNotAwaitingFinalEvent() may still appear in this iteration; for a
+                // non-final event that is harmless (it lands in the draining queue). A child that
+                // was closed gracefully while awaiting a final event must still receive it: a
+                // blocking call closes the caller's queue before the event bus may have
+                // distributed the final event.
                 if (child.isClosed() && !child.isAwaitingFinalEvent()) {
                     LOGGER.debug("MainQueue[{}]: Skipping closed child queue for event {}",
                             taskId, item.getEvent().getClass().getSimpleName());
