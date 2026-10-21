@@ -48,8 +48,10 @@
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-opentelemetry-common</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

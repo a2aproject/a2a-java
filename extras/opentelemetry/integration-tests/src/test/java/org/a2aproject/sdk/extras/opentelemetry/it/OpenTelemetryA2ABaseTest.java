@@ -3,6 +3,9 @@ package org.a2aproject.sdk.extras.opentelemetry.it;
 import static io.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_STREAMING_DURATION;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_END_SUFFIX;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_EVENT_SUFFIX;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -235,6 +238,93 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         }
     }
 
+    @Test
+    void testSendMessageStreamCreatesClosingSpan() throws Exception {
+        reset();
+        given().get("/reset-metrics").then().statusCode(HTTP_OK);
+
+        Client streamingClient = Client.builder(A2A.getAgentCard("http://localhost:" + serverPort))
+                .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                .build();
+
+        Message message = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(List.of(new TextPart("stream test")))
+                .messageId("stream-msg-1")
+                .build();
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
+
+        streamingClient.sendMessage(params, List.of(), null, null);
+
+        await().atMost(10, SECONDS).until(() -> {
+            List<Map<String, Object>> spans = getSpans();
+            return spans.stream().anyMatch(s -> (A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX).equals(s.get("name")));
+        });
+
+        List<Map<String, Object>> spans = getSpans();
+
+        Map<String, Object> initialSpan = spans.stream()
+                .filter(s -> A2AMethods.SEND_STREAMING_MESSAGE_METHOD.equals(s.get("name")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No initial SendStreamingMessage span found"));
+
+        Map<String, Object> closingSpan = spans.stream()
+                .filter(s -> (A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX).equals(s.get("name")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No SendStreamingMessage-stream closing span found"));
+
+        assertEquals(Boolean.TRUE, initialSpan.get("ended"), "Initial span should be ended");
+        assertEquals("SERVER", initialSpan.get("kind"), "Initial span should be SERVER");
+
+        assertEquals(Boolean.TRUE, closingSpan.get("ended"), "Closing span should be ended");
+        assertEquals("SERVER", closingSpan.get("kind"), "Closing span should be SERVER");
+
+        assertTrue(
+                spans.stream().anyMatch(s -> (A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX).equals(s.get("name"))),
+                "Should have at least one streaming event span");
+        assertEquals(1, ((Number) closingSpan.get("links_count")).intValue(),
+                "Closing span should have exactly one link");
+        assertEquals(initialSpan.get("spanId"), closingSpan.get("link_0_spanId"),
+                "Closing span should link to the initial span");
+    }
+
+    @Test
+    void testSendMessageStreamRecordsStreamingDuration() throws Exception {
+        reset();
+        given().get("/reset-metrics").then().statusCode(HTTP_OK);
+
+        Client streamingClient = Client.builder(A2A.getAgentCard("http://localhost:" + serverPort))
+                .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                .build();
+
+        Message message = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(List.of(new TextPart("metric stream test")))
+                .messageId("metric-stream-msg-1")
+                .build();
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
+
+        streamingClient.sendMessage(params, List.of(), null, null);
+
+        await().atMost(10, SECONDS).until(() -> {
+            List<Map<String, Object>> metrics = getMetrics();
+            return metrics.stream().anyMatch(m -> GENAI_STREAMING_DURATION.equals(m.get("name")));
+        });
+
+        List<Map<String, Object>> metrics = getMetrics();
+        Map<String, Object> streamingMetric = metrics.stream()
+                .filter(m -> GENAI_STREAMING_DURATION.equals(m.get("name")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No streaming duration metric found"));
+
+        assertEquals("HISTOGRAM", streamingMetric.get("type"),
+                "Streaming duration metric should be a histogram");
+        assertTrue(((Number) streamingMetric.get("data_count")).intValue() > 0,
+                "Histogram should have at least one data point");
+    }
+
     protected void saveTaskInTaskStore(Task task) throws Exception {
         HttpClient httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
@@ -297,4 +387,5 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
             throw new RuntimeException(String.format("Ensuring queue failed! Status: %d, Body: %s", response.statusCode(), response.body()));
         }
     }
+
 }

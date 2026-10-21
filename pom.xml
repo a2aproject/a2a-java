@@ -242,6 +242,12 @@
             </dependency>
             <dependency>
                 <groupId>org.a2aproject.sdk</groupId>
+                <artifactId>a2a-java-sdk-opentelemetry-common</artifactId>
+                <version>${project.version}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.a2aproject.sdk</groupId>
                 <artifactId>a2a-java-sdk-opentelemetry-client</artifactId>
                 <version>${project.version}</version>
             </dependency>

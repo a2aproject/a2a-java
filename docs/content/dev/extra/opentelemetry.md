@@ -14,6 +14,7 @@ Adds distributed tracing and context propagation to A2A servers and clients usin
 - **Context Propagation**: OpenTelemetry trace context propagation across async operations
 - **Request/Response Logging**: Optional extraction of request and response data into spans
 - **Error Tracking**: Automatic error status and error type attributes on failures
+- **Metrics**: `gen_ai.client.operation.duration` histogram on the client side; `gen_ai.agent.a2a.streaming.duration` histogram for full streaming lifecycle on the server side
 
 ## Modules
 
@@ -64,6 +65,76 @@ Async agent execution (maintains trace context)
     |
 Response (with trace headers)
 ```
+
+### Streaming Span Lifecycle
+
+Streaming methods (`message/stream` and `tasks/resubscribe`) follow a two-span model to correctly represent the full duration of a streaming response.
+
+**Span 1 — method span** is created when the request arrives and ended as soon as the publisher is returned to the transport layer. It captures request attributes and the initial outcome (success or synchronous error).
+
+**Per-event child spans** (`<method>-event`) are created for each streaming event published via `onNext()`. Each child span carries a [link](https://opentelemetry.io/docs/concepts/signals/traces/#span-links) back to Span 1 and is made the current span during delegate execution, so any nested telemetry is correctly parented.
+
+**Span 2 — end span** (`<method>-end`) is created when the stream terminates — either on completion or error. It also carries a link to Span 1 for correlation.
+
+<pre class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant D as OTel Decorator
+    participant H as RequestHandler
+    participant W as WrappedPublisher
+
+    C->>D: onMessageSendStream(params)
+    D->>D: create Span₁ (SERVER)
+    D->>H: onMessageSendStream(params)
+    H-->>D: publisher
+    D->>D: capture Span₁.context
+    D->>D: Span₁.setStatus(OK) · Span₁.end()
+    D-->>C: WrappedPublisher
+
+    note over D: Span₁ closed immediately
+
+    loop for each streaming event
+        W->>W: create child span (link→Span₁)
+        W-->>C: onNext(event)
+        W->>W: child span.end()
+    end
+
+    alt stream completes normally
+        W->>W: create Span₂ (SERVER, link→Span₁)
+        W->>W: Span₂.setStatus(OK) · Span₂.end()
+        W-->>C: onComplete()
+    else stream errors
+        W->>W: create Span₂ (SERVER, link→Span₁)
+        W->>W: Span₂.setStatus(ERROR) · Span₂.end()
+        W-->>C: onError(throwable)
+    end
+</pre>
+
+Each per-event child span carries:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.streaming-event` | Event kind identifier (`"message"`, `"task"`, `"statusUpdate"`, `"artifactUpdate"`) |
+| `gen_ai.agent.a2a.task.status.state` | Task status state (for `TaskStatusUpdateEvent` and `Task` events) |
+| `gen_ai.agent.a2a.task_id` | Task identifier (when available from the event) |
+
+### Metrics
+
+The server decorator records the following histogram instruments:
+
+| Instrument | Type | Unit | Description |
+|------------|------|------|-------------|
+| `gen_ai.agent.a2a.streaming.duration` | Histogram | `s` | Duration from stream initiation to last event, for `message/stream` and `tasks/resubscribe` |
+
+Attributes on `gen_ai.agent.a2a.streaming.duration`:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.operation.name` | A2A method name (`message/stream` or `tasks/resubscribe`) |
+| `gen_ai.system` | `a2a` |
+| `error.type` | `error` (only on stream failure) |
+
+Meter injection uses CDI `Instance<Meter>`, so the histogram is silently skipped if no `Meter` bean is available in the container.
 
 ### Context-Aware Async Executor
 
@@ -132,6 +203,30 @@ Adds OpenTelemetry spans to A2A client operations:
     <artifactId>a2a-java-sdk-opentelemetry-client</artifactId>
 </dependency>
 ```
+
+### Metrics
+
+The client transport records the following histogram:
+
+| Instrument | Type | Unit | Description |
+|------------|------|------|-------------|
+| `gen_ai.client.operation.duration` | Histogram | `s` | Duration of A2A client operations from invocation to completion or error |
+
+Attributes on `gen_ai.client.operation.duration`:
+
+| Attribute | Value |
+|-----------|-------|
+| `gen_ai.agent.a2a.operation.name` | A2A method name (e.g., `message/send`, `tasks/get`) |
+| `gen_ai.system` | `a2a` |
+| `error.type` | `error` (only on failure) |
+
+Metrics require passing a `Meter` to the constructor:
+
+```java
+OpenTelemetryClientTransport transport = new OpenTelemetryClientTransport(delegate, tracer, meter);
+```
+
+If `meter` is `null`, the histogram is silently skipped.
 
 ### Context Propagation
 

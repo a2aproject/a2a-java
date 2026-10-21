@@ -14,6 +14,11 @@ public class BaseTest {
         });
     }
 
+    protected List<Map<String, Object>> getMetrics() {
+        return get("/export-metrics").body().as(new TypeRef<>() {
+        });
+    }
+
     protected void buildGlobalTelemetryInstance() {
         // Do nothing in JVM mode
     }

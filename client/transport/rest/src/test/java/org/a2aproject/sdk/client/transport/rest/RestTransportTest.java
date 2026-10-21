@@ -69,6 +69,7 @@ import org.mockserver.model.JsonBody;
 public class RestTransportTest {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransportTest.class.getName());
+    private static final Throwable SENTINEL = new RuntimeException("not yet called");
     private ClientAndServer server;
     private static final AgentCard CARD = AgentCard.builder()
                 .name("Hello World Agent")
@@ -472,6 +473,89 @@ public class RestTransportTest {
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof org.a2aproject.sdk.spec.TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+    }
+
+    /**
+     * Test that the error handler is called with null on normal stream completion for sendMessageStreaming.
+     */
+    @Test
+    public void testSendMessageStreamingCompletion() throws Exception {
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/message:stream")
+                        .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        Message message = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("tell me some jokes")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build();
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
+                .acceptedOutputModes(List.of("text"))
+                .returnImmediately(true)
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(message)
+                .configuration(configuration)
+                .build();
+        CountDownLatch eventLatch = new CountDownLatch(1);
+        CountDownLatch completionLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> completionValue = new AtomicReference<>(SENTINEL);
+        Consumer<StreamingEventKind> eventHandler = event -> eventLatch.countDown();
+        Consumer<Throwable> errorHandler = error -> {
+            completionValue.set(error);
+            completionLatch.countDown();
+        };
+        client.sendMessageStreaming(params, eventHandler, errorHandler, null);
+
+        assertTrue(eventLatch.await(10, TimeUnit.SECONDS), "Should receive streaming event");
+        assertTrue(completionLatch.await(10, TimeUnit.SECONDS), "Error handler should be called on stream completion");
+        assertNull(completionValue.get(), "Error handler should be called with null for successful completion");
+    }
+
+    /**
+     * Test that the error handler is called with null on normal stream completion for subscribeToTask.
+     */
+    @Test
+    public void testSubscribeToTaskCompletion() throws Exception {
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/tasks/task-1234:subscribe")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        TaskIdParams taskIdParams = new TaskIdParams("task-1234");
+
+        CountDownLatch eventLatch = new CountDownLatch(1);
+        CountDownLatch completionLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> completionValue = new AtomicReference<>(SENTINEL);
+        Consumer<StreamingEventKind> eventHandler = event -> eventLatch.countDown();
+        Consumer<Throwable> errorHandler = error -> {
+            completionValue.set(error);
+            completionLatch.countDown();
+        };
+        client.subscribeToTask(taskIdParams, eventHandler, errorHandler, null);
+
+        assertTrue(eventLatch.await(10, TimeUnit.SECONDS), "Should receive streaming event");
+        assertTrue(completionLatch.await(10, TimeUnit.SECONDS), "Error handler should be called on stream completion");
+        assertNull(completionValue.get(), "Error handler should be called with null for successful completion");
     }
 
     /**

@@ -1,15 +1,52 @@
 package org.a2aproject.sdk.extras.opentelemetry.client;
 
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.ERROR_TYPE;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_REQUEST_SYS_PROPERTY;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_RESPONSE_SYS_PROPERTY;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_REQUEST;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_RESPONSE;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_STREAMING_EVENT;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_END_SUFFIX;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_EVENT_SUFFIX;
+import static org.a2aproject.sdk.extras.opentelemetry.OtelSpanMocks.mockClosingSpanBuilder;
+import static org.a2aproject.sdk.extras.opentelemetry.OtelSpanMocks.mockEventSpanBuilder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+import java.util.List;
+import java.util.function.Consumer;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
+import org.a2aproject.sdk.spec.A2AMethods;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
@@ -20,19 +57,13 @@ import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
-import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
+import org.a2aproject.sdk.spec.TextPart;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -40,16 +71,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
-import java.util.List;
-import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import org.a2aproject.sdk.spec.A2AMethods;
-import org.a2aproject.sdk.spec.CancelTaskParams;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -94,6 +115,7 @@ class OpenTelemetryClientTransportTest {
 
         transport = new OpenTelemetryClientTransport(delegate, tracer);
     }
+
 
     @Test
     void testSendMessage_Success() throws A2AClientException {
@@ -147,6 +169,7 @@ class OpenTelemetryClientTransportTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testSendMessageStreaming() throws A2AClientException {
         MessageSendParams request = mock(MessageSendParams.class);
         when(request.toString()).thenReturn("request-string");
@@ -298,6 +321,7 @@ class OpenTelemetryClientTransportTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testSubscribeToTask() throws A2AClientException {
         TaskIdParams request = mock(TaskIdParams.class);
         when(request.toString()).thenReturn("request-string");
@@ -360,17 +384,17 @@ class OpenTelemetryClientTransportTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testEventConsumer_ThroughSendMessageStreaming() throws A2AClientException {
         MessageSendParams request = mock(MessageSendParams.class);
         when(request.toString()).thenReturn("request-string");
 
-        SpanBuilder eventSpanBuilder = mock(SpanBuilder.class);
         Span eventSpan = mock(Span.class);
-        when(tracer.spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + "-event")).thenReturn(eventSpanBuilder);
-        when(eventSpanBuilder.setSpanKind(any(SpanKind.class))).thenReturn(eventSpanBuilder);
-        when(eventSpanBuilder.setAttribute(anyString(), anyString())).thenReturn(eventSpanBuilder);
-        when(eventSpanBuilder.addLink(any(SpanContext.class))).thenReturn(eventSpanBuilder);
-        when(eventSpanBuilder.startSpan()).thenReturn(eventSpan);
+        SpanBuilder eventSpanBuilder = mockEventSpanBuilder(tracer,
+                A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX, eventSpan);
+
+        Span closingSpan = mock(Span.class);
+        mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
 
         ArgumentCaptor<Consumer<StreamingEventKind>> eventConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         Consumer<StreamingEventKind> originalConsumer = mock(Consumer.class);
@@ -388,23 +412,21 @@ class OpenTelemetryClientTransportTest {
 
         eventConsumerCaptor.getValue().accept(event);
 
-        verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + "-event");
-        verify(eventSpan).setStatus(StatusCode.OK);
+        verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX);
+        verify(eventSpanBuilder).addLink(spanContext);
+        verify(eventSpanBuilder).setAttribute(GENAI_STREAMING_EVENT, event.kind());
         verify(eventSpan).end();
         verify(originalConsumer).accept(event);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testErrorConsumer_ThroughSendMessageStreaming() throws A2AClientException {
         MessageSendParams request = mock(MessageSendParams.class);
         when(request.toString()).thenReturn("request-string");
 
-        SpanBuilder errorSpanBuilder = mock(SpanBuilder.class);
-        Span errorSpan = mock(Span.class);
-        when(tracer.spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + "-error")).thenReturn(errorSpanBuilder);
-        when(errorSpanBuilder.setSpanKind(any(SpanKind.class))).thenReturn(errorSpanBuilder);
-        when(errorSpanBuilder.addLink(any(SpanContext.class))).thenReturn(errorSpanBuilder);
-        when(errorSpanBuilder.startSpan()).thenReturn(errorSpan);
+        Span closingSpan = mock(Span.class);
+        mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
 
         ArgumentCaptor<Consumer<Throwable>> errorConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         Consumer<Throwable> originalConsumer = mock(Consumer.class);
@@ -414,30 +436,35 @@ class OpenTelemetryClientTransportTest {
         verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), errorConsumerCaptor.capture(), any(ClientCallContext.class));
 
         Throwable error = new RuntimeException("Test error");
-
         errorConsumerCaptor.getValue().accept(error);
 
-        verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + "-error");
-        verify(errorSpan).setStatus(StatusCode.ERROR, "Test error");
-        verify(errorSpan).end();
+        verify(closingSpan).setAttribute(ERROR_TYPE, RuntimeException.class.getName());
+        verify(closingSpan).setStatus(StatusCode.ERROR, "Test error");
+        verify(closingSpan, atLeastOnce()).end();
         verify(originalConsumer).accept(error);
     }
 
     @Test
-    void testErrorConsumer_WithNullThrowable() throws A2AClientException {
+    @SuppressWarnings("unchecked")
+    void testTerminalConsumer_WithNullThrowable_CreatesOkClosingSpan() throws A2AClientException {
         MessageSendParams request = mock(MessageSendParams.class);
         when(request.toString()).thenReturn("request-string");
 
-        ArgumentCaptor<Consumer<Throwable>> errorConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
+        Span closingSpan = mock(Span.class);
+        mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+
+        ArgumentCaptor<Consumer<Throwable>> terminalConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         Consumer<Throwable> originalConsumer = mock(Consumer.class);
 
         transport.sendMessageStreaming(request, mock(Consumer.class), originalConsumer, context);
 
-        verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), errorConsumerCaptor.capture(), any(ClientCallContext.class));
+        verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), terminalConsumerCaptor.capture(), any(ClientCallContext.class));
 
-        errorConsumerCaptor.getValue().accept(null);
+        terminalConsumerCaptor.getValue().accept(null);
 
-        verify(originalConsumer, never()).accept(any());
+        verify(closingSpan).setStatus(StatusCode.OK);
+        verify(closingSpan).end();
+        verify(originalConsumer).accept(null);
     }
 
     @Test
@@ -471,6 +498,81 @@ class OpenTelemetryClientTransportTest {
         assertEquals(expectedException, exception);
         verify(span).setStatus(StatusCode.ERROR, "Resubscribe failed");
         verify(span).end();
+    }
+
+    @Nested
+    class MetricsTests {
+
+        @Mock
+        private Meter meter;
+
+        @Mock
+        private DoubleHistogramBuilder histogramBuilder;
+
+        @Mock
+        private DoubleHistogram histogram;
+
+        @BeforeEach
+        void setUpMeter() {
+            lenient().when(meter.histogramBuilder(anyString())).thenReturn(histogramBuilder);
+            lenient().when(histogramBuilder.setUnit(anyString())).thenReturn(histogramBuilder);
+            lenient().when(histogramBuilder.setDescription(anyString())).thenReturn(histogramBuilder);
+            lenient().when(histogramBuilder.build()).thenReturn(histogram);
+        }
+
+        @Test
+        void sendMessage_recordsOperationDuration() throws A2AClientException {
+            OpenTelemetryClientTransport transportWithMeter = new OpenTelemetryClientTransport(delegate, tracer, meter);
+            MessageSendParams request = mock(MessageSendParams.class);
+            EventKind expectedResult = mock(EventKind.class);
+            when(request.toString()).thenReturn("request-string");
+            when(expectedResult.toString()).thenReturn("response-string");
+            when(delegate.sendMessage(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
+
+            transportWithMeter.sendMessage(request, context);
+
+            verify(histogram).record(anyDouble(), any(io.opentelemetry.api.common.Attributes.class));
+        }
+
+        @Test
+        void sendMessage_noHistogramWhenNoMeter() throws A2AClientException {
+            // transport without meter — should not throw, histogram never invoked
+            MessageSendParams request = mock(MessageSendParams.class);
+            EventKind expectedResult = mock(EventKind.class);
+            when(request.toString()).thenReturn("request-string");
+            when(expectedResult.toString()).thenReturn("response-string");
+            when(delegate.sendMessage(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
+
+            transport.sendMessage(request, context);
+
+            verify(histogram, never()).record(anyDouble(), any(io.opentelemetry.api.common.Attributes.class));
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void sendMessageStreaming_recordsFailedOperationDuration() throws A2AClientException {
+            OpenTelemetryClientTransport transportWithMeter = new OpenTelemetryClientTransport(delegate, tracer, meter);
+            MessageSendParams request = mock(MessageSendParams.class);
+            A2AClientException expectedException = new A2AClientException("Streaming failed");
+            doThrow(expectedException).when(delegate).sendMessageStreaming(any(MessageSendParams.class), any(Consumer.class),
+                    any(Consumer.class), any(ClientCallContext.class));
+
+            assertThrows(A2AClientException.class,
+                    () -> transportWithMeter.sendMessageStreaming(request, mock(Consumer.class), mock(Consumer.class), context));
+
+            verify(histogram).record(anyDouble(), any(io.opentelemetry.api.common.Attributes.class));
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void closingSpan_notCreatedDuringStreamingInitiation() throws A2AClientException {
+        MessageSendParams request = mock(MessageSendParams.class);
+        when(request.toString()).thenReturn("request-string");
+
+        transport.sendMessageStreaming(request, mock(Consumer.class), mock(Consumer.class), context);
+
+        verify(tracer, never()).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX);
     }
 
     @Test

@@ -9,14 +9,15 @@ import java.util.logging.Logger;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import io.grpc.stub.StreamObserver;
+import org.jspecify.annotations.Nullable;
 
 public class EventStreamObserver implements StreamObserver<StreamResponse> {
 
     private static final Logger LOGGER = Logger.getLogger(EventStreamObserver.class.getName());
     private final Consumer<StreamingEventKind> eventHandler;
-    private final Consumer<Throwable> errorHandler;
+    @Nullable private final Consumer<Throwable> errorHandler;
 
-    public EventStreamObserver(Consumer<StreamingEventKind> eventHandler, Consumer<Throwable> errorHandler) {
+    public EventStreamObserver(Consumer<StreamingEventKind> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
     }
@@ -39,7 +40,9 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
                 break;
             default:
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
-                errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                if (errorHandler != null) {
+                    errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                }
                 return;
         }
         eventHandler.accept(event);
@@ -59,6 +62,8 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
 
     @Override
     public void onCompleted() {
-        // done
+        if (errorHandler != null) {
+            errorHandler.accept(null);
+        }
     }
 }
