@@ -241,7 +241,7 @@ public class RestTransport implements ClientTransport {
 
     
     private String buildListTasksQueryString(ListTasksParams request) {
-        java.util.List<String> queryParts = new java.util.ArrayList<>();
+        List<String> queryParts = new java.util.ArrayList<>();
         if (request.contextId() != null) {
             queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
         }
@@ -257,8 +257,23 @@ public class RestTransport implements ClientTransport {
         if (request.historyLength() != null) {
             queryParts.add("historyLength=" + request.historyLength());
         }
+        if (request.statusTimestampAfter() != null) {
+            queryParts.add("statusTimestampAfter=" + URLEncoder.encode(
+                    request.statusTimestampAfter().toString(), StandardCharsets.UTF_8));
+        }
         if (request.includeArtifacts() != null && request.includeArtifacts()) {
             queryParts.add("includeArtifacts=true");
+        }
+        return String.join("&", queryParts);
+    }
+
+    private String buildListPushNotificationConfigsQueryString(ListTaskPushNotificationConfigsParams request) {
+        List<String> queryParts = new java.util.ArrayList<>();
+        if (request.pageSize() > 0) {
+            queryParts.add("pageSize=" + request.pageSize());
+        }
+        if (request.pageToken() != null && !request.pageToken().isEmpty()) {
+            queryParts.add("pageToken=" + URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
         }
         return String.join("&", queryParts);
     }
@@ -325,8 +340,13 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
-            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.id());
-            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
+            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
+            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
+            String queryString = buildListPushNotificationConfigsQueryString(request);
+            if (!queryString.isEmpty()) {
+                urlBuilder.append("?").append(queryString);
+            }
+            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(urlBuilder.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
             A2AHttpResponse response = getBuilder.get();
             if (!response.success()) {
