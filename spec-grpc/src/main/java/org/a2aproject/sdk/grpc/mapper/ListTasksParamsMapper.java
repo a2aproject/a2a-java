@@ -28,6 +28,7 @@ public interface ListTasksParamsMapper {
     @Mapping(target = "historyLength", source = "historyLength", conditionExpression = "java(params.historyLength() != null)")
     @Mapping(target = "statusTimestampAfter", source = "statusTimestampAfter", qualifiedByName = "instantToProtoTimestamp")
     @Mapping(target = "includeArtifacts", source = "includeArtifacts", conditionExpression = "java(params.includeArtifacts() != null)")
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(params.tenant() != null)")
     ListTasksRequest toProto(org.a2aproject.sdk.spec.ListTasksParams params);
 
     /**
