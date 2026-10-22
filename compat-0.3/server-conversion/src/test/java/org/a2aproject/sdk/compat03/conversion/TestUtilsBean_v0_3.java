@@ -3,6 +3,8 @@ package org.a2aproject.sdk.compat03.conversion;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.a2aproject.sdk.server.events.EventQueue;
+import org.a2aproject.sdk.server.events.NoTaskQueueException;
 import org.a2aproject.sdk.server.events.QueueManager;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.TaskStore;
@@ -44,11 +46,29 @@ public class TestUtilsBean_v0_3 {
     }
 
     public void deleteTask(String taskId) {
-        taskStore.delete(taskId);
+        EventQueue queue = queueManager.get(taskId);
+        try {
+            if (queue != null) {
+                // Stop every child consumer, including subscriptions to non-final tasks.
+                queue.close(true);
+            }
+            try {
+                queueManager.close(taskId);
+            } catch (NoTaskQueueException ignored) {
+                // Finalization may already have removed the queue, or none was created.
+            }
+        } finally {
+            taskStore.delete(taskId);
+        }
     }
 
     public void ensureQueue(String taskId) {
         queueManager.createOrTap(taskId);
+    }
+
+    public void ensureQueueWithoutConsumer(String taskId) {
+        // createOrTap returns a child; release only that setup child and retain the non-final main queue.
+        queueManager.createOrTap(taskId).close();
     }
 
     public void enqueueEvent(String taskId, Event event) {

@@ -2,14 +2,24 @@ package org.a2aproject.sdk.compat03.client.transport.rest;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
-import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.compat03.client.http.A2ACardResolver_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.sse.RestSSEEventListener_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;
@@ -18,44 +28,37 @@ import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallI
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3;
 import org.a2aproject.sdk.compat03.grpc.CancelTaskRequest;
 import org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder;
 import org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.compat03.grpc.GetTaskRequest;
 import org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
+import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
-import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
-import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
-import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
+import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -194,8 +197,14 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
             builder.setConfigId(request.pushNotificationConfig().id());
         }
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest_v0_3.METHOD, builder, agentCard, context);
+        CreateTaskPushNotificationConfigRequestOrBuilder payload =
+                checkNotNullParam("payload", (CreateTaskPushNotificationConfigRequestOrBuilder) payloadAndHeaders.getPayload());
+        PayloadAndHeaders_v0_3 configBody = new PayloadAndHeaders_v0_3(payload.getConfig(), payloadAndHeaders.getHeaders());
+        String configId = payload.getConfigId().isEmpty() ? request.taskId() : payload.getConfigId();
+        String url = agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs", request.taskId())
+                + "?configId=" + URLEncoder.encode(configId, StandardCharsets.UTF_8);
         try {
-            String httpResponseBody = sendPostRequest(agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(url, configBody);
             org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(responseBuilder);
@@ -313,11 +322,11 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // We don't need to do anything special on completion
                     }));
         } catch (IOException e) {
-            throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
+            throw new A2AClientException_v0_3("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
-            throw new A2AClientException_v0_3("Send streaming message request timed out: " + e, e);
+            throw new A2AClientException_v0_3("Task resubscription request timed out: " + e, e);
         } catch (JsonProcessingException_v0_3 e) {
-            throw new A2AClientException_v0_3("Failed to process JSON for streaming message request: " + e, e);
+            throw new A2AClientException_v0_3("Failed to process JSON for task resubscription request: " + e, e);
         }
     }
 

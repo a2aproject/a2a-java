@@ -113,6 +113,28 @@
             <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
         </dependency>
 
+        <!-- Compat 0.3 adapters for the concrete v1.0 client -->
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-conversion</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-adapter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-adapter-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-adapter-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-adapter-grpc</artifactId>
+        </dependency>
+
         <!-- Compat 0.3 Client modules -->
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>

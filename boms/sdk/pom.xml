@@ -120,6 +120,33 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- Compat 0.3 client adaptation for the concrete v1.0 client -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-conversion</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Compat 0.3 Client modules -->
             <dependency>
                 <groupId>${project.groupId}</groupId>

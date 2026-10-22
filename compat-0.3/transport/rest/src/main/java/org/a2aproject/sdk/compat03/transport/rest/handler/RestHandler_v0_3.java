@@ -2,22 +2,27 @@ package org.a2aproject.sdk.compat03.transport.rest.handler;
 
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Flow;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Flow;
-
-import org.a2aproject.sdk.server.ExtendedAgentCard;
-import org.a2aproject.sdk.server.PublicAgentCard;
-import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
@@ -34,24 +39,18 @@ import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
+import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.util.async.Internal;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
-import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
 import org.a2aproject.sdk.spec.A2AError;
-import jakarta.enterprise.inject.Instance;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
@@ -142,12 +141,34 @@ public class RestHandler_v0_3 {
     }
 
     public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, ServerCallContext context) {
+        return setTaskPushNotificationConfiguration(taskId, body, null, context);
+    }
+
+    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body,
+            @Nullable String configId, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
             org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
-            parseRequestBody(body, builder);
+            validate(body);
+            var json = JsonParser.parseString(body);
+            if (json.isJsonObject() && json.getAsJsonObject().has("config")) {
+                // Accept the envelope sent by earlier SDK clients.
+                parseRequestBody(body, builder);
+            } else {
+                var config = org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
+                parseRequestBody(body, config);
+                if (config.getName().isEmpty()) {
+                    config.setName("tasks/" + taskId + "/pushNotificationConfigs");
+                }
+                builder.setParent("tasks/" + taskId).setConfig(config);
+            }
+            if (configId != null && !configId.isEmpty()) {
+                builder.setConfigId(configId);
+                builder.getConfigBuilder().setName("tasks/" + taskId + "/pushNotificationConfigs/" + configId);
+                builder.getConfigBuilder().getPushNotificationConfigBuilder().setId(configId);
+            }
             TaskPushNotificationConfig_v0_3 result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {

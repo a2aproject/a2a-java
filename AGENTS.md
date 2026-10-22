@@ -122,7 +122,7 @@ For detailed architectural documentation:
   - **[Request Flows](.claude/architecture/eventqueue/FLOWS.md)**: Non-streaming vs streaming, cleanup patterns
   - **[Usage Scenarios](.claude/architecture/eventqueue/SCENARIOS.md)**: Real-world patterns and common pitfalls
 - **Compatibility with previous protocol versions**:
-  - 0.3 protocol compatibility layer: `.claude/architecture/compatibility_0.3.md`
+  - 0.3 protocol compatibility layer, including the unified client adapters and legacy `Client_v0_3` API: `.claude/architecture/compatibility_0.3.md`
 
 > 💡 Deep-dive docs are loaded on-demand when working in related areas.
 

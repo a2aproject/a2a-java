@@ -18,6 +18,12 @@
     <description>Java SDK for the Agent2Agent Protocol (A2A) - 0.3 to 1.0 Type Conversion Layer</description>
 
     <dependencies>
+        <!-- Neutral conversion mappings -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-conversion</artifactId>
+        </dependency>
+
         <!-- 0.3 spec types (source) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -34,12 +40,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
-        </dependency>
-
-        <!-- MapStruct for type conversions -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
         </dependency>
 
         <!-- CDI -->

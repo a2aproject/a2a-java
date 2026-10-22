@@ -417,14 +417,11 @@ public class JsonRestMessages_v0_3 {
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
-              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "config": {
-                "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs",
-                "pushNotificationConfig": {
-                  "url": "https://example.com/callback",
-                  "authentication": {
-                    "schemes": [ "jwt" ]
-                  }
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs",
+              "pushNotificationConfig": {
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "schemes": [ "jwt" ]
                 }
               }
             }""";

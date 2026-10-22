@@ -26,6 +26,31 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-conversion</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-adapter-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -118,8 +143,13 @@
         <module>spec</module>
         <module>spec-grpc</module>
 
-        <!-- Server conversion (0.3 to 1.0 translation layer) -->
+        <!-- Neutral conversion and server conversion (0.3 to 1.0 translation layer) -->
+        <module>conversion</module>
         <module>server-conversion</module>
+        <module>client/adapter</module>
+        <module>client/adapter-jsonrpc</module>
+        <module>client/adapter-rest</module>
+        <module>client/adapter-grpc</module>
 
         <!-- Test infrastructure -->
         <module>tests/server-common</module>

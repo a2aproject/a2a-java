@@ -1,16 +1,18 @@
 package org.a2aproject.sdk.compat03.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
-import java.util.logging.Logger;
+import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 
 
 
@@ -34,6 +36,11 @@ public class Utils_v0_3 {
 
 
     private static final Logger LOGGER = Logger.getLogger(Utils_v0_3.class.getName());
+
+    /** Returns an unmodifiable shallow copy that preserves JSON null values. */
+    public static <K, V> Map<K, V> copyJsonMap(Map<K, V> map) {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(map));
+    }
 
     public static String toJsonString(Object data) {
         try {
