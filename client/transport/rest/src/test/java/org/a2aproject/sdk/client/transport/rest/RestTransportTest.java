@@ -6,6 +6,7 @@ import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.CANCEL_T
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.GET_TASK_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
+import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASKS_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_TEST_REQUEST;
@@ -22,6 +23,7 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -31,9 +33,12 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
+import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
@@ -48,6 +53,7 @@ import org.a2aproject.sdk.spec.FileWithUri;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
+import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
@@ -716,5 +722,143 @@ public class RestTransportTest {
         VersionNotSupportedError versionError = (VersionNotSupportedError) clientException.getCause();
         assertTrue(versionError.getMessage().contains("2.0"));
         assertTrue(versionError.getMessage().contains("1.0"));
+    }
+
+    /**
+     * Regression test for #1233: listTasks proto builder must set statusTimestampAfter so
+     * interceptors (auth, tracing, etc.) see the complete request.
+     */
+    @Test
+    public void testListTasksProtoBuilderIncludesStatusTimestampAfter() throws Exception {
+        Instant cutoff = Instant.parse("2026-10-01T00:00:00Z");
+        AtomicReference<Object> capturedPayload = new AtomicReference<>();
+
+        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
+            @Override
+            public PayloadAndHeaders intercept(String methodName, Object payload,
+                    java.util.Map<String, String> headers, AgentCard agentCard,
+                    ClientCallContext clientCallContext) {
+                capturedPayload.set(payload);
+                return new PayloadAndHeaders(payload, headers);
+            }
+        };
+
+        this.server.when(
+                request().withMethod("GET").withPath("/tasks")
+        ).respond(response().withStatusCode(200).withBody(LIST_TASKS_TEST_RESPONSE));
+
+        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
+        RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+
+        ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(cutoff).build();
+        client.listTasks(params, null);
+
+        assertNotNull(capturedPayload.get());
+        org.a2aproject.sdk.grpc.ListTasksRequest proto =
+                ((org.a2aproject.sdk.grpc.ListTasksRequest.Builder) capturedPayload.get()).build();
+        assertTrue(proto.hasStatusTimestampAfter(), "proto builder must set statusTimestampAfter");
+        assertEquals(cutoff.getEpochSecond(), proto.getStatusTimestampAfter().getSeconds());
+        assertEquals(cutoff.getNano(), proto.getStatusTimestampAfter().getNanos());
+    }
+
+    /**
+     * Regression test for #1233: listTaskPushNotificationConfigurations proto builder must set
+     * pageSize and pageToken so interceptors see the complete request.
+     */
+    @Test
+    public void testListTaskPushNotificationConfigurationsProtoBuilderIncludesPagination() throws Exception {
+        AtomicReference<Object> capturedPayload = new AtomicReference<>();
+
+        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
+            @Override
+            public PayloadAndHeaders intercept(String methodName, Object payload,
+                    java.util.Map<String, String> headers, AgentCard agentCard,
+                    ClientCallContext clientCallContext) {
+                capturedPayload.set(payload);
+                return new PayloadAndHeaders(payload, headers);
+            }
+        };
+
+        this.server.when(
+                request().withMethod("GET")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+        ).respond(response().withStatusCode(200).withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+
+        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
+        RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+
+        ListTaskPushNotificationConfigsParams params = ListTaskPushNotificationConfigsParams.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .pageSize(10)
+                .pageToken("next-page-token")
+                .build();
+        client.listTaskPushNotificationConfigurations(params, null);
+
+        assertNotNull(capturedPayload.get());
+        org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest proto =
+                ((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder) capturedPayload.get()).build();
+        assertEquals(10, proto.getPageSize(), "proto builder must set pageSize");
+        assertEquals("next-page-token", proto.getPageToken(), "proto builder must set pageToken");
+    }
+
+    /**
+     * Regression test for #1233: listTasks must include statusTimestampAfter in the query string.
+     * The mock server only responds when the parameter is present; without the fix the mock will
+     * not match and the client throws an exception, causing the assertion to fail.
+     */
+    @Test
+    public void testListTasksIncludesStatusTimestampAfterQueryParam() throws Exception {
+        Instant cutoff = Instant.parse("2026-10-01T00:00:00Z");
+        this.server.when(
+                request()
+                        .withMethod("GET")
+                        .withPath("/tasks")
+                        .withQueryStringParameter("statusTimestampAfter", "2026-10-01T00:00:00Z")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(LIST_TASKS_TEST_RESPONSE)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        ListTasksParams params = ListTasksParams.builder()
+                .statusTimestampAfter(cutoff)
+                .build();
+
+        var result = client.listTasks(params, null);
+        assertEquals(1, result.tasks().size());
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", result.tasks().get(0).id());
+    }
+
+    /**
+     * Regression test for #1233: listTaskPushNotificationConfigurations must include pageSize and
+     * pageToken in the query string. The mock server only responds when both parameters are present;
+     * without the fix the mock will not match and the client throws an exception.
+     */
+    @Test
+    public void testListTaskPushNotificationConfigurationsIncludesPaginationQueryParams() throws Exception {
+        this.server.when(
+                request()
+                        .withMethod("GET")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+                        .withQueryStringParameter("pageSize", "10")
+                        .withQueryStringParameter("pageToken", "next-page-token")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        ListTaskPushNotificationConfigsParams params = ListTaskPushNotificationConfigsParams.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .pageSize(10)
+                .pageToken("next-page-token")
+                .build();
+
+        ListTaskPushNotificationConfigsResult result = client.listTaskPushNotificationConfigurations(params, null);
+        assertEquals(2, result.configs().size());
     }
 }

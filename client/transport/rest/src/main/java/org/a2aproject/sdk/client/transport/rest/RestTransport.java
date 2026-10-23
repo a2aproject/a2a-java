@@ -205,6 +205,12 @@ public class RestTransport implements ClientTransport {
         if (request.includeArtifacts() != null && request.includeArtifacts()) {
             builder.setIncludeArtifacts(true);
         }
+        if (request.statusTimestampAfter() != null) {
+            builder.setStatusTimestampAfter(com.google.protobuf.Timestamp.newBuilder()
+                    .setSeconds(request.statusTimestampAfter().getEpochSecond())
+                    .setNanos(request.statusTimestampAfter().getNano())
+                    .build());
+        }
 
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_METHOD, builder, agentCard, context);
 
@@ -247,7 +253,7 @@ public class RestTransport implements ClientTransport {
             queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
         }
         if (request.status() != null) {
-            queryParts.add("status=" + request.status());
+            queryParts.add("status=" + URLEncoder.encode(request.status().toString(), StandardCharsets.UTF_8));
         }
         if (request.pageSize() != null) {
             queryParts.add("pageSize=" + request.pageSize());
@@ -258,8 +264,23 @@ public class RestTransport implements ClientTransport {
         if (request.historyLength() != null) {
             queryParts.add("historyLength=" + request.historyLength());
         }
+        if (request.statusTimestampAfter() != null) {
+            queryParts.add("statusTimestampAfter=" + URLEncoder.encode(
+                    request.statusTimestampAfter().toString(), StandardCharsets.UTF_8));
+        }
         if (request.includeArtifacts() != null && request.includeArtifacts()) {
             queryParts.add("includeArtifacts=true");
+        }
+        return String.join("&", queryParts);
+    }
+
+    private String buildListPushNotificationConfigsQueryString(ListTaskPushNotificationConfigsParams request) {
+        java.util.List<String> queryParts = new java.util.ArrayList<>();
+        if (request.pageSize() > 0) {
+            queryParts.add("pageSize=" + request.pageSize());
+        }
+        if (request.pageToken() != null && !request.pageToken().isEmpty()) {
+            queryParts.add("pageToken=" + URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
         }
         return String.join("&", queryParts);
     }
@@ -323,11 +344,22 @@ public class RestTransport implements ClientTransport {
         org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder
                 = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
         builder.setTaskId(request.id());
+        if (request.pageSize() > 0) {
+            builder.setPageSize(request.pageSize());
+        }
+        if (request.pageToken() != null && !request.pageToken().isEmpty()) {
+            builder.setPageToken(request.pageToken());
+        }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
-            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.id());
-            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
+            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
+            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
+            String queryString = buildListPushNotificationConfigsQueryString(request);
+            if (!queryString.isEmpty()) {
+                urlBuilder.append("?").append(queryString);
+            }
+            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(urlBuilder.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
             A2AHttpResponse response = getBuilder.get();
             if (!response.success()) {

@@ -387,4 +387,20 @@ public class JsonRestMessages {
                 "id": "task-1234"
              }
             }""";
+
+    static final String LIST_TASKS_TEST_RESPONSE = """
+            {
+              "tasks": [
+                {
+                  "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  },
+                  "metadata": {}
+                }
+              ],
+              "totalSize": 1,
+              "nextPageToken": ""
+            }""";
 }
