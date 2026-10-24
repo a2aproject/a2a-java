@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 
 /**
@@ -82,7 +83,7 @@ public record AgentCard_v0_3(String name, String description, String url, AgentP
             this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
             this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
             this.supportsAuthenticatedExtendedCard = card.supportsAuthenticatedExtendedCard;
-            this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
+            this.securitySchemes = Utils_v0_3.unmodifiableNullableShallowMap(card.securitySchemes);
             this.security = card.security != null ? new ArrayList<>(card.security) : null;
             this.iconUrl = card.iconUrl;
             this.additionalInterfaces = card.additionalInterfaces != null ? new ArrayList<>(card.additionalInterfaces) : null;
