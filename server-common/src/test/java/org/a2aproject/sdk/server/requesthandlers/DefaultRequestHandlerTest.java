@@ -24,6 +24,7 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -1748,6 +1749,66 @@ public class DefaultRequestHandlerTest {
         }
         assertNotNull(storedTask);
         assertEquals(TaskState.TASK_STATE_FAILED, storedTask.status().state());
+    }
+
+    /**
+     * A blocking call returns to the handler on the agent's first event, and the handler closes the
+     * caller's queue as soon as the agent returns. A final event the event bus distributes after that
+     * must still reach the queue, which was told to expect it; otherwise the consumer waits out its
+     * grace period for it and the call fails or returns late.
+     */
+    @Test
+    void blockingSendStillReturnsCompletedTaskWhenFinalEventArrivesLate() throws Exception {
+        CountDownLatch agentReturned = new CountDownLatch(1);
+        AtomicBoolean agentReturnedInTime = new AtomicBoolean();
+        holdEventsAfterWorkingUntilAgentReturned(agentReturned, agentReturnedInTime);
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+            emitter.complete();
+            agentReturned.countDown();
+        };
+
+        EventKind result = requestHandler.onMessageSend(blockingParams("msg-blocking-final-event"), NULL_CONTEXT);
+
+        assertTrue(agentReturnedInTime.get(), "the agent did not return while its next event was held");
+        Task task = assertInstanceOf(Task.class, result);
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
+    }
+
+    private void holdEventsAfterWorkingUntilAgentReturned(CountDownLatch agentReturned, AtomicBoolean agentReturnedInTime) {
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                if (event instanceof TaskStatusUpdateEvent statusUpdate
+                        && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
+                    try {
+                        // Hold the agent's next event in the bus until the handler has closed the queue
+                        agentReturnedInTime.set(agentReturned.await(5, TimeUnit.SECONDS));
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+            }
+        });
+    }
+
+    private static MessageSendParams blockingParams(String messageId) {
+        return MessageSendParams.builder()
+            .message(Message.builder()
+                .messageId(messageId)
+                .role(Message.Role.ROLE_USER)
+                .parts(new TextPart("hello"))
+                .build())
+            .configuration(MessageSendConfiguration.builder()
+                .returnImmediately(false)
+                .acceptedOutputModes(List.of())
+                .build())
+            .build();
     }
 
     @Test
