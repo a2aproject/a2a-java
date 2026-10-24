@@ -79,6 +79,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Integration tests for DefaultRequestHandler focusing on AUTH_REQUIRED workflow.
@@ -1220,6 +1221,30 @@ public class DefaultRequestHandlerTest {
 
         assertEquals(taskId, result.id());
         assertEquals("http://example.com/get-default-config-id", result.url());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void testGetTaskPushNotificationConfigDefaultsBlankIdToTaskIdWithEffectiveCard(String configId)
+            throws Exception {
+        String taskId = "get-default-config-id-with-card";
+        taskStore.save(Task.builder()
+                .id(taskId)
+                .contextId("ctx-get-default-config-id-with-card")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build(), false);
+        requestHandler.onCreateTaskPushNotificationConfig(TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://example.com/get-default-config-id-with-card")
+                .build(), NULL_CONTEXT);
+
+        TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(
+            new GetTaskPushNotificationConfigParams(taskId, configId),
+            configId == null || configId.isBlank() ? NULL_CONTEXT : contextWithEffectiveCard(true));
+
+        assertEquals(taskId, result.id());
+        assertEquals("http://example.com/get-default-config-id-with-card", result.url());
     }
 
     /**
