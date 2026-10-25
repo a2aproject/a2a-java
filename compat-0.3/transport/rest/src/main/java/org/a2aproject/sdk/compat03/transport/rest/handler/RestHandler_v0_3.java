@@ -41,10 +41,11 @@ import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
-import org.a2aproject.sdk.server.util.async.Internal;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
+import org.a2aproject.sdk.server.util.async.Internal;
+import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.A2AError;
 import jakarta.enterprise.inject.Instance;
 import java.util.concurrent.CompletableFuture;
@@ -121,12 +122,10 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse cancelTask(String taskId, ServerCallContext context) {
+    public HTTPRestResponse cancelTask(@Nullable String taskId, ServerCallContext context) {
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                throw new InvalidParamsError_v0_3();
-            }
-            TaskIdParams_v0_3 params = new TaskIdParams_v0_3(taskId);
+            String requiredTaskId = requireNonEmpty("task id", taskId);
+            TaskIdParams_v0_3 params = new TaskIdParams_v0_3(requiredTaskId);
             Task_v0_3 task = requestHandler.onCancelTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils_v0_3.ToProto.task(task)));
@@ -141,13 +140,43 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, ServerCallContext context) {
+    public HTTPRestResponse setTaskPushNotificationConfiguration(@Nullable String taskId, String body, ServerCallContext context) {
         try {
+            String requiredTaskId = requireNonEmpty("task id", taskId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
             org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
             parseRequestBody(body, builder);
+            String parent = "tasks/" + requiredTaskId;
+            if (!builder.getParent().isBlank() && !parent.equals(builder.getParent())) {
+                throw new InvalidParamsError_v0_3("bad parent");
+            }
+            String configNamePrefix = parent + "/pushNotificationConfigs";
+            String name = builder.getConfig().getName();
+            String nameConfigId = "";
+            if (!name.isBlank()) {
+                if (name.equals(configNamePrefix) || name.equals(configNamePrefix + "/")) {
+                    // The name omits a config ID; use config_id or the URL task ID.
+                } else if (name.startsWith(configNamePrefix + "/")) {
+                    nameConfigId = name.substring(configNamePrefix.length() + 1);
+                    if (nameConfigId.isBlank() || nameConfigId.contains("/")) {
+                        throw new InvalidParamsError_v0_3("bad config name");
+                    }
+                } else {
+                    throw new InvalidParamsError_v0_3("bad config name");
+                }
+            }
+            String requestConfigId = builder.getConfigId().isBlank() ? "" : builder.getConfigId();
+            if (requestConfigId.contains("/") || (!nameConfigId.isEmpty() && !requestConfigId.isEmpty()
+                    && !nameConfigId.equals(requestConfigId))) {
+                throw new InvalidParamsError_v0_3("bad config id");
+            }
+            String configId = !requestConfigId.isEmpty() ? requestConfigId
+                    : !nameConfigId.isEmpty() ? nameConfigId : requiredTaskId;
+            builder.setParent(parent);
+            builder.setConfigId(configId);
+            builder.getConfigBuilder().setName(configNamePrefix + "/" + configId);
             TaskPushNotificationConfig_v0_3 result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
@@ -159,12 +188,18 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse resubscribeTask(String taskId, ServerCallContext context) {
+    public HTTPRestResponse resubscribeTask(@Nullable String taskId, ServerCallContext context) {
+        String requiredTaskId;
+        try {
+            requiredTaskId = requireNonEmpty("task id", taskId);
+        } catch (InvalidParamsError_v0_3 e) {
+            return createErrorResponse(e);
+        }
         try {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError_v0_3("Streaming is not supported by the agent"));
             }
-            TaskIdParams_v0_3 params = new TaskIdParams_v0_3(taskId);
+            TaskIdParams_v0_3 params = new TaskIdParams_v0_3(requiredTaskId);
             Flow.Publisher<StreamingEventKind_v0_3> publisher = requestHandler.onResubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
@@ -176,9 +211,33 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse getTask(String taskId, int historyLength, ServerCallContext context) {
+    public HTTPRestResponse getTask(@Nullable String taskId, @Nullable String historyLengthSnakeCase,
+            @Nullable String historyLengthCamelCase, ServerCallContext context) {
+        String requiredTaskId;
         try {
-            TaskQueryParams_v0_3 params = new TaskQueryParams_v0_3(taskId, historyLength);
+            requiredTaskId = requireNonEmpty("task id", taskId);
+        } catch (InvalidParamsError_v0_3 e) {
+            return createErrorResponse(e);
+        }
+        if (historyLengthSnakeCase != null && historyLengthCamelCase != null) {
+            return createErrorResponse(new InvalidParamsError_v0_3(
+                    "Only one of 'history_length' or 'historyLength' may be specified"));
+        }
+        int historyLength = 0;
+        try {
+            if (historyLengthSnakeCase != null) {
+                historyLength = Integer.parseInt(historyLengthSnakeCase);
+            } else if (historyLengthCamelCase != null) {
+                historyLength = Integer.parseInt(historyLengthCamelCase);
+            }
+        } catch (NumberFormatException e) {
+            return createErrorResponse(new InvalidParamsError_v0_3("bad history_length or historyLength"));
+        }
+        if (historyLength < 0) {
+            return createErrorResponse(new InvalidParamsError_v0_3("bad history_length or historyLength"));
+        }
+        try {
+            TaskQueryParams_v0_3 params = new TaskQueryParams_v0_3(requiredTaskId, historyLength);
             Task_v0_3 task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils_v0_3.ToProto.task(task)));
@@ -193,12 +252,16 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, ServerCallContext context) {
+    /**
+     * A missing or empty config ID selects the task's default push notification configuration in v0.3.
+     */
+    public HTTPRestResponse getTaskPushNotificationConfiguration(@Nullable String taskId, @Nullable String configId, ServerCallContext context) {
         try {
+            String requiredTaskId = requireNonEmpty("task id", taskId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            GetTaskPushNotificationConfigParams_v0_3 params = new GetTaskPushNotificationConfigParams_v0_3(taskId, configId);
+            GetTaskPushNotificationConfigParams_v0_3 params = new GetTaskPushNotificationConfigParams_v0_3(requiredTaskId, configId);
             TaskPushNotificationConfig_v0_3 config = requestHandler.onGetTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(config)));
         } catch (A2AError e) {
@@ -210,12 +273,13 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse listTaskPushNotificationConfigurations(String taskId, ServerCallContext context) {
+    public HTTPRestResponse listTaskPushNotificationConfigurations(@Nullable String taskId, ServerCallContext context) {
         try {
+            String requiredTaskId = requireNonEmpty("task id", taskId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            ListTaskPushNotificationConfigParams_v0_3 params = new ListTaskPushNotificationConfigParams_v0_3(taskId);
+            ListTaskPushNotificationConfigParams_v0_3 params = new ListTaskPushNotificationConfigParams_v0_3(requiredTaskId);
             List<TaskPushNotificationConfig_v0_3> configs = requestHandler.onListTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils_v0_3.ToProto.listTaskPushNotificationConfigResponse(configs)));
         } catch (A2AError e) {
@@ -227,12 +291,14 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(String taskId, String configId, ServerCallContext context) {
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(@Nullable String taskId, @Nullable String configId, ServerCallContext context) {
         try {
+            String requiredTaskId = requireNonEmpty("task id", taskId);
+            String requiredConfigId = requireNonEmpty("config id", configId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            DeleteTaskPushNotificationConfigParams_v0_3 params = new DeleteTaskPushNotificationConfigParams_v0_3(taskId, configId);
+            DeleteTaskPushNotificationConfigParams_v0_3 params = new DeleteTaskPushNotificationConfigParams_v0_3(requiredTaskId, requiredConfigId);
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
             return new HTTPRestResponse(204, "application/json", "");
         } catch (A2AError e) {
@@ -257,6 +323,13 @@ public class RestHandler_v0_3 {
             LOGGER.log(Level.SEVERE, "Parse error details", e);
             throw new InvalidParamsError_v0_3("Failed to parse request body: " + e.getMessage());
         }
+    }
+
+    private static String requireNonEmpty(String parameter, @Nullable String value) {
+        if (Assert.isNullOrEmpty(value)) {
+            throw new InvalidParamsError_v0_3("bad " + parameter);
+        }
+        return Assert.checkNotNullParam(parameter, value);
     }
 
     private void validate(String json) {

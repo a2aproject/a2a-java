@@ -29,7 +29,8 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 10
+        interval: daily
+    cooldown:
+      default-days: 7      # Quarantine: never a release published the same day
     commit-message:
       prefix: "chore"

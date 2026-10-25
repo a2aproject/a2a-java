@@ -15,30 +15,52 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import jakarta.enterprise.inject.Instance;
 
-import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
-import org.a2aproject.sdk.transport.rest.handler.RestHandler;
-import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
+import org.jspecify.annotations.Nullable;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.AgentCardCacheMetadata;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
+import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
+import org.a2aproject.sdk.spec.AgentCapabilities;
+import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.AgentExtension;
+import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
+import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
+import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -403,7 +425,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn(APPLICATION_JSON);
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.listTaskPushNotificationConfigurations(any(ServerCallContext.class), anyString(), anyString(), anyInt(), anyString()))
+        when(mockRestHandler.listTaskPushNotificationConfigurations(any(ServerCallContext.class), anyString(), anyString(), any(), any()))
                 .thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -412,7 +434,7 @@ public class A2AServerRoutesTest {
         routes.listTaskPushNotificationConfigurations(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).listTaskPushNotificationConfigurations(contextCaptor.capture(), anyString(), eq("task123"), anyInt(), anyString());
+        verify(mockRestHandler).listTaskPushNotificationConfigurations(contextCaptor.capture(), anyString(), eq("task123"), any(), any());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -497,6 +519,24 @@ public class A2AServerRoutesTest {
         verify(mockResponse).setStatusCode(400);
     }
 
+    @Test
+    public void testSendMessage_ForwardsTransportPolicyResponseWithoutRouteValidation() {
+        HTTPRestResponse policyResponse = mock(HTTPRestResponse.class);
+        when(policyResponse.getStatusCode()).thenReturn(422);
+        when(policyResponse.getContentType()).thenReturn(APPLICATION_JSON);
+        when(policyResponse.getBody()).thenReturn("{\"error\":{\"code\":422,\"status\":\"INVALID_ARGUMENT\"}}");
+        when(mockRoutingContext.pathParam("tenant")).thenReturn("bad?tenant");
+        when(mockRestHandler.sendMessage(any(ServerCallContext.class), eq("bad?tenant"), anyString()))
+                .thenReturn(policyResponse);
+
+        routes.sendMessage("{}", mockRoutingContext);
+
+        verify(mockRestHandler).sendMessage(any(ServerCallContext.class), eq("bad?tenant"), eq("{}"));
+        verify(mockResponse).setStatusCode(422);
+        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+        verify(mockResponse).end("{\"error\":{\"code\":422,\"status\":\"INVALID_ARGUMENT\"}}");
+    }
+
     /**
      * Helper method to set a field via reflection for testing purposes.
      */
@@ -509,4 +549,390 @@ public class A2AServerRoutesTest {
             throw new RuntimeException("Failed to set field: " + fieldName, e);
         }
     }
+    private RequestHandler validationHandler;
+
+    private void validationFixture(String version, boolean extension, boolean capabilities) {
+        setUp();
+        validationHandler = mock(RequestHandler.class);
+        AgentCard card = AgentCard.builder().name("validation").description("Validation baseline").version("1")
+                .supportedInterfaces(List.of(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                .capabilities(AgentCapabilities.builder().streaming(capabilities).pushNotifications(capabilities)
+                        .extensions(extension ? List.of(AgentExtension.builder().uri("urn:test:required")
+                                .required(true).build()) : List.of()).build())
+                .defaultInputModes(List.of("text")).defaultOutputModes(List.of("text")).skills(List.of()).build();
+        setField(routes, "jsonRestHandler", new RestHandler(card,
+                new AgentCardCacheMetadata(card, new DefaultValuesConfigProvider()), validationHandler, Runnable::run));
+        mockHeaders.set("A2A-Version", version);
+        when(mockRequest.getHeader(anyString())).thenAnswer(invocation -> mockHeaders.get(invocation.getArgument(0).toString()));
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("task");
+        when(mockRoutingContext.pathParam("configId")).thenReturn("config");
+    }
+
+    private void assertValidationError(int status, String reason, String message) {
+        assertValidationError(status, reason, message, new JsonObject());
+    }
+
+    private void assertValidationError(int status, String reason, String message, JsonObject metadata) {
+        verify(mockResponse).setStatusCode(status);
+        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mockResponse).end(body.capture());
+        JsonObject expected = JsonParser.parseString("""
+                {"error":{"code":422,"status":"INVALID_ARGUMENT","message":"", "details":[{
+                "@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_PARAMS",
+                "domain":"a2a-protocol.org","metadata":{}}]}}
+                """).getAsJsonObject();
+        JsonObject error = expected.getAsJsonObject("error");
+        error.addProperty("code", status);
+        error.addProperty("status", switch (reason) {
+            case "VERSION_NOT_SUPPORTED", "PUSH_NOTIFICATION_NOT_SUPPORTED", "UNSUPPORTED_OPERATION" -> "UNIMPLEMENTED";
+            case "EXTENSION_SUPPORT_REQUIRED" -> "FAILED_PRECONDITION";
+            default -> "INVALID_ARGUMENT";
+        });
+        error.addProperty("message", message);
+        JsonObject info = error.getAsJsonArray("details").get(0).getAsJsonObject();
+        info.addProperty("reason", reason);
+        info.add("metadata", metadata);
+        assertEquals(expected, JsonParser.parseString(body.getValue()));
+        verifyNoMoreInteractions(mockResponse);
+        verifyNoInteractions(validationHandler);
+    }
+
+    private void assertBadTaskPath(Consumer<RoutingContext> operation) {
+        for (String taskId : new String[] {null, ""}) {
+            for (int conflict = 0; conflict < 4; conflict++) {
+                validationFixture(conflict == 1 ? "2.0" : "1.0", conflict == 2, conflict != 3);
+                when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+                when(mockRoutingContext.pathParam("configId")).thenReturn("");
+                mockParams.set("historyLength", "bad").set("pageSize", "bad");
+                operation.accept(mockRoutingContext);
+                assertValidationError(422, "INVALID_PARAMS", "bad task id");
+            }
+        }
+    }
+
+    @Test
+    public void testGetTaskRawInputValidationOrder() {
+        assertBadTaskPath(rc -> routes.getTask(rc));
+        for (String history : new String[] {"", "bad", "2147483648"}) {
+            for (int conflict = 0; conflict < 3; conflict++) {
+                validationFixture(conflict == 1 ? "2.0" : "1.0", conflict == 2, true);
+                mockParams.set("historyLength", history);
+                routes.getTask(mockRoutingContext);
+                assertValidationError(422, "INVALID_PARAMS", "bad historyLength");
+            }
+        }
+        validationFixture("2.0", false, true);
+        mockParams.set("historyLength", "-1");
+        routes.getTask(mockRoutingContext);
+        assertValidationError(400, "VERSION_NOT_SUPPORTED",
+                "Protocol version '2.0' is not supported. Supported versions: [1.0]");
+        validationFixture("1.0", false, true);
+        mockParams.set("historyLength", "-1");
+        routes.getTask(mockRoutingContext);
+        assertValidationError(422, "INVALID_PARAMS", "Invalid history length");
+    }
+
+    @Test
+    public void testListTasksRawQueryValidationOrder() {
+        for (String field : List.of("pageSize", "historyLength")) {
+            for (int conflict = 0; conflict < 3; conflict++) {
+                validationFixture(conflict == 1 ? "2.0" : "1.0", conflict == 2, true);
+                mockParams.set(field, "bad").set("status", "invalid").set("statusTimestampAfter", "invalid");
+                if (field.equals("pageSize")) {
+                    mockParams.set("historyLength", "also-bad");
+                }
+                routes.listTasks(mockRoutingContext);
+                assertValidationError(422, "INVALID_PARAMS", "Invalid number format in parameters");
+            }
+            validationFixture("2.0", false, true);
+            mockParams.set(field, "-1");
+            routes.listTasks(mockRoutingContext);
+            assertValidationError(400, "VERSION_NOT_SUPPORTED",
+                    "Protocol version '2.0' is not supported. Supported versions: [1.0]");
+        }
+        for (String raw : new String[] {null, "", "true", "TrUe", "false", "not-true", "1"}) {
+            validationFixture("1.0", false, true);
+            if (raw != null) {
+                mockParams.set("includeArtifacts", raw).set("pageSize", "").set("historyLength", "");
+            }
+            mockParams.set("status", "task_state_submitted");
+            when(validationHandler.onListTasks(any(), any())).thenReturn(new ListTasksResult(List.of()));
+            routes.listTasks(mockRoutingContext);
+            ArgumentCaptor<ListTasksParams> params = ArgumentCaptor.forClass(ListTasksParams.class);
+            verify(validationHandler).onListTasks(params.capture(), any());
+            assertEquals(TaskState.TASK_STATE_SUBMITTED, params.getValue().status());
+            assertNull(params.getValue().pageSize());
+            assertNull(params.getValue().historyLength());
+            assertEquals(raw == null || raw.isEmpty() ? null : Boolean.valueOf(raw), params.getValue().includeArtifacts());
+            verify(mockResponse).setStatusCode(200);
+            verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+        }
+        for (String field : List.of("status", "statusTimestampAfter")) {
+            validationFixture("1.0", false, true);
+            mockParams.set(field, "");
+            routes.listTasks(mockRoutingContext);
+            JsonObject metadata = new JsonObject();
+            metadata.addProperty("parameter", field);
+            metadata.addProperty("reason", field.equals("status")
+                    ? "Must be one of: " + java.util.Arrays.stream(TaskState.values()).map(TaskState::name)
+                            .collect(java.util.stream.Collectors.joining(", "))
+                    : "Must be an ISO-8601 timestamp");
+            assertValidationError(422, "INVALID_PARAMS", "Invalid params", metadata);
+        }
+    }
+
+    @Test
+    public void testCancelTaskPathValidationOrder() {
+        assertBadTaskPath(rc -> routes.cancelTask("{broken", rc));
+    }
+
+    @Test
+    public void testSubscribeToTaskPathValidationOrder() {
+        assertBadTaskPath(rc -> routes.subscribeToTask(rc));
+    }
+
+    @Test
+    public void testCreatePushConfigPathValidationOrder() {
+        assertBadTaskPath(rc -> routes.createTaskPushNotificationConfiguration("{broken", rc));
+    }
+
+    @Test
+    public void testGetPushConfigPathValidationOrder() {
+        assertBadTaskPath(rc -> routes.getTaskPushNotificationConfiguration(rc));
+        assertBadConfigPath(rc -> routes.getTaskPushNotificationConfiguration(rc), "bad configuration id");
+    }
+
+    @Test
+    public void testDeletePushConfigPathValidationOrder() {
+        assertBadTaskPath(rc -> routes.deleteTaskPushNotificationConfiguration(rc));
+        assertBadConfigPath(rc -> routes.deleteTaskPushNotificationConfiguration(rc), "bad config id");
+    }
+
+    private void assertBadConfigPath(Consumer<RoutingContext> operation, String message) {
+        for (String configId : new String[] {null, ""}) {
+            for (int conflict = 0; conflict < 4; conflict++) {
+                validationFixture(conflict == 1 ? "2.0" : "1.0", conflict == 2, conflict != 3);
+                when(mockRoutingContext.pathParam("configId")).thenReturn(configId);
+                operation.accept(mockRoutingContext);
+                assertValidationError(422, "INVALID_PARAMS", message);
+            }
+        }
+    }
+
+    @Test
+    public void testListPushConfigsRawInputValidationOrder() {
+        assertBadTaskPath(rc -> routes.listTaskPushNotificationConfigurations(rc));
+        for (String page : List.of("", "bad", "2147483648")) {
+            for (int conflict = 0; conflict < 4; conflict++) {
+                validationFixture(conflict == 1 ? "2.0" : "1.0", conflict == 2, conflict != 3);
+                mockParams.set("pageSize", page);
+                routes.listTaskPushNotificationConfigurations(mockRoutingContext);
+                assertValidationError(422, "INVALID_PARAMS", "bad pageSize");
+            }
+        }
+        for (String token : new String[] {null, ""}) {
+            validationFixture("1.0", false, true);
+            if (token != null) {
+                mockParams.set("pageToken", token);
+            }
+            when(validationHandler.onListTaskPushNotificationConfigs(any(), any()))
+                    .thenReturn(new ListTaskPushNotificationConfigsResult(List.of()));
+            routes.listTaskPushNotificationConfigurations(mockRoutingContext);
+            ArgumentCaptor<ListTaskPushNotificationConfigsParams> params =
+                    ArgumentCaptor.forClass(ListTaskPushNotificationConfigsParams.class);
+            verify(validationHandler).onListTaskPushNotificationConfigs(params.capture(), any());
+            assertEquals(0, params.getValue().pageSize());
+            assertEquals("", params.getValue().pageToken());
+            verify(mockResponse).setStatusCode(200);
+        }
+    }
+
+    @Test
+    public void testCancelContentTypeBeforePathValidation() {
+        validationFixture("2.0", true, false);
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("");
+        when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
+        routes.cancelTask("{broken", mockRoutingContext);
+        assertValidationError(415, "CONTENT_TYPE_NOT_SUPPORTED", "Incompatible content types");
+    }
+
+    @Test
+    public void testCreatePushContentTypeBeforePathValidation() {
+        validationFixture("2.0", true, false);
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("");
+        when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
+        routes.createTaskPushNotificationConfiguration("{broken", mockRoutingContext);
+        assertValidationError(415, "CONTENT_TYPE_NOT_SUPPORTED", "Incompatible content types");
+    }
+
+    @ParameterizedTest(name = "taskId={0}, historyLength={1}")
+    @MethodSource("taskAndRawValues")
+    public void testGetTaskForwardsRawPathAndQueryValues(@Nullable String taskId, @Nullable String raw) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        if (raw != null) {
+            mockParams.set("historyLength", raw);
+        }
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.getTask(any(), anyString(), eq(taskId), eq(raw))).thenReturn(error);
+
+        routes.getTask(mockRoutingContext);
+
+        verify(mockRestHandler).getTask(any(), anyString(), eq(taskId), eq(raw));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "raw query values={0}")
+    @MethodSource("rawValues")
+    public void testListTasksForwardsRawQueryValues(@Nullable String raw) {
+        setUp();
+        if (raw != null) {
+            mockParams.set("pageSize", raw).set("pageToken", raw).set("historyLength", raw)
+                    .set("status", "task_state_submitted")
+                    .set("includeArtifacts", raw).set("contextId", raw).set("statusTimestampAfter", raw);
+        }
+        String status = raw == null ? null : "task_state_submitted";
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.listTasks(any(), anyString(), eq(raw), eq(status), eq(raw), eq(raw), eq(raw), eq(raw), eq(raw)))
+                .thenReturn(error);
+
+        routes.listTasks(mockRoutingContext);
+
+        verify(mockRestHandler).listTasks(any(), anyString(), eq(raw), eq(status), eq(raw), eq(raw), eq(raw), eq(raw), eq(raw));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "taskId={0}")
+    @MethodSource("taskIds")
+    public void testCancelTaskForwardsRawPathValue(@Nullable String taskId) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.cancelTask(any(), anyString(), eq("{broken"), eq(taskId))).thenReturn(error);
+
+        routes.cancelTask("{broken", mockRoutingContext);
+
+        verify(mockRestHandler).cancelTask(any(), anyString(), eq("{broken"), eq(taskId));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "taskId={0}")
+    @MethodSource("taskIds")
+    public void testSubscribeToTaskForwardsRawPathValue(@Nullable String taskId) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.subscribeToTask(any(), anyString(), eq(taskId))).thenReturn(error);
+
+        routes.subscribeToTask(mockRoutingContext);
+
+        verify(mockRestHandler).subscribeToTask(any(), anyString(), eq(taskId));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "taskId={0}")
+    @MethodSource("taskIds")
+    public void testCreatePushConfigForwardsRawPathValue(@Nullable String taskId) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.createTaskPushNotificationConfiguration(any(), anyString(), eq("{broken"), eq(taskId)))
+                .thenReturn(error);
+
+        routes.createTaskPushNotificationConfiguration("{broken", mockRoutingContext);
+
+        verify(mockRestHandler).createTaskPushNotificationConfiguration(any(), anyString(), eq("{broken"), eq(taskId));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "taskId={0}, configId={1}")
+    @MethodSource("taskAndConfigValues")
+    public void testGetPushConfigForwardsRawPathValues(@Nullable String taskId, @Nullable String configId) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        when(mockRoutingContext.pathParam("configId")).thenReturn(configId);
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.getTaskPushNotificationConfiguration(any(), anyString(), eq(taskId), eq(configId)))
+                .thenReturn(error);
+
+        routes.getTaskPushNotificationConfiguration(mockRoutingContext);
+
+        verify(mockRestHandler).getTaskPushNotificationConfiguration(any(), anyString(), eq(taskId), eq(configId));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "taskId={0}, pageSize={1}")
+    @MethodSource("taskAndRawValues")
+    public void testListPushConfigsForwardsRawPathAndQueryValues(@Nullable String taskId, @Nullable String raw) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        if (raw != null) {
+            mockParams.set("pageSize", raw).set("pageToken", raw);
+        }
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.listTaskPushNotificationConfigurations(any(), anyString(), eq(taskId), eq(raw), eq(raw)))
+                .thenReturn(error);
+
+        routes.listTaskPushNotificationConfigurations(mockRoutingContext);
+
+        verify(mockRestHandler).listTaskPushNotificationConfigurations(any(), anyString(), eq(taskId), eq(raw), eq(raw));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    @ParameterizedTest(name = "taskId={0}, configId={1}")
+    @MethodSource("taskAndConfigValues")
+    public void testDeletePushConfigForwardsRawPathValues(@Nullable String taskId, @Nullable String configId) {
+        setUp();
+        when(mockRoutingContext.pathParam("taskId")).thenReturn(taskId);
+        when(mockRoutingContext.pathParam("configId")).thenReturn(configId);
+        HTTPRestResponse error = rawForwardingError();
+        when(mockRestHandler.deleteTaskPushNotificationConfiguration(any(), anyString(), eq(taskId), eq(configId)))
+                .thenReturn(error);
+
+        routes.deleteTaskPushNotificationConfiguration(mockRoutingContext);
+
+        verify(mockRestHandler).deleteTaskPushNotificationConfiguration(any(), anyString(), eq(taskId), eq(configId));
+        verifyNoMoreInteractions(mockRestHandler);
+        assertRawForwardingResponse(error);
+    }
+
+    private static Stream<Arguments> taskIds() {
+        return Stream.of(Arguments.of((Object) null), Arguments.of(""), Arguments.of("task"));
+    }
+
+    private static Stream<Arguments> rawValues() {
+        return Stream.of(Arguments.of((Object) null), Arguments.of(""), Arguments.of("bad"), Arguments.of("2"));
+    }
+
+    private static Stream<Arguments> taskAndRawValues() {
+        return Stream.of((String) null, "", "task")
+                .flatMap(taskId -> Stream.of((String) null, "", "bad", "2")
+                        .map(raw -> Arguments.of(taskId, raw)));
+    }
+
+    private static Stream<Arguments> taskAndConfigValues() {
+        return Stream.of((String) null, "", "task")
+                .flatMap(taskId -> Stream.of((String) null, "", "config")
+                        .map(configId -> Arguments.of(taskId, configId)));
+    }
+
+    private HTTPRestResponse rawForwardingError() {
+        return new HTTPRestResponse(422, APPLICATION_JSON, "{\"transportError\":true}");
+    }
+
+    private void assertRawForwardingResponse(HTTPRestResponse error) {
+        verify(mockResponse).setStatusCode(422);
+        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+        verify(mockResponse).end(error.getBody());
+        verifyNoMoreInteractions(mockResponse);
+    }
+
 }

@@ -9,7 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -24,6 +32,83 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 public class AgentCardValidatorTest {
+
+    @Test
+    void cachingValidatorWaitsForSuccessfulValidationBeforeReturning() throws Exception {
+        AgentCard card = createTestAgentCardBuilder().build();
+        CountDownLatch validating = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        CountDownLatch secondStarted = new CountDownLatch(1);
+        AtomicInteger invocations = new AtomicInteger();
+        CachingAgentCardTransportValidator validator = new CachingAgentCardTransportValidator(selected -> {
+            invocations.incrementAndGet();
+            validating.countDown();
+            try {
+                assertTrue(release.await(5, TimeUnit.SECONDS));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(e);
+            }
+        });
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> first = executor.submit(() -> validator.validate(card));
+            assertTrue(validating.await(5, TimeUnit.SECONDS));
+            Future<?> second = executor.submit(() -> {
+                secondStarted.countDown();
+                validator.validate(card);
+            });
+            assertTrue(secondStarted.await(5, TimeUnit.SECONDS));
+            assertThrows(TimeoutException.class, () -> second.get(100, TimeUnit.MILLISECONDS));
+            release.countDown();
+            first.get(5, TimeUnit.SECONDS);
+            second.get(5, TimeUnit.SECONDS);
+            assertEquals(1, invocations.get());
+        } finally {
+            release.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void failedValidationLeavesNoCacheEntryAndRetriesSuccessfully() {
+        AgentCard card = createTestAgentCardBuilder().build();
+        ConcurrentMap<AgentCard, Boolean> cache = AgentCardValidator.newValidatedCardsMap();
+        AtomicInteger invocations = new AtomicInteger();
+        Consumer<AgentCard> validator = selected -> {
+            if (invocations.incrementAndGet() == 1) {
+                throw new IllegalStateException("retry validation");
+            }
+        };
+        assertThrows(IllegalStateException.class, () -> AgentCardValidator.validateOnce(card, cache, validator));
+        assertFalse(cache.containsKey(card));
+        AgentCardValidator.validateOnce(card, cache, validator);
+        AgentCardValidator.validateOnce(card, cache, validator);
+        assertEquals(Boolean.TRUE, cache.get(card));
+        assertEquals(2, invocations.get());
+    }
+
+    @Test
+    void cachingValidatorsOwnIndependentCachesAndRetryFailures() {
+        AgentCard card = createTestAgentCardBuilder().build();
+        AtomicInteger firstCalls = new AtomicInteger();
+        AtomicInteger secondCalls = new AtomicInteger();
+        CachingAgentCardTransportValidator first = new CachingAgentCardTransportValidator(selected -> {
+            if (firstCalls.incrementAndGet() == 1) {
+                throw new IllegalStateException("retry");
+            }
+        });
+        CachingAgentCardTransportValidator second = new CachingAgentCardTransportValidator(
+                selected -> secondCalls.incrementAndGet());
+        assertThrows(IllegalStateException.class, () -> first.validate(card));
+        first.validate(card);
+        first.validate(card);
+        second.validate(card);
+        second.validate(card);
+        first.validate(createTestAgentCardBuilder().name("distinct").build());
+        assertEquals(3, firstCalls.get());
+        assertEquals(1, secondCalls.get());
+    }
 
     private AgentCard.Builder createTestAgentCardBuilder() {
         return AgentCard.builder()
@@ -234,348 +319,6 @@ public class AgentCardValidatorTest {
         }
     }
 
-    @Test
-    void resolveAndValidateOnceRetriesAfterFailure() {
-        AgentCard card = createTestAgentCardBuilder().build();
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-        AtomicInteger validationCount = new AtomicInteger(0);
-
-        assertThrows(IllegalStateException.class, () ->
-                AgentCardValidator.resolveAndValidateOnce(
-                        () -> card, validatedCards, c -> {
-                            validationCount.incrementAndGet();
-                            throw new IllegalStateException("transient failure");
-                        }));
-
-        assertFalse(validatedCards.contains(card), "card should be removed after failure");
-        assertEquals(1, validationCount.get());
-
-        AgentCard result = AgentCardValidator.resolveAndValidateOnce(
-                () -> card, validatedCards, c -> validationCount.incrementAndGet());
-
-        assertTrue(validatedCards.contains(card), "card should be in set after success");
-        assertEquals(2, validationCount.get());
-        assertEquals(card, result);
-    }
-
-    @Test
-    void resolveAndValidateOnceSkipsValidationOnSubsequentCalls() {
-        AgentCard card = createTestAgentCardBuilder().build();
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-        AtomicInteger validationCount = new AtomicInteger(0);
-
-        AgentCardValidator.resolveAndValidateOnce(
-                () -> card, validatedCards, c -> validationCount.incrementAndGet());
-        AgentCardValidator.resolveAndValidateOnce(
-                () -> card, validatedCards, c -> validationCount.incrementAndGet());
-
-        assertEquals(1, validationCount.get(), "validation should run only once for the same card");
-    }
-
-    @Test
-    void resolveAndValidateOnceValidatesEachDistinctCard() {
-        AgentCard card1 = createTestAgentCardBuilder().name("card-1").build();
-        AgentCard card2 = createTestAgentCardBuilder().name("card-2").build();
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-        AtomicInteger validationCount = new AtomicInteger(0);
-
-        AgentCardValidator.resolveAndValidateOnce(
-                () -> card1, validatedCards, c -> validationCount.incrementAndGet());
-        AgentCardValidator.resolveAndValidateOnce(
-                () -> card2, validatedCards, c -> validationCount.incrementAndGet());
-
-        assertEquals(2, validationCount.get(), "validation should run once per distinct card");
-        assertTrue(validatedCards.contains(card1));
-        assertTrue(validatedCards.contains(card2));
-    }
-
-    @Test
-    void resolveWithFallbackUsesPublicCardWhenPresent() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard publicCard = createTestAgentCardBuilder().name("public").build();
-            AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    new FixedInstance<>(publicCard), new FixedInstance<>(extendedCard), validatedCards);
-
-            assertEquals("public", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackFallsBackToExtendedCard() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    FixedInstance.empty(), new FixedInstance<>(extendedCard), validatedCards);
-
-            assertEquals("extended", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackThrowsWhenBothAbsent() {
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
-                AgentCardValidator.resolveWithFallback(
-                        FixedInstance.empty(), FixedInstance.empty(), validatedCards));
-
-        assertEquals(AgentCardValidator.NO_AGENT_CARD_MESSAGE, ex.getMessage());
-    }
-
-    @Test
-    void resolveWithFallbackThrowsWhenExtendedIsNull() {
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
-                AgentCardValidator.resolveWithFallback(
-                        FixedInstance.empty(), null, validatedCards));
-
-        assertEquals(AgentCardValidator.NO_AGENT_CARD_MESSAGE, ex.getMessage());
-    }
-
-    @Test
-    void requireFirstReturnsPublicCard() {
-        AgentCard publicCard = createTestAgentCardBuilder().name("public").build();
-        AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
-
-        assertEquals("public", AgentCardValidator.requireFirst(publicCard, extendedCard).name());
-    }
-
-    @Test
-    void requireFirstReturnsExtendedWhenPublicIsNull() {
-        AgentCard extendedCard = createTestAgentCardBuilder().name("extended").build();
-
-        assertEquals("extended", AgentCardValidator.requireFirst(null, extendedCard).name());
-    }
-
-    @Test
-    void requireFirstThrowsWhenBothNull() {
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
-                AgentCardValidator.requireFirst(null, null));
-
-        assertEquals(AgentCardValidator.NO_AGENT_CARD_MESSAGE, ex.getMessage());
-    }
-
-    @Test
-    void resolveWithFallbackUsesRouterWhenNoDefaultBean() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard routerCard = createTestAgentCardBuilder().name("router-card").build();
-            AgentCardRouter router = new AgentCardRouter() {
-                @Override
-                public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                    return null;
-                }
-
-                @Override
-                public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                    return routerCard;
-                }
-            };
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    FixedInstance.empty(), FixedInstance.empty(), router, "tenant-1", validatedCards);
-
-            assertEquals("router-card", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackPrefersTenantCardOverDefaultBean() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard publicCard = createTestAgentCardBuilder().name("default").build();
-            AgentCard routerCard = createTestAgentCardBuilder().name("tenant-card").build();
-            AgentCardRouter router = new AgentCardRouter() {
-                @Override
-                public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                    return null;
-                }
-
-                @Override
-                public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                    return "tenant-1".equals(tenant) ? routerCard : null;
-                }
-            };
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    new FixedInstance<>(publicCard), FixedInstance.empty(), router, "tenant-1", validatedCards);
-
-            assertEquals("tenant-card", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackPrefersDefaultBeanOverRouterWithoutTenant() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard publicCard = createTestAgentCardBuilder().name("default").build();
-            AgentCard routerCard = createTestAgentCardBuilder().name("router-default").build();
-            AgentCardRouter router = new AgentCardRouter() {
-                @Override
-                public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                    return null;
-                }
-
-                @Override
-                public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                    return routerCard;
-                }
-            };
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    new FixedInstance<>(publicCard), FixedInstance.empty(), router, null, validatedCards);
-
-            assertEquals("default", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackPrefersTenantPublicCardOverDefaultExtendedCard() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard defaultExtended = createTestAgentCardBuilder().name("default-extended").build();
-            AgentCard tenantPublic = createTestAgentCardBuilder().name("tenant-public").build();
-            AgentCardRouter router = new AgentCardRouter() {
-                @Override
-                public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                    return null;
-                }
-
-                @Override
-                public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                    return "tenant-1".equals(tenant) ? tenantPublic : null;
-                }
-            };
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    FixedInstance.empty(), new FixedInstance<>(defaultExtended), router, "tenant-1", validatedCards);
-
-            assertEquals("tenant-public", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackThrowsForUnknownTenantEvenWhenDefaultExtendedExists() {
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override
-            public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                return null;
-            }
-
-            @Override
-            public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                return null;
-            }
-        };
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-        AgentCard defaultExtended = createTestAgentCardBuilder().name("default-extended").build();
-
-        TenantNotFoundException ex = assertThrows(TenantNotFoundException.class, () ->
-                AgentCardValidator.resolveWithFallback(
-                        FixedInstance.empty(), new FixedInstance<>(defaultExtended), router, "unknown-tenant",
-                        validatedCards));
-
-        assertEquals("unknown-tenant", ex.getTenant());
-    }
-
-    @Test
-    void resolveWithFallbackThrowsForUnknownTenantEvenWhenDefaultPublicExists() {
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override
-            public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                return null;
-            }
-
-            @Override
-            public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                return null;
-            }
-        };
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-        AgentCard publicCard = createTestAgentCardBuilder().name("default").build();
-
-        TenantNotFoundException ex = assertThrows(TenantNotFoundException.class, () ->
-                AgentCardValidator.resolveWithFallback(
-                        new FixedInstance<>(publicCard), FixedInstance.empty(), router, "unknown-tenant",
-                        validatedCards));
-
-        assertEquals("unknown-tenant", ex.getTenant());
-    }
-
-    @Test
-    void resolveWithFallbackUsesRouterExtendedCardWhenPublicCardIsNull() {
-        System.setProperty(AgentCardValidator.SKIP_PROPERTY, "true");
-        try {
-            AgentCard extCard = createTestAgentCardBuilder().name("router-extended").build();
-            AgentCardRouter router = new AgentCardRouter() {
-                @Override
-                public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                    return extCard;
-                }
-
-                @Override
-                public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                    return null;
-                }
-            };
-            Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-            AgentCard result = AgentCardValidator.resolveWithFallback(
-                    FixedInstance.empty(), FixedInstance.empty(), router, "tenant-1", validatedCards);
-
-            assertEquals("router-extended", result.name());
-        } finally {
-            System.clearProperty(AgentCardValidator.SKIP_PROPERTY);
-        }
-    }
-
-    @Test
-    void resolveWithFallbackThrowsWhenRouterReturnsNull() {
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override
-            public @Nullable AgentCard resolveExtendedCard(@Nullable String tenant) {
-                return null;
-            }
-
-            @Override
-            public @Nullable AgentCard resolvePublicCard(@Nullable String tenant) {
-                return null;
-            }
-        };
-        Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-        TenantNotFoundException ex = assertThrows(TenantNotFoundException.class, () ->
-                AgentCardValidator.resolveWithFallback(
-                        FixedInstance.empty(), FixedInstance.empty(), router, "unknown", validatedCards));
-
-        assertEquals("unknown", ex.getTenant());
-    }
-
-    // A simple log handler for testing
     private static class TestLogHandler extends Handler {
         private final List<String> logMessages = new java.util.ArrayList<>();
 

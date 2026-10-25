@@ -7,21 +7,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import jakarta.enterprise.inject.Instance;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
-
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
-import org.a2aproject.sdk.server.TestInstances;
+import org.a2aproject.sdk.server.AgentCardValidator;
 import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.TestInstances;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
@@ -32,10 +35,20 @@ import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentExtension;
 import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
+import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.spec.TaskState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
@@ -56,13 +69,13 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), 0);
+        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), "0");
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
 
-        response = handler.getTask(callContext, "", MINIMAL_TASK.id(), 2);
+        response = handler.getTask(callContext, "", MINIMAL_TASK.id(), "2");
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -73,7 +86,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testGetTaskNotFound() {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", "nonexistent", 0);
+        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", "nonexistent", "0");
 
         assertProblemDetail(response, 404,
                 "TASK_NOT_FOUND", "Task not found");
@@ -83,10 +96,15 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testGetTaskNegativeHistoryLengthReturns422() {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), -1);
+        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), "-1");
 
         assertProblemDetail(response, 422,
                 "INVALID_PARAMS", "Invalid history length");
+        Assertions.assertEquals(Map.of(), response.getHeaders());
+        Assertions.assertFalse(response instanceof RestHandler.HTTPRestStreamingResponse);
+        JsonObject error = JsonParser.parseString(response.getBody()).getAsJsonObject().getAsJsonObject("error");
+        Assertions.assertEquals("INVALID_ARGUMENT", error.get("status").getAsString());
+        Assertions.assertEquals(new JsonObject(), error.getAsJsonArray("details").get(0).getAsJsonObject().get("metadata"));
     }
 
     @Test
@@ -111,6 +129,14 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         assertProblemDetail(response, 422,
                 "INVALID_PARAMS", "Invalid params");
+        Assertions.assertEquals(Map.of(), response.getHeaders());
+        Assertions.assertFalse(response instanceof RestHandler.HTTPRestStreamingResponse);
+        JsonObject error = JsonParser.parseString(response.getBody()).getAsJsonObject().getAsJsonObject("error");
+        Assertions.assertEquals("INVALID_ARGUMENT", error.get("status").getAsString());
+        JsonObject metadata = error.getAsJsonArray("details").get(0).getAsJsonObject().getAsJsonObject("metadata");
+        Assertions.assertEquals("status", metadata.get("parameter").getAsString());
+        Assertions.assertEquals("Must be one of: " + java.util.Arrays.stream(TaskState.values())
+                .map(Enum::name).collect(java.util.stream.Collectors.joining(", ")), metadata.get("reason").getAsString());
     }
 
     @Test
@@ -451,7 +477,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(callContext, "", MINIMAL_TASK.id(), 0, "");
+        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(callContext, "", MINIMAL_TASK.id(), "0", "");
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -494,7 +520,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(400, response.getStatusCode());
 
         // Test 404 for not found
-        response = handler.getTask(callContext, "", "nonexistent", 0);
+        response = handler.getTask(callContext, "", "nonexistent", "0");
         Assertions.assertEquals(404, response.getStatusCode());
     }
 
@@ -1226,7 +1252,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(MINIMAL_TASK, false);
 
         assertVersionRejected(handler.listTaskPushNotificationConfigurations(
-                incompatibleVersionContext(), "", MINIMAL_TASK.id(), 10, ""));
+                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "10", ""));
     }
 
     @Test
@@ -1488,4 +1514,327 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getAgentCard("some-tenant");
         Assertions.assertEquals(404, response.getStatusCode());
     }
+    @Test
+    public void testUnknownOperationTenantIsInvalidParams() {
+        AgentCardRouter router = tenant -> null;
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+
+        assertProblemDetail(handler.sendMessage(callContext, "unknown", "{broken"), 422,
+                "INVALID_PARAMS", "No public agent card registered for tenant: unknown");
+    }
+
+    @Test
+    public void testInvalidTenantPrecedesVersionAndStreamingBody() {
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        String message = "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed";
+        assertProblemDetail(handler.sendMessage(incompatibleVersionContext(), "bad/tenant", "{broken"),
+                422, "INVALID_PARAMS", message);
+        RestHandler.HTTPRestStreamingResponse response = Assertions.assertInstanceOf(
+                RestHandler.HTTPRestStreamingResponse.class,
+                handler.sendStreamingMessage(callContext, "bad/tenant", "{broken"));
+        assertSingleStreamProblem(response, 422, "INVALID_PARAMS", message);
+    }
+
+    @Test
+    public void testDisabledStreamingPrecedesMalformedBody() {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        RestHandler handler = new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
+        assertProblemDetail(handler.sendStreamingMessage(callContext, "", "{broken"), 400,
+                "UNSUPPORTED_OPERATION", "Streaming is not supported by the agent");
+    }
+
+    private static void assertSingleStreamProblem(RestHandler.HTTPRestStreamingResponse response,
+            int status, String reason, String message) {
+        CompletableFuture<String> event = new CompletableFuture<>();
+        response.getPublisher().subscribe(new Flow.Subscriber<>() {
+            @Override public void onSubscribe(Flow.Subscription subscription) { subscription.request(Long.MAX_VALUE); }
+            @Override public void onNext(String item) { event.complete(item); }
+            @Override public void onError(Throwable failure) { event.completeExceptionally(failure); }
+            @Override public void onComplete() { }
+        });
+        assertProblemDetail(new RestHandler.HTTPRestResponse(status, APPLICATION_JSON, event.join()),
+                status, reason, message);
+    }
+
+    @Test
+    public void testBoundarySlashesCanonicalizedForRoutingAndDispatch() {
+        AgentCardRouter router = Mockito.mock(AgentCardRouter.class);
+        Mockito.when(router.resolvePublicCard("acme")).thenReturn(CARD);
+        RequestHandler delegate = Mockito.mock(RequestHandler.class);
+        Mockito.when(delegate.onGetTask(Mockito.any(), Mockito.any())).thenReturn(MINIMAL_TASK);
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
+                delegate, internalExecutor, new FixedInstance<>(router));
+
+        Assertions.assertEquals(200, handler.getTask(callContext, "/acme/", "task", null).getStatusCode());
+        ArgumentCaptor<TaskQueryParams> params = ArgumentCaptor.forClass(TaskQueryParams.class);
+        Mockito.verify(delegate).onGetTask(params.capture(), Mockito.same(callContext));
+        Assertions.assertEquals("acme", params.getValue().tenant());
+        Assertions.assertEquals("acme", callContext.getEffectiveAgentCard().tenant());
+        Mockito.verify(router).resolvePublicCard("acme");
+        Mockito.verifyNoMoreInteractions(router);
+    }
+
+    @Test
+    public void testPublicDiscoveryValidatesDefaultAndRouterCardsOnce() {
+        AgentCard routed = AgentCard.builder(CARD).name("routed").build();
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override public AgentCard resolvePublicCard(String tenant) { return routed; }
+            @Override public AgentCard resolveExtendedCard(String tenant) { return null; }
+        };
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+        try (MockedStatic<AgentCardValidator> validator = Mockito.mockStatic(AgentCardValidator.class, Mockito.CALLS_REAL_METHODS)) {
+            for (int i = 0; i < 2; i++) {
+                Assertions.assertEquals(200, handler.getAgentCard().getStatusCode());
+                RestHandler.HTTPRestResponse response = handler.getAgentCard("acme");
+                Assertions.assertEquals(200, response.getStatusCode());
+                Assertions.assertEquals("routed", JsonParser.parseString(response.getBody()).getAsJsonObject().get("name").getAsString());
+            }
+            validator.verify(() -> AgentCardValidator.validateTransportConfiguration(CARD), Mockito.times(1));
+            validator.verify(() -> AgentCardValidator.validateTransportConfiguration(routed), Mockito.times(1));
+        }
+    }
+
+    @Test
+    public void testDiscoveryValidationFailureCanRetry() {
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override public AgentCard resolvePublicCard(String tenant) { return CARD; }
+            @Override public AgentCard resolveExtendedCard(String tenant) { return null; }
+        };
+        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
+                requestHandler, internalExecutor, new FixedInstance<>(router));
+        try (MockedStatic<AgentCardValidator> validator = Mockito.mockStatic(AgentCardValidator.class, Mockito.CALLS_REAL_METHODS)) {
+            validator.when(() -> AgentCardValidator.validateTransportConfiguration(CARD))
+                    .thenThrow(new IllegalArgumentException("invalid transport")).thenCallRealMethod();
+            validator.clearInvocations();
+            assertProblemDetail(handler.getAgentCard("acme"), 500, "INTERNAL", "Internal error");
+            Assertions.assertEquals(200, handler.getAgentCard("acme").getStatusCode());
+            Assertions.assertEquals(200, handler.getAgentCard("acme").getStatusCode());
+            validator.verify(() -> AgentCardValidator.validateTransportConfiguration(CARD), Mockito.times(2));
+        }
+    }
+
+    @Test
+    public void testPublicDiscoveryNeverExposesOnlyExtendedCard() {
+        RestHandler handler = new RestHandler(FixedInstance.empty(), new FixedInstance<>(CARD), createCacheMetadata(),
+                requestHandler, internalExecutor, null);
+        RestHandler.HTTPRestResponse response = handler.getAgentCard();
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals("text/plain", response.getContentType());
+        Assertions.assertEquals("Public agent card not configured", response.getBody());
+    }
+
+    @Test
+    public void testDiscoveryInvalidTenantRetainsSanitized500() {
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        assertProblemDetail(handler.getAgentCard("bad/tenant"), 500, "INTERNAL", "Internal error");
+        assertProblemDetail(handler.getExtendedAgentCard(callContext, "bad/tenant"), 500, "INTERNAL", "Internal error");
+    }
+
+    @Test
+    public void testExtendedDiscoveryDistinguishesCapabilityAndMissingCard() {
+        AgentCard disabled = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        RestHandler handler = new RestHandler(disabled, createCacheMetadata(disabled), requestHandler, internalExecutor);
+        assertProblemDetail(handler.getExtendedAgentCard(callContext, ""), 400,
+                "UNSUPPORTED_OPERATION", "This operation is not supported");
+        AgentCard enabled = AgentCard.builder(disabled)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        handler = new RestHandler(enabled, createCacheMetadata(enabled), requestHandler, internalExecutor);
+        assertProblemDetail(handler.getExtendedAgentCard(callContext, ""), 400,
+                "EXTENDED_AGENT_CARD_NOT_CONFIGURED", "Extended Card not configured");
+    }
+
+    private RequestHandler validationHandler;
+    private RestHandler validationRestHandler;
+    private ServerCallContext validationContext;
+
+    private void validationFixture(int conflict) {
+        validationHandler = Mockito.mock(RequestHandler.class);
+        AgentCard card = AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().streaming(conflict != 3).pushNotifications(conflict != 3)
+                        .extensions(conflict == 2 ? List.of(AgentExtension.builder().uri("urn:test:required")
+                                .required(true).build()) : List.of()).build()).build();
+        validationRestHandler = new RestHandler(card, createCacheMetadata(card), validationHandler, Runnable::run);
+        validationContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of(), new HashSet<>(),
+                conflict == 1 ? "2.0" : "1.0");
+    }
+
+    private void assertRawInputError(RestHandler.HTTPRestResponse response, String message) {
+        assertRawInputError(response, 422, "INVALID_PARAMS", message);
+    }
+
+    private void assertRawVersionError(RestHandler.HTTPRestResponse response) {
+        assertRawInputError(response, 400, "VERSION_NOT_SUPPORTED",
+                "Protocol version '2.0' is not supported. Supported versions: [1.0]");
+    }
+
+    private void assertRawInputError(RestHandler.HTTPRestResponse response, int status, String reason, String message) {
+        Assertions.assertEquals(status, response.getStatusCode());
+        Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
+        Assertions.assertFalse(response instanceof RestHandler.HTTPRestStreamingResponse);
+        Assertions.assertEquals(Map.of(), response.getHeaders());
+        JsonObject expected = JsonParser.parseString("""
+                {"error":{"code":422,"status":"INVALID_ARGUMENT","message":"", "details":[{
+                "@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_PARAMS",
+                "domain":"a2a-protocol.org","metadata":{}}]}}
+                """).getAsJsonObject();
+        JsonObject error = expected.getAsJsonObject("error");
+        error.addProperty("code", status);
+        error.addProperty("status", reason.equals("VERSION_NOT_SUPPORTED") ? "UNIMPLEMENTED" : "INVALID_ARGUMENT");
+        error.addProperty("message", message);
+        error.getAsJsonArray("details").get(0).getAsJsonObject().addProperty("reason", reason);
+        Assertions.assertEquals(expected, JsonParser.parseString(response.getBody()));
+        Mockito.verifyNoInteractions(validationHandler);
+    }
+
+    private void assertBadTaskPath(String taskId,
+            Function<String, RestHandler.HTTPRestResponse> operation) {
+        for (int conflict = 0; conflict < 4; conflict++) {
+            validationFixture(conflict);
+            assertRawInputError(operation.apply(taskId), "bad task id");
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testGetTaskRawInputValidationOrder(String taskId) {
+        assertBadTaskPath(taskId, id -> validationRestHandler.getTask(validationContext, "", id, "bad"));
+        for (String history : List.of("", "bad", "2147483648")) {
+            for (int conflict = 0; conflict < 3; conflict++) {
+                validationFixture(conflict);
+                assertRawInputError(validationRestHandler.getTask(validationContext, "", "task", history), "bad historyLength");
+            }
+        }
+        validationFixture(1);
+        assertRawVersionError(validationRestHandler.getTask(validationContext, "", "task", "-1"));
+        Mockito.verifyNoInteractions(validationHandler);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testCancelTaskPathValidationOrder(String taskId) {
+        assertBadTaskPath(taskId, id -> validationRestHandler.cancelTask(validationContext, "", "{broken", id));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testSubscribeToTaskPathValidationOrder(String taskId) {
+        assertBadTaskPath(taskId, id -> validationRestHandler.subscribeToTask(validationContext, "", id));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testCreatePushConfigPathValidationOrder(String taskId) {
+        assertBadTaskPath(taskId,
+                id -> validationRestHandler.createTaskPushNotificationConfiguration(validationContext, "", "{broken", id));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testGetPushConfigPathValidationOrder(String id) {
+        assertBadTaskPath(id,
+                taskId -> validationRestHandler.getTaskPushNotificationConfiguration(validationContext, "", taskId, id));
+        for (int conflict = 0; conflict < 4; conflict++) {
+            validationFixture(conflict);
+            assertRawInputError(validationRestHandler.getTaskPushNotificationConfiguration(validationContext, "", "task", id),
+                    "bad configuration id");
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testDeletePushConfigPathValidationOrder(String id) {
+        assertBadTaskPath(id,
+                taskId -> validationRestHandler.deleteTaskPushNotificationConfiguration(validationContext, "", taskId, id));
+        for (int conflict = 0; conflict < 4; conflict++) {
+            validationFixture(conflict);
+            assertRawInputError(validationRestHandler.deleteTaskPushNotificationConfiguration(validationContext, "", "task", id),
+                    "bad config id");
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    public void testListPushConfigsRawInputValidationOrder(String taskId) {
+        assertBadTaskPath(taskId,
+                id -> validationRestHandler.listTaskPushNotificationConfigurations(validationContext, "", id, "bad", null));
+        for (String page : List.of("", "bad", "2147483648")) {
+            for (int conflict = 0; conflict < 4; conflict++) {
+                validationFixture(conflict);
+                assertRawInputError(validationRestHandler.listTaskPushNotificationConfigurations(
+                        validationContext, "", "task", page, null), "bad pageSize");
+            }
+        }
+    }
+
+    @Test
+    public void testListTasksRawQueryValidationOrder() {
+        for (String field : List.of("pageSize", "historyLength")) {
+            for (int conflict = 0; conflict < 3; conflict++) {
+                validationFixture(conflict);
+                assertRawInputError(validationRestHandler.listTasks(validationContext, "", null, "invalid",
+                        field.equals("pageSize") ? "bad" : null, null, "also-bad", "invalid", null),
+                        "Invalid number format in parameters");
+            }
+            validationFixture(1);
+            assertRawVersionError(validationRestHandler.listTasks(validationContext, "", null, null,
+                    field.equals("pageSize") ? "-1" : null, null,
+                    field.equals("historyLength") ? "-1" : null, null, null));
+            Mockito.verifyNoInteractions(validationHandler);
+        }
+        for (String number : new String[] {null, "", "2"}) {
+            for (String raw : new String[] {null, "", "true", "TrUe", "false", "not-true", "1"}) {
+                validationFixture(0);
+                Mockito.when(validationHandler.onListTasks(Mockito.any(), Mockito.any()))
+                        .thenReturn(new ListTasksResult(List.of()));
+                RestHandler.HTTPRestResponse response = validationRestHandler.listTasks(validationContext, "", null,
+                        "task_state_submitted", number, null, number, null, raw);
+                Assertions.assertEquals(200, response.getStatusCode());
+                Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
+                ArgumentCaptor<ListTasksParams> params =
+                        ArgumentCaptor.forClass(ListTasksParams.class);
+                Mockito.verify(validationHandler).onListTasks(params.capture(), Mockito.any());
+                Assertions.assertEquals(TaskState.TASK_STATE_SUBMITTED, params.getValue().status());
+                Assertions.assertEquals(number == null || number.isEmpty() ? null : Integer.valueOf(number), params.getValue().pageSize());
+                Assertions.assertEquals(number == null || number.isEmpty() ? null : Integer.valueOf(number), params.getValue().historyLength());
+                Assertions.assertEquals(raw == null || raw.isEmpty() ? null : Boolean.valueOf(raw), params.getValue().includeArtifacts());
+            }
+        }
+    }
+
+    @Test
+    public void testRawQueryDefaultsAndSuccessfulConversions() {
+        for (String history : new String[] {null, "0", "2"}) {
+            validationFixture(0);
+            Mockito.when(validationHandler.onGetTask(Mockito.any(), Mockito.any())).thenReturn(MINIMAL_TASK);
+            Assertions.assertEquals(200, validationRestHandler.getTask(validationContext, "", "task", history).getStatusCode());
+            ArgumentCaptor<TaskQueryParams> params =
+                    ArgumentCaptor.forClass(TaskQueryParams.class);
+            Mockito.verify(validationHandler).onGetTask(params.capture(), Mockito.any());
+            Assertions.assertEquals(history == null ? null : Integer.valueOf(history), params.getValue().historyLength());
+        }
+        for (String page : new String[] {null, "0", "2"}) {
+            for (String token : new String[] {null, "", "next"}) {
+                validationFixture(0);
+                Mockito.when(validationHandler.onListTaskPushNotificationConfigs(Mockito.any(), Mockito.any()))
+                        .thenReturn(new ListTaskPushNotificationConfigsResult(List.of()));
+                Assertions.assertEquals(200, validationRestHandler.listTaskPushNotificationConfigurations(
+                        validationContext, "", "task", page, token).getStatusCode());
+                ArgumentCaptor<ListTaskPushNotificationConfigsParams> params =
+                        ArgumentCaptor.forClass(ListTaskPushNotificationConfigsParams.class);
+                Mockito.verify(validationHandler).onListTaskPushNotificationConfigs(params.capture(), Mockito.any());
+                Assertions.assertEquals(page == null ? 0 : Integer.parseInt(page), params.getValue().pageSize());
+                Assertions.assertEquals(token == null ? "" : token, params.getValue().pageToken());
+            }
+        }
+    }
+
 }

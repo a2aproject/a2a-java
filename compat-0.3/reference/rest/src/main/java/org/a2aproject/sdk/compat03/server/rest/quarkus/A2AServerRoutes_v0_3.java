@@ -33,7 +33,6 @@ import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
-import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
@@ -182,8 +181,8 @@ public class A2AServerRoutes_v0_3 {
         HTTPRestResponse error = null;
         try {
             HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, context);
-            if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
-                streamingResponse = hTTPRestStreamingResponse;
+            if (response instanceof HTTPRestStreamingResponse httpRestStreamingResponse) {
+                streamingResponse = httpRestStreamingResponse;
             } else {
                 error = response;
             }
@@ -205,28 +204,8 @@ public class A2AServerRoutes_v0_3 {
         ServerCallContext context = createCallContext(rc, GetTaskRequest_v0_3.METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
-            } else {
-                int historyLength = 0;
-                boolean hasHistoryLength = rc.request().params().contains("history_length");
-                boolean hasHistoryLengthCamel = rc.request().params().contains("historyLength");
-
-                if (hasHistoryLength && hasHistoryLengthCamel) {
-                    response = jsonRestHandler.createErrorResponse(
-                        new InvalidParamsError_v0_3("Only one of 'history_length' or 'historyLength' may be specified"));
-                } else if (hasHistoryLength) {
-                    historyLength = Integer.parseInt(rc.request().params().get("history_length"));
-                } else if (hasHistoryLengthCamel) {
-                    historyLength = Integer.parseInt(rc.request().params().get("historyLength"));
-                }
-
-                if (response == null) {
-                    response = jsonRestHandler.getTask(taskId, historyLength, context);
-                }
-            }
-        } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad history_length or historyLength"));
+            response = jsonRestHandler.getTask(taskId, rc.request().params().get("history_length"),
+                    rc.request().params().get("historyLength"), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
         } finally {
@@ -240,11 +219,7 @@ public class A2AServerRoutes_v0_3 {
         ServerCallContext context = createCallContext(rc, CancelTaskRequest_v0_3.METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
-            } else {
-                response = jsonRestHandler.cancelTask(taskId, context);
-            }
+            response = jsonRestHandler.cancelTask(taskId, context);
         } catch (Throwable t) {
             if (t instanceof JSONRPCError_v0_3 error) {
                 response = jsonRestHandler.createErrorResponse(error);
@@ -277,15 +252,11 @@ public class A2AServerRoutes_v0_3 {
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                error = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
+            HTTPRestResponse response = jsonRestHandler.resubscribeTask(taskId, context);
+            if (response instanceof HTTPRestStreamingResponse httpRestStreamingResponse) {
+                streamingResponse = httpRestStreamingResponse;
             } else {
-                HTTPRestResponse response = jsonRestHandler.resubscribeTask(taskId, context);
-                if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
-                    streamingResponse = hTTPRestStreamingResponse;
-                } else {
-                    error = response;
-                }
+                error = response;
             }
         } finally {
             if (error != null) {
@@ -305,11 +276,7 @@ public class A2AServerRoutes_v0_3 {
         ServerCallContext context = createCallContext(rc, SetTaskPushNotificationConfigRequest_v0_3.METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
-            } else {
-                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
-            }
+            response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
         } finally {
@@ -324,11 +291,7 @@ public class A2AServerRoutes_v0_3 {
         ServerCallContext context = createCallContext(rc, GetTaskPushNotificationConfigRequest_v0_3.METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
-            } else {
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
-            }
+            response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
         } finally {
@@ -342,11 +305,7 @@ public class A2AServerRoutes_v0_3 {
         ServerCallContext context = createCallContext(rc, ListTaskPushNotificationConfigRequest_v0_3.METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
-            } else {
-                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
-            }
+            response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
         } finally {
@@ -361,13 +320,7 @@ public class A2AServerRoutes_v0_3 {
         ServerCallContext context = createCallContext(rc, DeleteTaskPushNotificationConfigRequest_v0_3.METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad task id"));
-            } else if (configId == null || configId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError_v0_3("bad config id"));
-            } else {
-                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
-            }
+            response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
         } finally {

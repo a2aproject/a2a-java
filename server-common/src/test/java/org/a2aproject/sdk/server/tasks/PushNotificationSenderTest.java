@@ -13,10 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import jakarta.enterprise.inject.Instance;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
@@ -36,10 +39,14 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class PushNotificationSenderTest {
 
@@ -58,6 +65,7 @@ public class PushNotificationSenderTest {
         final List<String> rawBodies = Collections.synchronizedList(new ArrayList<>());
         volatile CountDownLatch latch;
         volatile boolean shouldThrowException = false;
+        volatile int responseStatusCode = 200;
 
         @Override
         public GetBuilder createGet() {
@@ -102,15 +110,16 @@ public class PushNotificationSenderTest {
                     urls.add(url);
                     headers.add(new java.util.HashMap<>(requestHeaders));
 
+                    int status = responseStatusCode;
                     return new A2AHttpResponse() {
                         @Override
                         public int status() {
-                            return 200;
+                            return status;
                         }
 
                         @Override
                         public boolean success() {
-                            return true;
+                            return status >= 200 && status < 300;
                         }
 
                         @Override
@@ -590,4 +599,150 @@ public class PushNotificationSenderTest {
         assertTrue(testHttpClient.rawBodies.isEmpty(), "No body should have been sent");
     }
 
+    static Stream<Arguments> nonSuccessHttpStatuses() {
+        return Stream.of(
+                Arguments.of("3xx redirect", 301),
+                Arguments.of("4xx client error", 404),
+                Arguments.of("5xx server error", 500));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("nonSuccessHttpStatuses")
+    public void testSendNotificationReturnsFalseOnNon2xxResponse(String description, int statusCode) {
+        String taskId = "task_non2xx_" + statusCode;
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", null);
+        configStore.setInfo(config);
+
+        testHttpClient.responseStatusCode = statusCode;
+
+        boolean result = sender.sendNotification(taskData, null);
+
+        assertFalse(result, description + " (HTTP " + statusCode + ") must cause sendNotification to return false");
+    }
+
+    @Nested
+    class ExecutorResolution {
+
+        @SuppressWarnings("unchecked")
+        private Instance<Executor> mockInstance(boolean resolvable, Executor executor) {
+            Instance<Executor> instance = mock(Instance.class);
+            when(instance.isResolvable()).thenReturn(resolvable);
+            if (resolvable) {
+                when(instance.get()).thenReturn(executor);
+            }
+            return instance;
+        }
+
+        @SuppressWarnings("unchecked")
+        private BasePushNotificationSender createWithExecutors(Instance<Executor> instrumented,
+                                                                Instance<Executor> named) {
+            Instance<PushNotificationPayloadFormatter> formatters = mock(Instance.class);
+            when(formatters.iterator()).thenReturn(Collections.emptyIterator());
+
+            Instance<A2AHttpClient> httpClient = mock(Instance.class);
+            when(httpClient.isResolvable()).thenReturn(false);
+
+            Instance<A2AHttpClient> propagatingClient = mock(Instance.class);
+            when(propagatingClient.isResolvable()).thenReturn(false);
+
+            return new BasePushNotificationSender(
+                    new InMemoryPushNotificationConfigStore(),
+                    formatters,
+                    PushNotificationUrlValidator.ALLOW_ALL,
+                    httpClient,
+                    propagatingClient,
+                    instrumented,
+                    named);
+        }
+
+        private TestHttpClient prepareDispatch(BasePushNotificationSender sender, String taskId) {
+            InMemoryPushNotificationConfigStore store = new InMemoryPushNotificationConfigStore();
+            store.setInfo(createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", null));
+            TestHttpClient http = new TestHttpClient();
+            http.latch = new CountDownLatch(1);
+            try {
+                java.lang.reflect.Field storeField = BasePushNotificationSender.class.getDeclaredField("configStore");
+                storeField.setAccessible(true);
+                storeField.set(sender, store);
+                java.lang.reflect.Field clientField = BasePushNotificationSender.class.getDeclaredField("httpClient");
+                clientField.setAccessible(true);
+                clientField.set(sender, http);
+            } catch (ReflectiveOperationException e) {
+                throw new RuntimeException(e);
+            }
+            return http;
+        }
+
+        @Test
+        void instrumentedExecutorIsPreferredOverNamed() throws InterruptedException {
+            AtomicInteger instrumentedCount = new AtomicInteger();
+            AtomicInteger namedCount = new AtomicInteger();
+
+            Executor instrumentedExec = command -> {
+                instrumentedCount.incrementAndGet();
+                command.run();
+            };
+            Executor namedExec = command -> {
+                namedCount.incrementAndGet();
+                command.run();
+            };
+
+            BasePushNotificationSender s = createWithExecutors(
+                    mockInstance(true, instrumentedExec),
+                    mockInstance(true, namedExec));
+
+            String taskId = "exec-resolution-instrumented";
+            TestHttpClient httpClient = prepareDispatch(s, taskId);
+
+            Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+            s.sendNotification(task, null);
+
+            assertTrue(httpClient.latch.await(5, TimeUnit.SECONDS));
+            assertTrue(instrumentedCount.get() > 0,
+                    "@Instrumented executor must be used when available");
+            assertEquals(0, namedCount.get(),
+                    "@Named executor must NOT be used when @Instrumented is available");
+        }
+
+        @Test
+        void namedExecutorUsedWhenInstrumentedAbsent() throws InterruptedException {
+            AtomicInteger namedCount = new AtomicInteger();
+
+            Executor namedExec = command -> {
+                namedCount.incrementAndGet();
+                command.run();
+            };
+
+            BasePushNotificationSender s = createWithExecutors(
+                    mockInstance(false, null),
+                    mockInstance(true, namedExec));
+
+            String taskId = "exec-resolution-named";
+            TestHttpClient httpClient = prepareDispatch(s, taskId);
+
+            Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+            s.sendNotification(task, null);
+
+            assertTrue(httpClient.latch.await(5, TimeUnit.SECONDS));
+            assertTrue(namedCount.get() > 0,
+                    "@Named executor must be used when @Instrumented is absent");
+        }
+
+        @Test
+        void commonPoolUsedWhenBothAbsent() throws InterruptedException {
+            BasePushNotificationSender s = createWithExecutors(
+                    mockInstance(false, null),
+                    mockInstance(false, null));
+
+            String taskId = "exec-resolution-fallback";
+            TestHttpClient httpClient = prepareDispatch(s, taskId);
+
+            Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+            s.sendNotification(task, null);
+
+            assertTrue(httpClient.latch.await(5, TimeUnit.SECONDS),
+                    "Notification must still be dispatched via the common pool fallback");
+        }
+    }
 }

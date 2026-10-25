@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
-import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
@@ -38,41 +39,47 @@ import org.a2aproject.sdk.server.events.InMemoryQueueManager;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
 import org.a2aproject.sdk.server.events.MainEventBusProcessorCallback;
+import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
-import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
+import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.AgentCapabilities;
+import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
-import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
+import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
-import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
-import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 /**
  * Integration tests for DefaultRequestHandler focusing on AUTH_REQUIRED workflow.
@@ -97,8 +104,6 @@ public class DefaultRequestHandlerTest {
         .parts(new TextPart("test message"))
         .build();
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
-
     // Test infrastructure components
     protected AgentExecutor executor;
     protected TaskStore taskStore;
@@ -111,6 +116,12 @@ public class DefaultRequestHandlerTest {
     protected AgentExecutorMethod agentExecutorCancel;
 
     protected final Executor internalExecutor = Executors.newCachedThreadPool();
+
+    @Test
+    public void authorizeTaskAccessRejectsWhitespaceOnlyTaskId() {
+        assertThrows(InvalidParamsError.class,
+                () -> requestHandler.authorizeTaskAccess(" ", NULL_CONTEXT, TaskOperation.SUBSCRIBE_TO_TASK));
+    }
 
     @BeforeEach
     public void init() {
@@ -140,7 +151,7 @@ public class DefaultRequestHandlerTest {
         // Create MainEventBus and MainEventBusProcessor
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(inMemoryTaskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         // Create DefaultRequestHandler
@@ -198,7 +209,7 @@ public class DefaultRequestHandlerTest {
         MainEventBus manualMainEventBus = new MainEventBus();
         InMemoryQueueManager manualQueueManager = new InMemoryQueueManager(manualTaskStore, manualMainEventBus);
         MainEventBusProcessor manualProcessor = new MainEventBusProcessor(
-            manualMainEventBus, manualTaskStore, NOOP_PUSHNOTIFICATION_SENDER, manualQueueManager);
+            manualMainEventBus, manualTaskStore, PushNotificationSender.NOOP, manualQueueManager);
 
         try {
             AgentExecutor manualAgentExecutor = new AgentExecutor() {
@@ -905,8 +916,9 @@ public class DefaultRequestHandlerTest {
      * mistaken for a reference to an existing task with id "", causing a spurious
      * TaskNotFoundError instead of starting a new task.
      */
-    @Test
-    void testSendMessage_WithBlankTaskId_TreatedAsNewTask() throws Exception {
+    @ParameterizedTest
+    @NullAndEmptySource
+    void testSendMessage_WithBlankTaskId_TreatedAsNewTask(String taskId) throws Exception {
         CountDownLatch agentCompleted = new CountDownLatch(1);
         agentExecutorExecute = (context, emitter) -> {
             emitter.complete();
@@ -916,7 +928,7 @@ public class DefaultRequestHandlerTest {
         Message message = Message.builder()
             .messageId("msg-blank-task-id")
             .role(Message.Role.ROLE_USER)
-            .taskId("")
+            .taskId(taskId)
             .contextId("")
             .parts(new TextPart("hello"))
             .build();
@@ -926,7 +938,7 @@ public class DefaultRequestHandlerTest {
             .configuration(DEFAULT_CONFIG)
             .build();
 
-        EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
+        EventKind result = requestHandler.onMessageSend(params, contextWithEffectiveCard(true));
 
         assertInstanceOf(Task.class, result, "A blank taskId should start a new task, not fail lookup");
         Task task = (Task) result;
@@ -940,10 +952,11 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
-     * Streaming counterpart of {@link #testSendMessage_WithBlankTaskId_TreatedAsNewTask()}.
+     * Streaming counterpart of {@link #testSendMessage_WithBlankTaskId_TreatedAsNewTask(String)}.
      */
-    @Test
-    void testSendMessageStream_WithBlankTaskId_TreatedAsNewTask() throws Exception {
+    @ParameterizedTest
+    @NullAndEmptySource
+    void testSendMessageStream_WithBlankTaskId_TreatedAsNewTask(String taskId) throws Exception {
         CountDownLatch agentCompleted = new CountDownLatch(1);
         agentExecutorExecute = (context, emitter) -> {
             emitter.complete();
@@ -953,7 +966,7 @@ public class DefaultRequestHandlerTest {
         Message message = Message.builder()
             .messageId("msg-stream-blank-task-id")
             .role(Message.Role.ROLE_USER)
-            .taskId("")
+            .taskId(taskId)
             .contextId("")
             .parts(new TextPart("hello"))
             .build();
@@ -968,7 +981,7 @@ public class DefaultRequestHandlerTest {
         AtomicReference<String> taskIdRef = new AtomicReference<>();
 
         Flow.Publisher<StreamingEventKind> publisher =
-                requestHandler.onMessageSendStream(params, contextWithVersion("1.0"));
+                requestHandler.onMessageSendStream(params, contextWithEffectiveCard(true));
         publisher.subscribe(new Flow.Subscriber<>() {
             @Override
             public void onSubscribe(Flow.Subscription s) {
@@ -1115,6 +1128,47 @@ public class DefaultRequestHandlerTest {
 
     private static ServerCallContext contextWithVersion(String version) {
         return new ServerCallContext(null, Map.of(), Set.of(), version);
+    }
+
+    static ServerCallContext contextWithEffectiveCard(boolean pushNotifications) {
+        ServerCallContext context = contextWithVersion("1.0");
+        context.attachEffectiveAgentCard(null, AgentCard.builder()
+                .name("test").description("Test agent").version("1.0")
+                .supportedInterfaces(List.of()).skills(List.of())
+                .defaultInputModes(List.of("text")).defaultOutputModes(List.of("text"))
+                .capabilities(AgentCapabilities.builder().pushNotifications(pushNotifications).build())
+                .build());
+        return context;
+    }
+
+    @ParameterizedTest(name = "streaming={0}, advertised={1}, enabled={2}, store={3}")
+    @CsvSource({
+            "false, false, true, true", "true, false, true, true",
+            "false, true, false, true", "true, true, false, true",
+            "false, true, true, false", "true, true, true, false"
+    })
+    void embeddedPushRequiresEffectiveCardAndConfiguredSupport(
+            boolean streaming, boolean advertised, boolean enabled, boolean hasStore) {
+        DefaultRequestHandler handler = DefaultRequestHandler.builder()
+                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
+                .pushConfigStore(hasStore ? pushConfigStore : null).pushNotificationsEnabled(enabled)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
+                .build();
+        MessageSendParams params = MessageSendParams.builder().message(MESSAGE)
+                .configuration(MessageSendConfiguration.builder()
+                        .taskPushNotificationConfig(TaskPushNotificationConfig.builder()
+                                .url("https://example.com/push").build()).build())
+                .build();
+        ServerCallContext context = contextWithEffectiveCard(advertised);
+
+        assertThrows(PushNotificationNotSupportedError.class, () -> {
+            if (streaming) {
+                handler.onMessageSendStream(params, context);
+            } else {
+                handler.onMessageSend(params, context);
+            }
+        });
     }
 
     /**
@@ -1796,7 +1850,7 @@ public class DefaultRequestHandlerTest {
             }
         };
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore,
-                NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+                PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         CountDownLatch workingEventProcessing = new CountDownLatch(1);
@@ -2020,4 +2074,15 @@ public class DefaultRequestHandlerTest {
                 () -> handlerNoPush.onCreateTaskPushNotificationConfig(pushConfig, NULL_CONTEXT),
                 "CreateTaskPushNotificationConfig should throw UnsupportedOperationError when push is disabled");
     }
+    @Test
+    public void testListTasksFutureTimestampValidation() {
+        Instant future = Instant.now().plusSeconds(60);
+        ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(future).build();
+        InvalidParamsError error = assertThrows(InvalidParamsError.class,
+                () -> requestHandler.onListTasks(params, NULL_CONTEXT));
+        assertEquals("Invalid params", error.getMessage());
+        assertEquals(Map.of("parameter", "statusTimestampAfter", "reason", "Timestamp cannot be in the future"),
+                error.getDetails());
+    }
+
 }

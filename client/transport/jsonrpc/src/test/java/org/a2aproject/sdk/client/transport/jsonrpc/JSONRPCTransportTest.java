@@ -37,6 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -54,6 +58,7 @@ import org.a2aproject.sdk.spec.FileWithBytes;
 import org.a2aproject.sdk.spec.FileWithUri;
 import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
+import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
@@ -86,6 +91,50 @@ public class JSONRPCTransportTest {
     @AfterEach
     public void tearDown() {
         server.stop();
+    }
+
+    @Test
+    public void testListTasksWithDefaultBuilder() throws Exception {
+        JsonObject params = listTasksAndGetRequestParams(ListTasksParams.builder().build());
+
+        assertEquals("", params.get("tenant").getAsString());
+    }
+
+    @Test
+    public void testListTasksWithDefaultConstructor() throws Exception {
+        JsonObject params = listTasksAndGetRequestParams(new ListTasksParams());
+
+        assertEquals("", params.get("tenant").getAsString());
+    }
+
+    @Test
+    public void testListTasksWithTenant() throws Exception {
+        JsonObject params = listTasksAndGetRequestParams(ListTasksParams.builder().tenant("tenant-123").build());
+
+        assertEquals("tenant-123", params.get("tenant").getAsString());
+    }
+
+    private JsonObject listTasksAndGetRequestParams(ListTasksParams params) throws Exception {
+        String body = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "list-tasks",
+                  "result": {"tasks": [], "totalSize": 0, "pageSize": 0}
+                }
+                """;
+        server.when(request().withMethod("POST").withPath("/"))
+                .respond(response().withStatusCode(200).withBody(body));
+
+        ListTasksResult result = new JSONRPCTransport("http://localhost:4001").listTasks(params, null);
+
+        assertTrue(result.tasks().isEmpty());
+        assertEquals(0, result.totalSize());
+        assertEquals(0, result.pageSize());
+        var requests = server.retrieveRecordedRequests(request().withMethod("POST").withPath("/"));
+        assertEquals(1, requests.length);
+        JsonObject json = JsonParser.parseString(requests[0].getBodyAsString()).getAsJsonObject();
+        assertEquals("ListTasks", json.get("method").getAsString());
+        return json.getAsJsonObject("params");
     }
 
     @Test

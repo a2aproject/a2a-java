@@ -44,6 +44,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Utility class to convert between GRPC and Spec objects.
@@ -314,7 +315,7 @@ public class ProtoUtils {
         }
 
         public static Message message(org.a2aproject.sdk.grpc.MessageOrBuilder message) {
-            if (message.getMessageId().isEmpty()) {
+            if (Assert.isNullOrEmpty(message.getMessageId())) {
                 throw new InvalidParamsError();
             }
             org.a2aproject.sdk.grpc.Message messageProto = message instanceof org.a2aproject.sdk.grpc.Message

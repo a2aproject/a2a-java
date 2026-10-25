@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
-
-
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,10 +11,17 @@ import com.google.gson.JsonObject;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.vertx.ext.web.Router;
@@ -26,8 +32,10 @@ import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Test routes for OpenTelemetry integration testing.
@@ -40,10 +48,21 @@ public class A2ATestRoutes {
     private static final String TEXT_PLAIN = "text/plain";
     private static final Gson gson = new GsonBuilder().create();
 
+    /**
+     * Captured webhook requests, each entry is a map of header name to value.
+     */
+    private final List<Map<String, String>> webhookRequests = new CopyOnWriteArrayList<>();
+
     @Inject
     TestUtilsBean testUtilsBean;
     @Inject
     InMemorySpanExporter inMemorySpanExporter;
+    @Inject
+    InMemoryMetricExporter inMemoryMetricExporter;
+    @Inject
+    OpenTelemetry openTelemetry;
+    @Inject
+    CustomDispatchExecutorProducer customDispatchExecutorProducer;
 
     @Inject
     Tracer tracer;
@@ -76,6 +95,37 @@ public class A2ATestRoutes {
             .produces(TEXT_PLAIN)
             .handler(ctx -> getChildQueueCount(ctx.pathParam("taskId"), ctx));
 
+        router.post("/test/pushconfig/:taskId")
+            .consumes(APPLICATION_JSON)
+            .handler(BodyHandler.create())
+            .blockingHandler(ctx -> savePushNotificationConfig(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+
+        router.delete("/test/pushconfig/:taskId/:configId")
+            .blockingHandler(ctx -> deletePushNotificationConfig(
+                    ctx.pathParam("taskId"), ctx.pathParam("configId"), ctx));
+
+        router.post("/test/webhook")
+            .handler(BodyHandler.create())
+            .handler(ctx -> captureWebhook(ctx));
+
+        router.get("/test/webhook/requests")
+            .produces(APPLICATION_JSON)
+            .handler(ctx -> getWebhookRequests(ctx));
+
+        router.delete("/test/webhook/requests")
+            .handler(ctx -> clearWebhookRequests(ctx));
+
+        router.get("/test/dispatch-executor/count")
+            .produces(TEXT_PLAIN)
+            .handler(ctx -> ctx.response().setStatusCode(HTTP_OK)
+                    .end(String.valueOf(customDispatchExecutorProducer.getExecutionCount())));
+
+        router.delete("/test/dispatch-executor/count")
+            .handler(ctx -> {
+                customDispatchExecutorProducer.resetExecutionCount();
+                ctx.response().setStatusCode(HTTP_OK).end();
+            });
+
         router.get("/hello")
             .produces(TEXT_PLAIN)
             .handler(ctx -> hello(ctx));
@@ -84,9 +134,17 @@ public class A2ATestRoutes {
             .produces(APPLICATION_JSON)
             .handler(ctx -> exportSpans(ctx));
 
+        router.get("/export-metrics")
+            .produces(APPLICATION_JSON)
+            .handler(ctx -> exportMetrics(ctx));
+
         router.get("/reset")
             .produces(TEXT_PLAIN)
             .handler(ctx -> reset(ctx));
+
+        router.get("/reset-metrics")
+            .produces(TEXT_PLAIN)
+            .handler(ctx -> resetMetrics(ctx));
     }
 
     public void saveTask(String body, RoutingContext rc) {
@@ -180,6 +238,48 @@ public class A2ATestRoutes {
                 .end(String.valueOf(count));
     }
 
+    public void savePushNotificationConfig(String taskId, String body, RoutingContext rc) {
+        try {
+            TaskPushNotificationConfig config = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
+            testUtilsBean.savePushNotificationConfig(taskId, config);
+            rc.response()
+                    .setStatusCode(200)
+                    .end();
+        } catch (Throwable t) {
+            errorResponse(t, rc);
+        }
+    }
+
+    public void deletePushNotificationConfig(String taskId, String configId, RoutingContext rc) {
+        try {
+            testUtilsBean.deletePushNotificationConfig(taskId, configId);
+            rc.response()
+                    .setStatusCode(200)
+                    .end();
+        } catch (Throwable t) {
+            errorResponse(t, rc);
+        }
+    }
+
+    private void captureWebhook(RoutingContext rc) {
+        Map<String, String> headers = new HashMap<>();
+        rc.request().headers().forEach(entry -> headers.put(entry.getKey(), entry.getValue()));
+        webhookRequests.add(headers);
+        rc.response().setStatusCode(HTTP_OK).end();
+    }
+
+    private void getWebhookRequests(RoutingContext rc) {
+        rc.response()
+                .setStatusCode(HTTP_OK)
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .end(gson.toJson(webhookRequests));
+    }
+
+    private void clearWebhookRequests(RoutingContext rc) {
+        webhookRequests.clear();
+        rc.response().setStatusCode(HTTP_OK).end();
+    }
+
     public void hello(RoutingContext rc) {
         Span span = tracer.spanBuilder("hello").startSpan();
         try (Scope scope = span.makeCurrent()) {
@@ -196,7 +296,7 @@ public class A2ATestRoutes {
         List<SpanData> spans = inMemorySpanExporter.getFinishedSpanItems()
                 .stream()
                 .filter(sd -> !sd.getName().contains("export") && !sd.getName().contains("reset"))
-                .collect(Collectors.toList());
+                .toList();
         String json = gson.toJson(serialize(spans));
         rc.response()
                 .setStatusCode(200)
@@ -228,10 +328,76 @@ public class A2ATestRoutes {
             spanData.getResource().getAttributes().forEach((k, v) -> {
                 jsonObject.addProperty("resource_" + k.getKey(), v.toString());
             });
+
+            serializeSpanEvents(spanData, jsonObject);
+            serializeSpanLinks(spanData, jsonObject);
+
             spans.add(jsonObject);
         }
 
         return spans;
+    }
+
+    private void serializeSpanEvents(SpanData spanData, JsonObject jsonObject) {
+        jsonObject.addProperty("events_count", spanData.getEvents().size());
+        spanData.getEvents().forEach(event -> {
+            JsonObject eventObject = new JsonObject();
+            eventObject.addProperty("name", event.getName());
+            event.getAttributes().forEach((k, v) -> eventObject.addProperty("attr_" + k.getKey(), v.toString()));
+            jsonObject.add("event_" + event.getName(), eventObject);
+        });
+    }
+
+    private void serializeSpanLinks(SpanData spanData, JsonObject jsonObject) {
+        jsonObject.addProperty("links_count", spanData.getLinks().size());
+        if (!spanData.getLinks().isEmpty()) {
+            jsonObject.addProperty("link_0_spanId", spanData.getLinks().get(0).getSpanContext().getSpanId());
+            jsonObject.addProperty("link_0_traceId", spanData.getLinks().get(0).getSpanContext().getTraceId());
+        }
+    }
+
+    public void exportMetrics(RoutingContext rc) {
+        if (openTelemetry instanceof OpenTelemetrySdk sdk) {
+            sdk.getSdkMeterProvider().forceFlush();
+        }
+        List<MetricData> metrics = inMemoryMetricExporter.getFinishedMetricItems().stream()
+                .filter(m -> m.getName().startsWith("gen_ai."))
+                .toList();
+        rc.response()
+                .setStatusCode(200)
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .end(gson.toJson(serializeMetrics(metrics)));
+    }
+
+    JsonElement serializeMetrics(List<MetricData> metricDataList) {
+        JsonArray result = new JsonArray(metricDataList.size());
+        for (MetricData m : metricDataList) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("name", m.getName());
+            obj.addProperty("description", m.getDescription());
+            obj.addProperty("unit", m.getUnit());
+            obj.addProperty("type", m.getType().name());
+            if (m.getType() == MetricDataType.HISTOGRAM) {
+                HistogramData histogram = m.getHistogramData();
+                obj.addProperty("data_count", histogram.getPoints().size());
+                JsonArray points = new JsonArray(histogram.getPoints().size());
+                histogram.getPoints().forEach(point -> {
+                    JsonObject pointObj = new JsonObject();
+                    pointObj.addProperty("count", point.getCount());
+                    pointObj.addProperty("sum", point.getSum());
+                    point.getAttributes().forEach((k, v) -> pointObj.addProperty("attr_" + k.getKey(), v.toString()));
+                    points.add(pointObj);
+                });
+                obj.add("points", points);
+            }
+            result.add(obj);
+        }
+        return result;
+    }
+
+    public void resetMetrics(RoutingContext rc) {
+        inMemoryMetricExporter.reset();
+        rc.response().setStatusCode(200).end();
     }
 
     public void reset(RoutingContext rc) {
@@ -254,6 +420,16 @@ public class A2ATestRoutes {
         @Singleton
         InMemorySpanExporter inMemorySpanExporter() {
             return InMemorySpanExporter.create();
+        }
+    }
+
+    @ApplicationScoped
+    static class InMemoryMetricExporterProducer {
+
+        @Produces
+        @Singleton
+        InMemoryMetricExporter inMemoryMetricExporter() {
+            return InMemoryMetricExporter.create();
         }
     }
 }

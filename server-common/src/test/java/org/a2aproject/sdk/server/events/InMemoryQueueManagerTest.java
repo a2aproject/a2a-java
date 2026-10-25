@@ -29,15 +29,13 @@ public class InMemoryQueueManagerTest {
     private InMemoryTaskStore taskStore;
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
-
     @BeforeEach
     public void setUp() {
         taskStateProvider = new MockTaskStateProvider();
         taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
     }
 

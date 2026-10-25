@@ -27,6 +27,11 @@ public class SSEEventListener extends AbstractSSEEventListener {
         super(eventHandler, errorHandler);
     }
 
+    public void onComplete() {
+        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
+        signalTerminal(null);
+    }
+
     @Override
     public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
         try {
@@ -35,9 +40,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
             JsonFormat.parser().merge(event.data(), builder);
             parseAndHandleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
-            if (getErrorHandler() != null) {
-                getErrorHandler().accept(RestErrorMapper.mapRestError(event.data(), 500));
-            }
+            signalTerminal(RestErrorMapper.mapRestError(event.data(), 500));
         }
     }
 
@@ -60,9 +63,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
                 event = ProtoUtils.FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
             default -> {
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
-                if (getErrorHandler() != null) {
-                    getErrorHandler().accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
-                }
+                signalTerminal(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
                 return;
             }
         }

@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.enterprise.inject.Instance;
 
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
@@ -47,14 +48,15 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
-
 import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.TestInstances;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.events.EventConsumer;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import org.a2aproject.sdk.server.requesthandlers.DefaultRequestHandler;
+import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.server.tasks.ResultAggregator;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCapabilities;
@@ -70,7 +72,9 @@ import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
@@ -87,13 +91,8 @@ import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
-import org.a2aproject.sdk.server.TestInstances;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
-
-import jakarta.enterprise.inject.Instance;
-
-import mutiny.zero.ZeroPublisher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -111,6 +110,205 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .acceptedOutputModes(List.of())
                 .returnImmediately(true)
                 .build();
+    }
+
+    @Test
+    void canonicalTenantAndEffectiveCardReachCustomHandlerForEveryOperation() throws Exception {
+        for (String operation : List.of("send", "stream", "get", "list", "cancel", "subscribe", "createPush", "getPush", "listPush", "deletePush")) {
+            assertCanonicalTenantDispatch(operation);
+        }
+    }
+
+    private void assertCanonicalTenantDispatch(String operation) throws Exception {
+        ServerCallContext callContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of(), Set.of(), "1.0");
+        AtomicReference<Object> expectedParams = new AtomicReference<>();
+        AtomicBoolean dispatched = new AtomicBoolean();
+        AgentCard card = versionTestCard();
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class, invocation -> {
+            if (invocation.getMethod().getName().equals("authorizeTaskAccess")) {
+                return null;
+            }
+            assertEquals(expectedParams.get(), invocation.getArgument(0));
+            ServerCallContext context = invocation.getArgument(1);
+            assertNotNull(context.getEffectiveAgentCard());
+            assertEquals("acme", context.getEffectiveAgentCard().tenant());
+            Assertions.assertSame(card, context.getEffectiveAgentCard().card());
+            dispatched.set(true);
+            return switch (operation) {
+                case "send", "get", "cancel" -> MINIMAL_TASK;
+                case "stream", "subscribe" -> ZeroPublisher.fromItems(MINIMAL_TASK);
+                case "list" -> new ListTasksResult(List.of());
+                case "createPush", "getPush" -> new TaskPushNotificationConfig("config", "task", "https://example.com", null, null, "acme");
+                case "listPush" -> new ListTaskPushNotificationConfigsResult(List.of());
+                default -> null;
+            };
+        });
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                assertEquals("acme", tenant);
+                return card;
+            }
+
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                return null;
+            }
+        };
+        JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(card), null, customHandler,
+                internalExecutor, new FixedInstance<>(router));
+        A2AError error;
+        switch (operation) {
+            case "send", "stream" -> {
+                expectedParams.set(new MessageSendParams(MESSAGE, defaultConfiguration(), Map.of("key", "value"), "acme"));
+                MessageSendParams params = new MessageSendParams(MESSAGE, defaultConfiguration(), Map.of("key", "value"), "/acme/");
+                error = operation.equals("send")
+                        ? handler.onMessageSend(new SendMessageRequest("1", params), callContext).getError()
+                        : drainStream(handler.onMessageSendStream(new SendStreamingMessageRequest("1", params), callContext)).get(0).getError();
+            }
+            case "get" -> {
+                expectedParams.set(new TaskQueryParams("task", 3, "acme"));
+                error = handler.onGetTask(new GetTaskRequest("1", new TaskQueryParams("task", 3, "/acme/")), callContext).getError();
+            }
+            case "list" -> {
+                expectedParams.set(new ListTasksParams("context", TaskState.TASK_STATE_WORKING, 7, "page", 3, null, true, "acme"));
+                error = handler.onListTasks(new ListTasksRequest("1", new ListTasksParams("context", TaskState.TASK_STATE_WORKING,
+                        7, "page", 3, null, true, "/acme/")), callContext).getError();
+            }
+            case "cancel" -> {
+                expectedParams.set(new CancelTaskParams("task", "acme", Map.of("key", "value")));
+                error = handler.onCancelTask(new CancelTaskRequest("1", new CancelTaskParams("task", "/acme/", Map.of("key", "value"))), callContext).getError();
+            }
+            case "subscribe" -> {
+                expectedParams.set(new TaskIdParams("task", "acme"));
+                error = drainStream(handler.onSubscribeToTask(new SubscribeToTaskRequest("1", new TaskIdParams("task", "/acme/")), callContext)).get(0).getError();
+            }
+            case "createPush" -> {
+                expectedParams.set(new TaskPushNotificationConfig("config", "task", "https://example.com", "token", null, "acme"));
+                error = handler.setPushNotificationConfig(new CreateTaskPushNotificationConfigRequest("1",
+                        new TaskPushNotificationConfig("config", "task", "https://example.com", "token", null, "/acme/")), callContext).getError();
+            }
+            case "getPush" -> {
+                expectedParams.set(new GetTaskPushNotificationConfigParams("task", "config", "acme"));
+                error = handler.getPushNotificationConfig(new GetTaskPushNotificationConfigRequest("1",
+                        new GetTaskPushNotificationConfigParams("task", "config", "/acme/")), callContext).getError();
+            }
+            case "listPush" -> {
+                expectedParams.set(new ListTaskPushNotificationConfigsParams("task", 7, "page", "acme"));
+                error = handler.listPushNotificationConfigs(new ListTaskPushNotificationConfigsRequest("1",
+                        new ListTaskPushNotificationConfigsParams("task", 7, "page", "/acme/")), callContext).getError();
+            }
+            case "deletePush" -> {
+                expectedParams.set(new DeleteTaskPushNotificationConfigParams("task", "config", "acme"));
+                error = handler.deletePushNotificationConfig(new DeleteTaskPushNotificationConfigRequest("1",
+                        new DeleteTaskPushNotificationConfigParams("task", "config", "/acme/")), callContext).getError();
+            }
+            default -> throw new AssertionError(operation);
+        }
+        assertNull(error);
+        assertTrue(dispatched.get(), "The custom handler must receive the canonical params");
+    }
+
+    @Test
+    void defaultTenantSpellingsReachCustomHandlerAsNull() {
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        Mockito.when(customHandler.onGetTask(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            TaskQueryParams params = invocation.getArgument(0);
+            assertNull(params.tenant());
+            ServerCallContext context = invocation.getArgument(1);
+            assertNull(context.getEffectiveAgentCard().tenant());
+            return MINIMAL_TASK;
+        });
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, customHandler, internalExecutor);
+
+        for (String tenant : List.of("", " ", "/")) {
+            ServerCallContext context = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of(), Set.of(), "1.0");
+            assertNull(handler.onGetTask(new GetTaskRequest("1", new TaskQueryParams("task", null, tenant)), context).getError());
+        }
+        Mockito.verify(customHandler, Mockito.times(3)).onGetTask(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void invalidDecodedTenantWinsOverUnsupportedVersion() {
+        // Constructors reject invalid tenants; model an already-decoded integration input directly.
+        TaskQueryParams params = Mockito.mock(TaskQueryParams.class);
+        Mockito.when(params.tenant()).thenReturn("bad/tenant");
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        JSONRPCHandler handler = new JSONRPCHandler(versionTestCard(), customHandler, internalExecutor);
+
+        GetTaskResponse response = handler.onGetTask(new GetTaskRequest("1", params), incompatibleVersionContext());
+
+        assertInstanceOf(InvalidParamsError.class, response.getError());
+        Mockito.verifyNoInteractions(customHandler);
+    }
+
+    @Test
+    void extendedDiscoveryDistinguishesDisabledCapabilityFromMissingCard() {
+        JSONRPCHandler disabled = new JSONRPCHandler(AgentCard.builder(CARD)
+                .capabilities(AgentCapabilities.builder().extendedAgentCard(false).build()).build(), requestHandler, internalExecutor);
+        JSONRPCHandler missing = new JSONRPCHandler(versionTestCard(), requestHandler, internalExecutor);
+
+        assertInstanceOf(UnsupportedOperationError.class,
+                disabled.onGetExtendedCardRequest(new GetExtendedAgentCardRequest("1"), callContext).getError());
+        GetExtendedAgentCardResponse missingResponse = missing.onGetExtendedCardRequest(new GetExtendedAgentCardRequest("1"), callContext);
+        assertInstanceOf(ExtendedAgentCardNotConfiguredError.class, missingResponse.getError());
+        assertEquals("Extended Card not configured", missingResponse.getError().getMessage());
+    }
+
+    @Test
+    void malformedTenantExtendedDiscoveryReturnsInvalidParams() {
+        GetExtendedAgentCardParams params = Mockito.mock(GetExtendedAgentCardParams.class);
+        Mockito.when(params.tenant()).thenReturn("bad/tenant");
+        JSONRPCHandler handler = versionTestHandler();
+
+        assertInstanceOf(InvalidParamsError.class, handler.onGetExtendedCardRequest(
+                new GetExtendedAgentCardRequest("2.0", "1", params), callContext).getError());
+    }
+
+    @Test
+    void routedExtendedDiscoveryUsesCanonicalTenant() {
+        AgentCard card = versionTestCard();
+        AgentCard extended = AgentCard.builder(card).description("extended").build();
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                assertEquals("acme", tenant);
+                return card;
+            }
+
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                assertEquals("acme", tenant);
+                return extended;
+            }
+        };
+        JSONRPCHandler handler = new JSONRPCHandler(new FixedInstance<>(card), null, requestHandler,
+                internalExecutor, new FixedInstance<>(router));
+
+        GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(
+                new GetExtendedAgentCardRequest("2.0", "1", new GetExtendedAgentCardParams("/acme/")), callContext);
+
+        assertNull(response.getError());
+        Assertions.assertSame(extended, response.getResult());
+    }
+
+    @Test
+    void capabilityErrorsRetainStreamingMessageAndPushErrorType() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        JSONRPCHandler handler = new JSONRPCHandler(card, customHandler, internalExecutor);
+        SendStreamingMessageResponse streaming = drainStream(handler.onMessageSendStream(
+                new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null)), callContext)).get(0);
+        SendStreamingMessageResponse subscription = drainStream(handler.onSubscribeToTask(
+                new SubscribeToTaskRequest("1", new TaskIdParams("task")), callContext)).get(0);
+
+        assertInstanceOf(UnsupportedOperationError.class, streaming.getError());
+        assertEquals("Streaming is not supported by the agent", streaming.getError().getMessage());
+        assertInstanceOf(UnsupportedOperationError.class, subscription.getError());
+        assertEquals("Streaming is not supported by the agent", subscription.getError().getMessage());
+        assertInstanceOf(PushNotificationNotSupportedError.class, handler.getPushNotificationConfig(
+                new GetTaskPushNotificationConfigRequest("1", new GetTaskPushNotificationConfigParams("task", "config")), callContext).getError());
+        Mockito.verifyNoInteractions(customHandler);
     }
 
     @Test
@@ -711,7 +909,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 = new GetTaskPushNotificationConfigRequest("111", new GetTaskPushNotificationConfigParams(
                         MINIMAL_TASK.id(),
                         "c295ea44-7543-4f78-b524-7a38915ad6e4"));
-        GetTaskPushNotificationConfigResponse getResponse = handler.getPushNotificationConfig(getRequest, callContext);
+        GetTaskPushNotificationConfigResponse getResponse = handler.getPushNotificationConfig(getRequest, newCallContext());
 
         TaskPushNotificationConfig expectedConfig = TaskPushNotificationConfig.builder()
                 .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
@@ -774,7 +972,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                     .taskId(MINIMAL_TASK.id())
                     .build();
             SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(msg, null, null));
-            Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
+            Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, newCallContext());
 
             final List<StreamingEventKind> results = Collections.synchronizedList(new ArrayList<>());
             final AtomicReference<Flow.Subscription> subscriptionRef = new AtomicReference<>();
@@ -1404,7 +1602,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .build();
         ListTaskPushNotificationConfigsRequest listRequest
                 = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
-        ListTaskPushNotificationConfigsResponse listResponse = handler.listPushNotificationConfigs(listRequest, callContext);
+        ListTaskPushNotificationConfigsResponse listResponse = handler.listPushNotificationConfigs(listRequest, newCallContext());
 
         assertEquals("111", listResponse.getId());
         assertEquals(1, listResponse.getResult().size());
@@ -1502,7 +1700,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         DeleteTaskPushNotificationConfigRequest deleteRequest
                 = new DeleteTaskPushNotificationConfigRequest("111", new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
         DeleteTaskPushNotificationConfigResponse deleteResponse
-                = handler.deletePushNotificationConfig(deleteRequest, callContext);
+                = handler.deletePushNotificationConfig(deleteRequest, newCallContext());
 
         assertEquals("111", deleteResponse.getId());
         assertNull(deleteResponse.getError());
@@ -1531,7 +1729,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         DeleteTaskPushNotificationConfigRequest deleteRequest
                 = new DeleteTaskPushNotificationConfigRequest("111", new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
         DeleteTaskPushNotificationConfigResponse deleteResponse
-                = handler.deletePushNotificationConfig(deleteRequest, callContext);
+                = handler.deletePushNotificationConfig(deleteRequest, newCallContext());
 
         assertEquals("111", deleteResponse.getId());
         assertNull(deleteResponse.getResult());
@@ -1566,7 +1764,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         DeleteTaskPushNotificationConfigRequest deleteRequest
                 = new DeleteTaskPushNotificationConfigRequest("111", new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
         DeleteTaskPushNotificationConfigResponse deleteResponse
-                = handler.deletePushNotificationConfig(deleteRequest, callContext);
+                = handler.deletePushNotificationConfig(deleteRequest, newCallContext());
 
         assertEquals("111", deleteResponse.getId());
         assertNull(deleteResponse.getResult());
@@ -2281,6 +2479,10 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
      */
     private static ServerCallContext incompatibleVersionContext() {
         return new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "2.0");
+    }
+
+    private static ServerCallContext newCallContext() {
+        return new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "1.0");
     }
 
     /**

@@ -1,5 +1,9 @@
 package org.a2aproject.sdk.transport.grpc.handler;
 
+import static org.a2aproject.sdk.server.AgentCardOperation.EXTENDED_CARD;
+import static org.a2aproject.sdk.server.AgentCardOperation.PUSH_NOTIFICATIONS;
+import static org.a2aproject.sdk.server.AgentCardOperation.STREAMING;
+
 import static org.a2aproject.sdk.grpc.utils.ProtoUtils.FromProto;
 import static org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
@@ -8,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -24,8 +29,12 @@ import org.a2aproject.sdk.grpc.A2AServiceGrpc;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.AgentCardOperation;
+import org.a2aproject.sdk.server.AgentCardRequestPolicy;
+import org.a2aproject.sdk.server.AgentCardResolver;
+import org.a2aproject.sdk.server.AgentCardTransportValidator;
 import org.a2aproject.sdk.server.AgentCardValidator;
-import org.a2aproject.sdk.server.FixedInstance;
+import org.a2aproject.sdk.server.CachingAgentCardTransportValidator;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
@@ -33,8 +42,8 @@ import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
-import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
@@ -52,7 +61,6 @@ import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.MethodNotFoundError;
-import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
@@ -61,8 +69,6 @@ import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import org.a2aproject.sdk.spec.A2AErrorCodes;
-import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys;
@@ -162,7 +168,11 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     // Without this we get intermittent failures
     private static volatile @Nullable Runnable streamingSubscribedRunnable;
 
-    private final Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
+    private final AgentCardTransportValidator transportValidator =
+            new CachingAgentCardTransportValidator(this::validateTransportConfigurationWithCorrectClassLoader);
+
+    private volatile @Nullable AgentCardRequestPolicy requestPolicy;
+    private @Nullable AgentCardResolver agentCardResolver;
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
@@ -202,9 +212,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void sendMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                            StreamObserver<org.a2aproject.sdk.grpc.SendMessageResponse> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
+            String tenant = request.getTenant();
             ServerCallContext context = createCallContext(responseObserver, tenant);
-            MessageSendParams params = FromProto.messageSendParams(request);
+            MessageSendParams params = FromProto.messageSendParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             EventKind taskOrMessage = getRequestHandler().onMessageSend(params, context);
             org.a2aproject.sdk.grpc.SendMessageResponse response = ToProto.taskOrMessage(taskOrMessage);
             responseObserver.onNext(response);
@@ -224,9 +235,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getTask(org.a2aproject.sdk.grpc.GetTaskRequest request,
                        StreamObserver<org.a2aproject.sdk.grpc.Task> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
+            String tenant = request.getTenant();
             ServerCallContext context = createCallContext(responseObserver, tenant);
-            TaskQueryParams params = FromProto.taskQueryParams(request);
+            TaskQueryParams params = FromProto.taskQueryParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             Task task = getRequestHandler().onGetTask(params, context);
             if (task != null) {
                 responseObserver.onNext(ToProto.task(task));
@@ -249,9 +261,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void listTasks(org.a2aproject.sdk.grpc.ListTasksRequest request,
                          StreamObserver<org.a2aproject.sdk.grpc.ListTasksResponse> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
+            String tenant = request.getTenant();
             ServerCallContext context = createCallContext(responseObserver, tenant);
-            org.a2aproject.sdk.spec.ListTasksParams params = FromProto.listTasksParams(request);
+            org.a2aproject.sdk.spec.ListTasksParams params = FromProto.listTasksParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             ListTasksResult result = getRequestHandler().onListTasks(params, context);
             responseObserver.onNext(ToProto.listTasksResult(result));
             responseObserver.onCompleted();
@@ -270,9 +283,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void cancelTask(org.a2aproject.sdk.grpc.CancelTaskRequest request,
                           StreamObserver<org.a2aproject.sdk.grpc.Task> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
+            String tenant = request.getTenant();
             ServerCallContext context = createCallContext(responseObserver, tenant);
-            CancelTaskParams params = FromProto.cancelTaskParams(request);
+            CancelTaskParams params = FromProto.cancelTaskParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             Task task = getRequestHandler().onCancelTask(params, context);
             if (task != null) {
                 responseObserver.onNext(ToProto.task(task));
@@ -295,14 +309,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void createTaskPushNotificationConfig(org.a2aproject.sdk.grpc.TaskPushNotificationConfig request,
                                                StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                handleError(responseObserver, new PushNotificationNotSupportedError());
-                return;
-            }
-
-            ServerCallContext context = createCallContext(responseObserver, tenant);
-            TaskPushNotificationConfig config = FromProto.createTaskPushNotificationConfig(request);
+            String tenant = request.getTenant();
+            ServerCallContext context = createCallContext(responseObserver, tenant, PUSH_NOTIFICATIONS);
+            TaskPushNotificationConfig config = FromProto.createTaskPushNotificationConfig(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             TaskPushNotificationConfig responseConfig = getRequestHandler().onCreateTaskPushNotificationConfig(config, context);
             responseObserver.onNext(ToProto.taskPushNotificationConfig(responseConfig));
             responseObserver.onCompleted();
@@ -321,14 +331,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getTaskPushNotificationConfig(org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest request,
                                             StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                handleError(responseObserver, new PushNotificationNotSupportedError());
-                return;
-            }
-
-            ServerCallContext context = createCallContext(responseObserver, tenant);
-            GetTaskPushNotificationConfigParams params = FromProto.getTaskPushNotificationConfigParams(request);
+            String tenant = request.getTenant();
+            ServerCallContext context = createCallContext(responseObserver, tenant, PUSH_NOTIFICATIONS);
+            GetTaskPushNotificationConfigParams params = FromProto.getTaskPushNotificationConfigParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             TaskPushNotificationConfig config = getRequestHandler().onGetTaskPushNotificationConfig(params, context);
             responseObserver.onNext(ToProto.taskPushNotificationConfig(config));
             responseObserver.onCompleted();
@@ -347,14 +353,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void listTaskPushNotificationConfigs(org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest request,
                                              StreamObserver<org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                handleError(responseObserver, new PushNotificationNotSupportedError());
-                return;
-            }
-
-            ServerCallContext context = createCallContext(responseObserver, tenant);
-            ListTaskPushNotificationConfigsParams params = FromProto.listTaskPushNotificationConfigsParams(request);
+            String tenant = request.getTenant();
+            ServerCallContext context = createCallContext(responseObserver, tenant, PUSH_NOTIFICATIONS);
+            ListTaskPushNotificationConfigsParams params = FromProto.listTaskPushNotificationConfigsParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             ListTaskPushNotificationConfigsResult result = getRequestHandler().onListTaskPushNotificationConfigs(params, context);
             org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse response = ToProto.listTaskPushNotificationConfigsResponse(result);
             responseObserver.onNext(response);
@@ -411,16 +413,11 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void sendStreamingMessage(org.a2aproject.sdk.grpc.SendMessageRequest request,
                                      StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
-            if (!resolveAgentCard(tenant).capabilities().streaming()) {
-                handleError(responseObserver,
-                        new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
-                return;
-            }
-
-            ServerCallContext context = createCallContext(responseObserver, tenant);
+            String tenant = request.getTenant();
+            ServerCallContext context = createCallContext(responseObserver, tenant, STREAMING);
             installForkedContextWrapper(context);
-            MessageSendParams params = FromProto.messageSendParams(request);
+            MessageSendParams params = FromProto.messageSendParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
         } catch (TenantNotFoundException e) {
@@ -438,16 +435,11 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
-            if (!resolveAgentCard(tenant).capabilities().streaming()) {
-                handleError(responseObserver,
-                        new UnsupportedOperationError(null, "Streaming is not supported by the agent", null));
-                return;
-            }
-
-            ServerCallContext context = createCallContext(responseObserver, tenant);
+            String tenant = request.getTenant();
+            ServerCallContext context = createCallContext(responseObserver, tenant, STREAMING);
             installForkedContextWrapper(context);
-            TaskIdParams params = FromProto.taskIdParams(request);
+            TaskIdParams params = FromProto.taskIdParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onSubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
         } catch (TenantNotFoundException e) {
@@ -593,20 +585,14 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest request,
                            StreamObserver<org.a2aproject.sdk.grpc.AgentCard> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
+            String tenant = request.getTenant();
             Utils.validateTenant(tenant);
-            if (!resolveAgentCard(tenant).capabilities().extendedAgentCard()) {
-                handleError(responseObserver, new UnsupportedOperationError());
-                return;
-            }
-            createCallContext(responseObserver, tenant);
-            AgentCardRouter router = getAgentCardRouter();
-            AgentCard extendedAgentCard;
-            if (tenant != null && !tenant.isBlank() && router != null) {
-                extendedAgentCard = router.resolveExtendedCard(tenant);
-            } else {
-                extendedAgentCard = getExtendedAgentCard();
-            }
+            AgentCardResolver resolver = getAgentCardResolver();
+            AgentCardRequestPolicy policy = getRequestPolicy();
+            AgentCard card = policy.resolveAndValidateCapability(tenant, transportValidator, EXTENDED_CARD);
+            ServerCallContext context = createRawCallContext(responseObserver);
+            String normalizedTenant = policy.validateContextAndAttach(card, tenant, context).tenant();
+            AgentCard extendedAgentCard = resolver.resolveExtendedDiscoveryCard(normalizedTenant);
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
                 responseObserver.onCompleted();
@@ -615,6 +601,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             }
         } catch (TenantNotFoundException e) {
             handleTenantNotFound(responseObserver, e);
+        } catch (A2AError e) {
+            handleError(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -624,14 +612,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void deleteTaskPushNotificationConfig(org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest request,
                                                StreamObserver<Empty> responseObserver) {
         try {
-            String tenant = extractTenant(request.getTenant());
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                handleError(responseObserver, new PushNotificationNotSupportedError());
-                return;
-            }
-
-            ServerCallContext context = createCallContext(responseObserver, tenant);
-            DeleteTaskPushNotificationConfigParams params = FromProto.deleteTaskPushNotificationConfigParams(request);
+            String tenant = request.getTenant();
+            ServerCallContext context = createCallContext(responseObserver, tenant, PUSH_NOTIFICATIONS);
+            DeleteTaskPushNotificationConfigParams params = FromProto.deleteTaskPushNotificationConfigParams(
+                    request.toBuilder().setTenant(canonicalTenant(context)).build());
             getRequestHandler().onDeleteTaskPushNotificationConfig(params, context);
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
@@ -682,7 +666,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * @see CallContextFactory
      * @see org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys
      */
-    private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver, @Nullable String tenant) {
+    private <V> ServerCallContext createRawCallContext(StreamObserver<V> responseObserver) {
         CallContextFactory factory = getCallContextFactory();
         ServerCallContext context;
         if (factory == null) {
@@ -748,10 +732,28 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             context = factory.create(responseObserver); // Fall back to basic create() method for now
         }
 
-        AgentCard agentCard = resolveAgentCard(tenant);
-        A2AVersionValidator.validateProtocolVersion(agentCard, context);
-        A2AExtensions.validateRequiredExtensions(agentCard, context);
         return context;
+    }
+
+    private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver, @Nullable String tenant) {
+        ServerCallContext context = createRawCallContext(responseObserver);
+        getRequestPolicy().preflight(
+                tenant, context, transportValidator, AgentCardOperation.none());
+        return context;
+    }
+
+    private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver, @Nullable String tenant,
+            AgentCardOperation operation) {
+        AgentCardRequestPolicy policy = getRequestPolicy();
+        AgentCard card = policy.resolveAndValidateCapability(tenant, transportValidator, operation);
+        ServerCallContext context = createRawCallContext(responseObserver);
+        policy.validateContextAndAttach(card, tenant, context);
+        return context;
+    }
+
+    private static String canonicalTenant(ServerCallContext context) {
+        String tenant = Objects.requireNonNull(context.getEffectiveAgentCard()).tenant();
+        return tenant == null ? "" : tenant;
     }
 
     /**
@@ -877,18 +879,29 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
 
-    private AgentCard resolveAgentCard(@Nullable String tenant) {
-        AgentCard publicCard = getAgentCard();
-        AgentCard extendedCard = getExtendedAgentCard();
-        return AgentCardValidator.resolveWithFallback(
-                publicCard != null ? new FixedInstance<>(publicCard) : FixedInstance.empty(),
-                extendedCard != null ? new FixedInstance<>(extendedCard) : FixedInstance.empty(),
-                getAgentCardRouter(), tenant, validatedCards,
-                this::validateTransportConfigurationWithCorrectClassLoader);
+    /** Creates a resolver using this handler's overridable card sources and router. */
+    protected AgentCardResolver createAgentCardResolver() {
+        return AgentCardResolver.of(this::getAgentCard, this::getExtendedAgentCard, getAgentCardRouter());
     }
 
-    private static @Nullable String extractTenant(String protoTenant) {
-        return protoTenant.isBlank() ? null : protoTenant;
+    private AgentCardRequestPolicy getRequestPolicy() {
+        AgentCardRequestPolicy policy = requestPolicy;
+        if (policy == null) {
+            synchronized (this) {
+                policy = requestPolicy;
+                if (policy == null) {
+                    agentCardResolver = createAgentCardResolver();
+                    policy = new AgentCardRequestPolicy(agentCardResolver);
+                    requestPolicy = policy;
+                }
+            }
+        }
+        return policy;
+    }
+
+    private AgentCardResolver getAgentCardResolver() {
+        getRequestPolicy();
+        return Objects.requireNonNull(agentCardResolver);
     }
 
     private <V> void handleTenantNotFound(StreamObserver<V> responseObserver, TenantNotFoundException e) {

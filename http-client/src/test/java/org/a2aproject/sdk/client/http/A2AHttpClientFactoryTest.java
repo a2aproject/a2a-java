@@ -103,6 +103,22 @@ public class A2AHttpClientFactoryTest {
     }
 
     @Test
+    public void testCreateExcludingUnknownNameIgnoresFilter() {
+        A2AHttpClient client = A2AHttpClientFactory.createExcluding("nonexistent-provider");
+        assertNotNull(client);
+        assertInstanceOf(JdkA2AHttpClient.class, client,
+            "createExcluding an unknown name should still return the JDK client");
+    }
+
+    @Test
+    public void testCreateExcludingAllAvailableProvidersThrows() {
+        assertThrows(
+            IllegalStateException.class,
+            () -> A2AHttpClientFactory.createExcluding("jdk"),
+            "Factory should throw when every available provider is excluded");
+    }
+
+    @Test
     public void testCreatedClientIsUsable() {
         A2AHttpClient client = A2AHttpClientFactory.create();
         assertNotNull(client);

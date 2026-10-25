@@ -1,8 +1,11 @@
 package org.a2aproject.sdk.transport.jsonrpc.handler;
 
+import static org.a2aproject.sdk.server.AgentCardOperation.EXTENDED_CARD;
+import static org.a2aproject.sdk.server.AgentCardOperation.PUSH_NOTIFICATIONS;
+import static org.a2aproject.sdk.server.AgentCardOperation.STREAMING;
+
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
@@ -37,34 +40,41 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
+import org.a2aproject.sdk.server.AgentCardOperation;
+import org.a2aproject.sdk.server.AgentCardRequestPolicy;
+import org.a2aproject.sdk.server.AgentCardResolver;
 import org.a2aproject.sdk.server.AgentCardValidator;
+import org.a2aproject.sdk.server.CachingAgentCardTransportValidator;
+import org.a2aproject.sdk.server.EffectiveAgentCard;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
-import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
-import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.util.async.Internal;
-import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.CancelTaskParams;
+import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
+import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
+import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
-import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
+import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
-import org.a2aproject.sdk.spec.UnsupportedOperationError;
-import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -150,9 +160,10 @@ public class JSONRPCHandler {
     private @Nullable Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
     private Executor executor;
-    private final Set<AgentCard> validatedCards = AgentCardValidator.newValidatedCardsSet();
-
-    private @Nullable AgentCardRouter agentCardRouter;
+    private final CachingAgentCardTransportValidator transportValidator =
+            new CachingAgentCardTransportValidator(AgentCardValidator::validateTransportConfiguration);
+    private AgentCardResolver agentCardResolver;
+    private AgentCardRequestPolicy requestPolicy;
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -166,6 +177,8 @@ public class JSONRPCHandler {
         this.extendedAgentCard = null;
         this.requestHandler = null;
         this.executor = null;
+        this.agentCardResolver = null;
+        this.requestPolicy = null;
     }
 
     /**
@@ -186,7 +199,9 @@ public class JSONRPCHandler {
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
         this.executor = executor;
-        this.agentCardRouter = CdiUtils.getIfResolvable(agentCardRouterInstance);
+        this.agentCardResolver = AgentCardResolver.of(() -> CdiUtils.resolveDefault(this.agentCardInstance),
+                () -> CdiUtils.resolveDefault(this.extendedAgentCard), CdiUtils.getIfResolvable(agentCardRouterInstance));
+        this.requestPolicy = new AgentCardRequestPolicy(agentCardResolver);
     }
 
     /**
@@ -246,8 +261,10 @@ public class JSONRPCHandler {
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
-            validateVersionAndExtensions(tenant, context);
-            EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
+            EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
+            MessageSendParams params = request.getParams();
+            EventKind taskOrMessage = requestHandler.onMessageSend(new MessageSendParams(params.message(),
+                    params.configuration(), params.metadata(), effective.tenant()), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (A2AError e) {
             return new SendMessageResponse(request.getId(), e);
@@ -296,15 +313,11 @@ public class JSONRPCHandler {
             SendStreamingMessageRequest request, ServerCallContext context) {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().streaming()) {
-                return ZeroPublisher.fromItems(
-                        new SendStreamingMessageResponse(
-                                request.getId(),
-                                new UnsupportedOperationError(null, "Streaming is not supported by the agent", null)));
-            }
+            EffectiveAgentCard effective = preflight(tenant, context, STREAMING);
+            MessageSendParams params = request.getParams();
             Flow.Publisher<StreamingEventKind> publisher =
-                    requestHandler.onMessageSendStream(request.getParams(), context);
+                    requestHandler.onMessageSendStream(new MessageSendParams(params.message(), params.configuration(),
+                            params.metadata(), effective.tenant()), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
@@ -343,8 +356,9 @@ public class JSONRPCHandler {
     public CancelTaskResponse onCancelTask(CancelTaskRequest request, ServerCallContext context) {
         try {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
-            validateVersionAndExtensions(tenant, context);
-            Task task = requestHandler.onCancelTask(request.getParams(), context);
+            EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
+            CancelTaskParams params = request.getParams();
+            Task task = requestHandler.onCancelTask(new CancelTaskParams(params.id(), effective.tenant(), params.metadata()), context);
             if (task != null) {
                 return new CancelTaskResponse(request.getId(), task);
             }
@@ -393,21 +407,16 @@ public class JSONRPCHandler {
     public Flow.Publisher<SendStreamingMessageResponse> onSubscribeToTask(
             SubscribeToTaskRequest request, ServerCallContext context) throws A2AError {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        EffectiveAgentCard effective;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().streaming()) {
-                return ZeroPublisher.fromItems(
-                        new SendStreamingMessageResponse(
-                                request.getId(),
-                                new UnsupportedOperationError(null, "Streaming is not supported by the agent", null)));
-            }
+            effective = preflight(tenant, context, STREAMING);
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         }
         requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {
             Flow.Publisher<StreamingEventKind> publisher =
-                    requestHandler.onSubscribeToTask(request.getParams(), context);
+                    requestHandler.onSubscribeToTask(new TaskIdParams(request.getParams().id(), effective.tenant()), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
@@ -447,13 +456,11 @@ public class JSONRPCHandler {
             GetTaskPushNotificationConfigRequest request, ServerCallContext context) {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                return new GetTaskPushNotificationConfigResponse(request.getId(),
-                        new PushNotificationNotSupportedError());
-            }
+            EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
+            GetTaskPushNotificationConfigParams params = request.getParams();
             TaskPushNotificationConfig config =
-                    requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
+                    requestHandler.onGetTaskPushNotificationConfig(new GetTaskPushNotificationConfigParams(
+                            params.taskId(), params.id(), effective.tenant()), context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), e);
@@ -491,13 +498,11 @@ public class JSONRPCHandler {
             CreateTaskPushNotificationConfigRequest request, ServerCallContext context) {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                return new CreateTaskPushNotificationConfigResponse(request.getId(),
-                        new PushNotificationNotSupportedError());
-            }
+            EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
+            TaskPushNotificationConfig params = request.getParams();
             TaskPushNotificationConfig config =
-                    requestHandler.onCreateTaskPushNotificationConfig(request.getParams(), context);
+                    requestHandler.onCreateTaskPushNotificationConfig(new TaskPushNotificationConfig(params.id(),
+                            params.taskId(), params.url(), params.token(), params.authentication(), effective.tenant()), context);
             return new CreateTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(), e);
@@ -533,8 +538,9 @@ public class JSONRPCHandler {
     public GetTaskResponse onGetTask(GetTaskRequest request, ServerCallContext context) {
         try {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
-            validateVersionAndExtensions(tenant, context);
-            Task task = requestHandler.onGetTask(request.getParams(), context);
+            EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
+            TaskQueryParams params = request.getParams();
+            Task task = requestHandler.onGetTask(new TaskQueryParams(params.id(), params.historyLength(), effective.tenant()), context);
             return new GetTaskResponse(request.getId(), task);
         } catch (A2AError e) {
             return new GetTaskResponse(request.getId(), e);
@@ -582,8 +588,11 @@ public class JSONRPCHandler {
     public ListTasksResponse onListTasks(ListTasksRequest request, ServerCallContext context) {
         try {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
-            validateVersionAndExtensions(tenant, context);
-            ListTasksResult result = requestHandler.onListTasks(request.getParams(), context);
+            EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
+            ListTasksParams params = request.getParams();
+            ListTasksResult result = requestHandler.onListTasks(new ListTasksParams(params.contextId(), params.status(),
+                    params.pageSize(), params.pageToken(), params.historyLength(), params.statusTimestampAfter(),
+                    params.includeArtifacts(), effective.tenant()), context);
             return new ListTasksResponse(request.getId(), result);
         } catch (A2AError e) {
             return new ListTasksResponse(request.getId(), e);
@@ -620,13 +629,11 @@ public class JSONRPCHandler {
             ListTaskPushNotificationConfigsRequest request, ServerCallContext context) {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                return new ListTaskPushNotificationConfigsResponse(request.getId(),
-                        new PushNotificationNotSupportedError());
-            }
+            EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
+            ListTaskPushNotificationConfigsParams params = request.getParams();
             ListTaskPushNotificationConfigsResult result =
-                    requestHandler.onListTaskPushNotificationConfigs(request.getParams(), context);
+                    requestHandler.onListTaskPushNotificationConfigs(new ListTaskPushNotificationConfigsParams(
+                            params.id(), params.pageSize(), params.pageToken(), effective.tenant()), context);
             return new ListTaskPushNotificationConfigsResponse(request.getId(), result);
         } catch (A2AError e) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(), e);
@@ -664,12 +671,10 @@ public class JSONRPCHandler {
             DeleteTaskPushNotificationConfigRequest request, ServerCallContext context) {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().pushNotifications()) {
-                return new DeleteTaskPushNotificationConfigResponse(request.getId(),
-                        new PushNotificationNotSupportedError());
-            }
-            requestHandler.onDeleteTaskPushNotificationConfig(request.getParams(), context);
+            EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
+            DeleteTaskPushNotificationConfigParams params = request.getParams();
+            requestHandler.onDeleteTaskPushNotificationConfig(new DeleteTaskPushNotificationConfigParams(
+                    params.taskId(), params.id(), effective.tenant()), context);
             return new DeleteTaskPushNotificationConfigResponse(request.getId());
         } catch (A2AError e) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), e);
@@ -706,19 +711,8 @@ public class JSONRPCHandler {
             GetExtendedAgentCardRequest request, ServerCallContext context) {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
         try {
-            validateVersionAndExtensions(tenant, context);
-            if (!resolveAgentCard(tenant).capabilities().extendedAgentCard()) {
-                return new GetExtendedAgentCardResponse(request.getId(), new UnsupportedOperationError());
-            }
-            if (tenant != null && !tenant.isBlank() && agentCardRouter != null) {
-                AgentCard card = agentCardRouter.resolveExtendedCard(tenant);
-                if (card == null) {
-                    return new GetExtendedAgentCardResponse(request.getId(),
-                            new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
-                }
-                return new GetExtendedAgentCardResponse(request.getId(), card);
-            }
-            AgentCard extCard = CdiUtils.resolveDefault(extendedAgentCard);
+            EffectiveAgentCard effective = preflight(tenant, context, EXTENDED_CARD);
+            AgentCard extCard = agentCardResolver.resolveExtendedDiscoveryCard(effective.tenant());
             if (extCard == null) {
                 return new GetExtendedAgentCardResponse(request.getId(),
                         new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
@@ -726,15 +720,13 @@ public class JSONRPCHandler {
             return new GetExtendedAgentCardResponse(request.getId(), extCard);
         } catch (A2AError e) {
             return new GetExtendedAgentCardResponse(request.getId(), e);
-        } catch(TenantNotFoundException ex) {
-            return new GetExtendedAgentCardResponse(request.getId(), new InvalidParamsError(ex.getResponseMessage()));
         } catch (Throwable t) {
             return new GetExtendedAgentCardResponse(request.getId(), internalError(t));
         }
     }
 
     /**
-     * Validates the requested protocol version and extensions against the agent card.
+     * Applies shared card policy at the decoded-request dispatch boundary.
      *
      * <p>Section 3.6.2 of the specification requires this on every request, so every operation
      * calls it before reaching the request handler.
@@ -742,11 +734,9 @@ public class JSONRPCHandler {
      * @param context the server call context carrying the requested version and extensions
      * @throws A2AError if the requested version or a required extension is not supported
      */
-    private void validateVersionAndExtensions(@Nullable String tenant, ServerCallContext context) throws A2AError {
+    private EffectiveAgentCard preflight(@Nullable String tenant, ServerCallContext context, AgentCardOperation operation) {
         try {
-            AgentCard agentCard = resolveAgentCard(tenant);
-            A2AVersionValidator.validateProtocolVersion(agentCard, context);
-            A2AExtensions.validateRequiredExtensions(agentCard, context);
+            return requestPolicy.preflight(tenant, context, transportValidator, operation);
         } catch (TenantNotFoundException ex) {
             throw new InvalidParamsError(ex.getResponseMessage());
         }
@@ -773,7 +763,7 @@ public class JSONRPCHandler {
      * resolves the card. If the router returns {@code null} the tenant is unknown and a
      * {@link TenantNotFoundException} is thrown (callers should map this to HTTP 404).
      * <p>
-     * When no router is configured, any non-blank tenant is logged and the default card
+     * When no router is configured, the default card
      * is returned (single-tenant server, tenant segment is ignored).
      *
      * @param tenant the tenant identifier, may be {@code null}
@@ -781,37 +771,11 @@ public class JSONRPCHandler {
      * @throws TenantNotFoundException if a router is configured but the tenant is not registered
      */
     public @Nullable AgentCard getAgentCard(@Nullable String tenant) {
-        Utils.validateTenant(tenant);
-        if (tenant != null && !tenant.isBlank()) {
-            if (agentCardRouter != null) {
-                AgentCard card = agentCardRouter.resolvePublicCard(tenant);
-                if (card != null) {
-                    return card;
-                }
-                LOGGER.fine(() -> "Tenant '" + tenant + "' not found in AgentCardRouter — returning 404");
-                throw new TenantNotFoundException(tenant);
-            }
-            LOGGER.fine(() -> "No AgentCardRouter configured; serving default public card for tenant '" + tenant + "'");
+        AgentCard card = agentCardResolver.resolvePublicDiscoveryCard(tenant);
+        if (card != null) {
+            transportValidator.validate(card);
         }
-        AgentCard card = CdiUtils.resolveDefault(agentCardInstance);
-        if (card == null && agentCardRouter != null) {
-            card = agentCardRouter.resolvePublicCard(tenant);
-        }
-        if (card == null) {
-            return null;
-        }
-        AgentCard validatedCard = card;
-        return AgentCardValidator.resolveAndValidateOnce(() -> validatedCard, validatedCards,
-                AgentCardValidator::validateTransportConfiguration);
-    }
-
-    private AgentCard resolveAgentCard(@Nullable String tenant) {
-        try {
-            return AgentCardValidator.resolveWithFallback(agentCardInstance, extendedAgentCard,
-                    agentCardRouter, tenant, validatedCards);
-        } catch (TenantNotFoundException ex) {
-            throw new InvalidParamsError(ex.getResponseMessage());
-        }
+        return card;
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(

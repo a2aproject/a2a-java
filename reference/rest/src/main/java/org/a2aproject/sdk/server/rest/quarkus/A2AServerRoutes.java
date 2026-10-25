@@ -36,10 +36,8 @@ import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.MethodNotFoundError;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
@@ -354,8 +352,8 @@ public class A2AServerRoutes {
         HTTPRestResponse error = null;
         try {
             HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(context, extractTenant(rc), body);
-            if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
-                streamingResponse = hTTPRestStreamingResponse;
+            if (response instanceof HTTPRestStreamingResponse httpRestStreamingResponse) {
+                streamingResponse = httpRestStreamingResponse;
             } else {
                 error = response;
             }
@@ -402,39 +400,10 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, LIST_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
-            // Extract query parameters
-            String contextId = rc.request().params().get("contextId");
-            String statusStr = rc.request().params().get("status");
-            if (statusStr != null && !statusStr.isEmpty()) {
-                statusStr = statusStr.toUpperCase();
-            }
-            String pageSizeStr = rc.request().params().get(PAGE_SIZE_PARAM);
-            String pageToken = rc.request().params().get(PAGE_TOKEN_PARAM);
-            String historyLengthStr = rc.request().params().get(HISTORY_LENGTH_PARAM);
-            String statusTimestampAfter = rc.request().params().get(STATUS_TIMESTAMP_AFTER);
-            String includeArtifactsStr = rc.request().params().get("includeArtifacts");
-
-            // Parse optional parameters
-            Integer pageSize = null;
-            if (pageSizeStr != null && !pageSizeStr.isEmpty()) {
-                pageSize = Integer.valueOf(pageSizeStr);
-            }
-
-            Integer historyLength = null;
-            if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
-                historyLength = Integer.valueOf(historyLengthStr);
-            }
-
-            Boolean includeArtifacts = null;
-            if (includeArtifactsStr != null && !includeArtifactsStr.isEmpty()) {
-                includeArtifacts = Boolean.valueOf(includeArtifactsStr);
-            }
-            response = jsonRestHandler.listTasks(context, extractTenant(rc), contextId, statusStr, pageSize, pageToken,
-                    historyLength, statusTimestampAfter, includeArtifacts);
-        } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
-        } catch (IllegalArgumentException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+            response = jsonRestHandler.listTasks(context, extractTenant(rc), rc.request().params().get("contextId"),
+                    rc.request().params().get("status"), rc.request().params().get(PAGE_SIZE_PARAM),
+                    rc.request().params().get(PAGE_TOKEN_PARAM), rc.request().params().get(HISTORY_LENGTH_PARAM),
+                    rc.request().params().get(STATUS_TIMESTAMP_AFTER), rc.request().params().get("includeArtifacts"));
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -459,17 +428,8 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, GET_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else {
-                Integer historyLength = null;
-                if (rc.request().params().contains(HISTORY_LENGTH_PARAM)) {
-                    historyLength = Integer.valueOf(rc.request().params().get(HISTORY_LENGTH_PARAM));
-                }
-                response = jsonRestHandler.getTask(context, extractTenant(rc), taskId, historyLength);
-            }
-        } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
+            response = jsonRestHandler.getTask(context, extractTenant(rc), taskId,
+                    rc.request().params().get(HISTORY_LENGTH_PARAM));
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -497,11 +457,7 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, CANCEL_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else {
-                response = jsonRestHandler.cancelTask(context, extractTenant(rc), body, taskId);
-            }
+            response = jsonRestHandler.cancelTask(context, extractTenant(rc), body, taskId);
         } catch (Throwable t) {
             if (t instanceof A2AError error) {
                 response = jsonRestHandler.createErrorResponse(error);
@@ -562,15 +518,11 @@ public class A2AServerRoutes {
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                error = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            HTTPRestResponse response = jsonRestHandler.subscribeToTask(context, extractTenant(rc), taskId);
+            if (response instanceof HTTPRestStreamingResponse httpRestStreamingResponse) {
+                streamingResponse = httpRestStreamingResponse;
             } else {
-                HTTPRestResponse response = jsonRestHandler.subscribeToTask(context, extractTenant(rc), taskId);
-                if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
-                    streamingResponse = hTTPRestStreamingResponse;
-                } else {
-                    error = response;
-                }
+                error = response;
             }
         } finally {
             if (error != null) {
@@ -611,11 +563,7 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else {
-                response = jsonRestHandler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
-            }
+            response = jsonRestHandler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -641,13 +589,7 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else if (configId == null || configId.isEmpty()) { 
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad configuration id"));
-            }else {
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
-            }
+            response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -679,21 +621,8 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else {
-                 int pageSize = 0;
-                if (rc.request().params().contains(PAGE_SIZE_PARAM)) {
-                    pageSize = Integer.parseInt(rc.request().params().get(PAGE_SIZE_PARAM));
-                }
-                String pageToken = "";
-                if (rc.request().params().contains(PAGE_TOKEN_PARAM)) {
-                    pageToken = Utils.defaultIfNull(rc.request().params().get(PAGE_TOKEN_PARAM), "");
-                }
-                response = jsonRestHandler.listTaskPushNotificationConfigurations(context, extractTenant(rc), taskId, pageSize, pageToken);
-            }
-        } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
+            response = jsonRestHandler.listTaskPushNotificationConfigurations(context, extractTenant(rc), taskId,
+                    rc.request().params().get(PAGE_SIZE_PARAM), rc.request().params().get(PAGE_TOKEN_PARAM));
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -721,13 +650,7 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else if (configId == null || configId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad config id"));
-            } else {
-                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
-            }
+            response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));

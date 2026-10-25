@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 
 public class EventConsumerTest {
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
     private static final String TASK_ID = "123";  // Must match MINIMAL_TASK id
 
     private EventQueue eventQueue;
@@ -65,7 +64,7 @@ public class EventConsumerTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)

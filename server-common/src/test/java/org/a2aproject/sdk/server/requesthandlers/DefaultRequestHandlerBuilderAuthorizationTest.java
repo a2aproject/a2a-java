@@ -4,34 +4,42 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.auth.SimpleTaskAuthorizationProvider;
+import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
 import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.events.EventQueueUtil;
 import org.a2aproject.sdk.server.events.InMemoryQueueManager;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
+import org.a2aproject.sdk.server.events.QueueManager;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
+import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
+import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -49,6 +57,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class DefaultRequestHandlerBuilderAuthorizationTest {
 
@@ -56,8 +66,6 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             .returnImmediately(true)
             .acceptedOutputModes(List.of())
             .build();
-
-    private static final PushNotificationSender NOOP_PUSH_SENDER = (event, snapshot) -> {};
 
     private InMemoryTaskStore taskStore;
     private InMemoryQueueManager queueManager;
@@ -73,7 +81,7 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
         taskStore = new InMemoryTaskStore();
         MainEventBus mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSH_SENDER, queueManager);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         executor = Executors.newCachedThreadPool();
@@ -97,6 +105,61 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
         if (executor != null) {
             executor.shutdownNow();
         }
+    }
+
+    @ParameterizedTest(name = "{0} rejects blank {1}")
+    @CsvSource({
+            "getTask, ''", "getTask, '   '",
+            "cancelTask, ''", "cancelTask, '   '",
+            "subscribe, ''", "subscribe, '   '",
+            "createPush, ''", "createPush, '   '",
+            "getPush, ''", "getPush, '   '",
+            "getPushId, ''", "getPushId, '   '",
+            "listPush, ''", "listPush, '   '",
+            "deletePush, ''", "deletePush, '   '",
+            "deletePushId, ''", "deletePushId, '   '"
+    })
+    void effectiveCardRejectsBlankRequiredIdsBeforeDependencies(String operation, String id) {
+        AgentExecutor agent = mock(AgentExecutor.class);
+        TaskStore store = mock(TaskStore.class);
+        PushNotificationConfigStore pushStore = mock(PushNotificationConfigStore.class);
+        TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+        QueueManager queues = mock(QueueManager.class);
+        Executor execution = mock(Executor.class);
+        RequestHandler validatedHandler = DefaultRequestHandler.builder()
+                .agentExecutor(agent).taskStore(store).queueManager(queues)
+                .pushConfigStore(pushStore).mainEventBusProcessor(mainEventBusProcessor)
+                .executor(execution).eventConsumerExecutor(execution)
+                .authorizationProvider(authorization).build();
+        ServerCallContext context = DefaultRequestHandlerTest.contextWithEffectiveCard(true);
+
+        assertThrows(InvalidParamsError.class, () -> {
+            switch (operation) {
+                case "getTask" -> validatedHandler.onGetTask(new TaskQueryParams(id, null, null), context);
+                case "cancelTask" -> validatedHandler.onCancelTask(new CancelTaskParams(id), context);
+                case "subscribe" -> validatedHandler.onSubscribeToTask(new TaskIdParams(id), context);
+                case "createPush" -> validatedHandler.onCreateTaskPushNotificationConfig(
+                        TaskPushNotificationConfig.builder().taskId(id).url("https://example.com/push").build(), context);
+                case "getPush" -> validatedHandler.onGetTaskPushNotificationConfig(
+                        new GetTaskPushNotificationConfigParams(id, "config"), context);
+                case "getPushId" -> validatedHandler.onGetTaskPushNotificationConfig(
+                        new GetTaskPushNotificationConfigParams("task", id), context);
+                case "listPush" -> validatedHandler.onListTaskPushNotificationConfigs(
+                        new ListTaskPushNotificationConfigsParams(id), context);
+                case "deletePush" -> validatedHandler.onDeleteTaskPushNotificationConfig(
+                        new DeleteTaskPushNotificationConfigParams(id, "config"), context);
+                case "deletePushId" -> validatedHandler.onDeleteTaskPushNotificationConfig(
+                        new DeleteTaskPushNotificationConfigParams("task", id), context);
+                default -> throw new AssertionError(operation);
+            }
+        });
+        verifyNoInteractions(agent, store, pushStore, authorization, queues, execution);
+    }
+
+    @Test
+    void blankTaskIdWithoutEffectiveCardRetainsAuthorizationBehavior() {
+        assertThrows(TaskNotFoundError.class,
+                () -> handler.onGetTask(new TaskQueryParams("", null, null), contextForUser("anyone")));
     }
 
     @Nested

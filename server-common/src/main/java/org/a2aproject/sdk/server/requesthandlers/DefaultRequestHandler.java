@@ -28,6 +28,7 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.EffectiveAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
@@ -64,6 +65,7 @@ import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
@@ -503,6 +505,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public Task onGetTask(TaskQueryParams params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "id", params.id());
         LOGGER.debug("onGetTask {}", params.id());
         enforceRead(context, params.id(), TaskOperation.GET_TASK);
         Task task = taskStore.get(params.id());
@@ -652,6 +655,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "id", params.id());
         enforceWrite(context, params.id(), TaskOperation.CANCEL_TASK);
         // Serialize check-then-act per task so two concurrent cancels (or a cancel racing
         // a concurrent completion) cannot both act on the pre-transition state.
@@ -752,6 +756,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @SuppressWarnings("NullAway")
     public EventKind onMessageSend(MessageSendParams rawParams, ServerCallContext context) throws A2AError {
         MessageSendParams params = normalizeBlankIds(rawParams);
+        validateEmbeddedPushConfig(params, context);
         LOGGER.debug("onMessageSend - task: {}; context {}", params.message().taskId(), params.message().contextId());
         String msgTaskId = params.message().taskId();
         if (msgTaskId != null) {
@@ -965,6 +970,7 @@ public class DefaultRequestHandler implements RequestHandler {
     public Flow.Publisher<StreamingEventKind> onMessageSendStream(
             MessageSendParams rawParams, ServerCallContext context) throws A2AError {
         MessageSendParams params = normalizeBlankIds(rawParams);
+        validateEmbeddedPushConfig(params, context);
         LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}",
                 params.message().taskId(), params.message().contextId(), runningAgents.size());
         String msgTaskId = params.message().taskId();
@@ -1129,6 +1135,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
             TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "taskId", params.taskId());
         if (pushConfigStore == null || !pushNotificationsEnabled) {
             throw new UnsupportedOperationError();
         }
@@ -1149,6 +1156,8 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public TaskPushNotificationConfig onGetTaskPushNotificationConfig(
             GetTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "taskId", params.taskId());
+        validateRequiredId(context, "id", params.id());
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
@@ -1164,7 +1173,8 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         String requestedConfigId = params.id();
-        String configId = requestedConfigId == null || requestedConfigId.isEmpty() ? params.taskId() : requestedConfigId;
+        String configId = Assert.isNullOrEmpty(requestedConfigId) ? params.taskId()
+                : Assert.checkNotNullParam("requestedConfigId", requestedConfigId);
         return getTaskPushNotificationConfig(listTaskPushNotificationConfigsResult, configId);
     }
 
@@ -1180,6 +1190,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public Flow.Publisher<StreamingEventKind> onSubscribeToTask(TaskIdParams params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "id", params.id());
         LOGGER.debug("onSubscribeToTask - taskId: {}", params.id());
         enforceRead(context, params.id(), TaskOperation.SUBSCRIBE_TO_TASK);
         Task task = taskStore.get(params.id());
@@ -1228,6 +1239,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(
             ListTaskPushNotificationConfigsParams params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "id", params.id());
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
@@ -1242,6 +1254,8 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public void onDeleteTaskPushNotificationConfig(
             DeleteTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
+        validateRequiredId(context, "taskId", params.taskId());
+        validateRequiredId(context, "id", params.id());
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
@@ -1253,6 +1267,22 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         pushConfigStore.deleteInfo(params.taskId(), params.id());
+    }
+
+    private static void validateRequiredId(@Nullable ServerCallContext context, String parameter, @Nullable String id) {
+        if (context != null && context.getEffectiveAgentCard() != null && (id == null || id.isBlank())) {
+            throw new InvalidParamsError(parameter + " is required");
+        }
+    }
+
+    private void validateEmbeddedPushConfig(MessageSendParams params, @Nullable ServerCallContext context) {
+        EffectiveAgentCard effectiveCard = context != null ? context.getEffectiveAgentCard() : null;
+        if (effectiveCard != null && params.configuration() != null
+                && params.configuration().taskPushNotificationConfig() != null
+                && (!pushNotificationsEnabled || pushConfigStore == null
+                        || !effectiveCard.card().capabilities().pushNotifications())) {
+            throw new PushNotificationNotSupportedError();
+        }
     }
 
     private boolean shouldAddPushInfo(MessageSendParams params) {
@@ -1525,8 +1555,12 @@ public class DefaultRequestHandler implements RequestHandler {
         if (requestedTaskId == null || requestedTaskId.isEmpty()) {
             return;
         }
-        enforceRead(context, requestedTaskId, operation);
-        Task task = taskStore.get(requestedTaskId);
+        String taskId = Assert.checkNotNullParam("requestedTaskId", requestedTaskId);
+        if (taskId.isBlank()) {
+            throw new InvalidParamsError("taskId is required");
+        }
+        enforceRead(context, taskId, operation);
+        Task task = taskStore.get(taskId);
         if (task == null) {
             throw new TaskNotFoundError();
         }

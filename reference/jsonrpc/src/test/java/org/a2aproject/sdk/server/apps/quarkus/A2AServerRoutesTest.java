@@ -1,20 +1,20 @@
 package org.a2aproject.sdk.server.apps.quarkus;
 
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static java.util.Collections.singletonList;
+import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
-import static java.util.Collections.singletonList;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,16 +28,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import jakarta.enterprise.inject.Instance;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.RequestBody;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
@@ -55,11 +65,12 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
+import org.a2aproject.sdk.server.FixedInstance;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
+import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -70,11 +81,6 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RequestBody;
-import io.vertx.ext.web.RoutingContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -267,6 +273,24 @@ public class A2AServerRoutesTest {
         assertNotNull(capturedContext);
         assertEquals(GET_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
         verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    }
+
+    @Test
+    public void testGetTask_ForwardsTransportPolicyErrorAndResponseId() {
+        String jsonRpcRequest = """
+                {"jsonrpc":"2.0","id":"request-id","method":"GetTask","params":{"id":"task"}}
+                """;
+        GetTaskResponse policyResponse = new GetTaskResponse("policy-error-id",
+                new org.a2aproject.sdk.spec.UnsupportedOperationError());
+        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+                .thenReturn(policyResponse);
+
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class));
+        JsonObject response = captureResponse();
+        assertEquals("policy-error-id", response.get("id").getAsString());
+        assertTrue(response.has("error"));
     }
 
     @Test
@@ -828,6 +852,100 @@ public class A2AServerRoutesTest {
         verify(mockHttpResponse, never()).putHeader(any(CharSequence.class), any(CharSequence.class));
     }
 
+    @Test
+    void malformedEnvelopeWinsOverUnknownTenantAndUnsupportedVersion() {
+        AgentCardRouter router = tenant -> {
+            throw new AssertionError("Envelope decoding must precede card policy");
+        };
+        JSONRPCHandler handler = new JSONRPCHandler(FixedInstance.empty(), null, mock(RequestHandler.class),
+                mockExecutor, new FixedInstance<>(router));
+        setField(routes, "jsonRpcHandler", handler);
+        mockHeaders.set("A2A-Version", "2.0");
+        when(mockRoutingContext.normalizedPath()).thenReturn("/unknown");
+
+        routes.invokeJSONRPCHandler("[]", mockRoutingContext);
+
+        assertEquals(-32600, captureResponse().getAsJsonObject("error").get("code").getAsInt());
+    }
+
+    @Test
+    void tenantPublicCardInvalidNameReturns400Text() {
+        when(mockRoutingContext.pathParam("tenant")).thenReturn("bad?tenant");
+
+        publicCardRoute(true).handle(mockRoutingContext);
+
+        verify(mockHttpResponse).setStatusCode(400);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, "text/plain");
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpResponse).end(body.capture());
+        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", body.getValue());
+        org.mockito.Mockito.verifyNoInteractions(mockJsonRpcHandler);
+    }
+
+    @Test
+    void unknownRoutedPublicCardReturns404() {
+        AgentCardRouter router = tenant -> null;
+        setField(routes, "jsonRpcHandler", new JSONRPCHandler(FixedInstance.empty(), null,
+                mock(RequestHandler.class), mockExecutor, new FixedInstance<>(router)));
+        when(mockRoutingContext.pathParam("tenant")).thenReturn("unknown");
+
+        publicCardRoute(true).handle(mockRoutingContext);
+
+        verify(mockHttpResponse).setStatusCode(404);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, "text/plain");
+        verify(mockHttpResponse).end("No public agent card registered for tenant: unknown");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void publicCardTransportConfigurationFailuresReturnSanitized500(boolean routed) {
+        AgentCard invalid = AgentCard.builder()
+                .name("invalid")
+                .description("invalid transport configuration")
+                .version("1.0")
+                .supportedInterfaces(List.of(new AgentInterface("NOT_INSTALLED", "http://localhost")))
+                .capabilities(AgentCapabilities.builder().build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+        AgentCardRouter router = new AgentCardRouter() {
+            @Override
+            public AgentCard resolvePublicCard(String tenant) {
+                return invalid;
+            }
+
+            @Override
+            public AgentCard resolveExtendedCard(String tenant) {
+                return null;
+            }
+        };
+        setField(routes, "jsonRpcHandler", new JSONRPCHandler(new FixedInstance<>(invalid), null,
+                mock(RequestHandler.class), mockExecutor, routed ? new FixedInstance<>(router) : null));
+        when(mockRoutingContext.pathParam("tenant")).thenReturn("acme");
+
+        publicCardRoute(routed).handle(mockRoutingContext);
+
+        verify(mockHttpResponse).setStatusCode(500);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, "text/plain");
+        verify(mockHttpResponse).end("Internal Server Error");
+    }
+
+    private Handler<RoutingContext> publicCardRoute(boolean routed) {
+        Router router = mock(Router.class);
+        Route route = mock(Route.class, org.mockito.Mockito.RETURNS_SELF);
+        Route publicRoute = mock(Route.class, org.mockito.Mockito.RETURNS_SELF);
+        Route tenantRoute = mock(Route.class, org.mockito.Mockito.RETURNS_SELF);
+        when(router.post(anyString())).thenReturn(route);
+        when(router.postWithRegex(anyString())).thenReturn(route);
+        when(router.get(anyString())).thenReturn(publicRoute);
+        when(router.getWithRegex(anyString())).thenReturn(tenantRoute);
+        routes.setupRoutes(router);
+        ArgumentCaptor<Handler<RoutingContext>> captor = ArgumentCaptor.forClass(Handler.class);
+        verify(routed ? tenantRoute : publicRoute).handler(captor.capture());
+        return captor.getValue();
+    }
+
     /**
      * Helper method to set a field via reflection for testing purposes.
      */
@@ -840,4 +958,43 @@ public class A2AServerRoutesTest {
             throw new RuntimeException("Failed to set field: " + fieldName, e);
         }
     }
+
+    @Test
+    public void testEmptyMessageIdDecodeErrorRetainsId() {
+        routes.invokeJSONRPCHandler("""
+                {"jsonrpc":"2.0","id":"empty-message","method":"SendMessage","params":{
+                  "message":{"messageId":"","role":"ROLE_USER","parts":[{"text":"hello"}]}}}
+                """, mockRoutingContext);
+        verify(mockHttpResponse).setStatusCode(200);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpResponse).end(body.capture());
+        assertEquals(JsonParser.parseString("""
+                {"jsonrpc":"2.0","id":"empty-message","error":{"code":-32602,
+                 "message":"Required field cannot be null or empty","data":[{
+                 "@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_PARAMS",
+                 "domain":"a2a-protocol.org","metadata":{}}]}}
+                """), JsonParser.parseString(body.getValue()));
+        org.mockito.Mockito.verifyNoInteractions(mockJsonRpcHandler);
+    }
+
+    @Test
+    public void testMalformedProtobufParamsDecodeErrorHasNullId() {
+        routes.invokeJSONRPCHandler("""
+                {"jsonrpc":"2.0","id":"protobuf-error","method":"GetTask",
+                 "params":{"id":"task","historyLength":"bad"}}
+                """, mockRoutingContext);
+        verify(mockHttpResponse).setStatusCode(200);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpResponse).end(body.capture());
+        assertEquals(JsonParser.parseString("""
+                {"jsonrpc":"2.0","id":null,"error":{"code":-32600,
+                "message":"Invalid request content: Not an int32 value: \\"bad\\". Please verify the request matches the expected schema for this method.",
+                "data":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_REQUEST",
+                "domain":"a2a-protocol.org","metadata":{}}]}}
+                """), JsonParser.parseString(body.getValue()));
+        org.mockito.Mockito.verifyNoInteractions(mockJsonRpcHandler);
+    }
+
 }

@@ -9,6 +9,16 @@ public final class Assert {
     }
 
     /**
+     * Checks whether the value is {@code null}, empty, or blank.
+     *
+     * @param value the value to check
+     * @return {@code true} if the value is {@code null}, empty, or blank
+     */
+    public static boolean isNullOrEmpty(@Nullable String value) {
+        return value == null || value.isBlank();
+    }
+
+    /**
      * Check that the named parameter is not {@code null}.  Use a standard exception message if it is.
      *
      * @param name the parameter name

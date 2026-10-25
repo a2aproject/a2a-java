@@ -81,6 +81,17 @@ public class CdiA2AHttpClientFactoryTest {
             assertFalse(records.stream().anyMatch(r -> r.getLevel() == Level.WARNING),
                     "No warning should be logged when CDI provider succeeds");
         }
+
+        @Test
+        public void testCreateExcludingCdiSkipsTheCdiBeanAndFallsBack() {
+            // Regression guard for the recursive CDI self-delegation bug: a CDI producer that
+            // produces an A2AHttpClient must call createExcluding("cdi") so the factory does not
+            // re-enter the container and return the proxy being constructed as its own delegate.
+            A2AHttpClient client = A2AHttpClientFactory.createExcluding("cdi");
+            assertNotNull(client);
+            assertFalse(client instanceof DummyA2AHttpClient,
+                    "createExcluding('cdi') must not return the CDI-registered bean");
+        }
     }
 
     @Nested

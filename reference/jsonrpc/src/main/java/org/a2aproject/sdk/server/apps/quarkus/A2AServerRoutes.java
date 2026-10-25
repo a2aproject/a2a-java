@@ -240,7 +240,8 @@ public class A2AServerRoutes {
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .end(agentCard);
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
+                    LOGGER.error("Internal error while resolving agent card", e);
                     ctx.response().setStatusCode(500).putHeader(CONTENT_TYPE, "text/plain").end("Internal Server Error");
                 }
             });

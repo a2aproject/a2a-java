@@ -8,15 +8,16 @@ import io.grpc.stub.StreamObserver;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import org.jspecify.annotations.Nullable;
 import static org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.FromProto;
 
 public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> {
 
     private static final Logger LOGGER = Logger.getLogger(EventStreamObserver_v0_3.class.getName());
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
-    private final Consumer<Throwable> errorHandler;
+    @Nullable private final Consumer<Throwable> errorHandler;
 
-    public EventStreamObserver_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler, Consumer<Throwable> errorHandler) {
+    public EventStreamObserver_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
     }
@@ -39,7 +40,9 @@ public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> 
                 break;
             default:
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
-                errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                if (errorHandler != null) {
+                    errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                }
                 return;
         }
         eventHandler.accept(event);
@@ -59,6 +62,8 @@ public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> 
 
     @Override
     public void onCompleted() {
-        // done
+        if (errorHandler != null) {
+            errorHandler.accept(null);
+        }
     }
 }

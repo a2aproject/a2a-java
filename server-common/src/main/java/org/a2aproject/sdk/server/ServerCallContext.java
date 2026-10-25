@@ -2,13 +2,16 @@ package org.a2aproject.sdk.server;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.a2aproject.sdk.server.auth.User;
+import org.a2aproject.sdk.spec.AgentCard;
 import org.jspecify.annotations.Nullable;
 
 public class ServerCallContext {
+    private static final String EFFECTIVE_AGENT_CARD_KEY = ServerCallContext.class.getName() + ".effectiveAgentCard";
     /**
      * Key for transport protocol type in the state map.
      * Value should be a {@link org.a2aproject.sdk.spec.TransportProtocol} instance.
@@ -53,6 +56,29 @@ public class ServerCallContext {
 
     public Map<String, Object> getState() {
         return state;
+    }
+
+    /** Atomically attaches a card; only the same canonical tenant and card instance may be reattached. */
+    public void attachEffectiveAgentCard(@Nullable String tenant, AgentCard card) {
+        String normalizedTenant = AgentCardResolver.normalizeTenantForResolution(tenant);
+        state.compute(EFFECTIVE_AGENT_CARD_KEY, (key, oldValue) -> {
+            EffectiveAgentCard next = new EffectiveAgentCard(normalizedTenant, card);
+            if (oldValue == null) {
+                return next;
+            }
+            if (oldValue instanceof EffectiveAgentCard current
+                    && Objects.equals(current.tenant(), next.tenant())
+                    && current.card() == next.card()) {
+                return current;
+            }
+            throw new IllegalStateException("Conflicting effective Agent Card");
+        });
+    }
+
+    /** Returns the v1 effective card, or null when no request policy has attached one. */
+    public @Nullable EffectiveAgentCard getEffectiveAgentCard() {
+        Object value = state.get(EFFECTIVE_AGENT_CARD_KEY);
+        return value instanceof EffectiveAgentCard card ? card : null;
     }
 
     public User getUser() {

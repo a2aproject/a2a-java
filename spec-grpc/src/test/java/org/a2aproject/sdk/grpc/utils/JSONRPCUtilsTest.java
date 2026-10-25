@@ -26,7 +26,6 @@ import java.util.Map;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-
 import org.a2aproject.sdk.grpc.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
@@ -802,6 +801,21 @@ public class JSONRPCUtilsTest {
         GetExtendedAgentCardRequest extRequest = (GetExtendedAgentCardRequest) request;
         assertNotNull(extRequest.getParams());
         assertEquals("body-tenant", extRequest.getParams().tenant());
+    }
+
+    @Test
+    public void testRequestAndResponseEmptyMessageIdsKeepDistinctErrors() {
+        String body = """
+                {"jsonrpc":"2.0","id":"empty-message","method":"SendMessage","params":{
+                  "message":{"messageId":"","role":"ROLE_USER","parts":[{"text":"hello"}]}}}
+                """;
+        InvalidParamsJsonMappingException requestError = assertThrows(InvalidParamsJsonMappingException.class,
+                () -> JSONRPCUtils.parseRequestBody(body, null));
+        assertEquals("Required field cannot be null or empty", requestError.getMessage());
+        assertEquals("empty-message", requestError.getId());
+        InvalidParamsError responseError = assertThrows(InvalidParamsError.class,
+                () -> ProtoUtils.FromProto.message(org.a2aproject.sdk.grpc.Message.getDefaultInstance()));
+        assertEquals("Invalid parameters", responseError.getMessage());
     }
 
 }

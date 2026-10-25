@@ -1,24 +1,37 @@
 package org.a2aproject.sdk.compat03.transport.rest.handler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import java.util.HashSet;
 import java.util.Map;
 
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
-import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
+import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
+import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
+import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
+import org.a2aproject.sdk.spec.InternalError;
+import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.mockito.ArgumentCaptor;
 
 /**
  * Test suite for v0.3 RestHandler with v1.0 backend.
@@ -47,14 +60,14 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         // Save v0.3 task by converting to v1.0
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
-        RestHandler_v0_3.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.id(), 0, callContext);
+        RestHandler_v0_3.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.id(), null, null, callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
 
         // Test with different version parameter
-        response = handler.getTask(MINIMAL_TASK.id(), 2, callContext);
+        response = handler.getTask(MINIMAL_TASK.id(), "2", null, callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -65,7 +78,7 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     public void testGetTaskNotFound() {
         RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
 
-        RestHandler_v0_3.HTTPRestResponse response = handler.getTask("nonexistent", 0, callContext);
+        RestHandler_v0_3.HTTPRestResponse response = handler.getTask("nonexistent", null, null, callContext);
 
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -322,6 +335,76 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     }
 
     @Test
+    public void testSetPushConfigUsesUrlTaskIdAndExplicitConfigId() {
+        for (String body : new String[] {
+                pushConfigBody("\"parent\":\"tasks/task\",\"configId\":\"chosen\",",
+                        "tasks/task/pushNotificationConfigs/chosen"),
+                pushConfigBody("\"configId\":\"chosen\",", ""),
+                pushConfigBody("", "tasks/task/pushNotificationConfigs/chosen")}) {
+            RequestHandler backend = mock(RequestHandler.class);
+            when(backend.onCreateTaskPushNotificationConfig(any(), any())).thenThrow(new InternalError("delegated"));
+            assertWireError(validationHandler(true, backend).setTaskPushNotificationConfiguration("task", body, callContext),
+                    500, "InternalError", "delegated");
+            ArgumentCaptor<TaskPushNotificationConfig> config = ArgumentCaptor.forClass(TaskPushNotificationConfig.class);
+            verify(backend).onCreateTaskPushNotificationConfig(config.capture(), any());
+            assertEquals("task", config.getValue().taskId());
+            assertEquals("chosen", config.getValue().id());
+        }
+    }
+
+    @Test
+    public void testSetPushConfigDefaultsAbsentConfigIdToUrlTaskId() {
+        for (String configId : new String[] {null, "", "   "}) {
+            for (String name : new String[] {"", "tasks/task/pushNotificationConfigs", "tasks/task/pushNotificationConfigs/"}) {
+                String fields = configId == null ? "" : "\"configId\":\"" + configId + "\",";
+                RequestHandler backend = mock(RequestHandler.class);
+                when(backend.onCreateTaskPushNotificationConfig(any(), any())).thenThrow(new InternalError("delegated"));
+                assertWireError(validationHandler(true, backend).setTaskPushNotificationConfiguration("task",
+                        pushConfigBody(fields, name), callContext), 500, "InternalError", "delegated");
+                ArgumentCaptor<TaskPushNotificationConfig> config = ArgumentCaptor.forClass(TaskPushNotificationConfig.class);
+                verify(backend).onCreateTaskPushNotificationConfig(config.capture(), any());
+                assertEquals("task", config.getValue().taskId());
+                assertEquals("task", config.getValue().id());
+            }
+        }
+    }
+
+    @Test
+    public void testSetPushConfigRejectsConflictingAndMalformedResourceNames() {
+        for (String body : new String[] {
+                pushConfigBody("\"parent\":\"tasks/other\",", "tasks/task/pushNotificationConfigs/"),
+                pushConfigBody("\"parent\":\"tasks/task/extra\",", "tasks/task/pushNotificationConfigs/"),
+                pushConfigBody("", "tasks/other/pushNotificationConfigs/chosen"),
+                pushConfigBody("", "tasks/task/pushNotificationConfigs/chosen/extra"),
+                pushConfigBody("", "tasks/task/notPushNotificationConfigs/chosen"),
+                pushConfigBody("\"configId\":\"other\",", "tasks/task/pushNotificationConfigs/chosen")}) {
+            RequestHandler backend = mock(RequestHandler.class);
+            RestHandler_v0_3.HTTPRestResponse response = validationHandler(true, backend)
+                    .setTaskPushNotificationConfiguration("task", body, callContext);
+            assertEquals(422, response.getStatusCode(), body);
+            assertTrue(response.getBody().contains("InvalidParamsError"), response.getBody());
+            verifyNoInteractions(backend);
+        }
+    }
+
+    @Test
+    public void testSetPushConfigCapabilityPreflightPrecedesBodyValidation() {
+        for (String body : new String[] {"{broken", pushConfigBody("\"parent\":\"tasks/other\",", "bad/name")}) {
+            RequestHandler backend = mock(RequestHandler.class);
+            RestHandler_v0_3.HTTPRestResponse response = validationHandler(false, backend)
+                    .setTaskPushNotificationConfiguration("task", body, callContext);
+            assertEquals(501, response.getStatusCode());
+            assertTrue(response.getBody().contains("PushNotificationNotSupportedError"), response.getBody());
+            verifyNoInteractions(backend);
+        }
+    }
+
+    private String pushConfigBody(String fields, String name) {
+        return "{" + fields + "\"config\":{\"name\":\"" + name
+                + "\",\"pushNotificationConfig\":{\"url\":\"https://example.com/callback\"}}}";
+    }
+
+    @Test
     public void testGetPushNotificationConfig() {
         RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
 
@@ -402,6 +485,156 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                         handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.id(), requestBody, callContext)
                                 .getStatusCode()),
                 "secret-token-12345", "oauth-secret-67890");
+    }
+
+    @Test
+    public void testSharedErrorConversionPreservesWireMessage() {
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+        RestHandler_v0_3.HTTPRestResponse response = handler.getTask("missing-conversion-task", null, null, callContext);
+        assertEquals(404, response.getStatusCode());
+        assertEquals("application/json", response.getContentType());
+        assertEquals(Map.of(), response.getHeaders());
+        assertEquals("{\"error\": \"org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3\", "
+                + "\"message\": \"Task not found\"}", response.getBody());
+        response = handler.getTask("task", "-1", null, callContext);
+        assertEquals(422, response.getStatusCode());
+        assertEquals("application/json", response.getContentType());
+        assertEquals("{\"error\": \"org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3\", "
+                + "\"message\": \"bad history_length or historyLength\"}", response.getBody());
+    }
+
+    private RestHandler_v0_3 validationHandler(boolean capabilities, RequestHandler backend) {
+        AgentCard_v0_3 card = new AgentCard_v0_3.Builder(CARD)
+                .capabilities(new AgentCapabilities_v0_3(capabilities, capabilities, false, null)).build();
+        return new RestHandler_v0_3(card, internalExecutor, new Convert_v0_3_To10RequestHandler(backend));
+    }
+
+    private void assertWireError(RestHandler_v0_3.HTTPRestResponse response, int status, String type, String message) {
+        assertEquals(RestHandler_v0_3.HTTPRestResponse.class, response.getClass());
+        assertEquals(status, response.getStatusCode());
+        assertEquals("application/json", response.getContentType());
+        assertEquals(Map.of(), response.getHeaders());
+        assertEquals("{\"error\": \"org.a2aproject.sdk.compat03.spec." + type
+                + "_v0_3\", \"message\": \"" + message + "\"}", response.getBody());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testGetTaskRawAliasValidationOrder(String taskId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        RestHandler_v0_3 handler = validationHandler(true, backend);
+        assertWireError(handler.getTask(taskId, "bad", "bad", callContext), 422, "InvalidParamsError", "bad task id");
+        assertWireError(handler.getTask(taskId, "bad", null, callContext), 422, "InvalidParamsError", "bad task id");
+        assertWireError(handler.getTask(taskId, null, "bad", callContext), 422, "InvalidParamsError", "bad task id");
+        verifyNoInteractions(backend);
+    }
+
+    @Test
+    public void testGetTaskRawAliases() {
+        RequestHandler backend = mock(RequestHandler.class);
+        RestHandler_v0_3 handler = validationHandler(true, backend);
+        for (String snake : new String[] {"", "bad", "2"}) {
+            assertWireError(handler.getTask("task", snake, "bad", callContext), 422, "InvalidParamsError",
+                    "Only one of 'history_length' or 'historyLength' may be specified");
+        }
+        for (String value : new String[] {"", "bad", "2147483648", "-1"}) {
+            assertWireError(handler.getTask("task", value, null, callContext), 422, "InvalidParamsError",
+                    "bad history_length or historyLength");
+            assertWireError(handler.getTask("task", null, value, callContext), 422, "InvalidParamsError",
+                    "bad history_length or historyLength");
+        }
+        verifyNoInteractions(backend);
+        for (String[] aliases : new String[][] {{null, null}, {"2", null}, {null, "2"}}) {
+            RequestHandler successfulBackend = mock(RequestHandler.class);
+            RestHandler_v0_3 successfulHandler = validationHandler(true, successfulBackend);
+            when(successfulBackend.onGetTask(any(), any())).thenReturn(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK));
+            RestHandler_v0_3.HTTPRestResponse response = successfulHandler.getTask("task", aliases[0], aliases[1], callContext);
+            assertEquals(200, response.getStatusCode());
+            assertEquals("application/json", response.getContentType());
+            assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+            ArgumentCaptor<TaskQueryParams> query = ArgumentCaptor.forClass(TaskQueryParams.class);
+            verify(successfulBackend).onGetTask(query.capture(), any());
+            assertEquals(aliases[0] == null && aliases[1] == null ? null : Integer.valueOf(2), query.getValue().historyLength());
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testCancelTaskPathValidationOrder(String taskId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        assertWireError(validationHandler(true, backend).cancelTask(taskId, callContext),
+                422, "InvalidParamsError", "bad task id");
+        verifyNoInteractions(backend);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testResubscribeTaskPathValidationOrder(String taskId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        for (boolean capabilities : new boolean[] {true, false}) {
+            assertWireError(validationHandler(capabilities, backend).resubscribeTask(taskId, callContext),
+                    422, "InvalidParamsError", "bad task id");
+        }
+        verifyNoInteractions(backend);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testSetPushConfigPathValidationOrder(String taskId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        for (boolean capabilities : new boolean[] {true, false}) {
+            assertWireError(validationHandler(capabilities, backend).setTaskPushNotificationConfiguration(taskId, "{broken", callContext),
+                    422, "InvalidParamsError", "bad task id");
+        }
+        verifyNoInteractions(backend);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testGetPushConfigPathValidationOrder(String taskId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        for (boolean capabilities : new boolean[] {true, false}) {
+            assertWireError(validationHandler(capabilities, backend).getTaskPushNotificationConfiguration(taskId, null, callContext),
+                    422, "InvalidParamsError", "bad task id");
+        }
+        verifyNoInteractions(backend);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testGetPushConfigPermitsMissingConfigId(String configId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        when(backend.onGetTaskPushNotificationConfig(any(), any())).thenThrow(new InternalError("delegated"));
+        assertWireError(validationHandler(true, backend).getTaskPushNotificationConfiguration("task", configId, callContext),
+                500, "InternalError", "delegated");
+        ArgumentCaptor<GetTaskPushNotificationConfigParams> query = ArgumentCaptor.forClass(GetTaskPushNotificationConfigParams.class);
+        verify(backend).onGetTaskPushNotificationConfig(query.capture(), any());
+        assertEquals(configId == null ? "task" : "", query.getValue().id());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testListPushConfigsPathValidationOrder(String taskId) {
+        RequestHandler backend = mock(RequestHandler.class);
+        for (boolean capabilities : new boolean[] {true, false}) {
+            assertWireError(validationHandler(capabilities, backend).listTaskPushNotificationConfigurations(taskId, callContext),
+                    422, "InvalidParamsError", "bad task id");
+        }
+        verifyNoInteractions(backend);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testDeletePushConfigPathValidationOrder(String id) {
+        RequestHandler backend = mock(RequestHandler.class);
+        for (boolean capabilities : new boolean[] {true, false}) {
+            RestHandler_v0_3 handler = validationHandler(capabilities, backend);
+            assertWireError(handler.deleteTaskPushNotificationConfiguration(id, id, callContext),
+                    422, "InvalidParamsError", "bad task id");
+            assertWireError(handler.deleteTaskPushNotificationConfiguration("task", id, callContext),
+                    422, "InvalidParamsError", "bad config id");
+        }
+        verifyNoInteractions(backend);
     }
 
 }

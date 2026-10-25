@@ -3,6 +3,8 @@ package org.a2aproject.sdk.client.http;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -72,7 +74,32 @@ public final class A2AHttpClientFactory {
      * @throws IllegalStateException if no provider found or all providers failed to instantiate
      */
     public static A2AHttpClient create() {
+        return createInternal(p -> true);
+    }
+
+    /**
+     * Creates a new A2AHttpClient instance, skipping any provider whose name is in
+     * {@code excludedProviderNames}.
+     *
+     * <p>This overload exists to break the CDI self-delegation cycle: a CDI producer method
+     * that itself produces an {@link A2AHttpClient} must not call the plain {@link #create()},
+     * because the CDI provider (priority 200) would re-enter the container and return the
+     * proxy being constructed — causing infinite recursion. Calling
+     * {@code createExcluding("cdi")} bypasses the CDI provider and selects the next eligible
+     * implementation (e.g. Vert.x at priority 100, or JDK at priority 0).
+     *
+     * @param excludedProviderNames names of providers to skip (see {@link A2AHttpClientProvider#name()})
+     * @return a new A2AHttpClient instance from the first non-excluded provider
+     * @throws IllegalStateException if no remaining provider could be instantiated
+     */
+    public static A2AHttpClient createExcluding(String... excludedProviderNames) {
+        Set<String> excluded = Set.of(excludedProviderNames);
+        return createInternal(p -> !excluded.contains(p.name()));
+    }
+
+    private static A2AHttpClient createInternal(Predicate<A2AHttpClientProvider> filter) {
         return PROVIDERS.stream()
+                .filter(filter)
                 .flatMap(p -> {
                     try {
                         return Stream.of(p.create());

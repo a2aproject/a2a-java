@@ -67,6 +67,7 @@ public class MainEventBusProcessorPushNotificationOrderTest {
             }
             deliveryOrder.add(index);
             latch.countDown();
+            return true;
         };
 
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
@@ -115,6 +116,7 @@ public class MainEventBusProcessorPushNotificationOrderTest {
                 fastDeliveredWhileSlowBlocked.set(slowLatch.getCount() > 0 ? 1 : 0);
                 fastLatch.countDown();
             }
+            return true;
         };
 
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
@@ -157,7 +159,10 @@ public class MainEventBusProcessorPushNotificationOrderTest {
         //   3. Assert on the captured count, not a fresh read.
         int taskCount = 10;
         CountDownLatch latch = new CountDownLatch(taskCount * 2);
-        PushNotificationSender sender = (event, snapshot) -> latch.countDown();
+        PushNotificationSender sender = (event, snapshot) -> {
+            latch.countDown();
+            return true;
+        };
 
         mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
         mainEventBusProcessor.setPushNotificationExecutor(Runnable::run);
@@ -191,6 +196,44 @@ public class MainEventBusProcessorPushNotificationOrderTest {
         } while (count != 0 && System.nanoTime() < deadline);
         assertEquals(0, count,
                 "A completed task's chain entry must not be left in the map");
+    }
+
+    @Test
+    public void testDeliveryFailureDoesNotStopSubsequentNotifications() throws InterruptedException {
+        // When sendNotification() returns false, the processor must continue delivering
+        // subsequent events rather than stopping or throwing.
+        String taskId = "failure-resilience-task";
+        int eventCount = 5;
+        CountDownLatch latch = new CountDownLatch(eventCount);
+        AtomicInteger attemptCount = new AtomicInteger(0);
+
+        PushNotificationSender sender = (event, snapshot) -> {
+            int attempt = attemptCount.incrementAndGet();
+            latch.countDown();
+            // Alternate: fail on even-indexed attempts to prove the chain continues.
+            return attempt % 2 != 0;
+        };
+
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, sender, queueManager);
+        EventQueueUtil.start(mainEventBusProcessor);
+        EventQueue eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(taskId)
+                .mainEventBus(mainEventBus)
+                .build().tap();
+
+        eventQueue.enqueueEvent(Task.builder()
+                .id(taskId)
+                .contextId(CONTEXT_ID)
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                .build());
+        for (int i = 0; i < eventCount - 1; i++) {
+            eventQueue.enqueueEvent(statusEventWithSequence(taskId, i));
+        }
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS),
+                "All notifications must be attempted even when some deliveries return false");
+        assertEquals(eventCount, attemptCount.get(),
+                "Every event must be passed to the sender regardless of prior delivery failures");
     }
 
     private TaskStatusUpdateEvent statusEventWithSequence(String taskId, int sequence) {

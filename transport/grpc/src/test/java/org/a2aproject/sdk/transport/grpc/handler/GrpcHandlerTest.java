@@ -2,15 +2,23 @@ package org.a2aproject.sdk.transport.grpc.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Struct;
@@ -40,6 +48,7 @@ import org.a2aproject.sdk.grpc.TaskPushNotificationConfig;
 import org.a2aproject.sdk.grpc.TaskState;
 import org.a2aproject.sdk.grpc.TaskStatus;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.TransportMetadata;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.events.EventConsumer;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
@@ -59,7 +68,6 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.MockedConstruction;
@@ -100,6 +108,31 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), task.getId());
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), task.getContextId());
         assertEquals(TaskState.TASK_STATE_SUBMITTED, task.getStatus().getState());
+    }
+
+    @Test
+    public void resolverPolicyIsInitializedOnceAcrossRequests() throws Exception {
+        AtomicInteger resolverCreations = new AtomicInteger();
+        GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor) {
+            @Override
+            protected org.a2aproject.sdk.server.AgentCardResolver createAgentCardResolver() {
+                resolverCreations.incrementAndGet();
+                return super.createAgentCardResolver();
+            }
+        };
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
+        GetTaskRequest request = GetTaskRequest.newBuilder()
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .build();
+
+        StreamRecorder<Task> first = StreamRecorder.create();
+        StreamRecorder<Task> second = StreamRecorder.create();
+        handler.getTask(request, first);
+        handler.getTask(request, second);
+        first.awaitCompletion(5, TimeUnit.SECONDS);
+        second.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertEquals(1, resolverCreations.get());
     }
 
     @Test
@@ -1528,6 +1561,318 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(0, response.getPageSize(), "pageSize should be 0");
         // nextPageToken will be empty string for empty results (protobuf default)
         Assertions.assertNotNull(response.getNextPageToken());
+    }
+
+    @Test
+    public void testNormalOperationInvalidTenantMapsToInvalidParams() throws Exception {
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        GrpcHandler handler = new TestGrpcHandler(CARD, customHandler, internalExecutor);
+        StreamRecorder<Task> recorder = StreamRecorder.create();
+
+        handler.getTask(GetTaskRequest.newBuilder().setId("task").setTenant("bad/tenant").build(), recorder);
+
+        assertGrpcReason(recorder, Status.Code.INVALID_ARGUMENT, "INVALID_PARAMS");
+        Mockito.verifyNoInteractions(customHandler);
+    }
+
+    @Test
+    public void testCapabilityOperationsInvalidTenantMapsToInvalidParams() throws Exception {
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        GrpcHandler handler = new TestGrpcHandler(CARD, customHandler, internalExecutor);
+        StreamRecorder<StreamResponse> streaming = StreamRecorder.create();
+        StreamRecorder<Empty> push = StreamRecorder.create();
+
+        handler.sendStreamingMessage(SendMessageRequest.newBuilder().setTenant("bad/tenant").build(), streaming);
+        handler.deleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigRequest.newBuilder()
+                .setTaskId("task").setId("config").setTenant("bad/tenant").build(), push);
+
+        assertGrpcReason(streaming, Status.Code.INVALID_ARGUMENT, "INVALID_PARAMS");
+        assertGrpcReason(push, Status.Code.INVALID_ARGUMENT, "INVALID_PARAMS");
+        Mockito.verifyNoInteractions(customHandler);
+    }
+
+    @Test
+    public void testCapabilityFailuresPrecedeInvalidVersion() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        GrpcHandler handler = handlerWithVersion(card, customHandler, "2.0");
+        StreamRecorder<StreamResponse> send = StreamRecorder.create();
+        StreamRecorder<StreamResponse> subscribe = StreamRecorder.create();
+        StreamRecorder<TaskPushNotificationConfig> create = StreamRecorder.create();
+        StreamRecorder<TaskPushNotificationConfig> get = StreamRecorder.create();
+        StreamRecorder<ListTaskPushNotificationConfigsResponse> list = StreamRecorder.create();
+        StreamRecorder<Empty> delete = StreamRecorder.create();
+
+        handler.sendStreamingMessage(SendMessageRequest.getDefaultInstance(), send);
+        handler.subscribeToTask(SubscribeToTaskRequest.getDefaultInstance(), subscribe);
+        handler.createTaskPushNotificationConfig(TaskPushNotificationConfig.getDefaultInstance(), create);
+        handler.getTaskPushNotificationConfig(GetTaskPushNotificationConfigRequest.getDefaultInstance(), get);
+        handler.listTaskPushNotificationConfigs(ListTaskPushNotificationConfigsRequest.getDefaultInstance(), list);
+        handler.deleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigRequest.getDefaultInstance(), delete);
+
+        assertGrpcReason(send, Status.Code.UNIMPLEMENTED, "UNSUPPORTED_OPERATION");
+        assertEquals("Streaming is not supported by the agent", Status.fromThrowable(send.getError()).getDescription());
+        assertGrpcReason(subscribe, Status.Code.UNIMPLEMENTED, "UNSUPPORTED_OPERATION");
+        for (StreamRecorder<?> recorder : List.of(create, get, list, delete)) {
+            assertGrpcReason(recorder, Status.Code.UNIMPLEMENTED, "PUSH_NOTIFICATION_NOT_SUPPORTED");
+        }
+        Mockito.verifyNoInteractions(customHandler);
+    }
+
+    @Test
+    public void testInvalidVersionWithEnabledCapabilitiesMapsToA2AError() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder()
+                .streaming(true).pushNotifications(true).build()).build();
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        GrpcHandler handler = handlerWithVersion(card, customHandler, "2.0");
+        StreamRecorder<Task> ordinary = StreamRecorder.create();
+        StreamRecorder<StreamResponse> streaming = StreamRecorder.create();
+        StreamRecorder<Empty> push = StreamRecorder.create();
+
+        handler.getTask(GetTaskRequest.getDefaultInstance(), ordinary);
+        handler.sendStreamingMessage(SendMessageRequest.getDefaultInstance(), streaming);
+        handler.deleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigRequest.getDefaultInstance(), push);
+
+        for (StreamRecorder<?> recorder : List.of(ordinary, streaming, push)) {
+            assertGrpcReason(recorder, Status.Code.UNIMPLEMENTED, "VERSION_NOT_SUPPORTED");
+        }
+        Mockito.verifyNoInteractions(customHandler);
+    }
+
+    @Test
+    public void testCanonicalTenantReachesRouterAndCustomHandler() throws Exception {
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        Mockito.when(customHandler.onGetTask(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            org.a2aproject.sdk.spec.TaskQueryParams params = invocation.getArgument(0);
+            ServerCallContext context = invocation.getArgument(1);
+            assertEquals("acme", params.tenant());
+            assertEquals("acme", context.getEffectiveAgentCard().tenant());
+            Assertions.assertSame(CARD, context.getEffectiveAgentCard().card());
+            return MINIMAL_TASK;
+        });
+        AgentCardRouter router = Mockito.mock(AgentCardRouter.class);
+        Mockito.when(router.resolvePublicCard("acme")).thenReturn(CARD);
+        GrpcHandler handler = new TestGrpcHandler(CARD, customHandler, internalExecutor) {
+            @Override
+            protected AgentCardRouter getAgentCardRouter() {
+                return router;
+            }
+        };
+        StreamRecorder<Task> recorder = StreamRecorder.create();
+
+        handler.getTask(GetTaskRequest.newBuilder().setId("task").setTenant("/acme/").build(), recorder);
+
+        Assertions.assertNull(recorder.getError());
+        assertEquals(1, recorder.getValues().size());
+        Mockito.verify(customHandler).onGetTask(Mockito.any(), Mockito.any());
+        Mockito.verify(router).resolvePublicCard("acme");
+        Mockito.verifyNoMoreInteractions(router);
+    }
+
+    @Test
+    public void testStreamingAndPushUseOneResolvedCardAndCanonicalTenant() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder()
+                .streaming(true).pushNotifications(true).build()).build();
+        RequestHandler customHandler = Mockito.mock(RequestHandler.class);
+        Mockito.when(customHandler.onMessageSendStream(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            MessageSendParams params = invocation.getArgument(0);
+            ServerCallContext context = invocation.getArgument(1);
+            assertEquals("acme", params.tenant());
+            assertEquals("acme", context.getEffectiveAgentCard().tenant());
+            Assertions.assertSame(card, context.getEffectiveAgentCard().card());
+            return ZeroPublisher.fromIterable(List.of());
+        });
+        Mockito.doAnswer(invocation -> {
+            org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams params = invocation.getArgument(0);
+            ServerCallContext context = invocation.getArgument(1);
+            assertEquals("acme", params.tenant());
+            Assertions.assertSame(card, context.getEffectiveAgentCard().card());
+            return null;
+        }).when(customHandler).onDeleteTaskPushNotificationConfig(Mockito.any(), Mockito.any());
+        AgentCardRouter router = Mockito.mock(AgentCardRouter.class);
+        Mockito.when(router.resolvePublicCard("acme")).thenReturn(card);
+        GrpcHandler handler = new TestGrpcHandler(CARD, customHandler, internalExecutor) {
+            @Override
+            protected AgentCardRouter getAgentCardRouter() {
+                return router;
+            }
+        };
+        StreamRecorder<StreamResponse> streaming = StreamRecorder.create();
+        StreamRecorder<Empty> push = StreamRecorder.create();
+
+        handler.sendStreamingMessage(SendMessageRequest.newBuilder().setMessage(GRPC_MESSAGE)
+                .setTenant("/acme/").build(), streaming);
+        handler.deleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigRequest.newBuilder()
+                .setTaskId("task").setId("config").setTenant("/acme/").build(), push);
+        streaming.awaitCompletion(5, TimeUnit.SECONDS);
+
+        Assertions.assertNull(streaming.getError());
+        Assertions.assertNull(push.getError());
+        assertEquals(1, push.getValues().size());
+        Mockito.verify(customHandler).onMessageSendStream(Mockito.any(), Mockito.any());
+        Mockito.verify(customHandler).onDeleteTaskPushNotificationConfig(Mockito.any(), Mockito.any());
+        Mockito.verify(router, Mockito.times(2)).resolvePublicCard("acme");
+        Mockito.verifyNoMoreInteractions(router);
+    }
+
+    @Test
+    public void testTransportValidationUsesDeploymentTcclAndRestoresCallerTccl() {
+        ClassLoader callerTccl = Thread.currentThread().getContextClassLoader();
+        AtomicInteger validations = new AtomicInteger();
+        ClassLoader deploymentCl = new ClassLoader(callerTccl) {
+            @Override
+            public Enumeration<URL> getResources(String name) throws IOException {
+                if (name.equals("META-INF/services/" + TransportMetadata.class.getName())) {
+                    Assertions.assertSame(this, Thread.currentThread().getContextClassLoader());
+                    validations.incrementAndGet();
+                }
+                return super.getResources(name);
+            }
+        };
+        GrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor) {
+            @Override
+            protected ClassLoader getDeploymentClassLoader() {
+                return deploymentCl;
+            }
+        };
+        StreamRecorder<Task> recorder = StreamRecorder.create();
+
+        handler.getTask(GetTaskRequest.newBuilder().setId("missing").build(), recorder);
+
+        assertGrpcError(recorder, Status.Code.NOT_FOUND);
+        assertEquals(1, validations.get());
+        Assertions.assertSame(callerTccl, Thread.currentThread().getContextClassLoader());
+    }
+
+    @Test
+    public void testConcurrentRequestsWaitForTransportValidation() throws Exception {
+        CountDownLatch validating = new CountDownLatch(1);
+        CountDownLatch releaseValidation = new CountDownLatch(1);
+        CountDownLatch secondResolving = new CountDownLatch(1);
+        AtomicInteger resolutions = new AtomicInteger();
+        AtomicInteger validations = new AtomicInteger();
+        ClassLoader deploymentCl = new ClassLoader(Thread.currentThread().getContextClassLoader()) {
+            @Override
+            public Enumeration<URL> getResources(String name) throws IOException {
+                if (name.equals("META-INF/services/" + TransportMetadata.class.getName())) {
+                    validations.incrementAndGet();
+                    validating.countDown();
+                    try {
+                        if (!releaseValidation.await(5, TimeUnit.SECONDS)) {
+                            throw new IOException("Timed out waiting to release transport validation");
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException(e);
+                    }
+                }
+                return super.getResources(name);
+            }
+        };
+        GrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor) {
+            @Override
+            protected AgentCard getAgentCard() {
+                if (resolutions.incrementAndGet() == 2) {
+                    secondResolving.countDown();
+                }
+                return CARD;
+            }
+
+            @Override
+            protected ClassLoader getDeploymentClassLoader() {
+                return deploymentCl;
+            }
+        };
+        ExecutorService callers = Executors.newFixedThreadPool(2);
+        StreamRecorder<Task> first = StreamRecorder.create();
+        StreamRecorder<Task> second = StreamRecorder.create();
+        GetTaskRequest request = GetTaskRequest.newBuilder().setId("missing").build();
+        try {
+            Future<?> firstCall = callers.submit(() -> handler.getTask(request, first));
+            Assertions.assertTrue(validating.await(5, TimeUnit.SECONDS));
+            Future<?> secondCall = callers.submit(() -> handler.getTask(request, second));
+            Assertions.assertTrue(secondResolving.await(5, TimeUnit.SECONDS));
+            Assertions.assertThrows(TimeoutException.class, () -> secondCall.get(200, TimeUnit.MILLISECONDS));
+            releaseValidation.countDown();
+            firstCall.get(5, TimeUnit.SECONDS);
+            secondCall.get(5, TimeUnit.SECONDS);
+            assertGrpcError(first, Status.Code.NOT_FOUND);
+            assertGrpcError(second, Status.Code.NOT_FOUND);
+            assertEquals(1, validations.get());
+        } finally {
+            releaseValidation.countDown();
+            callers.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testExtendedCardCapabilityFailurePrecedesInvalidVersion() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        GrpcHandler handler = handlerWithVersion(card, requestHandler, "2.0");
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+
+        handler.getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.getDefaultInstance(), recorder);
+
+        assertGrpcReason(recorder, Status.Code.UNIMPLEMENTED, "UNSUPPORTED_OPERATION");
+    }
+
+    @Test
+    public void testExtendedCardMissingAfterCapabilitySuccess() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor) {
+            @Override
+            protected AgentCard getExtendedAgentCard() {
+                return null;
+            }
+        };
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+
+        handler.getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.getDefaultInstance(), recorder);
+
+        assertGrpcReason(recorder, Status.Code.FAILED_PRECONDITION, "EXTENDED_AGENT_CARD_NOT_CONFIGURED");
+    }
+
+    @Test
+    public void testExtendedCardInvalidVersionMapsToA2AError() throws Exception {
+        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        GrpcHandler handler = handlerWithVersion(card, requestHandler, "2.0");
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+
+        handler.getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.getDefaultInstance(), recorder);
+
+        assertGrpcReason(recorder, Status.Code.UNIMPLEMENTED, "VERSION_NOT_SUPPORTED");
+    }
+
+    @Test
+    public void testExtendedCardInvalidTenantRetainsInternalMapping() throws Exception {
+        GrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor);
+        StreamRecorder<org.a2aproject.sdk.grpc.AgentCard> recorder = StreamRecorder.create();
+
+        handler.getExtendedAgentCard(org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder()
+                .setTenant("bad/tenant").build(), recorder);
+
+        assertGrpcReason(recorder, Status.Code.INTERNAL, "INTERNAL");
+    }
+
+    private GrpcHandler handlerWithVersion(AgentCard card, RequestHandler customHandler, String version) {
+        return new TestGrpcHandler(card, customHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> observer) {
+                        return new ServerCallContext(UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", observer), Set.of(), version);
+                    }
+                };
+            }
+        };
+    }
+
+    private void assertGrpcReason(StreamRecorder<?> recorder, Status.Code code, String reason) throws Exception {
+        assertGrpcError(recorder, code);
+        com.google.rpc.Status status = io.grpc.protobuf.StatusProto.fromThrowable(recorder.getError());
+        assertEquals(reason, status.getDetails(0).unpack(com.google.rpc.ErrorInfo.class).getReason());
     }
 
     private static class TestGrpcHandler extends GrpcHandler {
