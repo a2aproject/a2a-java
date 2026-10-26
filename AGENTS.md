@@ -90,7 +90,7 @@ The `announce.png` filename is required. The `image: announce.png` frontmatter f
 - AsciiDoc: blank line after `---`, then `image::announce.png[<alt text>]` (blank line required for block macro recognition)
 - Markdown: blank line after `---`, then `![<alt text>](announce.png)`
 
-**Version metadata:** Each version has a YAML file in `docs/data/versions/` (e.g. `dev.yml`, `1.1.0.Final.yml`) that defines the label, URL path, sort order, default/dev flags, and sidebar menu. When adding or removing a documentation page, update the `menu` list in `docs/data/versions/dev.yml` accordingly.
+**Version metadata:** Each version has a YAML file in `docs/data/versions/` (e.g. `dev.yml`, `1.1.0.Final.yml`) that defines the label, URL path, sort order, default/dev flags, and sidebar menu. When adding or removing a documentation page, update the `menu` list in `docs/data/versions/dev.yml` accordingly. The Pages deployment exposes the version with `defaultVersion: true` at `/latest/`; it is generated from the site artifact, so do not create `docs/content/latest`.
 
 **Running the docs site locally:**
 ```bash
