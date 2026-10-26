@@ -159,6 +159,8 @@ When applicable:
 
 4. For Final releases: set the previous default version's `defaultVersion` to `false`.
 
+   The documentation deployment automatically exposes the version marked `defaultVersion: true` under `/latest/`, including Javadoc. Do not create or update a `docs/content/latest` directory during a release.
+
 5. For pre-releases superseding a prior pre-release in the same X.Y.Z series: remove the old pre-release's content folder (`docs/content/<old-version_underscored>`), version yml (`docs/data/versions/<old-version>.yml`), and apidocs folder (`docs/public/<old-version_underscored>/apidocs/`).
 
 6. Generate Javadoc. The `site-javadoc` profile outputs to `docs/public/dev/apidocs/`:

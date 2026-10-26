@@ -184,6 +184,8 @@ Edit `docs/data/versions/X.Y.Z.Final.yml`:
 Update the previous default version's data file (e.g., `docs/data/versions/<previous-version>.yml`):
 - Set `defaultVersion` to `false`
 
+The documentation deployment automatically exposes the version marked `defaultVersion: true` under `/latest/`, including Javadoc. Do not create or update a `docs/content/latest` directory during a release.
+
 Review the new version's content for accuracy — ensure all pages reflect features available in this release.
 
 #### Generate Javadoc (major/minor releases only)

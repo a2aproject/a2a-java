@@ -10,8 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Test latest documentation alias
+        run: .github/scripts/test-create-latest-alias.sh
       - name: Generate Roq Site
         uses: quarkiverse/quarkus-roq@d0bdb4255f4dcc3ddd218c83f9dd19faa823ac31 # v1.1
         with:
           site-directory: ./docs/
           github-pages: 'false'
+      - name: Verify latest documentation alias
+        run: |
+          .github/scripts/create-latest-alias.sh docs/data/versions docs/target/roq
+          test -f docs/target/roq/latest/apidocs/index.html

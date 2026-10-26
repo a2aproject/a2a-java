@@ -10,13 +10,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read    # to check out the site sources
+      pages: write      # to upload the GitHub Pages artifact
+      id-token: write   # to verify the deployment originates from an appropriate source
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Generate Roq Site
         uses: quarkiverse/quarkus-roq@d0bdb4255f4dcc3ddd218c83f9dd19faa823ac31 # v1.1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}   # Used to automatically get the GitHub Pages url
           site-directory: ./docs/
+          github-pages: 'false'
+          site-url: https://a2aproject.github.io/a2a-java
+      - name: Create latest documentation alias
+        run: .github/scripts/create-latest-alias.sh docs/data/versions docs/target/roq
+      - name: Setup Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: docs/target/roq
   deploy:
     environment:
       name: github-pages
