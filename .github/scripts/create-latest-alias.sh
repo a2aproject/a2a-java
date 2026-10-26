@@ -8,11 +8,11 @@ latest_path=""
 
 for version_file in "$versions_dir"/*.yml; do
     candidate=$(awk '
-        $1 == "path:" {
+        /^path:/ {
             path = $2
             gsub(/^"|"$/, "", path)
         }
-        $1 == "defaultVersion:" && $2 == "true" {
+        /^defaultVersion:/ && $2 == "true" {
             default_version = 1
         }
         END {

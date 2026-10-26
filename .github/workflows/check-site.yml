@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - docs/**
+      - .github/scripts/**
+      - .github/workflows/check-site.yml
+      - .github/workflows/deploy-site.yml
 
 jobs:
   build:
@@ -17,6 +20,7 @@ jobs:
         with:
           site-directory: ./docs/
           github-pages: 'false'
+          site-url: https://a2aproject.github.io/a2a-java
       - name: Verify latest documentation alias
         run: |
           .github/scripts/create-latest-alias.sh docs/data/versions docs/target/roq

@@ -18,6 +18,9 @@ EOF
 cat > "$versions_dir/1.5.0.Final.yml" <<'EOF'
 path: "1_5_0_Final"
 defaultVersion: true
+menu:
+  - title: "Javadoc"
+    path: "/apidocs/"
 EOF
 
 "$script_dir/create-latest-alias.sh" "$versions_dir" "$site_dir"

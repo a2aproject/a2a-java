@@ -5,6 +5,8 @@ on:
     branches: [ main ]   # Switch to the branch which should be deployed to GitHub Pages
     paths:
       - docs/**
+      - .github/scripts/**
+      - .github/workflows/deploy-site.yml
   workflow_dispatch:
 
 jobs:
