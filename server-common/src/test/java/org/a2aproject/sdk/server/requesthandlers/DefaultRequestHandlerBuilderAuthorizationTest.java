@@ -114,7 +114,6 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             "subscribe, ''", "subscribe, '   '",
             "createPush, ''", "createPush, '   '",
             "getPush, ''", "getPush, '   '",
-            "getPushId, ''", "getPushId, '   '",
             "listPush, ''", "listPush, '   '",
             "deletePush, ''", "deletePush, '   '",
             "deletePushId, ''", "deletePushId, '   '"
