@@ -1172,7 +1172,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         String requestedConfigId = params.id();
-        String configId = requestedConfigId == null || requestedConfigId.isBlank()
+        String configId = requestedConfigId == null || requestedConfigId.isEmpty()
             ? params.taskId()
             : requestedConfigId;
         return getTaskPushNotificationConfig(listTaskPushNotificationConfigsResult, configId);

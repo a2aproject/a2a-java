@@ -1225,8 +1225,7 @@ public class DefaultRequestHandlerTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = " ")
-    void testGetTaskPushNotificationConfigDefaultsBlankIdToTaskIdWithEffectiveCard(String configId)
+    void testGetTaskPushNotificationConfigDefaultsMissingIdToTaskIdWithEffectiveCard(String configId)
             throws Exception {
         String taskId = "get-default-config-id-with-card";
         taskStore.save(Task.builder()
@@ -1241,7 +1240,7 @@ public class DefaultRequestHandlerTest {
 
         TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(
             new GetTaskPushNotificationConfigParams(taskId, configId),
-            configId == null || configId.isBlank() ? NULL_CONTEXT : contextWithEffectiveCard(true));
+            contextWithEffectiveCard(true));
 
         assertEquals(taskId, result.id());
         assertEquals("http://example.com/get-default-config-id-with-card", result.url());
