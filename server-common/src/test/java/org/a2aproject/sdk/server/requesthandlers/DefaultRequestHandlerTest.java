@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -1759,35 +1760,56 @@ public class DefaultRequestHandlerTest {
      */
     @Test
     void blockingSendStillReturnsCompletedTaskWhenFinalEventArrivesLate() throws Exception {
-        CountDownLatch agentReturned = new CountDownLatch(1);
-        AtomicBoolean agentReturnedInTime = new AtomicBoolean();
-        holdEventsAfterWorkingUntilAgentReturned(agentReturned, agentReturnedInTime);
+        AtomicReference<EventQueue> callerQueue = new AtomicReference<>();
+        useQueueManager(new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
+            @Override
+            public EventQueue createOrTap(String taskId) {
+                EventQueue queue = super.createOrTap(taskId);
+                callerQueue.compareAndSet(null, queue);
+                return queue;
+            }
+        });
+        AtomicBoolean callerQueueClosedInTime = new AtomicBoolean();
+        holdEventsAfterWorkingUntilClosed(callerQueue, callerQueueClosedInTime);
         agentExecutorExecute = (context, emitter) -> {
             emitter.startWork();
             emitter.complete();
-            agentReturned.countDown();
         };
 
         EventKind result = requestHandler.onMessageSend(blockingParams("msg-blocking-final-event"), NULL_CONTEXT);
 
-        assertTrue(agentReturnedInTime.get(), "the agent did not return while its next event was held");
+        assertTrue(callerQueueClosedInTime.get(), "the caller's queue was not closed while the final event was held");
         Task task = assertInstanceOf(Task.class, result);
         assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
     }
 
-    private void holdEventsAfterWorkingUntilAgentReturned(CountDownLatch agentReturned, AtomicBoolean agentReturnedInTime) {
+    private void useQueueManager(InMemoryQueueManager manager) {
+        EventQueueUtil.stop(mainEventBusProcessor);
+        queueManager = manager;
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore,
+                PushNotificationSender.NOOP, queueManager);
+        EventQueueUtil.start(mainEventBusProcessor);
+        requestHandler = DefaultRequestHandler.builder()
+                .agentExecutor(executor)
+                .taskStore(taskStore)
+                .queueManager(queueManager)
+                .pushConfigStore(pushConfigStore)
+                .pushNotificationsEnabled(true)
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(internalExecutor)
+                .eventConsumerExecutor(internalExecutor)
+                .authorizationRequired(false)
+                .build();
+    }
+
+    private void holdEventsAfterWorkingUntilClosed(AtomicReference<EventQueue> callerQueue, AtomicBoolean closedInTime) {
         mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
             @Override
             public void onEventProcessed(String taskId, Event event) {
                 if (event instanceof TaskStatusUpdateEvent statusUpdate
                         && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
-                    try {
-                        // Hold the agent's next event in the bus until the handler has closed the queue
-                        agentReturnedInTime.set(agentReturned.await(5, TimeUnit.SECONDS));
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                    // Hold the agent's next event in the bus until the handler has closed the caller's queue
+                    closedInTime.set(awaitClosed(callerQueue, Duration.ofSeconds(5)));
                 }
             }
 
@@ -1795,6 +1817,23 @@ public class DefaultRequestHandlerTest {
             public void onTaskFinalized(String taskId) {
             }
         });
+    }
+
+    private static boolean awaitClosed(AtomicReference<EventQueue> queue, Duration timeout) {
+        long deadline = System.nanoTime() + timeout.toNanos();
+        while (System.nanoTime() < deadline) {
+            EventQueue current = queue.get();
+            if (current != null && current.isClosed()) {
+                return true;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
     }
 
     private static MessageSendParams blockingParams(String messageId) {
