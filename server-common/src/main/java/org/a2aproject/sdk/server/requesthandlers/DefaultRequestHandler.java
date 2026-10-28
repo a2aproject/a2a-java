@@ -631,15 +631,12 @@ public class DefaultRequestHandler implements RequestHandler {
         }
     }
 
-    private void enforceListRead(ServerCallContext context) throws A2AError {
-        if (authorizationProvider == null) {
-            if (authorizationRequired) {
-                throw new TaskNotFoundError();
-            }
-            return;
-        }
-        if (!authorizationProvider.checkRead(context, LIST_TASKS_SCOPE_ID, TaskOperation.LIST_TASKS)) {
-            throw new TaskNotFoundError();
+    private boolean isReadAllowed(ServerCallContext context, String taskId, TaskOperation operation) {
+        try {
+            enforceRead(context, taskId, operation);
+            return true;
+        } catch (TaskNotFoundError ignored) {
+            return false;
         }
     }
 
@@ -665,7 +662,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
-        enforceListRead(context);
+        enforceRead(context, LIST_TASKS_SCOPE_ID, TaskOperation.LIST_TASKS);
         LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, statusTimestampAfter={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.statusTimestampAfter());
 
@@ -693,14 +690,11 @@ public class DefaultRequestHandler implements RequestHandler {
         // Post-filter per-task read authorization at the handler level.
         // On the CDI path this is redundant (store already filters), but on the builder
         // path the store may not have the provider, so the handler must be authoritative.
-        if (authorizationProvider != null) {
-            List<Task> filtered = result.tasks().stream()
-                    .filter(task -> TaskAuthorizationProvider.checkReadAccess(
-                            authorizationProvider, context, task.id(), TaskOperation.LIST_TASKS))
-                    .toList();
-            if (filtered.size() != result.tasks().size()) {
-                result = new ListTasksResult(filtered, filtered.size(), filtered.size(), result.nextPageToken());
-            }
+        List<Task> filtered = result.tasks().stream()
+                .filter(task -> isReadAllowed(context, task.id(), TaskOperation.LIST_TASKS))
+                .toList();
+        if (filtered.size() != result.tasks().size()) {
+            result = new ListTasksResult(filtered, filtered.size(), filtered.size(), result.nextPageToken());
         }
         LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
         return result;

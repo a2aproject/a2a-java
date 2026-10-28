@@ -1,11 +1,12 @@
 package org.a2aproject.sdk.server.requesthandlers;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -199,9 +200,21 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
         }
 
         @Test
-        void onListTasks_deniedWithoutProvider() {
+        void onListTasks_deniedWithoutProviderBeforeQueryingStore() {
+            TaskStore untrustedStore = mock(TaskStore.class);
+            RequestHandler failClosedBeforeStore = DefaultRequestHandler.builder()
+                    .agentExecutor(completingAgentExecutor())
+                    .taskStore(untrustedStore)
+                    .queueManager(queueManager)
+                    .pushConfigStore(new InMemoryPushNotificationConfigStore())
+                    .mainEventBusProcessor(mainEventBusProcessor)
+                    .executor(executor)
+                    .eventConsumerExecutor(executor)
+                    .build();
+
             assertThrows(TaskNotFoundError.class,
-                    () -> failClosedHandler.onListTasks(new ListTasksParams(), contextForUser("anyone")));
+                    () -> failClosedBeforeStore.onListTasks(new ListTasksParams(), contextForUser("anyone")));
+            verifyNoInteractions(untrustedStore);
         }
     }
 
@@ -247,7 +260,11 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
 
         @Test
         void onListTasks_succeedsWithoutProvider() throws A2AError {
-            assertDoesNotThrow(() -> noAuthHandler.onListTasks(new ListTasksParams(), contextForUser("anyone")));
+            Task task = saveTask("task-1");
+
+            ListTasksResult result = noAuthHandler.onListTasks(new ListTasksParams(), contextForUser("anyone"));
+
+            assertEquals(List.of(task), result.tasks());
         }
     }
 
@@ -375,6 +392,60 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
 
     @Nested
     class ListTasksTests {
+
+        @Test
+        void listTasks_enforcesReadForListScopeAndEachReturnedTask() throws A2AError {
+            Task first = saveTask("task-1");
+            Task second = saveTask("task-2");
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            ServerCallContext context = contextForUser("anyone");
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, first.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, second.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            RequestHandler enforcingHandler = DefaultRequestHandler.builder()
+                    .agentExecutor(completingAgentExecutor())
+                    .taskStore(taskStore)
+                    .queueManager(queueManager)
+                    .pushConfigStore(new InMemoryPushNotificationConfigStore())
+                    .mainEventBusProcessor(mainEventBusProcessor)
+                    .executor(executor)
+                    .eventConsumerExecutor(executor)
+                    .authorizationProvider(authorization)
+                    .build();
+
+            ListTasksResult result = enforcingHandler.onListTasks(new ListTasksParams(), context);
+
+            assertEquals(2, result.tasks().size());
+            verify(authorization).checkRead(context, "", TaskOperation.LIST_TASKS);
+            verify(authorization).checkRead(context, first.id(), TaskOperation.LIST_TASKS);
+            verify(authorization).checkRead(context, second.id(), TaskOperation.LIST_TASKS);
+        }
+
+        @Test
+        void listTasks_builderPathFiltersTasksDeniedByPerTaskReadAuthorization() throws A2AError {
+            Task allowed = saveTask("task-allowed");
+            Task denied = saveTask("task-denied");
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            ServerCallContext context = contextForUser("anyone");
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, allowed.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, denied.id(), TaskOperation.LIST_TASKS)).thenReturn(false);
+            RequestHandler enforcingHandler = DefaultRequestHandler.builder()
+                    .agentExecutor(completingAgentExecutor())
+                    .taskStore(taskStore)
+                    .queueManager(queueManager)
+                    .pushConfigStore(new InMemoryPushNotificationConfigStore())
+                    .mainEventBusProcessor(mainEventBusProcessor)
+                    .executor(executor)
+                    .eventConsumerExecutor(executor)
+                    .authorizationProvider(authorization)
+                    .build();
+
+            ListTasksResult result = enforcingHandler.onListTasks(new ListTasksParams(), context);
+
+            assertEquals(List.of(allowed), result.tasks());
+            verify(authorization).checkRead(context, denied.id(), TaskOperation.LIST_TASKS);
+        }
 
         @Test
         void listTasks_denied() throws A2AError {
