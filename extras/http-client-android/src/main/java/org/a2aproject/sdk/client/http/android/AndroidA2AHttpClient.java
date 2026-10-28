@@ -30,6 +30,7 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.BoundedLineAccumulator;
+import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
@@ -41,8 +42,8 @@ import org.jspecify.annotations.Nullable;
  * Android-specific implementation of {@link A2AHttpClient} using {@link HttpURLConnection}.
  *
  * <p><b>Security Note:</b> This client does not follow HTTP redirects automatically
- * to prevent credential leakage to third-party origins. Applications requiring redirect
- * following must handle redirects manually.
+ * to prevent credential leakage to third-party origins. Explicitly enabled POST redirects are
+ * followed once with headers filtered by {@link RedirectHeaderPolicy}.
  */
 public class AndroidA2AHttpClient implements A2AHttpClient {
 
@@ -53,9 +54,21 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
   });
 
   private final SSEParserConfig sseParserConfig;
+  private final RedirectHeaderPolicy redirectHeaderPolicy;
 
   public AndroidA2AHttpClient() {
-    this(SSEParserConfig.DEFAULT);
+    this(SSEParserConfig.DEFAULT, RedirectHeaderPolicy.DEFAULT);
+  }
+
+  /**
+   * Creates a new Android HTTP client with a custom redirect header policy.
+   *
+   * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+   * @return a client with default SSE parser limits and the supplied redirect policy
+   */
+  public static AndroidA2AHttpClient withRedirectHeaderPolicy(
+      RedirectHeaderPolicy redirectHeaderPolicy) {
+    return new AndroidA2AHttpClient(SSEParserConfig.DEFAULT, redirectHeaderPolicy);
   }
 
   /**
@@ -64,31 +77,45 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
    * @param sseParserConfig the SSE parser configuration to use for streaming responses
    */
   public AndroidA2AHttpClient(SSEParserConfig sseParserConfig) {
+    this(sseParserConfig, RedirectHeaderPolicy.DEFAULT);
+  }
+
+  /**
+   * Creates a new Android HTTP client with custom parser limits and redirect policy.
+   *
+   * @param sseParserConfig the SSE parser configuration to use for streaming responses
+   * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+   */
+  public AndroidA2AHttpClient(
+      SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
     this.sseParserConfig = checkNotNullParam("sseParserConfig", sseParserConfig);
+    this.redirectHeaderPolicy = checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
   }
 
   @Override
   public GetBuilder createGet() {
-    return new AndroidGetBuilder(sseParserConfig);
+    return new AndroidGetBuilder(sseParserConfig, redirectHeaderPolicy);
   }
 
   @Override
   public PostBuilder createPost() {
-    return new AndroidPostBuilder(sseParserConfig);
+    return new AndroidPostBuilder(sseParserConfig, redirectHeaderPolicy);
   }
 
   @Override
   public DeleteBuilder createDelete() {
-    return new AndroidDeleteBuilder(sseParserConfig);
+    return new AndroidDeleteBuilder(sseParserConfig, redirectHeaderPolicy);
   }
 
   private abstract static class AndroidBuilder<T extends Builder<T>> implements Builder<T> {
     protected String url = "";
     protected Map<String, String> headers = new HashMap<>();
     protected final SSEParserConfig sseParserConfig;
+    protected final RedirectHeaderPolicy redirectHeaderPolicy;
 
-    AndroidBuilder(SSEParserConfig sseParserConfig) {
+    AndroidBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
       this.sseParserConfig = sseParserConfig;
+      this.redirectHeaderPolicy = redirectHeaderPolicy;
     }
 
     @Override
@@ -117,9 +144,15 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
     }
 
     protected HttpURLConnection createConnection(String method, boolean isSSE) throws IOException {
+      return createConnection(url, method, headers, isSSE);
+    }
+
+    protected HttpURLConnection createConnection(
+        String requestUrl, String method, Map<String, String> requestHeaders, boolean isSSE)
+        throws IOException {
       URL urlObj;
       try {
-        urlObj = new URI(url).toURL();
+        urlObj = new URI(requestUrl).toURL();
       } catch (URISyntaxException e) {
         throw new MalformedURLException("Invalid URL: " + url);
       }
@@ -129,7 +162,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
       connection.setReadTimeout(60000);    // 60 seconds
       // Security: Disable automatic redirect following to prevent credential leakage
       connection.setInstanceFollowRedirects(false);
-      for (Map.Entry<String, String> header : headers.entrySet()) {
+      for (Map.Entry<String, String> header : requestHeaders.entrySet()) {
         connection.setRequestProperty(header.getKey(), header.getValue());
       }
       if (isSSE) {
@@ -335,8 +368,8 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
   }
 
   private static class AndroidGetBuilder extends AndroidBuilder<GetBuilder> implements GetBuilder {
-AndroidGetBuilder(SSEParserConfig sseParserConfig) {
-      super(sseParserConfig);
+AndroidGetBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
+      super(sseParserConfig, redirectHeaderPolicy);
     }
 
     @Override
@@ -366,8 +399,8 @@ AndroidGetBuilder(SSEParserConfig sseParserConfig) {
     private String body = "";
     private boolean followRedirects = false;
 
-AndroidPostBuilder(SSEParserConfig sseParserConfig) {
-      super(sseParserConfig);
+AndroidPostBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
+      super(sseParserConfig, redirectHeaderPolicy);
     }
 
     @Override
@@ -385,11 +418,40 @@ AndroidPostBuilder(SSEParserConfig sseParserConfig) {
     @Override
     public A2AHttpResponse post() throws IOException {
       HttpURLConnection connection = createConnection("POST", false);
-      connection.setInstanceFollowRedirects(followRedirects);
       connection.setDoOutput(true);
       try {
         try (OutputStream os = connection.getOutputStream()) {
           os.write(body.getBytes(StandardCharsets.UTF_8));
+        }
+        A2AHttpResponse response = execute(connection);
+        if (!followRedirects) {
+          return response;
+        }
+
+        String location = response.headers().firstValue("Location");
+        RedirectHeaderPolicy.RedirectedRequest redirect = redirectHeaderPolicy
+            .redirectedRequest(URI.create(url), response.status(), location, headers)
+            .orElse(null);
+        if (redirect == null) {
+          return response;
+        }
+        if (!RedirectHeaderPolicy.sameOrigin(URI.create(url), redirect.target())) {
+          // HttpURLConnection cannot isolate process-wide CookieHandler or Authenticator state
+          // for an individual request. Never follow across an origin boundary.
+          return response;
+        }
+
+        connection.disconnect();
+        connection = createConnection(
+            redirect.target().toString(),
+            redirect.redirectAsGet() ? "GET" : "POST",
+            redirect.headers(),
+            false);
+        if (!redirect.redirectAsGet()) {
+          connection.setDoOutput(true);
+          try (OutputStream os = connection.getOutputStream()) {
+            os.write(body.getBytes(StandardCharsets.UTF_8));
+          }
         }
         return execute(connection);
       } catch (IOException e) {
@@ -424,8 +486,8 @@ AndroidPostBuilder(SSEParserConfig sseParserConfig) {
 
   private static class AndroidDeleteBuilder extends AndroidBuilder<DeleteBuilder>
       implements DeleteBuilder {
-AndroidDeleteBuilder(SSEParserConfig sseParserConfig) {
-      super(sseParserConfig);
+AndroidDeleteBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
+      super(sseParserConfig, redirectHeaderPolicy);
     }
 
     @Override

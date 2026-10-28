@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.a2aproject.sdk.client.http.A2ACardResolver;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.spec.A2AClientError;
 import org.a2aproject.sdk.spec.A2AClientJSONError;
@@ -286,7 +287,7 @@ public class A2A {
      * @see AgentCard
      */
     public static AgentCard getAgentCard(String agentUrl) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(A2AHttpClientFactory.create(), agentUrl);
+        return getAgentCard(A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT), agentUrl);
     }
 
     /**
@@ -357,7 +358,7 @@ public class A2A {
      * @throws org.a2aproject.sdk.spec.A2AClientJSONError if the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(A2AHttpClientFactory.create(), agentUrl, relativeCardPath, authHeaders);
+        return getAgentCard(A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT), agentUrl, relativeCardPath, authHeaders);
     }
 
     /**

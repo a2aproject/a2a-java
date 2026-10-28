@@ -3,6 +3,7 @@ package org.a2aproject.sdk.extras.opentelemetry.it;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 
 /**
@@ -19,7 +20,9 @@ public class CustomHttpClientProducer {
     @Produces
     @ApplicationScoped
     A2AHttpClient customClient() {
-        return new MarkerHeaderA2AHttpClient(A2AHttpClientFactory.createExcluding("cdi"));
+        return new MarkerHeaderA2AHttpClient(A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
+                .excludedProviderNames(java.util.List.of("cdi"))
+                .build()));
     }
 
     /**

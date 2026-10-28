@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.http.android;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,6 +33,13 @@ public class AndroidA2AHttpClientProviderTest {
     public void testSupportsSseConfig() {
         AndroidA2AHttpClientProvider provider = new AndroidA2AHttpClientProvider();
         assertTrue(provider.supportsSseConfig(), "Android provider must support SSE config");
+    }
+
+    @Test
+    public void testDoesNotSupportRedirectHeaderPolicy() {
+        AndroidA2AHttpClientProvider provider = new AndroidA2AHttpClientProvider();
+        assertFalse(provider.supportsRedirectHeaderPolicy(),
+                "Android does not safely support cross-origin redirect header filtering");
     }
 
     @Test

@@ -3,12 +3,13 @@ package org.a2aproject.sdk.client.http;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Factory for creating {@link A2AHttpClient} instances using the ServiceLoader mechanism.
@@ -21,10 +22,10 @@ import java.util.stream.StreamSupport;
  * <h2>Usage</h2>
  * <pre>{@code
  * // Get the default client (highest available priority provider)
- * A2AHttpClient client = A2AHttpClientFactory.create();
+ * A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
  *
  * // Use with try-with-resources if the client implements AutoCloseable
- * try (A2AHttpClient client = A2AHttpClientFactory.create()) {
+ * try (A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)) {
  *     A2AHttpResponse response = client.createGet()
  *         .url("https://example.com")
  *         .get();
@@ -72,114 +73,112 @@ public final class A2AHttpClientFactory {
      *
      * @return a new A2AHttpClient instance
      * @throws IllegalStateException if no provider found or all providers failed to instantiate
+     * @deprecated use {@link #create(A2AHttpClientConfiguration)} with
+     *     {@link A2AHttpClientConfiguration#DEFAULT}
      */
+    @Deprecated(forRemoval = false)
     public static A2AHttpClient create() {
-        return createInternal(p -> true);
+        return create(A2AHttpClientConfiguration.DEFAULT);
     }
 
     /**
-     * Creates a new A2AHttpClient instance, skipping any provider whose name is in
-     * {@code excludedProviderNames}.
+     * Creates a client while excluding the named providers.
      *
-     * <p>This overload exists to break the CDI self-delegation cycle: a CDI producer method
-     * that itself produces an {@link A2AHttpClient} must not call the plain {@link #create()},
-     * because the CDI provider (priority 200) would re-enter the container and return the
-     * proxy being constructed — causing infinite recursion. Calling
-     * {@code createExcluding("cdi")} bypasses the CDI provider and selects the next eligible
-     * implementation (e.g. Vert.x at priority 100, or JDK at priority 0).
+     * <p>This overload is retained for source and binary compatibility. Use
+     * {@link #create(A2AHttpClientConfiguration)} with
+     * {@link A2AHttpClientConfiguration.Builder#excludedProviderNames(List)} for new code.
      *
-     * @param excludedProviderNames names of providers to skip (see {@link A2AHttpClientProvider#name()})
-     * @return a new A2AHttpClient instance from the first non-excluded provider
-     * @throws IllegalStateException if no remaining provider could be instantiated
+     * @param excludedProviderNames names of providers to skip
+     * @return a client from the highest-priority non-excluded provider
+     * @throws IllegalStateException if no eligible provider could be instantiated
+     * @deprecated use {@link #create(A2AHttpClientConfiguration)}
      */
+    @Deprecated(forRemoval = false)
     public static A2AHttpClient createExcluding(String... excludedProviderNames) {
-        Set<String> excluded = Set.of(excludedProviderNames);
-        return createInternal(p -> !excluded.contains(p.name()));
-    }
-
-    private static A2AHttpClient createInternal(Predicate<A2AHttpClientProvider> filter) {
-        return PROVIDERS.stream()
-                .filter(filter)
-                .flatMap(p -> {
-                    try {
-                        return Stream.of(p.create());
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, e, () -> "Provider " + p.name() + " skipped");
-                        return Stream.empty();
-                    }
-                })
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No A2AHttpClientProvider could be instantiated"));
+        return create(A2AHttpClientConfiguration.builder()
+                .excludedProviderNames(List.of(excludedProviderNames))
+                .build());
     }
 
     /**
-     * Creates a new A2AHttpClient instance with the given {@link SSEParserConfig} using the
-     * highest available priority provider that honours it.
+     * Creates a client with custom SSE parser settings.
      *
-     * <p>Only providers that return {@code true} from {@link A2AHttpClientProvider#supportsSseConfig()}
-     * are considered. This prevents a higher-priority provider (e.g. Vert.x at priority 100 or CDI
-     * at priority 200) from silently ignoring the supplied configuration. If no
-     * SSE-config-aware provider is available the method falls back to any available provider and
-     * logs a warning.
+     * <p>This overload is retained for source and binary compatibility. Use
+     * {@link #create(A2AHttpClientConfiguration)} with
+     * {@link A2AHttpClientConfiguration.Builder#sseParserConfig(SSEParserConfig)} for new code.
      *
-     * @param sseParserConfig the SSE parser configuration to apply
-     * @return a new A2AHttpClient instance
-     * @throws IllegalStateException if no provider found or all providers failed to instantiate
+     * @param sseParserConfig SSE parser settings, or {@code null} for defaults
+     * @return a client from the highest-priority provider that supports the settings
+     * @throws IllegalStateException if no eligible provider could be instantiated
+     * @deprecated use {@link #create(A2AHttpClientConfiguration)}
      */
+    @Deprecated(forRemoval = false)
     public static A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
-        if (sseParserConfig == null) {
-            return create();
-        }
-        // Prefer providers that explicitly support SSE config to avoid silent config loss.
-        List<A2AHttpClientProvider> sseAwareProviders = PROVIDERS.stream()
-                .filter(p -> {
-                    if (!p.supportsSseConfig()) {
-                        LOGGER.warning(() -> "Provider " + p.name()
-                                + " skipped because it does not support SSEParserConfig");
-                        return false;
-                    }
-                    return true;
-                })
-                .toList();
-        List<A2AHttpClientProvider> candidates = sseAwareProviders.isEmpty() ? PROVIDERS : sseAwareProviders;
-        if (sseAwareProviders.isEmpty()) {
-            LOGGER.warning("No A2AHttpClientProvider supports SSEParserConfig; "
-                    + "the supplied configuration may be ignored. "
-                    + "Consider using JdkA2AHttpClient.withSseConfig() directly.");
-        }
-        return candidates.stream()
-                .flatMap(p -> {
-                    try {
-                        return Stream.of(p.createWithSseConfig(sseParserConfig));
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, e, () -> "Provider " + p.name() + " skipped");
-                        return Stream.empty();
-                    }
-                })
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No A2AHttpClientProvider could be instantiated"));
+        return create(A2AHttpClientConfiguration.builder()
+                .sseParserConfig(sseParserConfig)
+                .build());
     }
 
     /**
-     * Creates a new A2AHttpClient instance using a specific provider by name.
+     * Creates a client from the named provider.
      *
-     * <p>
-     * This method is useful for testing or when you need to force a specific implementation.
+     * <p>This overload is retained for source and binary compatibility. New code should use
+     * {@link #create(A2AHttpClientConfiguration)} and exclude unwanted providers instead.
      *
-     * @param providerName the name of the provider to use
-     * @return a new A2AHttpClient instance from the specified provider
-     * @throws IllegalArgumentException if no provider with the given name is found
+     * @param providerName the provider name
+     * @return a client from the named provider
+     * @throws IllegalArgumentException if the name is null, empty, or unknown
+     * @deprecated use {@link #create(A2AHttpClientConfiguration)}
      */
+    @Deprecated(forRemoval = false)
     public static A2AHttpClient create(String providerName) {
         if (providerName == null || providerName.isEmpty()) {
             throw new IllegalArgumentException("Provider name must not be null or empty");
         }
-
         return PROVIDERS.stream()
-                .filter(p -> providerName.equals(p.name()))
+                .filter(provider -> providerName.equals(provider.name()))
                 .findFirst()
-                .map(A2AHttpClientProvider::create)
+                .map(provider -> provider.create(A2AHttpClientConfiguration.DEFAULT))
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No A2AHttpClientProvider found with name: " + providerName));
     }
+
+    /**
+     * Creates a new A2AHttpClient using the supplied selection and client configuration.
+     *
+     * <p>When SSE parser limits or a redirect-header policy are configured, providers that do
+     * not support them are skipped. This ensures configured values are never silently ignored.
+     *
+     * @param configuration provider exclusions and optional client settings
+     * @return a configured client from the highest-priority eligible provider
+     * @throws IllegalStateException if no eligible provider could be instantiated
+     */
+    public static A2AHttpClient create(A2AHttpClientConfiguration configuration) {
+        Assert.checkNotNullParam("configuration", configuration);
+        return createInternal(
+                p -> !configuration.excludedProviderNames().contains(p.name()) && supports(p, configuration),
+                configuration);
+    }
+
+    private static boolean supports(A2AHttpClientProvider provider, A2AHttpClientConfiguration configuration) {
+        return (configuration.sseParserConfig() == null || provider.supportsSseConfig())
+                && (configuration.redirectHeaderPolicy() == null || provider.supportsRedirectHeaderPolicy());
+    }
+
+    private static A2AHttpClient createInternal(
+            Predicate<A2AHttpClientProvider> filter, A2AHttpClientConfiguration configuration) {
+        return PROVIDERS.stream()
+                .filter(filter)
+                .flatMap(p -> {
+                    try {
+                        return Stream.of(p.create(configuration));
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, e, () -> "Provider " + p.name() + " skipped");
+                        return Stream.empty();
+                    }
+                })
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No A2AHttpClientProvider could be instantiated"));
+    }
+
 }

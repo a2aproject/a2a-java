@@ -24,6 +24,23 @@ public interface A2AHttpClientProvider {
     A2AHttpClient create();
 
     /**
+     * Creates a client using the supplied factory configuration.
+     *
+     * <p>The default implementation supports SSE parser configuration when this provider
+     * advertises {@link #supportsSseConfig()}; providers that support redirect-header policies
+     * should override this method to apply them.
+     *
+     * @param configuration the factory configuration
+     * @return a new A2AHttpClient instance
+     */
+    default A2AHttpClient create(A2AHttpClientConfiguration configuration) {
+        if (configuration.sseParserConfig() != null) {
+            return createWithSseConfig(configuration.sseParserConfig());
+        }
+        return create();
+    }
+
+    /**
      * Creates a new instance of an A2AHttpClient with the given {@link SSEParserConfig}.
      *
      * <p>Providers that support SSE parser configuration should override both this method
@@ -43,8 +60,8 @@ public interface A2AHttpClientProvider {
      *
      * <p>Providers that override {@link #createWithSseConfig} to actually apply the
      * configuration must also override this method and return {@code true}; the
-     * {@link A2AHttpClientFactory#createWithSseConfig} method uses this flag to skip
-     * providers that would silently ignore the supplied configuration.
+     * {@link A2AHttpClientFactory#create(A2AHttpClientConfiguration)} method uses this flag
+     * to skip providers that would silently ignore the supplied configuration.
      *
      * <p>The default is {@code false}, matching the default no-op implementation of
      * {@link #createWithSseConfig}.
@@ -52,6 +69,15 @@ public interface A2AHttpClientProvider {
      * @return {@code true} if this provider applies the given {@link SSEParserConfig}
      */
     default boolean supportsSseConfig() {
+        return false;
+    }
+
+    /**
+     * Returns whether this provider honours a configured {@link RedirectHeaderPolicy}.
+     *
+     * @return {@code true} if this provider applies redirect-header policies
+     */
+    default boolean supportsRedirectHeaderPolicy() {
         return false;
     }
 

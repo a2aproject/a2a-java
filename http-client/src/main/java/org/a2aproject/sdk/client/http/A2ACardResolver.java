@@ -209,7 +209,9 @@ public class A2ACardResolver {
          * @throws IllegalArgumentException if baseUrl is null
          */
         public A2ACardResolver build() throws A2AClientError {
-            A2AHttpClient client = httpClient != null ? httpClient : A2AHttpClientFactory.create();
+            A2AHttpClient client = httpClient != null
+                    ? httpClient
+                    : A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
             if (baseUrl == null) {
                 throw new IllegalArgumentException("baseUrl must not be null");
             }

@@ -5,6 +5,8 @@ import java.util.logging.Logger;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
 
 /**
  * Service provider for {@link VertxA2AHttpClient}.
@@ -52,6 +54,31 @@ public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create VertxA2AHttpClient instance", e);
         }
+    }
+
+    @Override
+    public A2AHttpClient create(A2AHttpClientConfiguration configuration) {
+        if (configuration.redirectHeaderPolicy() == null) {
+            return create();
+        }
+        if (!VERTX_AVAILABLE) {
+            throw new IllegalStateException(
+                    "Vert.x classes are not available on the classpath. "
+                    + "Add io.vertx:vertx-web-client dependency or use the JDK HTTP client implementation.");
+        }
+        try {
+            Class<?> clientClass = Class.forName("org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient");
+            return (A2AHttpClient) clientClass
+                    .getMethod("withRedirectHeaderPolicy", RedirectHeaderPolicy.class)
+                    .invoke(null, configuration.redirectHeaderPolicy());
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create VertxA2AHttpClient instance", e);
+        }
+    }
+
+    @Override
+    public boolean supportsRedirectHeaderPolicy() {
+        return true;
     }
 
     @Override

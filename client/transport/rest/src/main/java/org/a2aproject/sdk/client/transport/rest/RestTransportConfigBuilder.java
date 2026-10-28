@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.rest;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfigBuilder;
 import org.jspecify.annotations.Nullable;
@@ -65,6 +66,7 @@ import org.jspecify.annotations.Nullable;
 public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<RestTransportConfig, RestTransportConfigBuilder> {
 
     private @Nullable A2AHttpClient httpClient;
+    private A2AHttpClientConfiguration httpClientConfiguration = A2AHttpClientConfiguration.DEFAULT;
 
     /**
      * Set the HTTP client to use for REST requests.
@@ -98,6 +100,13 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
         return this;
     }
 
+    /** Sets the configuration used when this builder creates the HTTP client. */
+    public RestTransportConfigBuilder httpClientConfiguration(A2AHttpClientConfiguration httpClientConfiguration) {
+        this.httpClientConfiguration = org.a2aproject.sdk.util.Assert.checkNotNullParam(
+                "httpClientConfiguration", httpClientConfiguration);
+        return this;
+    }
+
     /**
      * Build the REST transport configuration.
      * <p>
@@ -110,7 +119,7 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
     public RestTransportConfig build() {
         // No HTTP client provided, use factory to get best available implementation
         if (httpClient == null) {
-            httpClient = A2AHttpClientFactory.create();
+            httpClient = A2AHttpClientFactory.create(httpClientConfiguration);
         }
 
         RestTransportConfig config = new RestTransportConfig(httpClient);

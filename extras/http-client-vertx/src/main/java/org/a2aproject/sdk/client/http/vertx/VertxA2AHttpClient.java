@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.util.Assert;
@@ -93,8 +94,10 @@ import org.jspecify.annotations.Nullable;
  * for a specific POST request, call
  * {@link PostBuilder#followRedirects(boolean) followRedirects(true)} on the builder.
  * When enabled, 301/302/303 responses are followed as a GET to the {@code Location}
- * header (RFC 7231 semantics), and 307/308 responses are followed as a POST with the
- * original body (RFC 7538 semantics). At most one redirect hop is followed.
+ * header (RFC 7231 semantics). 307/308 responses are followed as a POST with the original body
+ * (RFC 7538 semantics), but only when the redirect target has the same origin. At most one
+ * redirect hop is followed. Cross-origin redirects retain only safe request metadata, and
+ * POST-to-GET redirects remove entity headers.
  *
  * <h2>Usage Examples</h2>
  *
@@ -143,11 +146,12 @@ import org.jspecify.annotations.Nullable;
  */
 public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
 
+    private static final Logger LOGGER = Logger.getLogger(VertxA2AHttpClient.class.getName());
     private final Vertx vertx;
     private final WebClient webClient;
     private final HttpClient httpClient;
+    private final RedirectHeaderPolicy redirectHeaderPolicy;
     private boolean ownsVertx;
-    private static final Logger LOGGER = Logger.getLogger(VertxA2AHttpClient.class.getName());
 
     /**
      * Creates a new VertxA2AHttpClient with an internally managed Vert.x instance.
@@ -165,7 +169,27 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * @see #VertxA2AHttpClient(Vertx) for using an externally managed Vertx instance
      */
     public VertxA2AHttpClient() {
-        this.vertx = createVertx();
+        this(createVertx(), RedirectHeaderPolicy.DEFAULT);
+    }
+
+    /**
+     * Creates a new Vert.x HTTP client with a custom redirect header policy.
+     *
+     * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+     * @return a client with an internally managed Vert.x instance and supplied redirect policy
+     */
+    public static VertxA2AHttpClient withRedirectHeaderPolicy(RedirectHeaderPolicy redirectHeaderPolicy) {
+        return new VertxA2AHttpClient(createVertx(), redirectHeaderPolicy);
+    }
+
+    private VertxA2AHttpClient(ManagedVertx managedVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
+        this(managedVertx.vertx(), managedVertx.ownsVertx(), redirectHeaderPolicy);
+    }
+
+    private VertxA2AHttpClient(Vertx vertx, boolean ownsVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
+        this.vertx = Assert.checkNotNullParam("vertx", vertx);
+        this.ownsVertx = ownsVertx;
+        this.redirectHeaderPolicy = Assert.checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
         WebClientOptions options = new WebClientOptions()
                 .setFollowRedirects(false)
                 .setKeepAlive(true);
@@ -174,22 +198,23 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
        LOGGER.fine("Vert.x client is ready.");
     }
 
-    private Vertx createVertx() {
+    private static ManagedVertx createVertx() {
         try {
             BeanManager beanManager = CDI.current().getBeanManager();
             Set<Bean<?>> beans = beanManager.getBeans(Vertx.class);
             if (beans != null && !beans.isEmpty()) {
-                this.ownsVertx = false;
                 Bean<?> bean = beans.iterator().next();
                 CreationalContext<?> context = beanManager.createCreationalContext(bean);
-                return (Vertx) beanManager.getReference(bean, Vertx.class, context);
+                return new ManagedVertx(
+                        (Vertx) beanManager.getReference(bean, Vertx.class, context), false);
             }
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, "Error loading vertx from CDI error details", ex);
         }
-        this.ownsVertx = true;
-        return Vertx.vertx();
+        return new ManagedVertx(Vertx.vertx(), true);
     }
+
+    private record ManagedVertx(Vertx vertx, boolean ownsVertx) {}
 
     /**
      * Creates a new VertxA2AHttpClient using an externally managed Vert.x instance.
@@ -208,14 +233,17 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * @throws IllegalArgumentException if vertx is null
      */
     public VertxA2AHttpClient(Vertx vertx) {
-        this.vertx = Assert.checkNotNullParam("vertx", vertx);
-        this.ownsVertx = false;
-        WebClientOptions options = new WebClientOptions()
-                .setFollowRedirects(false)
-                .setKeepAlive(true);
-        this.webClient = WebClient.create(vertx, options);
-        this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
-        LOGGER.fine("Vert.x client is ready.");
+        this(vertx, false, RedirectHeaderPolicy.DEFAULT);
+    }
+
+    /**
+     * Creates a new Vert.x HTTP client using an external Vert.x instance and custom redirect policy.
+     *
+     * @param vertx the Vert.x instance to use; must not be null
+     * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+     */
+    public VertxA2AHttpClient(Vertx vertx, RedirectHeaderPolicy redirectHeaderPolicy) {
+        this(vertx, false, redirectHeaderPolicy);
     }
 
     /**
@@ -534,28 +562,6 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         }
     }
 
-    /**
-     * Resolves an HTTP {@code Location} header value against the original request URI.
-     *
-     * <p>Per RFC 9110 10.2.2 (and RFC 7231 before it) a {@code Location} may be a relative
-     * reference such as {@code /collect}; RFC 3986 5 reference resolution turns it into the
-     * effective target URI. An already-absolute {@code Location} is returned unchanged. A
-     * malformed base or location falls back to the raw value so any existing handling still
-     * applies.
-     *
-     * @param requestUri the original (absolute) request URI the redirect responded to
-     * @param location the raw {@code Location} header value
-     * @return the absolute redirect target
-     */
-    // Package-private for direct unit testing of RFC 3986 reference resolution.
-    static String resolveRedirectLocation(String requestUri, String location) {
-        try {
-            return URI.create(requestUri).resolve(location).toString();
-        } catch (IllegalArgumentException e) {
-            return location;
-        }
-    }
-
     private class VertxPostBuilder extends VertxBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
 
         private String body = "";
@@ -594,15 +600,25 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 int statusCode = response.status();
                 String location = response.headers().firstValue("Location");
                 if (location != null) {
-                    // RFC 9110 10.2.2 permits a relative Location (e.g. /collect); resolve it
-                    // against the original request URI per RFC 3986 5 before following.
-                    String resolvedLocation = resolveRedirectLocation(url, location);
-                    if (statusCode == 301 || statusCode == 302 || statusCode == 303) {
+                    RedirectHeaderPolicy.RedirectedRequest redirect;
+                    try {
+                        redirect = redirectHeaderPolicy.redirectedRequest(URI.create(url), statusCode, location, headers)
+                                .orElse(null);
+                    } catch (IllegalArgumentException e) {
+                        LOGGER.fine("Not following redirect with malformed Location: " + location);
+                        return response;
+                    }
+                    if (redirect == null) {
+                        return response;
+                    }
+                    if (redirect.redirectAsGet()) {
                         // RFC 7231: 301/302/303 redirect POST as GET; 307/308 would preserve the method
-                        return executeSyncRequest(webClient.getAbs(resolvedLocation), headers, null);
-                    } else if (statusCode == 307 || statusCode == 308) {
+                        return executeSyncRequest(
+                                webClient.getAbs(redirect.target().toString()), redirect.headers(), null);
+                    } else {
                         // RFC 7538: 307/308 must repeat the request with the original method and body
-                        return executeSyncRequest(webClient.postAbs(resolvedLocation), headers, bodyBuffer);
+                        return executeSyncRequest(
+                                webClient.postAbs(redirect.target().toString()), redirect.headers(), bodyBuffer);
                     }
                 }
             }

@@ -3,6 +3,7 @@ package org.a2aproject.sdk.client.http.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +22,13 @@ import okhttp3.ResponseBody;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Test-only {@link A2AHttpClient} backed by OkHttp, simulating Android's HTTP stack.
@@ -116,7 +119,12 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
         }
 
         protected Request.Builder applyHeaders(Request.Builder builder) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
+            return applyHeaders(builder, headers);
+        }
+
+        protected Request.Builder applyHeaders(
+                Request.Builder builder, Map<String, String> requestHeaders) {
+            for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
                 builder.addHeader(entry.getKey(), entry.getValue());
             }
             return builder;
@@ -286,13 +294,41 @@ OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
 
         @Override
         public A2AHttpResponse post() throws IOException {
-            OkHttpClient client = buildClient(followRedirects);
+            OkHttpClient client = buildClient(false);
             Request request = applyHeaders(
                     new Request.Builder().url(url)
                             .post(RequestBody.create(body, JSON)))
                     .build();
             try (Response response = client.newCall(request).execute()) {
+                RedirectHeaderPolicy.RedirectedRequest redirect = redirectedRequest(response);
+                if (redirect != null) {
+                    Request.Builder redirectRequest = applyHeaders(
+                            new Request.Builder().url(redirect.target().toString()), redirect.headers());
+                    Request followUpRequest = redirect.redirectAsGet()
+                            ? redirectRequest.get().build()
+                            : redirectRequest.post(RequestBody.create(body, JSON)).build();
+                    try (Response followUpResponse = client.newCall(followUpRequest).execute()) {
+                        return toResponse(followUpResponse);
+                    }
+                }
                 return toResponse(response);
+            }
+        }
+
+        private RedirectHeaderPolicy.@Nullable RedirectedRequest redirectedRequest(Response response) {
+            if (!followRedirects) {
+                return null;
+            }
+            String location = response.header("Location");
+            if (location == null) {
+                return null;
+            }
+            try {
+                return RedirectHeaderPolicy.DEFAULT
+                        .redirectedRequest(URI.create(url), response.code(), location, headers)
+                        .orElse(null);
+            } catch (IllegalArgumentException e) {
+                return null;
             }
         }
 

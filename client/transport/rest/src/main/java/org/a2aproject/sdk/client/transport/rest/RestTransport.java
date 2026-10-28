@@ -29,6 +29,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.common.A2AHeaders;
@@ -77,7 +78,7 @@ public class RestTransport implements ClientTransport {
 
     public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors) {
-        this.httpClient = httpClient == null ? A2AHttpClientFactory.create() : httpClient;
+        this.httpClient = httpClient == null ? A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT) : httpClient;
         this.agentCard = agentCard;
         this.agentInterface = agentInterface;
         this.interceptors = interceptors;

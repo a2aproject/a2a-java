@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.jsonrpc;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfigBuilder;
 import org.jspecify.annotations.Nullable;
@@ -65,6 +66,7 @@ import org.jspecify.annotations.Nullable;
 public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<JSONRPCTransportConfig, JSONRPCTransportConfigBuilder> {
 
     private @Nullable A2AHttpClient httpClient;
+    private A2AHttpClientConfiguration httpClientConfiguration = A2AHttpClientConfiguration.DEFAULT;
 
     /**
      * Set the HTTP client to use for JSON-RPC requests.
@@ -98,6 +100,13 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
         return this;
     }
 
+    /** Sets the configuration used when this builder creates the HTTP client. */
+    public JSONRPCTransportConfigBuilder httpClientConfiguration(A2AHttpClientConfiguration httpClientConfiguration) {
+        this.httpClientConfiguration = org.a2aproject.sdk.util.Assert.checkNotNullParam(
+                "httpClientConfiguration", httpClientConfiguration);
+        return this;
+    }
+
     /**
      * Build the JSON-RPC transport configuration.
      * <p>
@@ -110,7 +119,7 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
     public JSONRPCTransportConfig build() {
         // No HTTP client provided, use factory to get best available implementation
         if (httpClient == null) {
-            httpClient = A2AHttpClientFactory.create();
+            httpClient = A2AHttpClientFactory.create(httpClientConfiguration);
         }
 
         JSONRPCTransportConfig config = new JSONRPCTransportConfig(httpClient);

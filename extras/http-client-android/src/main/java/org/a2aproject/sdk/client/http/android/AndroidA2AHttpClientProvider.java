@@ -2,6 +2,8 @@ package org.a2aproject.sdk.client.http.android;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
 
 /**
@@ -40,8 +42,25 @@ public final class AndroidA2AHttpClientProvider implements A2AHttpClientProvider
     }
 
     @Override
+    public A2AHttpClient create(A2AHttpClientConfiguration configuration) {
+        if (!ANDROID_AVAILABLE) {
+            throw new IllegalStateException(
+                    "Android classes are not available. This provider is only supported on Android.");
+        }
+        return new AndroidA2AHttpClient(
+                configuration.sseParserConfigOrDefault(), configuration.redirectHeaderPolicyOrDefault());
+    }
+
+    @Override
     public boolean supportsSseConfig() {
         return true;
+    }
+
+    @Override
+    public boolean supportsRedirectHeaderPolicy() {
+        // Android intentionally does not follow cross-origin redirects, which is the only
+        // redirect type for which RedirectHeaderPolicy changes the forwarded headers.
+        return false;
     }
 
     @Override

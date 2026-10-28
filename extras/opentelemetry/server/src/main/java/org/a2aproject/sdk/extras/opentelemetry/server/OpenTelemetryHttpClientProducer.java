@@ -16,6 +16,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.server.Instrumented;
 import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
@@ -37,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * mTLS, a proxy, or custom timeouts), this producer wraps that bean so the
  * application's HTTP configuration is preserved. When no CDI-provided bean
  * exists, the delegate falls back to
- * {@link A2AHttpClientFactory#createExcluding(String...)} with the
+ * {@link A2AHttpClientFactory#create(A2AHttpClientConfiguration)} with the
  * {@code "cdi"} provider excluded (to avoid the self-delegation cycle
  * that would otherwise occur when the CDI provider re-enters the container).
  *
@@ -77,7 +78,7 @@ public class OpenTelemetryHttpClientProducer {
      *   <li>An application-provided unqualified {@link A2AHttpClient} CDI bean
      *       (custom mTLS, proxy, auth, etc.)</li>
      *   <li>A factory-created client via
-     *       {@link A2AHttpClientFactory#createExcluding(String...)} with the
+     *       {@link A2AHttpClientFactory#create(A2AHttpClientConfiguration)} with the
      *       {@code "cdi"} provider excluded to prevent recursive CDI
      *       self-delegation</li>
      * </ol>
@@ -92,7 +93,9 @@ public class OpenTelemetryHttpClientProducer {
     A2AHttpClient createPropagatingClient(Instance<A2AHttpClient> httpClient) {
         A2AHttpClient delegate = httpClient.isResolvable()
                 ? httpClient.get()
-                : A2AHttpClientFactory.createExcluding(CDI_PROVIDER_NAME);
+                : A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
+                        .excludedProviderNames(java.util.List.of(CDI_PROVIDER_NAME))
+                        .build());
         return new OpenTelemetryA2AHttpClient(delegate, openTelemetry);
     }
 
