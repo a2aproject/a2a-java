@@ -39,9 +39,10 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
  *   <li>Asynchronous Server-Sent Events (SSE) streaming</li>
  * </ul>
  *
- * <p><b>Security Note:</b> The default client does not follow HTTP redirects
- * automatically to prevent credential leakage to third-party origins. To enable
- * one-hop redirect following for a POST request, call
+ * <p><b>Security Note:</b> GET, DELETE, and GET SSE requests always use an internal
+ * no-redirect client to prevent credential leakage, regardless of the redirect policy
+ * configured on the supplied {@link HttpClient}. POST requests do not follow HTTP redirects
+ * automatically either. To enable one-hop redirect following for a POST request, call
  * {@link org.a2aproject.sdk.client.http.A2AHttpClient.PostBuilder#followRedirects(boolean)
  * followRedirects(true)} on the builder. Redirect headers are filtered by
  * {@link RedirectHeaderPolicy}.
@@ -143,9 +144,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     /**
      * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}.
      *
-     * <p>This constructor allows full control over the {@link HttpClient} configuration.
-     * The caller is responsible for ensuring the client is configured securely. In particular,
-     * when enabling POST redirect following, the supplied client must use
+     * <p>This constructor allows full control over the {@link HttpClient} configuration,
+     * such as custom SSL settings, proxy, or executor. GET, DELETE, and GET SSE requests
+     * always route through an internal no-redirect clone of the supplied client, so their
+     * redirect policy is enforced by the SDK regardless of the policy set on the supplied
+     * {@link HttpClient}.
+     *
+     * <p>For POST redirect following, the supplied client must use
      * {@link HttpClient.Redirect#NEVER}; the SDK applies its redirect header policy before
      * issuing the follow-up request.
      *
@@ -260,14 +265,6 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 builder.header(headerEntry.getKey(), headerEntry.getValue());
             }
             return builder;
-        }
-
-        protected CompletableFuture<Void> asyncRequest(
-                HttpRequest request,
-                Consumer<ServerSentEvent> messageConsumer,
-                Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) {
-            return asyncRequest(httpClient, request, messageConsumer, errorConsumer, completeRunnable);
         }
 
         protected CompletableFuture<Void> asyncRequest(
@@ -400,6 +397,22 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
     private class JdkGetBuilder extends JdkBuilder<GetBuilder> implements A2AHttpClient.GetBuilder {
 
+        private boolean followRedirects = false;
+
+        @Override
+        public GetBuilder followRedirects(boolean follow) {
+            this.followRedirects = follow;
+            return self();
+        }
+
+        private HttpClient resolveClient() throws IOException {
+            if (followRedirects && httpClient.followRedirects() != HttpClient.Redirect.NEVER) {
+                throw new IOException(
+                        "The supplied HttpClient must disable native redirects when followRedirects(true) is used");
+            }
+            return followRedirects ? httpClient : getNoRedirectClient();
+        }
+
         private HttpRequest.Builder createRequestBuilder(boolean SSE) throws IOException {
             HttpRequest.Builder builder = super.createRequestBuilder().GET();
             if (SSE) {
@@ -410,10 +423,23 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         @Override
         public A2AHttpResponse get() throws IOException, InterruptedException {
-            HttpRequest request = createRequestBuilder(false)
-                    .build();
-            HttpResponse<String> response =
-                    httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+            HttpRequest request = createRequestBuilder(false).build();
+            HttpResponse<String> response = resolveClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+            if (followRedirects) {
+                String location = response.headers().firstValue("Location").orElse(null);
+                RedirectHeaderPolicy.RedirectedRequest redirect = redirectHeaderPolicy
+                        .redirectedRequest(request.uri(), response.statusCode(), location, headers)
+                        .orElse(null);
+                if (redirect != null) {
+                    HttpClient redirectClient = RedirectHeaderPolicy.sameOrigin(request.uri(), redirect.target())
+                            ? resolveClient()
+                            : getCredentialFreeNoRedirectClient();
+                    HttpRequest redirectRequest = createRequestBuilder(redirect.target(), redirect.headers())
+                            .GET().build();
+                    response = redirectClient.send(redirectRequest, BodyHandlers.ofString(StandardCharsets.UTF_8));
+                }
+            }
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
@@ -435,7 +461,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 Runnable completeRunnable) throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(true)
                     .build();
-            return super.asyncRequest(request, messageConsumer, errorConsumer, completeRunnable);
+            return super.asyncRequest(getNoRedirectClient(), request, messageConsumer, errorConsumer, completeRunnable);
         }
 
     }
@@ -446,7 +472,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         public A2AHttpResponse delete() throws IOException, InterruptedException {
             HttpRequest request = super.createRequestBuilder().DELETE().build();
             HttpResponse<String> response =
-                    httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+                    getNoRedirectClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
@@ -464,6 +490,9 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     }
 
     private HttpClient getNoRedirectClient() {
+        if (httpClient.followRedirects() == HttpClient.Redirect.NEVER) {
+            return httpClient;
+        }
         HttpClient local = noRedirectClient;
         if (local == null) {
             synchronized (this) {

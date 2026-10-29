@@ -45,6 +45,67 @@ public abstract class AbstractA2AHttpClientRedirectTest {
     }
 
     @Test
+    public void synchronousGetDoesNotFollowRedirectByDefault() throws Exception {
+        redirector = ClientAndServer.startClientAndServer(0);
+        redirector.when(request().withMethod("GET").withPath("/agent"))
+                .respond(response()
+                        .withStatusCode(302)
+                        .withHeader("Location", "/target"));
+        redirector.when(request().withMethod("GET").withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        A2AHttpResponse result = createClient().createGet()
+                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
+                .get();
+
+        assertEquals(302, result.status(),
+                "Synchronous GET must not follow redirects by default");
+        redirector.verify(request().withPath("/target"), exactly(0));
+    }
+
+    @Test
+    public void synchronousGetFollowsRedirectWhenExplicitlyEnabled() throws Exception {
+        redirector = ClientAndServer.startClientAndServer(0);
+        redirector.when(request().withMethod("GET").withPath("/agent"))
+                .respond(response()
+                        .withStatusCode(302)
+                        .withHeader("Location", "/target"));
+        redirector.when(request().withMethod("GET").withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        A2AHttpResponse result = createClient().createGet()
+                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
+                .followRedirects(true)
+                .get();
+
+        assertEquals(200, result.status(),
+                "Synchronous GET must follow redirect when explicitly enabled");
+        redirector.verify(request().withPath("/target"), exactly(1));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {307, 308})
+    public void synchronousGetDoesNotFollowCrossOriginMethodPreservingRedirect(int redirectStatus)
+            throws Exception {
+        redirector = ClientAndServer.startClientAndServer(0);
+        collector = ClientAndServer.startClientAndServer(0);
+        String location = "http://127.0.0.1:" + collector.getLocalPort() + "/collect";
+        redirector.when(request().withMethod("GET").withPath("/agent"))
+                .respond(response().withStatusCode(redirectStatus).withHeader("Location", location));
+        collector.when(request().withMethod("GET").withPath("/collect"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        A2AHttpResponse result = createClient().createGet()
+                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
+                .followRedirects(true)
+                .get();
+
+        assertEquals(redirectStatus, result.status(),
+                "GET 307/308 redirects are deliberately not followed across origins");
+        collector.verify(request().withPath("/collect"), exactly(0));
+    }
+
+    @Test
     public void synchronousPostDoesNotFollowRedirectByDefault() throws Exception {
         startRedirectPair();
 

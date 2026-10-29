@@ -238,8 +238,16 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     }
 
     private static class OkHttpGetBuilder extends OkHttpBuilder<GetBuilder> implements GetBuilder {
+        private boolean followRedirects = false;
+
 OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
             super(sseParserConfig);
+        }
+
+        @Override
+        public GetBuilder followRedirects(boolean follow) {
+            this.followRedirects = follow;
+            return self();
         }
 
         @Override
@@ -247,6 +255,27 @@ OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
             OkHttpClient client = buildClient(false);
             Request request = applyHeaders(new Request.Builder().url(url).get()).build();
             try (Response response = client.newCall(request).execute()) {
+                if (followRedirects) {
+                    String location = response.header("Location");
+                    if (location != null) {
+                        RedirectHeaderPolicy.@Nullable RedirectedRequest redirect;
+                        try {
+                            redirect = RedirectHeaderPolicy.DEFAULT
+                                    .redirectedRequest(URI.create(url), response.code(), location, headers)
+                                    .orElse(null);
+                        } catch (IllegalArgumentException e) {
+                            redirect = null;
+                        }
+                        if (redirect != null) {
+                            Request followUpRequest = applyHeaders(
+                                    new Request.Builder().url(redirect.target().toString()), redirect.headers())
+                                    .get().build();
+                            try (Response followUpResponse = client.newCall(followUpRequest).execute()) {
+                                return toResponse(followUpResponse);
+                            }
+                        }
+                    }
+                }
                 return toResponse(response);
             }
         }

@@ -21,7 +21,8 @@ public class RestTransportProvider implements ClientTransportProvider<RestTransp
          if (transportConfig == null) {
             transportConfig = new RestTransportConfig(A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT));
         }
-        return new RestTransport(transportConfig.getHttpClient(), agentCard, agentInterface, transportConfig.getInterceptors());
+        return new RestTransport(transportConfig.getHttpClient(), agentCard, agentInterface,
+                transportConfig.getInterceptors(), transportConfig.isFollowRedirects());
     }
 
     @Override

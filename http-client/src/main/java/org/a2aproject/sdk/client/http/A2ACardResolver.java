@@ -288,6 +288,7 @@ public class A2ACardResolver {
     private AgentCard fetchAgentCard(String url) throws A2AClientError, A2AClientJSONError {
         A2AHttpClient.GetBuilder builder = httpClient.createGet()
                 .url(url)
+                .followRedirects(true)
                 .addHeader("Content-Type", "application/json");
 
         if (authHeaders != null) {

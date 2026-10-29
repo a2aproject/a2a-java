@@ -113,6 +113,24 @@ public interface A2AHttpClient {
      */
     interface GetBuilder extends Builder<GetBuilder> {
         /**
+         * Controls whether the HTTP client follows at most one redirect for this synchronous
+         * GET request. When set to {@code true}, the SDK issues a follow-up GET to the
+         * {@code Location} URL with headers filtered by {@link RedirectHeaderPolicy} to
+         * prevent credential leakage. {@code getAsyncSSE} is never redirected regardless of
+         * this flag.
+         *
+         * <p><strong>Note for implementors:</strong> The default implementation is a no-op.
+         * Third-party {@link A2AHttpClient} implementations MUST override this method to
+         * honour the setting.
+         *
+         * @param follow {@code true} to follow one redirect hop, {@code false} to disable (default)
+         * @return this builder for chaining
+         */
+        default GetBuilder followRedirects(boolean follow) {
+            return this;
+        }
+
+        /**
          * Executes a synchronous GET request.
          *
          * @return the HTTP response
@@ -155,7 +173,7 @@ public interface A2AHttpClient {
         PostBuilder body(String body);
 
         /**
-         * Controls whether the HTTP client follows redirects for this request.
+         * Controls whether the HTTP client follows redirects for this synchronous POST request.
          * When set to {@code false}, redirect responses (3xx) are returned as-is
          * instead of being followed automatically.
          *
@@ -186,6 +204,8 @@ public interface A2AHttpClient {
 
         /**
          * Executes an asynchronous POST request expecting Server-Sent Events (SSE).
+         * Redirect following is not supported for streaming requests; redirect responses are
+         * delivered to the configured callbacks as ordinary non-SSE responses.
          *
          * <p>The request will stream SSE messages asynchronously, invoking the provided
          * consumers for each event, error, or completion.

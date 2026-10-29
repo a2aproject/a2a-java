@@ -115,6 +115,12 @@ class OpenTelemetryA2AHttpClient implements A2AHttpClient {
         }
 
         @Override
+        public GetBuilder followRedirects(boolean follow) {
+            delegate.followRedirects(follow);
+            return this;
+        }
+
+        @Override
         public A2AHttpResponse get() throws IOException, InterruptedException {
             injectContextIntoDelegate();
             return delegate.get();

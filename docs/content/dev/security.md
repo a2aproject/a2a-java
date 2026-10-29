@@ -43,15 +43,29 @@ Additionally, API keys are only injected when the security scheme explicitly spe
 
 ## HTTP Redirect Handling
 
-SDK-managed HTTP clients do not follow redirects automatically by default. When explicitly enabled
-on a synchronous POST builder with `followRedirects(true)`, they follow at most one HTTP(S)
-redirect and apply the shared `RedirectHeaderPolicy`. JDK and Vert.x clients follow cross-origin
-301, 302, and 303 redirects as GET requests with only the default safe headers, including
-`A2A-Version` and `A2A-Extensions`, unless additional headers are configured for that exact target
-origin. No client follows a cross-origin 307 or 308 redirect, so the original POST body is never
-forwarded to another origin. HTTPS-to-HTTP redirects are not followed; the client returns the
-original redirect response. Redirect following does not apply to
-`postAsyncSSE()`.
+SDK-managed HTTP clients do not follow redirects automatically by default. A synchronous GET can
+opt into one redirect hop with `followRedirects(true)`; this is enabled automatically for agent
+card discovery. A synchronous POST can opt in the same way. Redirect following never applies to
+SSE streaming methods (`getAsyncSSE()` and `postAsyncSSE()`).
+
+JDK and Vert.x clients follow cross-origin 301, 302, and 303 redirects as GET requests with only
+the default safe headers, including `A2A-Version` and `A2A-Extensions`, unless additional headers
+are configured for that exact target origin. No client follows a cross-origin 307 or 308 redirect,
+so the original POST body is never forwarded to another origin. GET requests also deliberately do
+not follow 307 or 308 redirects, even though they have no body: GET and POST share the same
+conservative redirect policy to keep method-preserving redirects consistent. HTTPS-to-HTTP
+redirects are not followed; the client returns the original redirect response.
+
+For example, an application can enable a redirect for a regular GET request:
+
+```java
+A2AHttpResponse response = client.createGet()
+    .url("https://agent.example/.well-known/agent-card.json")
+    .followRedirects(true)
+    .get();
+```
+
+`A2ACardResolver` and `A2A.getAgentCard(...)` enable this setting when retrieving an agent card.
 
 ### JDK HTTP Client
 
@@ -82,11 +96,11 @@ redirect policy. `postAsyncSSE()` does not follow redirects.
 
 The `AndroidA2AHttpClient` disables automatic redirect following by calling
 `setInstanceFollowRedirects(false)` on all `HttpURLConnection` instances. Use
-`followRedirects(true)` on a synchronous `post()` builder to enable same-origin one-hop
-redirects. Android always returns the original redirect response for a cross-origin target:
+`followRedirects(true)` on a synchronous `get()` or `post()` builder to enable same-origin
+one-hop redirects. Android always returns the original redirect response for a cross-origin target:
 `HttpURLConnection` cannot isolate process-wide `CookieHandler` or `Authenticator` state for an
 individual follow-up request, and those globals can change concurrently.
-`postAsyncSSE()` does not follow redirects.
+Neither `getAsyncSSE()` nor `postAsyncSSE()` follows redirects.
 
 ## Best Practices
 

@@ -535,6 +535,14 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
 
     private class VertxGetBuilder extends VertxBuilder<GetBuilder> implements A2AHttpClient.GetBuilder {
 
+        private boolean followRedirects = false;
+
+        @Override
+        public GetBuilder followRedirects(boolean follow) {
+            this.followRedirects = follow;
+            return self();
+        }
+
         /**
          * {@inheritDoc}
          *
@@ -549,7 +557,26 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
          */
         @Override
         public A2AHttpResponse get() throws IOException, InterruptedException {
-            return executeSyncRequest(webClient.getAbs(url), headers, null);
+            A2AHttpResponse response = executeSyncRequest(webClient.getAbs(url), headers, null);
+            if (followRedirects) {
+                String location = response.headers().firstValue("Location");
+                if (location != null) {
+                    RedirectHeaderPolicy.RedirectedRequest redirect;
+                    try {
+                        redirect = redirectHeaderPolicy
+                                .redirectedRequest(URI.create(url), response.status(), location, headers)
+                                .orElse(null);
+                    } catch (IllegalArgumentException e) {
+                        LOGGER.fine("Not following redirect with malformed Location: " + location);
+                        return response;
+                    }
+                    if (redirect != null) {
+                        return executeSyncRequest(
+                                webClient.getAbs(redirect.target().toString()), redirect.headers(), null);
+                    }
+                }
+            }
+            return response;
         }
 
         @Override

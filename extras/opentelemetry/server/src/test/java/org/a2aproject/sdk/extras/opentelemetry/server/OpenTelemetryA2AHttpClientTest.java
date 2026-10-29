@@ -166,6 +166,14 @@ class OpenTelemetryA2AHttpClientTest {
     }
 
     @Test
+    void getBuilder_delegatesRedirectFollowing() {
+        A2AHttpClient.GetBuilder chained = client.createGet().followRedirects(true);
+
+        assertNotNull(chained);
+        verify(delegateGetBuilder).followRedirects(true);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void contextInjection_propagatesHeadersViaAddHeaders() throws IOException, InterruptedException {
         when(delegatePostBuilder.post()).thenReturn(response);

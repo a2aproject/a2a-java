@@ -18,7 +18,8 @@ public class JSONRPCTransportProvider implements ClientTransportProvider<JSONRPC
             currentClientTransportConfig = new JSONRPCTransportConfig(
                     A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT));
         }
-        return new JSONRPCTransport(currentClientTransportConfig.getHttpClient(), agentCard, agentInterface, currentClientTransportConfig.getInterceptors());
+        return new JSONRPCTransport(currentClientTransportConfig.getHttpClient(), agentCard, agentInterface,
+                currentClientTransportConfig.getInterceptors(), currentClientTransportConfig.isFollowRedirects());
     }
 
     @Override
