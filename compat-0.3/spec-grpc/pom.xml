@@ -131,7 +131,7 @@
                                 <skip>${skip.protobuf.generate}</skip>
                                 <cleanOutputDirectories>true</cleanOutputDirectories>
                                 <protoc kind="binary-maven">
-                                    <version>${protobuf-java.version}</version>
+                                    <version>${protobuf-protoc.version}</version>
                                 </protoc>
                                 <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
                                 <plugins>

@@ -123,7 +123,7 @@
                 <version>${protobuf-maven-plugin.version}</version>
                 <configuration>
                     <protoc kind="binary-maven">
-                        <version>${protobuf-java.version}</version>
+                        <version>${protobuf-protoc.version}</version>
                     </protoc>
                     <sourceDirectories>
                         <sourceDirectory>${a2a.itk.proto.dir}</sourceDirectory>
