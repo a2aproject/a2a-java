@@ -2,8 +2,15 @@ package org.a2aproject.sdk.server.requesthandlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -35,6 +42,7 @@ import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.TaskStore;
+import org.a2aproject.sdk.server.tasks.TaskStoreException;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
@@ -67,6 +75,19 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             .returnImmediately(true)
             .acceptedOutputModes(List.of())
             .build();
+
+    private RequestHandler handlerWith(TaskStore store, TaskAuthorizationProvider authorization) {
+        return DefaultRequestHandler.builder()
+                .agentExecutor(completingAgentExecutor())
+                .taskStore(store)
+                .queueManager(queueManager)
+                .pushConfigStore(new InMemoryPushNotificationConfigStore())
+                .mainEventBusProcessor(mainEventBusProcessor)
+                .executor(executor)
+                .eventConsumerExecutor(executor)
+                .authorizationProvider(authorization)
+                .build();
+    }
 
     private InMemoryTaskStore taskStore;
     private InMemoryQueueManager queueManager;
@@ -394,6 +415,89 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
     class ListTasksTests {
 
         @Test
+        void listTasks_usesStoreAuthorizationBeforePagination() throws A2AError {
+            TaskStore awareStore = mock(TaskStore.class);
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            ServerCallContext context = contextForUser("anyone");
+            ListTasksParams params = new ListTasksParams(1, null);
+            ListTasksResult storedResult = new ListTasksResult(List.of(), 0, 0, null);
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(awareStore.listAuthorized(params, context, authorization)).thenReturn(storedResult);
+            RequestHandler awareHandler = handlerWith(awareStore, authorization);
+
+            assertEquals(storedResult, awareHandler.onListTasks(params, context));
+            verify(awareStore).listAuthorized(params, context, authorization);
+            verify(awareStore, never()).list(any(ListTasksParams.class), eq(context));
+        }
+
+        @Test
+        void listTasks_failsWhenStoreOverrideReturnsDeniedTasks() {
+            Task denied = saveTask("task-denied-by-override");
+            TaskStore faultyStore = mock(TaskStore.class);
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            ServerCallContext context = contextForUser("anyone");
+            ListTasksParams params = new ListTasksParams(1, null);
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, denied.id(), TaskOperation.LIST_TASKS)).thenReturn(false);
+            when(faultyStore.listAuthorized(params, context, authorization)).thenReturn(
+                    new ListTasksResult(List.of(denied), 1, 1, "next-page"));
+            RequestHandler guardedHandler = handlerWith(faultyStore, authorization);
+
+            assertThrows(TaskStoreException.class, () -> guardedHandler.onListTasks(params, context));
+        }
+
+        @Test
+        void listTasks_stopsWhenStoreNeverFinishesPagination() {
+            Task task = saveTask("task-1");
+            TaskStore endlessStore = mock(TaskStore.class, CALLS_REAL_METHODS);
+            ServerCallContext context = contextForUser("anyone");
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, task.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(endlessStore.list(any(ListTasksParams.class), eq(context)))
+                    .thenReturn(new ListTasksResult(List.of(task), 1, 1, "same-token"));
+            RequestHandler boundedHandler = handlerWith(endlessStore, authorization);
+
+            assertThrows(TaskStoreException.class,
+                    () -> boundedHandler.onListTasks(new ListTasksParams(1, null), context));
+            verify(endlessStore, atMost(2)).list(any(ListTasksParams.class), eq(context));
+        }
+
+        @Test
+        void listTasks_defaultStoreMethodFiltersAndPaginates() throws A2AError {
+            Task first = saveTask("task-allowed-1");
+            Task denied = saveTask("task-denied");
+            Task second = saveTask("task-allowed-2");
+            List<Task> candidates = List.of(first, denied, second);
+            TaskStore customStore = mock(TaskStore.class, CALLS_REAL_METHODS);
+            ServerCallContext context = contextForUser("anyone");
+            when(customStore.list(any(ListTasksParams.class), eq(context))).thenAnswer(invocation -> {
+                ListTasksParams query = invocation.getArgument(0);
+                int start = query.pageToken() == null ? 0 : Integer.parseInt(query.pageToken());
+                int end = Math.min(start + query.getEffectivePageSize(), candidates.size());
+                return new ListTasksResult(candidates.subList(start, end), candidates.size(), end - start,
+                        end < candidates.size() ? Integer.toString(end) : null);
+            });
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, first.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, denied.id(), TaskOperation.LIST_TASKS)).thenReturn(false);
+            when(authorization.checkRead(context, second.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            RequestHandler customHandler = handlerWith(customStore, authorization);
+
+            ListTasksResult firstPage = customHandler.onListTasks(new ListTasksParams(1, null), context);
+            ListTasksResult secondPage = customHandler.onListTasks(
+                    new ListTasksParams(1, firstPage.nextPageToken()), context);
+
+            assertEquals(List.of(first), firstPage.tasks());
+            assertEquals(2, firstPage.totalSize());
+            assertNotNull(firstPage.nextPageToken());
+            assertEquals(List.of(second), secondPage.tasks());
+            assertEquals(2, secondPage.totalSize());
+            assertNull(secondPage.nextPageToken());
+        }
+
+        @Test
         void listTasks_enforcesReadForListScopeAndEachReturnedTask() throws A2AError {
             Task first = saveTask("task-1");
             Task second = saveTask("task-2");
@@ -402,23 +506,14 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
             when(authorization.checkRead(context, first.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
             when(authorization.checkRead(context, second.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
-            RequestHandler enforcingHandler = DefaultRequestHandler.builder()
-                    .agentExecutor(completingAgentExecutor())
-                    .taskStore(taskStore)
-                    .queueManager(queueManager)
-                    .pushConfigStore(new InMemoryPushNotificationConfigStore())
-                    .mainEventBusProcessor(mainEventBusProcessor)
-                    .executor(executor)
-                    .eventConsumerExecutor(executor)
-                    .authorizationProvider(authorization)
-                    .build();
+            RequestHandler enforcingHandler = handlerWith(taskStore, authorization);
 
             ListTasksResult result = enforcingHandler.onListTasks(new ListTasksParams(), context);
 
             assertEquals(2, result.tasks().size());
-            verify(authorization).checkRead(context, "", TaskOperation.LIST_TASKS);
-            verify(authorization).checkRead(context, first.id(), TaskOperation.LIST_TASKS);
-            verify(authorization).checkRead(context, second.id(), TaskOperation.LIST_TASKS);
+            verify(authorization, atLeastOnce()).checkRead(context, "", TaskOperation.LIST_TASKS);
+            verify(authorization, atLeastOnce()).checkRead(context, first.id(), TaskOperation.LIST_TASKS);
+            verify(authorization, atLeastOnce()).checkRead(context, second.id(), TaskOperation.LIST_TASKS);
         }
 
         @Test
@@ -430,21 +525,39 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
             when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
             when(authorization.checkRead(context, allowed.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
             when(authorization.checkRead(context, denied.id(), TaskOperation.LIST_TASKS)).thenReturn(false);
-            RequestHandler enforcingHandler = DefaultRequestHandler.builder()
-                    .agentExecutor(completingAgentExecutor())
-                    .taskStore(taskStore)
-                    .queueManager(queueManager)
-                    .pushConfigStore(new InMemoryPushNotificationConfigStore())
-                    .mainEventBusProcessor(mainEventBusProcessor)
-                    .executor(executor)
-                    .eventConsumerExecutor(executor)
-                    .authorizationProvider(authorization)
-                    .build();
+            RequestHandler enforcingHandler = handlerWith(taskStore, authorization);
 
             ListTasksResult result = enforcingHandler.onListTasks(new ListTasksParams(), context);
 
             assertEquals(List.of(allowed), result.tasks());
-            verify(authorization).checkRead(context, denied.id(), TaskOperation.LIST_TASKS);
+            verify(authorization, atLeastOnce()).checkRead(context, denied.id(), TaskOperation.LIST_TASKS);
+        }
+
+        @Test
+        void listTasks_builderPathCountsAuthorizedTasksAcrossPages() throws A2AError {
+            Task firstAllowed = saveTask("task-allowed-1");
+            Task denied = saveTask("task-denied");
+            Task secondAllowed = saveTask("task-allowed-2");
+            TaskAuthorizationProvider authorization = mock(TaskAuthorizationProvider.class);
+            ServerCallContext context = contextForUser("anyone");
+            when(authorization.checkRead(context, "", TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, firstAllowed.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            when(authorization.checkRead(context, denied.id(), TaskOperation.LIST_TASKS)).thenReturn(false);
+            when(authorization.checkRead(context, secondAllowed.id(), TaskOperation.LIST_TASKS)).thenReturn(true);
+            RequestHandler enforcingHandler = handlerWith(taskStore, authorization);
+
+            ListTasksResult firstPage = enforcingHandler.onListTasks(new ListTasksParams(1, null), context);
+            assertNotNull(firstPage.nextPageToken());
+            ListTasksResult secondPage = enforcingHandler.onListTasks(
+                    new ListTasksParams(1, firstPage.nextPageToken()), context);
+
+            assertEquals(2, firstPage.totalSize());
+            assertEquals(2, secondPage.totalSize());
+            assertEquals(1, firstPage.pageSize());
+            assertEquals(1, secondPage.pageSize());
+            assertEquals(Set.of(firstAllowed, secondAllowed),
+                    Set.of(firstPage.tasks().get(0), secondPage.tasks().get(0)));
+            assertNull(secondPage.nextPageToken());
         }
 
         @Test
@@ -459,16 +572,7 @@ class DefaultRequestHandlerBuilderAuthorizationTest {
                 }
             };
 
-            RequestHandler restrictedHandler = DefaultRequestHandler.builder()
-                    .agentExecutor(completingAgentExecutor())
-                    .taskStore(taskStore)
-                    .queueManager(queueManager)
-                    .pushConfigStore(new InMemoryPushNotificationConfigStore())
-                    .mainEventBusProcessor(mainEventBusProcessor)
-                    .executor(executor)
-                    .eventConsumerExecutor(executor)
-                    .authorizationProvider(denyListProvider)
-                    .build();
+            RequestHandler restrictedHandler = handlerWith(taskStore, denyListProvider);
 
             assertThrows(TaskNotFoundError.class,
                     () -> restrictedHandler.onListTasks(new ListTasksParams(), contextForUser("anyone")));

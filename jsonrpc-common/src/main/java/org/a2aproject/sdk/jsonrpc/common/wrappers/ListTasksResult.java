@@ -10,7 +10,8 @@ import org.jspecify.annotations.Nullable;
  * Result of a list tasks request containing matching tasks and pagination information.
  *
  * @param tasks Array of tasks matching the specified criteria
- * @param totalSize Total number of tasks available (before pagination)
+ * @param totalSize Total number of matching tasks across all pages, after any applicable authorization
+ *                  filtering
  * @param pageSize Number of tasks returned in this response
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */

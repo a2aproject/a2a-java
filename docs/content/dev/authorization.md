@@ -80,3 +80,11 @@ Authorization decisions rely on `context.getUser()` returning the authenticated 
 | `messageSend` / `messageSendStream` (existing task) | `checkWrite` |
 | `messageSend` / `messageSendStream` (new task) | `checkCreate`, then `recordOwnership` |
 | `listTasks` | `checkRead` per task |
+
+## Default authorized listing fallback
+
+Stores that do not override `TaskStore.listAuthorized` use a bounded fallback over `list`. Each call scans all matching candidates to count authorized tasks, then separately traverses the requested page and looks ahead for more authorized tasks. This can scan the full candidate set twice, even for a small requested page.
+
+The count scan fetches batches of 100 candidates. Counting and page traversal/lookahead each have separate limits of 300 queries or 20,000 returned candidate tasks, including denied tasks. Exceeding either limit throws `TaskStoreException` rather than returning a partial total; JPA configuration properties do not change these generic limits. Stores with larger candidate sets or more efficient query support should override `listAuthorized`, applying the supplied provider's authorization before pagination and counting authorized matches across all pages independently of the cursor.
+
+The exact `totalSize` assumes stable task data and authorization decisions. The default fallback does not share a snapshot between counting and page selection, so concurrent task additions, deletions, or updates can make the count, returned page, and continuation token disagree. Overrides follow their store's consistency and isolation guarantees.

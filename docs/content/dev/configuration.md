@@ -76,6 +76,20 @@ a2a.authorization.required=true
 
 See [Task Authorization](authorization.md) for details on implementing a `TaskAuthorizationProvider`.
 
+### JPA Task Store Authorized Listings
+
+These settings apply when using the JPA Task Store together with a `TaskAuthorizationProvider`:
+
+```properties
+# Maximum candidate rows inspected while counting an authorized task listing (default: 10000)
+a2a.max-scanned-tasks=10000
+
+# Candidate rows fetched in each database query during that scan (default: 100)
+a2a.authorization-scan-batch-size=100
+```
+
+`a2a.max-scanned-tasks` bounds the work performed while counting authorized tasks. The count must be exact, so a listing fails if the scan limit is reached before all matching candidates have been inspected. `a2a.authorization-scan-batch-size` controls the database fetch size within that budget. Both values must be greater than zero. Increase the batch size to reduce round trips when many candidates are denied; lower it to reduce memory used per query.
+
 ### Push Notification Config Store
 
 ```properties

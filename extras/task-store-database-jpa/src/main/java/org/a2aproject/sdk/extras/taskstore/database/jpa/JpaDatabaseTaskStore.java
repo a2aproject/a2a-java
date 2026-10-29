@@ -26,10 +26,11 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
 import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
+import org.a2aproject.sdk.server.tasks.TaskPersistenceException;
+import org.a2aproject.sdk.server.tasks.TaskSerializationException;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.server.tasks.TaskStore;
-import org.a2aproject.sdk.server.tasks.TaskSerializationException;
-import org.a2aproject.sdk.server.tasks.TaskPersistenceException;
+import org.a2aproject.sdk.server.tasks.TaskStoreException;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -47,6 +48,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabaseTaskStore.class);
     private static final String A2A_REPLICATION_GRACE_PERIOD_SECONDS = "a2a.replication.grace-period-seconds";
     private static final String A2A_REPLICATION_MAX_SCANNED_TASKS = "a2a.max-scanned-tasks";
+    private static final String A2A_AUTHORIZATION_SCAN_BATCH_SIZE = "a2a.authorization-scan-batch-size";
+    private static final int DEFAULT_AUTHORIZATION_SCAN_BATCH_SIZE = 100;
 
     @PersistenceContext(unitName = "a2a-java")
     private EntityManager em;
@@ -79,17 +82,21 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
      */
     private long gracePeriodSeconds;
     /**
-     * Max number of rows being scanned when looking for a task.
-     * The a2a.max-scanned-tasks means you'll always return in at most a2a.max-scanned-tasks rows scanned
-     * regardless of how many are denied — and you might return a partial page, which is valid for a paginated API
-     * (clients already handle that via nextPageToken).
+     * Maximum number of candidate rows inspected while counting an authorized task listing.
+     * An exact authorized count cannot be returned once this limit is exceeded, so the listing
+     * fails instead of returning a partial count.
      */
     private long maxScanned;
+    /**
+     * Number of candidate rows fetched per query while scanning an authorized task listing.
+     */
+    private int authorizationScanBatchSize = DEFAULT_AUTHORIZATION_SCAN_BATCH_SIZE;
 
     @PostConstruct
     void initConfig() {
         gracePeriodSeconds = Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
         maxScanned = Long.parseLong(configProvider.getValue(A2A_REPLICATION_MAX_SCANNED_TASKS));
+        authorizationScanBatchSize = Integer.parseInt(configProvider.getValue(A2A_AUTHORIZATION_SCAN_BATCH_SIZE));
     }
 
 
@@ -277,10 +284,34 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     @Transactional
     @Override
     public ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context) {
+        return listWithAuthorization(params, context, authorizationProvider);
+    }
+
+    @Transactional
+    @Override
+    public ListTasksResult listAuthorized(ListTasksParams params, ServerCallContext context,
+            TaskAuthorizationProvider provider) {
+        return listWithAuthorization(params, context, provider);
+    }
+
+    private ListTasksResult listWithAuthorization(ListTasksParams params, @Nullable ServerCallContext context,
+            @Nullable TaskAuthorizationProvider provider) {
         LOGGER.debug("Listing tasks with params: contextId={}, status={}, pageSize={}, pageToken={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken());
 
         try {
+            if (provider != null && context == null) {
+                LOGGER.warn("Authorization provider is configured but no ServerCallContext available — "
+                        + "returning empty result (fail-closed)");
+                return new ListTasksResult(List.of(), 0, 0, null);
+            }
+            if (provider != null && maxScanned <= 0) {
+                throw new TaskStoreException("a2a.max-scanned-tasks must be greater than zero");
+            }
+            if (provider != null && authorizationScanBatchSize <= 0) {
+                throw new TaskStoreException("a2a.authorization-scan-batch-size must be greater than zero");
+            }
+
             int pageSize = params.getEffectivePageSize();
 
             // Build base WHERE clause (without cursor — shared across iterations)
@@ -289,56 +320,49 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             List<Task> tasks;
             boolean hasMore;
             int totalSize;
+            PageToken cursor = PageToken.fromString(params.pageToken());
+            PageToken scanCursor = cursor;
 
-            if (authorizationProvider != null && context == null) {
-                LOGGER.warn("Authorization provider is configured but no ServerCallContext available — "
-                        + "returning empty result (fail-closed)");
-                return new ListTasksResult(List.of(), 0, 0, null);
-            }
-            if (authorizationProvider != null) {
-                // Iterative fetch: accumulate pageSize authorized results across DB pages
+            if (provider != null) {
+                AuthorizedTaskCount authorizedTaskCount = countAuthorizedTasks(
+                        baseWhereClause, params, cursor, context, provider);
                 tasks = new ArrayList<>(pageSize);
-                PageToken cursor = PageToken.fromString(params.pageToken());
                 boolean dbExhausted = false;
-                int totalScanned = 0;
+                long totalScanned = 0;
 
                 while (tasks.size() < pageSize && !dbExhausted && totalScanned < maxScanned) {
-                    int remaining = pageSize - tasks.size();
-                    int limit = remaining + 1;
+                    long remaining = maxScanned - totalScanned;
+                    int limit = (int) Math.min(remaining, authorizationScanBatchSize);
                     TypedQuery<JpaTask> query = createPageQuery(
-                            baseWhereClause, params, cursor, limit);
+                            baseWhereClause, params, scanCursor, limit);
                     List<JpaTask> batch = query.getResultList();
 
                     dbExhausted = batch.size() < limit;
-                    int batchEnd = Math.min(batch.size(), remaining);
-                    totalScanned += batchEnd;
-
+                    int batchEnd = (int) Math.min(batch.size(), remaining);
                     int processedCount = 0;
-                    for (JpaTask jpaTask : batch) {
+                    for (int i = 0; i < batchEnd; i++) {
+                        JpaTask jpaTask = batch.get(i);
                         processedCount++;
+                        totalScanned++;
                         Task task = deserializeTask(jpaTask);
-                        if (isReadAuthorized(authorizationProvider, context, task.id())) {
+                        if (isReadAuthorized(provider, context, task.id())) {
                             tasks.add(task);
                             if (tasks.size() == pageSize) {
                                 break;
                             }
                         }
                     }
-
-                    // Advance cursor to last fetched DB row for next iteration
                     if (processedCount > 0) {
                         JpaTask last = batch.get(processedCount - 1);
-                        cursor = new PageToken(last.getStatusTimestamp(), last.getId());
+                        scanCursor = new PageToken(last.getStatusTimestamp(), last.getId());
                     }
                 }
 
-                hasMore = !dbExhausted;
-                // Use the authorized count to avoid leaking the existence of unauthorized tasks
-                totalSize = tasks.size();
+                hasMore = authorizedTaskCount.totalSize() > authorizedTaskCount.beforePage() + tasks.size();
+                totalSize = authorizedTaskCount.totalSize();
             } else {
                 // Single fetch — no authorization filtering needed
                 totalSize = executeCountQuery(baseWhereClause, params);
-                PageToken cursor = PageToken.fromString(params.pageToken());
                 TypedQuery<JpaTask> query = createPageQuery(
                         baseWhereClause, params, cursor, pageSize + 1);
                 List<JpaTask> jpaTasksPage = query.getResultList();
@@ -358,6 +382,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 Task lastTask = tasks.get(tasks.size() - 1);
                 Instant timestamp = lastTask.status().timestamp().toInstant();
                 nextPageToken = new PageToken(timestamp, lastTask.id()).toString();
+            } else if (hasMore) {
+                nextPageToken = scanCursor == null ? null : scanCursor.toString();
             }
 
             // Apply post-processing transformations (history limiting, artifact removal)
@@ -416,6 +442,59 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         TypedQuery<Long> countQuery = em.createQuery(jpql, Long.class);
         setFilterParameters(countQuery, params);
         return countQuery.getSingleResult().intValue();
+    }
+
+    /**
+     * Counts every authorized candidate and the authorized candidates at or before the requested
+     * cursor. The latter lets the page scan determine whether another authorized task exists
+     * without advertising a token that can only lead to an empty page.
+     */
+    private AuthorizedTaskCount countAuthorizedTasks(String baseWhereClause, ListTasksParams params,
+            @Nullable PageToken pageCursor, ServerCallContext context, TaskAuthorizationProvider provider) {
+        PageToken countCursor = null;
+        long scanned = 0;
+        int totalSize = 0;
+        int beforePage = 0;
+
+        while (true) {
+            long remaining = maxScanned - scanned;
+            if (remaining <= 0) {
+                throw new TaskStoreException("Authorized task listing exceeded its scan limit");
+            }
+            int batchSize = (int) Math.min(remaining, authorizationScanBatchSize);
+            // Fetch a look-ahead row. It distinguishes an exhausted database from a full final
+            // batch without inspecting an additional candidate for authorization.
+            List<JpaTask> batch = createPageQuery(baseWhereClause, params, countCursor, batchSize + 1)
+                    .getResultList();
+            int processedCount = Math.min(batch.size(), batchSize);
+            for (int i = 0; i < processedCount; i++) {
+                JpaTask jpaTask = batch.get(i);
+                scanned++;
+                if (isReadAuthorized(provider, context, jpaTask.getId())) {
+                    totalSize++;
+                    if (isAtOrBeforeCursor(jpaTask, pageCursor)) {
+                        beforePage++;
+                    }
+                }
+            }
+            if (batch.size() <= batchSize) {
+                return new AuthorizedTaskCount(totalSize, beforePage);
+            }
+            JpaTask last = batch.get(processedCount - 1);
+            countCursor = new PageToken(last.getStatusTimestamp(), last.getId());
+        }
+    }
+
+    private static boolean isAtOrBeforeCursor(JpaTask task, @Nullable PageToken cursor) {
+        if (cursor == null) {
+            return false;
+        }
+        int timestampComparison = task.getStatusTimestamp().compareTo(cursor.timestamp());
+        return timestampComparison > 0
+                || (timestampComparison == 0 && task.getId().compareTo(cursor.id()) <= 0);
+    }
+
+    private record AuthorizedTaskCount(int totalSize, int beforePage) {
     }
 
     private void setFilterParameters(TypedQuery<?> query, ListTasksParams params) {

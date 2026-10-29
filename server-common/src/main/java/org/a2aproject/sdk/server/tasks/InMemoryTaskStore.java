@@ -135,6 +135,17 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     @Override
     public ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context) {
+        return listWithAuthorization(params, context, authorizationProvider);
+    }
+
+    @Override
+    public ListTasksResult listAuthorized(ListTasksParams params, ServerCallContext context,
+            TaskAuthorizationProvider provider) {
+        return listWithAuthorization(params, context, provider);
+    }
+
+    private ListTasksResult listWithAuthorization(ListTasksParams params, @Nullable ServerCallContext context,
+            @Nullable TaskAuthorizationProvider provider) {
         // Filter and sort tasks in a single stream pipeline
         List<Task> allFilteredTasks = tasks.values().stream()
                 .filter(task -> params.contextId() == null || params.contextId().equals(task.contextId()))
@@ -144,7 +155,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                         (task.status() != null &&
                          task.status().timestamp() != null &&
                          task.status().timestamp().toInstant().isAfter(params.statusTimestampAfter())))
-                .filter(task -> isReadAuthorized(authorizationProvider, context, task.id()))
+                .filter(task -> isReadAuthorized(provider, context, task.id()))
                 .sorted(Comparator.comparing(
                         (Task t) -> (t.status() != null && t.status().timestamp() != null)
                                 // Truncate to milliseconds for consistency with pageToken precision
