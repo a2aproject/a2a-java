@@ -72,6 +72,9 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private PushNotificationUrlValidator urlValidator;
     private Executor dispatchExecutor = ForkJoinPool.commonPool();
 
+    @Inject
+    private volatile @Nullable Instance<PushNotificationDeliveryObserver> deliveryObservers;
+
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -273,17 +276,41 @@ public class BasePushNotificationSender implements PushNotificationSender {
                 () -> dispatchNotification(event, taskSnapshot, pushInfo, versionsByConfigId), dispatchExecutor);
     }
 
+    /**
+     * Outcome of a single delivery attempt, distinguishing deliberate skips from failures
+     * so that observers are not notified when a notification is intentionally not sent.
+     */
+    private enum DeliveryOutcome {
+        /** The HTTP POST was accepted by the destination. */
+        SUCCESS,
+        /** Delivery failed (rejected, network error, or format error). */
+        FAILURE,
+        /** Notification intentionally skipped (e.g. version formatter returned {@code null}). */
+        SKIPPED
+    }
+
     private boolean dispatchNotification(StreamingEventKind event,
                                           @Nullable Task taskSnapshot,
                                           TaskPushNotificationConfig pushInfo,
                                           Map<String, String> versionsByConfigId) {
+        DeliveryOutcome outcome = attemptDelivery(event, taskSnapshot, pushInfo, versionsByConfigId);
+        if (outcome != DeliveryOutcome.SKIPPED) {
+            notifyDelivery(pushInfo, outcome == DeliveryOutcome.SUCCESS);
+        }
+        return outcome != DeliveryOutcome.FAILURE;
+    }
+
+    private DeliveryOutcome attemptDelivery(StreamingEventKind event,
+                                             @Nullable Task taskSnapshot,
+                                             TaskPushNotificationConfig pushInfo,
+                                             Map<String, String> versionsByConfigId) {
         String url = pushInfo.url();
 
         try {
             urlValidator.validate(url);
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
-            return false;
+            return DeliveryOutcome.FAILURE;
         }
 
         String token = pushInfo.token();
@@ -296,22 +323,24 @@ public class BasePushNotificationSender implements PushNotificationSender {
         if (formatter != null) {
             try {
                 body = formatter.formatPayload(event, taskSnapshot);
-            } catch (Throwable throwable) {
+            } catch (Exception exception) {
                 LOGGER.error("Error formatting payload with {} formatter: {}",
-                        version, throwable.getMessage(), throwable);
-                return false;
+                        version, exception.getMessage(), exception);
+                return DeliveryOutcome.FAILURE;
             }
             if (body == null) {
+                // Formatter explicitly opted out of sending this notification; this is not a
+                // delivery failure — observers must not record it as such.
                 LOGGER.debug("Formatter for version {} returned null, skipping notification for {}",
                         version, url);
-                return true;
+                return DeliveryOutcome.SKIPPED;
             }
         } else {
             try {
                 body = JsonUtil.toJsonStreamingEvent(event);
-            } catch (Throwable throwable) {
-                LOGGER.error("Error serializing StreamingEventKind to JSON: {}", throwable.getMessage(), throwable);
-                return false;
+            } catch (Exception exception) {
+                LOGGER.error("Error serializing StreamingEventKind to JSON: {}", exception.getMessage(), exception);
+                return DeliveryOutcome.FAILURE;
             }
         }
 
@@ -322,7 +351,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
                 rejectCrlf(token, X_A2A_NOTIFICATION_TOKEN);
             } catch (IllegalArgumentException e) {
                 LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
-                return false;
+                return DeliveryOutcome.FAILURE;
             }
             postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
         }
@@ -335,7 +364,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
                     authorizationHeader = buildAuthorizationHeader(authentication.scheme(), credentials);
                 } catch (IllegalArgumentException e) {
                     LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
-                    return false;
+                    return DeliveryOutcome.FAILURE;
                 }
                 postBuilder.addHeader("Authorization", authorizationHeader);
             }
@@ -350,13 +379,38 @@ public class BasePushNotificationSender implements PushNotificationSender {
             if (!response.success()) {
                 LOGGER.warn("Push notification [config={}] to {} failed with HTTP status {}",
                         pushInfo.id(), url, response.status());
-                return false;
+                return DeliveryOutcome.FAILURE;
             }
         } catch (IOException | InterruptedException e) {
             LOGGER.warn("Push notification [config={}] to {} failed: {}", pushInfo.id(), url, e.getMessage(), e);
-            return false;
+            return DeliveryOutcome.FAILURE;
         }
-        return true;
+        return DeliveryOutcome.SUCCESS;
+    }
+
+    /**
+     * Test-only seam for injecting delivery observers without CDI.
+     * In production the {@link #deliveryObservers} field is populated by {@code @Inject}.
+     */
+    void setDeliveryObservers(@Nullable Instance<PushNotificationDeliveryObserver> deliveryObservers) {
+        this.deliveryObservers = deliveryObservers;
+    }
+
+    private void notifyDelivery(TaskPushNotificationConfig config, boolean success) {
+        if (deliveryObservers == null) {
+            return;
+        }
+        try {
+            for (PushNotificationDeliveryObserver observer : deliveryObservers) {
+                try {
+                    observer.onDelivery(config.taskId(), config.id(), success);
+                } catch (RuntimeException e) {
+                    LOGGER.debug("Push notification delivery observer failed", e);
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.debug("Could not resolve push notification delivery observers", e);
+        }
     }
 
     /**
