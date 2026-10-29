@@ -75,7 +75,7 @@
         <protobuf-maven-plugin.version>5.1.11</protobuf-maven-plugin.version>
         <!-- Keep generation compatible with the protobuf runtime supplied by the WildFly gRPC feature pack. -->
         <protobuf-protoc.version>4.35.0</protobuf-protoc.version>
-        <quarkus.platform.version>3.39.2</quarkus.platform.version>
+        <quarkus.platform.version>3.40.1.1</quarkus.platform.version>
         <rest-assured.version>6.3.0</rest-assured.version>
         <slf4j.version>2.0.19</slf4j.version>
         <logback.version>1.6.3</logback.version>
