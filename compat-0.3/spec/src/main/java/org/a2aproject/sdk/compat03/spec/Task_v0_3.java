@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +37,7 @@ public record Task_v0_3(
         this.status = status;
         this.artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
         this.history = history != null ? List.copyOf(history) : List.of();
-        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.metadata = metadata != null ? Collections.unmodifiableMap(new HashMap<>(metadata)) : null;
     }
 
     public Task_v0_3(String id, String contextId, TaskStatus_v0_3 status, List<Artifact_v0_3> artifacts,

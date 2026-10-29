@@ -17,6 +17,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
 import org.a2aproject.sdk.spec.InvalidParamsError;
+import org.a2aproject.sdk.spec.InvalidRequestError;
 
 /**
  * Common field mapping utilities shared across all mappers.
@@ -239,8 +240,12 @@ public interface A2ACommonFieldMapper {
             case STRING_VALUE:
                 return value.getStringValue();
             case NULL_VALUE:
-            default:
+                if (value.getNullValue() != NullValue.NULL_VALUE) {
+                    throw new InvalidRequestError();
+                }
                 return null;
+            default:
+                throw new InvalidRequestError();
         }
     }
 

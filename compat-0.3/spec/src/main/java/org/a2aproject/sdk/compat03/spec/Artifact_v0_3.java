@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +68,7 @@ public record Artifact_v0_3(String artifactId, String name, String description, 
         }
 
         public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = Map.copyOf(metadata);
+            this.metadata = Collections.unmodifiableMap(new HashMap<>(metadata));
             return this;
         }
 

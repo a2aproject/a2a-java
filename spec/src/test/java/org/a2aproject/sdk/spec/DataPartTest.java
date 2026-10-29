@@ -102,8 +102,9 @@ class DataPartTest {
     }
 
     @Test
-    void testFromJson_nullLiteralThrows() {
-        assertThrows(IllegalArgumentException.class, () -> DataPart.fromJson("null"));
+    void testFromJson_nullLiteralIsPreserved() {
+        assertNull(DataPart.fromJson("null").data());
+        assertNull(new DataPart(null).data());
     }
 
     @Test
@@ -167,5 +168,11 @@ class DataPartTest {
         DataPart part = new DataPart(data);
 
         assertSame(data, part.data());
+    }
+
+    @Test
+    void testFromJson_emptyInputRemainsInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> DataPart.fromJson(""));
+        assertThrows(IllegalArgumentException.class, () -> DataPart.fromJson("  "));
     }
 }

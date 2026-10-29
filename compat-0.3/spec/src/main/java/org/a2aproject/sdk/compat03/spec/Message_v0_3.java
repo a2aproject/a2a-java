@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,7 +44,7 @@ public record Message_v0_3(
         this.contextId = contextId;
         this.taskId = taskId;
         this.referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
-        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.metadata = metadata != null ? Collections.unmodifiableMap(new HashMap<>(metadata)) : null;
         this.extensions = extensions != null ? List.copyOf(extensions) : null;
     }
 
