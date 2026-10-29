@@ -37,11 +37,14 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
+import org.a2aproject.sdk.extras.opentelemetry.ProtocolLogEmitter;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AMethods;
@@ -111,7 +114,7 @@ class OpenTelemetryClientTransportTest {
         when(spanBuilder.startSpan()).thenReturn(span);
         when(span.makeCurrent()).thenReturn(scope);
         when(span.getSpanContext()).thenReturn(spanContext);
-        when(context.getHeaders()).thenReturn(new java.util.HashMap<>());
+        when(context.getHeaders()).thenReturn(new HashMap<>());
 
         transport = new OpenTelemetryClientTransport(delegate, tracer);
     }
@@ -384,6 +387,17 @@ class OpenTelemetryClientTransportTest {
     }
 
     @Test
+    void sendMessageIgnoresFailureInResponseLogging() throws A2AClientException {
+        MessageSendParams request = mock(MessageSendParams.class);
+        EventKind response = mock(EventKind.class);
+        when(response.kind()).thenThrow(new IllegalStateException("invalid kind"));
+        when(delegate.sendMessage(eq(request), any(ClientCallContext.class))).thenReturn(response);
+        OpenTelemetryClientTransport withLogs = new OpenTelemetryClientTransport(delegate, tracer, null, mock(ProtocolLogEmitter.class));
+
+        assertEquals(response, withLogs.sendMessage(request, context));
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void testEventConsumer_ThroughSendMessageStreaming() throws A2AClientException {
         MessageSendParams request = mock(MessageSendParams.class);
@@ -413,7 +427,7 @@ class OpenTelemetryClientTransportTest {
         eventConsumerCaptor.getValue().accept(event);
 
         verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX);
-        verify(eventSpanBuilder).addLink(spanContext);
+        verify(eventSpanBuilder).setParent(any(Context.class));
         verify(eventSpanBuilder).setAttribute(GENAI_STREAMING_EVENT, event.kind());
         verify(eventSpan).end();
         verify(originalConsumer).accept(event);

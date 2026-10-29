@@ -7,28 +7,14 @@ import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENA
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_END_SUFFIX;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_EVENT_SUFFIX;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.a2aproject.sdk.A2A;
-import org.a2aproject.sdk.client.Client;
-import org.a2aproject.sdk.client.config.ClientConfig;
-import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
-import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
-import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
-import org.a2aproject.sdk.spec.A2AClientException;
-import org.a2aproject.sdk.spec.CancelTaskParams;
-import org.a2aproject.sdk.spec.ListTasksParams;
-import org.a2aproject.sdk.spec.Task;
-import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
-import org.a2aproject.sdk.spec.TaskQueryParams;
-import org.a2aproject.sdk.spec.TaskState;
-import org.a2aproject.sdk.spec.TaskStatus;
 import io.opentelemetry.api.trace.SpanKind;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -39,10 +25,27 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.a2aproject.sdk.A2A;
+import org.a2aproject.sdk.client.Client;
+import org.a2aproject.sdk.client.config.ClientConfig;
+import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
+import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AMethods;
+import org.a2aproject.sdk.spec.CancelTaskParams;
+import org.a2aproject.sdk.spec.DataPart;
+import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TextPart;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Abstract base class for OpenTelemetry A2A integration tests.
@@ -95,6 +98,43 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
                 return false;
             }
         });
+    }
+
+    @Test
+    void testStreamingProtocolLogsAreExportedWithTraceContextAndMaskedPayload() throws Exception {
+        given().delete("/test/protocol-logs").then().statusCode(204);
+        Client streamingClient = Client.builder(A2A.getAgentCard("http://localhost:" + serverPort))
+                .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                .build();
+        Message message = Message.builder().role(Message.Role.ROLE_USER).messageId("protocol-log-test")
+                .parts(List.of(new TextPart("protocol logging test"),
+                        new DataPart(Map.of("api_key", "do-not-export-this"))))
+                .build();
+        streamingClient.sendMessage(new MessageSendParams(message, null, null, ""), List.of(), null, null);
+
+        await().atMost(10, SECONDS).until(() -> getProtocolLogs().stream()
+                .anyMatch(record -> "a2a.task.stream.end".equals(record.get("event"))));
+        List<Map<String, Object>> records = getProtocolLogs();
+        Map<String, Object> requestLog = records.stream()
+                .filter(record -> "a2a.task.request".equals(record.get("event")))
+                .findFirst().orElseThrow();
+        assertTrue(records.stream().anyMatch(record -> "a2a.task.state_change".equals(record.get("event"))));
+        assertTrue(requestLog.get("body").toString().contains("[redacted]"));
+        assertFalse(requestLog.get("body").toString().contains("do-not-export-this"));
+        assertEquals("DEBUG", requestLog.get("severity"));
+        assertEquals("inbound", requestLog.get("attr_a2a.log.direction"));
+        assertEquals(A2AMethods.SEND_STREAMING_MESSAGE_METHOD, requestLog.get("attr_a2a.operation.name"));
+        assertEquals("protocol-log-test", requestLog.get("attr_a2a.message.id"));
+        assertEquals(Boolean.TRUE, requestLog.get("sampled"));
+
+        await().atMost(10, SECONDS).until(() -> getSpans().stream()
+                .anyMatch(span -> requestLog.get("spanId").equals(span.get("spanId"))));
+        Map<String, Object> requestSpan = getSpans().stream()
+                .filter(span -> requestLog.get("spanId").equals(span.get("spanId")))
+                .findFirst().orElseThrow();
+        assertEquals(requestSpan.get("traceId"), requestLog.get("traceId"));
+        assertEquals(A2AMethods.SEND_STREAMING_MESSAGE_METHOD, requestSpan.get("name"));
     }
 
     @Test
@@ -313,10 +353,10 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         assertTrue(
                 spans.stream().anyMatch(s -> (A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX).equals(s.get("name"))),
                 "Should have at least one streaming event span");
-        assertEquals(1, ((Number) closingSpan.get("links_count")).intValue(),
-                "Closing span should have exactly one link");
-        assertEquals(initialSpan.get("spanId"), closingSpan.get("link_0_spanId"),
-                "Closing span should link to the initial span");
+        assertEquals(initialSpan.get("spanId"), closingSpan.get("parentSpanId"),
+                "Closing span should be a child of the initial span");
+        assertEquals(0, ((Number) closingSpan.get("links_count")).intValue(),
+                "Closing span should not also link to its own parent");
     }
 
     @Test
@@ -370,6 +410,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
 
         saveTaskInTaskStore(task);
         clearExportedSpans();
+        given().delete("/test/protocol-logs").then().statusCode(204);
         savePushNotificationConfig(taskId,
                 TaskPushNotificationConfig.builder()
                         .id(PUSH_TEST_CONFIG_ID)
@@ -405,6 +446,13 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
             String traceIdFromHeader = traceparent.split("-")[1];
             assertEquals(traceIdFromHeader, pushSpan.get("traceId"),
                     "traceparent trace ID should match the SendPushNotification span's trace ID");
+            await().atMost(10, SECONDS).until(() -> given().get("/test/protocol-logs").body().asString()
+                    .contains("a2a.notification.delivery.attempt"));
+            String logs = given().get("/test/protocol-logs").body().asString();
+            List<Map<String, Object>> records = getProtocolLogs();
+            assertTrue(records.stream().anyMatch(record -> "a2a.notification.delivery.attempt".equals(record.get("event"))
+                    && traceIdFromHeader.equals(record.get("traceId"))));
+            assertFalse(logs.contains("http://localhost:" + serverPort + "/test/webhook"));
         } finally {
             deletePushNotificationConfig(taskId, PUSH_TEST_CONFIG_ID);
             deleteTaskInTaskStore(taskId);
@@ -586,6 +634,12 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
     }
 
     private static final Type WEBHOOK_LIST_TYPE = new TypeToken<List<Map<String, String>>>() {}.getType();
+    private static final Type PROTOCOL_LOG_LIST_TYPE = new TypeToken<List<Map<String, Object>>>() {}.getType();
+
+    private List<Map<String, Object>> getProtocolLogs() {
+        String json = given().get("/test/protocol-logs").then().statusCode(HTTP_OK).extract().body().asString();
+        return GSON.fromJson(json, PROTOCOL_LOG_LIST_TYPE);
+    }
 
     /**
      * Fetches captured webhook requests via HTTP, so it works across JVM

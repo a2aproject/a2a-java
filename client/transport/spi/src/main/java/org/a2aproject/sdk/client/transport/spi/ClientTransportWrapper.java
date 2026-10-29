@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.client.transport.spi;
 
+import org.a2aproject.sdk.spec.AgentInterface;
+
 /**
  * Service provider interface for wrapping client transports with additional functionality.
  * Implementations can add cross-cutting concerns like tracing, metrics, logging, etc.
@@ -43,6 +45,10 @@ public interface ClientTransportWrapper extends Comparable<ClientTransportWrappe
      * @return the wrapped transport, or the original if wrapping is not applicable
      */
     ClientTransport wrap(ClientTransport transport, ClientTransportConfig<?> config);
+
+    /** Called after the client selects an interface, before the transport is wrapped. */
+    default void onTransportSelected(AgentInterface selected, ClientTransportConfig<?> config) {
+    }
 
     /**
      * Returns the priority of this wrapper. Higher priority wrappers are applied first
