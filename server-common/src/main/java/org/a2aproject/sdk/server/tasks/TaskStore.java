@@ -227,8 +227,11 @@ public interface TaskStore {
      * The default implementation scans all matching candidates to count authorized tasks on
      * every call, then separately traverses the requested page and looks ahead for more
      * authorized tasks. This can scan the full candidate set twice, even for a small page.
-     * Counting uses batches of 100. The count scan and the requested-page scan each have a limit of 300
-     * batches or 20,000 returned candidate tasks. It throws {@link TaskStoreException} if
+     * Candidates are fetched in batches of up to 100. Counting and normal page traversal/lookahead
+     * each have separate limits of 300 queries and 20,000 distinct candidate tasks. Re-fetching
+     * a candidate counts once within each phase. Up to 100 additional page queries
+     * may recover an opaque continuation token within the final fetched batch only;
+     * the page phase therefore permits at most 400 queries. It throws {@link TaskStoreException} if
      * either limit is exceeded or if the store repeats a page token.
      * <p>
      * The exact count assumes stable task data and authorization decisions. The default
