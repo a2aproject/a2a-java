@@ -73,21 +73,21 @@ To set up your development environment you need to:
 
 ## Code Formatting
 
-CI checks formatting with Spotless using JDK 25. Before submitting a PR, apply the configured formatting from the
-repository root:
+Run Spotless from the repository root using JDK 21 or later. CI uses JDK 25; the SDK itself still supports Java 17.
+
+**Fix formatting errors** (updates files in place):
 
 ```bash
 mvn -N -Dskip.spotless=false spotless:apply
 ```
 
-To check formatting without changing files:
+**Check formatting** without changing files (the command fails if formatting errors remain):
 
 ```bash
 mvn -N -Dskip.spotless=false spotless:check
 ```
 
-Run these commands with JDK 25. The root configuration covers sources and POMs throughout the repository; `-N` avoids
-repeating the same work in each module. Released documentation snapshots are excluded.
+The root configuration covers sources and POMs throughout the repository; `-N` avoids repeating the same work in each module. Released documentation snapshots are excluded.
 
 ## Contributing Guidelines
 
