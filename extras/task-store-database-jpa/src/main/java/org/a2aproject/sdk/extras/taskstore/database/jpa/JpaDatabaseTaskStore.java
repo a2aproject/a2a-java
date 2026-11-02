@@ -97,6 +97,12 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         gracePeriodSeconds = Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
         maxScanned = Long.parseLong(configProvider.getValue(A2A_REPLICATION_MAX_SCANNED_TASKS));
         authorizationScanBatchSize = Integer.parseInt(configProvider.getValue(A2A_AUTHORIZATION_SCAN_BATCH_SIZE));
+        if (maxScanned <= 0) {
+            throw new TaskStoreException("a2a.max-scanned-tasks must be greater than zero");
+        }
+        if (authorizationScanBatchSize <= 0) {
+            throw new TaskStoreException("a2a.authorization-scan-batch-size must be greater than zero");
+        }
     }
 
 
@@ -305,13 +311,6 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                         + "returning empty result (fail-closed)");
                 return new ListTasksResult(List.of(), 0, 0, null);
             }
-            if (provider != null && maxScanned <= 0) {
-                throw new TaskStoreException("a2a.max-scanned-tasks must be greater than zero");
-            }
-            if (provider != null && authorizationScanBatchSize <= 0) {
-                throw new TaskStoreException("a2a.authorization-scan-batch-size must be greater than zero");
-            }
-
             int pageSize = params.getEffectivePageSize();
 
             // Build base WHERE clause (without cursor — shared across iterations)

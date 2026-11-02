@@ -143,27 +143,6 @@ class JpaDatabaseTaskStoreAuthorizationTest {
         assertNull(result.nextPageToken());
     }
 
-    @Test
-    void listAuthorizedRejectsNonpositiveScanLimit() throws Exception {
-        TaskAuthorizationProvider authProvider = mock(TaskAuthorizationProvider.class);
-        ServerCallContext context = mock(ServerCallContext.class);
-        JpaDatabaseTaskStore store = storeWithProvider(authProvider, mock(EntityManager.class), 0);
-
-        assertThrows(TaskStoreException.class,
-                () -> store.listAuthorized(new ListTasksParams(), context, authProvider));
-    }
-
-    @Test
-    void listAuthorizedRejectsNonpositiveAuthorizationScanBatchSize() throws Exception {
-        TaskAuthorizationProvider authProvider = mock(TaskAuthorizationProvider.class);
-        ServerCallContext context = mock(ServerCallContext.class);
-        JpaDatabaseTaskStore store = storeWithProvider(authProvider, mock(EntityManager.class), 1);
-        setField(store, "authorizationScanBatchSize", 0);
-
-        assertThrows(TaskStoreException.class,
-                () -> store.listAuthorized(new ListTasksParams(), context, authProvider));
-    }
-
     @SuppressWarnings("unchecked")
     private static JpaDatabaseTaskStore storeWithProvider(TaskAuthorizationProvider provider,
             EntityManager entityManager, long maxScanned) throws Exception {

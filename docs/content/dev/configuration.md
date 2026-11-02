@@ -88,7 +88,7 @@ a2a.max-scanned-tasks=10000
 a2a.authorization-scan-batch-size=100
 ```
 
-`a2a.max-scanned-tasks` bounds the work performed while counting authorized tasks. The count must be exact, so a listing fails if the scan limit is reached before all matching candidates have been inspected. `a2a.authorization-scan-batch-size` controls the database fetch size within that budget. Both values must be greater than zero. Increase the batch size to reduce round trips when many candidates are denied; lower it to reduce memory used per query.
+`a2a.max-scanned-tasks` bounds the work performed while counting authorized tasks. The count must be exact, so a listing fails if the scan limit is reached before all matching candidates have been inspected. `a2a.authorization-scan-batch-size` controls the database fetch size within that budget. Both values must be greater than zero; invalid values cause the JPA task store to fail during initialization. Increase the batch size to reduce round trips when many candidates are denied; lower it to reduce memory used per query.
 
 ### Push Notification Config Store
 
