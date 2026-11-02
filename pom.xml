@@ -80,7 +80,7 @@
         <slf4j.version>2.0.19</slf4j.version>
         <logback.version>1.6.3</logback.version>
         <version.testcontainers>2.0.5</version.testcontainers>
-        <error-prone.version>2.50.0</error-prone.version>
+        <error-prone.version>2.51.0</error-prone.version>
         <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
         <google-java-format.version>1.37.0</google-java-format.version>
         <nullaway.version>0.14.1</nullaway.version>
