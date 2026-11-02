@@ -1,0 +1,25 @@
+name: Check Formatting
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  formatting:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+    - name: Set up JDK 25
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: maven
+    - name: Check formatting with Spotless
+      run: mvn -B -N -Dskip.spotless=false spotless:check

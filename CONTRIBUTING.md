@@ -71,6 +71,24 @@ To set up your development environment you need to:
     mvn clean install -DskipTests=true
     ```
 
+## Code Formatting
+
+CI checks formatting with Spotless using JDK 25. Before submitting a PR, apply the configured formatting from the
+repository root:
+
+```bash
+mvn -N -Dskip.spotless=false spotless:apply
+```
+
+To check formatting without changing files:
+
+```bash
+mvn -N -Dskip.spotless=false spotless:check
+```
+
+Run these commands with JDK 25. The root configuration covers sources and POMs throughout the repository; `-N` avoids
+repeating the same work in each module. Released documentation snapshots are excluded.
+
 ## Contributing Guidelines
 
 When submitting a PR, please keep the following guidelines in mind:

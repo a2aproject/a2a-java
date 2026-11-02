@@ -636,6 +636,12 @@
                     </formats>
                     <!-- define a language-specific format -->
                     <java>
+                        <excludes>
+                            <exclude>**/target/**</exclude>
+                            <!-- Keep protoc-generated sources in the generator's format. -->
+                            <exclude>**/src/main/java/org/a2aproject/sdk/grpc/*.java</exclude>
+                            <exclude>**/src/main/java/org/a2aproject/sdk/compat03/grpc/*.java</exclude>
+                        </excludes>
                         <includes>
                             <include>**/src/main/java/**/*.java</include>
                             <include>**/src/test/java/**/*.java</include>
@@ -647,7 +653,6 @@
                             <formatJavadoc>false</formatJavadoc>
                         </googleJavaFormat>
                         <importOrder/>
-                        <shortenFullyQualifiedTypes/>
                         <importOrder/>
                         <removeUnusedImports/>
                         <indent>
@@ -656,6 +661,9 @@
                         </indent>
                     </java>
                     <pom>
+                        <excludes>
+                            <exclude>**/target/**</exclude>
+                        </excludes>
                         <includes>
                             <include>pom.xml</include>
                             <include>**/pom.xml</include>
@@ -678,7 +686,7 @@
                     <markdown>
                         <includes>
                             <!-- You have to set the target manually -->
-                            <include>docs/**/*.md</include>
+                            <include>docs/content/dev/**/*.md</include>
                             <include>CODE_OF_CONDUCT.md</include>
                             <include>CONTRIBUTING.md</include>
                             <include>CONTRIBUTING_INTEGRATIONS.md</include>
@@ -686,14 +694,7 @@
                             <include>RELEASE.md</include>
                             <include>SECURITY.md</include>
                         </includes>
-                        <flexmark>
-                            <emulationProfile>COMMONMARK</emulationProfile>
-                            <pegdownExtensions>ALL,TOC</pegdownExtensions>
-                            <extensions>YamlFrontMatter,Emoji</extensions>
-                            <formatterOptions>
-                                <rightMargin>120</rightMargin>
-                            </formatterOptions>
-                        </flexmark>
+                        <endWithNewline/>
                     </markdown>
                 </configuration>
                 <executions>
