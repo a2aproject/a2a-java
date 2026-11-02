@@ -219,6 +219,39 @@ public interface TaskStore {
     ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context);
 
     /**
+     * Lists tasks using the supplied provider to filter candidates before pagination.
+     * Implementations can override this for efficient filtering. The result's {@code totalSize}
+     * must be the exact number of matching tasks the provider authorizes, across all pages and
+     * independent of {@code params.pageToken()}.
+     * <p>
+     * The default implementation scans all matching candidates to count authorized tasks on
+     * every call, then separately traverses the requested page and looks ahead for more
+     * authorized tasks. This can scan the full candidate set twice, even for a small page.
+     * Counting uses batches of 100. The count scan and the requested-page scan each have a limit of 300
+     * batches or 20,000 returned candidate tasks. It throws {@link TaskStoreException} if
+     * either limit is exceeded or if the store repeats a page token.
+     * <p>
+     * The exact count assumes stable task data and authorization decisions. The default
+     * implementation does not provide a shared snapshot for counting and page selection;
+     * concurrent task additions, deletions, or updates can make {@code totalSize}, the returned
+     * page, and its continuation token inconsistent. Overrides follow the store's consistency
+     * and isolation guarantees; this interface does not require snapshot isolation.
+     * <p>
+     * Overrides must apply per-task authorization before pagination and honor the exact-count
+     * contract. The request handler performs a final read check on returned tasks as a defense
+     * against incorrect overrides; that check cannot reconstruct an inaccurate total count.
+     *
+     * @param params listing filters and pagination
+     * @param context authenticated call context
+     * @param authorizationProvider provider used for per-task read checks
+     * @return the authorized page and its pagination metadata
+     */
+    default ListTasksResult listAuthorized(ListTasksParams params, ServerCallContext context,
+            TaskAuthorizationProvider authorizationProvider) {
+        return TaskStoreAuthorizationFallback.listAuthorized(this, params, context, authorizationProvider);
+    }
+
+    /**
      * Checks whether a task is authorized for reading during list operations.
      * <p>
      * Delegates to {@link TaskAuthorizationProvider#checkReadAccess} with

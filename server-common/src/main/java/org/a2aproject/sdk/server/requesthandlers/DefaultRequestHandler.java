@@ -49,6 +49,7 @@ import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.ResultAggregator;
 import org.a2aproject.sdk.server.tasks.TaskManager;
 import org.a2aproject.sdk.server.tasks.TaskStore;
+import org.a2aproject.sdk.server.tasks.TaskStoreException;
 import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.server.util.async.EventConsumerExecutorProducer.EventConsumerExecutor;
 import org.a2aproject.sdk.server.util.async.Internal;
@@ -631,18 +632,6 @@ public class DefaultRequestHandler implements RequestHandler {
         }
     }
 
-    private void enforceListRead(ServerCallContext context) throws A2AError {
-        if (authorizationProvider == null) {
-            if (authorizationRequired) {
-                throw new TaskNotFoundError();
-            }
-            return;
-        }
-        if (!authorizationProvider.checkRead(context, LIST_TASKS_SCOPE_ID, TaskOperation.LIST_TASKS)) {
-            throw new TaskNotFoundError();
-        }
-    }
-
     private void recordOwnershipIfNeeded(ServerCallContext context, @Nullable String taskId,
             TaskOperation operation) throws A2AError {
         if (authorizationProvider != null && taskId != null && !authorizationProvider.isTaskRecorded(taskId)) {
@@ -665,7 +654,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
-        enforceListRead(context);
+        enforceRead(context, LIST_TASKS_SCOPE_ID, TaskOperation.LIST_TASKS);
         LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, statusTimestampAfter={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.statusTimestampAfter());
 
@@ -689,17 +678,20 @@ public class DefaultRequestHandler implements RequestHandler {
             }
         }
 
-        ListTasksResult result = taskStore.list(params, context);
-        // Post-filter per-task read authorization at the handler level.
-        // On the CDI path this is redundant (store already filters), but on the builder
-        // path the store may not have the provider, so the handler must be authoritative.
-        if (authorizationProvider != null) {
-            List<Task> filtered = result.tasks().stream()
-                    .filter(task -> TaskAuthorizationProvider.checkReadAccess(
-                            authorizationProvider, context, task.id(), TaskOperation.LIST_TASKS))
+        TaskAuthorizationProvider configuredAuthorizationProvider = authorizationProvider;
+        ListTasksResult result = configuredAuthorizationProvider == null
+                ? taskStore.list(params, context)
+                : taskStore.listAuthorized(params, context, configuredAuthorizationProvider);
+        if (configuredAuthorizationProvider != null) {
+            List<Task> authorizedTasks = result.tasks().stream()
+                    .filter(task -> configuredAuthorizationProvider.checkRead(
+                            context, task.id(), TaskOperation.LIST_TASKS))
                     .toList();
-            if (filtered.size() != result.tasks().size()) {
-                result = new ListTasksResult(filtered, filtered.size(), filtered.size(), result.nextPageToken());
+            if (authorizedTasks.size() != result.tasks().size()) {
+                LOGGER.error("TaskStore.listAuthorized returned tasks denied by the authorization provider");
+                // The handler cannot reconstruct an exact authorized total or a correct continuation
+                // token after an override has violated the pre-pagination authorization contract.
+                throw new TaskStoreException("TaskStore.listAuthorized returned unauthorized tasks");
             }
         }
         LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
