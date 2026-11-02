@@ -85,7 +85,7 @@ public enum TaskState {
      *
      * @return {@code true} if this is a terminal state, {@code false} else.
      */
-    public boolean isFinal(){
+    public boolean isFinal() {
         return isFinal;
     }
 

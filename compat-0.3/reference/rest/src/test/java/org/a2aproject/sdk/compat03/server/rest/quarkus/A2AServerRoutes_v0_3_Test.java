@@ -12,18 +12,15 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import jakarta.enterprise.inject.Instance;
-
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import org.jspecify.annotations.Nullable;
+import jakarta.enterprise.inject.Instance;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -32,6 +29,7 @@ import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -49,11 +47,22 @@ public class A2AServerRoutes_v0_3_Test {
     private void fixture(boolean capabilities) {
         routes = new A2AServerRoutes_v0_3();
         handler = mock(RequestHandler.class);
-        AgentCard_v0_3 card = new AgentCard_v0_3.Builder().name("validation").description("Validation baseline")
-                .url("http://localhost:9999").version("1").protocolVersion("0.3")
-                .capabilities(new AgentCapabilities_v0_3(capabilities, capabilities, false, null))
-                .defaultInputModes(List.of("text")).defaultOutputModes(List.of("text")).skills(List.of()).build();
-        routes.jsonRestHandler = new RestHandler_v0_3(card, Runnable::run, new Convert_v0_3_To10RequestHandler(handler));
+        AgentCard_v0_3 card =
+                new AgentCard_v0_3.Builder()
+                        .name("validation")
+                        .description("Validation baseline")
+                        .url("http://localhost:9999")
+                        .version("1")
+                        .protocolVersion("0.3")
+                        .capabilities(
+                                new AgentCapabilities_v0_3(capabilities, capabilities, false, null))
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
+        routes.jsonRestHandler =
+                new RestHandler_v0_3(
+                        card, Runnable::run, new Convert_v0_3_To10RequestHandler(handler));
         routes.callContextFactory = mock(Instance.class);
         when(routes.callContextFactory.isUnsatisfied()).thenReturn(true);
         rc = mock(RoutingContext.class);
@@ -68,15 +77,21 @@ public class A2AServerRoutes_v0_3_Test {
         when(request.params()).thenReturn(params);
         when(request.headers()).thenReturn(MultiMap.caseInsensitiveMultiMap());
         when(response.setStatusCode(anyInt())).thenReturn(response);
-        when(response.putHeader(any(CharSequence.class), any(CharSequence.class))).thenReturn(response);
+        when(response.putHeader(any(CharSequence.class), any(CharSequence.class)))
+                .thenReturn(response);
         when(response.end(anyString())).thenReturn(Future.succeededFuture());
     }
 
     private void assertError(int status, String type, String message) {
         verify(response).setStatusCode(status);
         verify(response).putHeader(CONTENT_TYPE, "application/json");
-        verify(response).end("{\"error\": \"org.a2aproject.sdk.compat03.spec." + type
-                + "_v0_3\", \"message\": \"" + message + "\"}");
+        verify(response)
+                .end(
+                        "{\"error\": \"org.a2aproject.sdk.compat03.spec."
+                                + type
+                                + "_v0_3\", \"message\": \""
+                                + message
+                                + "\"}");
         verifyNoMoreInteractions(response);
     }
 
@@ -110,7 +125,10 @@ public class A2AServerRoutes_v0_3_Test {
             fixture(true);
             params.set("history_length", snake).set("historyLength", "bad");
             routes.getTask(rc);
-            assertError(422, "InvalidParamsError", "Only one of 'history_length' or 'historyLength' may be specified");
+            assertError(
+                    422,
+                    "InvalidParamsError",
+                    "Only one of 'history_length' or 'historyLength' may be specified");
             verifyNoInteractions(handler);
         }
         for (String alias : List.of("history_length", "historyLength")) {
@@ -130,7 +148,8 @@ public class A2AServerRoutes_v0_3_Test {
             routes.getTask(rc);
             ArgumentCaptor<TaskQueryParams> query = ArgumentCaptor.forClass(TaskQueryParams.class);
             verify(handler).onGetTask(query.capture(), any());
-            assertEquals(alias == null ? null : Integer.valueOf(2), query.getValue().historyLength());
+            assertEquals(
+                    alias == null ? null : Integer.valueOf(2), query.getValue().historyLength());
             assertError(404, "TaskNotFoundError", "Task not found");
         }
     }
@@ -160,7 +179,8 @@ public class A2AServerRoutes_v0_3_Test {
         for (String configId : new String[] {null, ""}) {
             fixture(true);
             when(rc.pathParam("configId")).thenReturn(configId);
-            when(handler.onGetTaskPushNotificationConfig(any(), any())).thenThrow(new InternalError("delegated"));
+            when(handler.onGetTaskPushNotificationConfig(any(), any()))
+                    .thenThrow(new InternalError("delegated"));
             routes.getTaskPushNotificationConfiguration(rc);
             ArgumentCaptor<GetTaskPushNotificationConfigParams> query =
                     ArgumentCaptor.forClass(GetTaskPushNotificationConfigParams.class);
@@ -191,8 +211,8 @@ public class A2AServerRoutes_v0_3_Test {
 
     @ParameterizedTest(name = "taskId={0}, history_length={1}, historyLength={2}")
     @MethodSource("taskAndAliasValues")
-    public void testGetTaskForwardsRawPathAndQueryValues(@Nullable String taskId, @Nullable String snake,
-            @Nullable String camel) {
+    public void testGetTaskForwardsRawPathAndQueryValues(
+            @Nullable String taskId, @Nullable String snake, @Nullable String camel) {
         fixture(true);
         RestHandler_v0_3 transport = mock(RestHandler_v0_3.class);
         routes.jsonRestHandler = transport;
@@ -256,7 +276,8 @@ public class A2AServerRoutes_v0_3_Test {
         routes.jsonRestHandler = transport;
         setTaskId(taskId);
         RestHandler_v0_3.HTTPRestResponse error = rawForwardingError();
-        when(transport.setTaskPushNotificationConfiguration(eq(taskId), eq("{broken"), any())).thenReturn(error);
+        when(transport.setTaskPushNotificationConfiguration(eq(taskId), eq("{broken"), any()))
+                .thenReturn(error);
 
         routes.setTaskPushNotificationConfiguration("{broken", rc);
 
@@ -267,14 +288,16 @@ public class A2AServerRoutes_v0_3_Test {
 
     @ParameterizedTest(name = "taskId={0}, configId={1}")
     @MethodSource("taskAndConfigIds")
-    public void testGetPushConfigForwardsRawPathValues(@Nullable String taskId, @Nullable String configId) {
+    public void testGetPushConfigForwardsRawPathValues(
+            @Nullable String taskId, @Nullable String configId) {
         fixture(true);
         RestHandler_v0_3 transport = mock(RestHandler_v0_3.class);
         routes.jsonRestHandler = transport;
         setTaskId(taskId);
         when(rc.pathParam("configId")).thenReturn(configId);
         RestHandler_v0_3.HTTPRestResponse error = rawForwardingError();
-        when(transport.getTaskPushNotificationConfiguration(eq(taskId), eq(configId), any())).thenReturn(error);
+        when(transport.getTaskPushNotificationConfiguration(eq(taskId), eq(configId), any()))
+                .thenReturn(error);
 
         routes.getTaskPushNotificationConfiguration(rc);
 
@@ -302,14 +325,16 @@ public class A2AServerRoutes_v0_3_Test {
 
     @ParameterizedTest(name = "taskId={0}, configId={1}")
     @MethodSource("taskAndConfigIds")
-    public void testDeletePushConfigForwardsRawPathValues(@Nullable String taskId, @Nullable String configId) {
+    public void testDeletePushConfigForwardsRawPathValues(
+            @Nullable String taskId, @Nullable String configId) {
         fixture(true);
         RestHandler_v0_3 transport = mock(RestHandler_v0_3.class);
         routes.jsonRestHandler = transport;
         setTaskId(taskId);
         when(rc.pathParam("configId")).thenReturn(configId);
         RestHandler_v0_3.HTTPRestResponse error = rawForwardingError();
-        when(transport.deleteTaskPushNotificationConfiguration(eq(taskId), eq(configId), any())).thenReturn(error);
+        when(transport.deleteTaskPushNotificationConfiguration(eq(taskId), eq(configId), any()))
+                .thenReturn(error);
 
         routes.deleteTaskPushNotificationConfiguration(rc);
 
@@ -324,16 +349,28 @@ public class A2AServerRoutes_v0_3_Test {
 
     private static Stream<Arguments> taskAndConfigIds() {
         return Stream.of((String) null, "", "task")
-                .flatMap(taskId -> Stream.of((String) null, "", "config")
-                        .map(configId -> Arguments.of(taskId, configId)));
+                .flatMap(
+                        taskId ->
+                                Stream.of((String) null, "", "config")
+                                        .map(configId -> Arguments.of(taskId, configId)));
     }
 
     private static Stream<Arguments> taskAndAliasValues() {
-        String[][] aliases = {{null, null}, {"", null}, {null, ""}, {"bad", null}, {null, "bad"},
-                {"2", null}, {null, "2"}, {"", "bad"}};
+        String[][] aliases = {
+            {null, null},
+            {"", null},
+            {null, ""},
+            {"bad", null},
+            {null, "bad"},
+            {"2", null},
+            {null, "2"},
+            {"", "bad"}
+        };
         return Stream.of((String) null, "", "task")
-                .flatMap(taskId -> Stream.of(aliases)
-                        .map(alias -> Arguments.of(taskId, alias[0], alias[1])));
+                .flatMap(
+                        taskId ->
+                                Stream.of(aliases)
+                                        .map(alias -> Arguments.of(taskId, alias[0], alias[1])));
     }
 
     private void setTaskId(@Nullable String taskId) {
@@ -342,7 +379,8 @@ public class A2AServerRoutes_v0_3_Test {
     }
 
     private RestHandler_v0_3.HTTPRestResponse rawForwardingError() {
-        return new RestHandler_v0_3.HTTPRestResponse(422, "application/json", "{\"transportError\":true}");
+        return new RestHandler_v0_3.HTTPRestResponse(
+                422, "application/json", "{\"transportError\":true}");
     }
 
     private void assertRawForwardingResponse(RestHandler_v0_3.HTTPRestResponse error) {

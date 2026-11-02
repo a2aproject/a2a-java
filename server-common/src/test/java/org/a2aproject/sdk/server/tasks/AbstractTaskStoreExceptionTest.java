@@ -93,7 +93,8 @@ public abstract class AbstractTaskStoreExceptionTest<T extends TaskStoreExceptio
     @Test
     void testCauseChain_multipleLevels() {
         RuntimeException rootCause = new RuntimeException("Database error");
-        IllegalStateException intermediateCause = new IllegalStateException("Transaction failed", rootCause);
+        IllegalStateException intermediateCause =
+                new IllegalStateException("Transaction failed", rootCause);
         T exception = createException("task-123", "Save failed", intermediateCause);
 
         assertNotNull(exception.getCause());
@@ -148,7 +149,8 @@ public abstract class AbstractTaskStoreExceptionTest<T extends TaskStoreExceptio
     protected void assertMessageContains(T exception, String expectedSubstring) {
         assertNotNull(exception.getMessage());
         assert exception.getMessage().contains(expectedSubstring)
-                : String.format("Expected message to contain '%s' but was: %s",
+                : String.format(
+                        "Expected message to contain '%s' but was: %s",
                         expectedSubstring, exception.getMessage());
     }
 

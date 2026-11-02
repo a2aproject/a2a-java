@@ -1,22 +1,16 @@
 package org.a2aproject.sdk.grpc.utils;
 
-import org.a2aproject.sdk.spec.A2AErrorCodes;
-
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,17 +22,31 @@ import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.IdJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.jsonrpc.common.json.MethodNotFoundJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2AMessage;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2ARequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2AResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
@@ -54,14 +62,13 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
-import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
+import org.a2aproject.sdk.spec.GetExtendedAgentCardParams;
 import org.a2aproject.sdk.spec.InvalidAgentResponseError;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.InvalidRequestError;
@@ -75,17 +82,6 @@ import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.util.ErrorDetail;
 import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
-
-import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
-
-import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 
 /**
  * Utilities for converting between JSON-RPC 2.0 messages and Protocol Buffer objects.
@@ -173,22 +169,27 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 public class JSONRPCUtils {
 
     private static final Logger LOGGER = Logger.getLogger(JSONRPCUtils.class.getName());
-    private static final Gson GSON = new GsonBuilder()
-            .setStrictness(Strictness.STRICT)
-            .create();
-    private static final Pattern EXTRACT_WRONG_VALUE = Pattern.compile("Expect (.*) but got: \".*\"");
-    private static final Pattern EXTRACT_WRONG_TYPE = Pattern.compile("Expected (.*) but found \".*\"");
-    static final String ERROR_MESSAGE = "Invalid request content: %s. Please verify the request matches the expected schema for this method.";
+    private static final Gson GSON = new GsonBuilder().setStrictness(Strictness.STRICT).create();
+    private static final Pattern EXTRACT_WRONG_VALUE =
+            Pattern.compile("Expect (.*) but got: \".*\"");
+    private static final Pattern EXTRACT_WRONG_TYPE =
+            Pattern.compile("Expected (.*) but found \".*\"");
+    static final String ERROR_MESSAGE =
+            "Invalid request content: %s. Please verify the request matches the expected schema for"
+                    + " this method.";
 
-    public static A2ARequest<?> parseRequestBody(String body, @Nullable String tenant) throws JsonMappingException, JsonProcessingException {
+    public static A2ARequest<?> parseRequestBody(String body, @Nullable String tenant)
+            throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         if (!jelement.isJsonObject()) {
-            throw new JsonMappingException(null, "Invalid JSON-RPC request: the request must be a JSON object.");
+            throw new JsonMappingException(
+                    null, "Invalid JSON-RPC request: the request must be a JSON object.");
         }
         JsonObject jsonRpc = jelement.getAsJsonObject();
         if (!jsonRpc.has("method")) {
             throw new IdJsonMappingException(
-                    "JSON-RPC request missing required 'method' field. Request must include: jsonrpc, id, method, and params.",
+                    "JSON-RPC request missing required 'method' field. Request must include:"
+                            + " jsonrpc, id, method, and params.",
                     getIdIfPossible(jsonRpc));
         }
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -198,98 +199,144 @@ public class JSONRPCUtils {
         try {
             return parseMethodRequest(version, id, method, paramsNode, tenant);
         } catch (InvalidParamsError e) {
-            throw new InvalidParamsJsonMappingException(Utils.defaultIfNull(e.getMessage(), "Invalid parameters"), id);
+            throw new InvalidParamsJsonMappingException(
+                    Utils.defaultIfNull(e.getMessage(), "Invalid parameters"), id);
         }
     }
 
-    private static void setTenantIfAbsent(Supplier<String> existingTenantGetter, Consumer<String> setter, @Nullable String tenantOverride) {
-        if (tenantOverride != null && !tenantOverride.isBlank() && existingTenantGetter.get().isBlank()) {
+    private static void setTenantIfAbsent(
+            Supplier<String> existingTenantGetter,
+            Consumer<String> setter,
+            @Nullable String tenantOverride) {
+        if (tenantOverride != null
+                && !tenantOverride.isBlank()
+                && existingTenantGetter.get().isBlank()) {
             setter.accept(tenantOverride);
         }
     }
 
-    private static A2ARequest<?> parseMethodRequest(String version, Object id, String method, @Nullable JsonElement paramsNode, @Nullable String tenant) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
+    private static A2ARequest<?> parseMethodRequest(
+            String version,
+            Object id,
+            String method,
+            @Nullable JsonElement paramsNode,
+            @Nullable String tenant)
+            throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
         // JSON-RPC 2.0 allows "params" to be omitted: parse it like an empty params object.
         JsonElement params = paramsNode == null ? new JsonObject() : paramsNode;
         switch (method) {
             case GET_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
+                org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new GetTaskRequest(version, id, ProtoUtils.FromProto.taskQueryParams(builder));
+                return new GetTaskRequest(
+                        version, id, ProtoUtils.FromProto.taskQueryParams(builder));
             }
             case CANCEL_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.CancelTaskRequest.Builder builder = org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder();
+                org.a2aproject.sdk.grpc.CancelTaskRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new CancelTaskRequest(version, id, ProtoUtils.FromProto.cancelTaskParams(builder));
+                return new CancelTaskRequest(
+                        version, id, ProtoUtils.FromProto.cancelTaskParams(builder));
             }
             case LIST_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.ListTasksRequest.Builder builder = org.a2aproject.sdk.grpc.ListTasksRequest.newBuilder();
+                org.a2aproject.sdk.grpc.ListTasksRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.ListTasksRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
+                return new ListTasksRequest(
+                        version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
+                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder =
+                        org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new CreateTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.createTaskPushNotificationConfig(builder));
+                return new CreateTaskPushNotificationConfigRequest(
+                        version,
+                        id,
+                        ProtoUtils.FromProto.createTaskPushNotificationConfig(builder));
             }
             case GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
+                org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new GetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
+                return new GetTaskPushNotificationConfigRequest(
+                        version,
+                        id,
+                        ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
             }
             case SEND_MESSAGE_METHOD -> {
-                org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+                org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
+                return new SendMessageRequest(
+                        version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
+                org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new ListTaskPushNotificationConfigsRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(builder));
+                return new ListTaskPushNotificationConfigsRequest(
+                        version,
+                        id,
+                        ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
+                org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest
+                                .newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
+                return new DeleteTaskPushNotificationConfigRequest(
+                        version,
+                        id,
+                        ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
             case GET_EXTENDED_AGENT_CARD_METHOD -> {
                 if (paramsNode != null && !paramsNode.isJsonNull()) {
-                    org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.Builder builder = org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder();
+                    org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.Builder builder =
+                            org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder();
                     parseRequestBody(paramsNode, builder, id);
                     setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                    return new GetExtendedAgentCardRequest(version, id, ProtoUtils.FromProto.getExtendedAgentCardParams(builder));
+                    return new GetExtendedAgentCardRequest(
+                            version, id, ProtoUtils.FromProto.getExtendedAgentCardParams(builder));
                 }
                 if (tenant != null && !tenant.isBlank()) {
-                    return new GetExtendedAgentCardRequest(version, id, new GetExtendedAgentCardParams(tenant));
+                    return new GetExtendedAgentCardRequest(
+                            version, id, new GetExtendedAgentCardParams(tenant));
                 }
                 return new GetExtendedAgentCardRequest(version, id, null);
             }
             case SEND_STREAMING_MESSAGE_METHOD -> {
-                org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+                org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
+                return new SendStreamingMessageRequest(
+                        version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case SUBSCRIBE_TO_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder builder = org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder();
+                org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder builder =
+                        org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder();
                 parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
-                return new SubscribeToTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
+                return new SubscribeToTaskRequest(
+                        version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             default ->
-                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id);
+                    throw new MethodNotFoundJsonMappingException(
+                            "Unsupported JSON-RPC method: '" + method + "'", id);
         }
     }
 
-    public static StreamResponse parseResponseEvent(String body) throws JsonMappingException, JsonProcessingException {
+    public static StreamResponse parseResponseEvent(String body)
+            throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -304,7 +351,8 @@ public class JSONRPCUtils {
         return builder.build();
     }
 
-    public static A2AResponse<?> parseResponseBody(String body, String method) throws JsonMappingException, JsonProcessingException {
+    public static A2AResponse<?> parseResponseBody(String body, String method)
+            throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -316,57 +364,74 @@ public class JSONRPCUtils {
         }
         switch (method) {
             case GET_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.Task.Builder builder = org.a2aproject.sdk.grpc.Task.newBuilder();
+                org.a2aproject.sdk.grpc.Task.Builder builder =
+                        org.a2aproject.sdk.grpc.Task.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
                 return new GetTaskResponse(id, ProtoUtils.FromProto.task(builder));
             }
             case CANCEL_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.Task.Builder builder = org.a2aproject.sdk.grpc.Task.newBuilder();
+                org.a2aproject.sdk.grpc.Task.Builder builder =
+                        org.a2aproject.sdk.grpc.Task.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
                 return new CancelTaskResponse(id, ProtoUtils.FromProto.task(builder));
             }
             case LIST_TASK_METHOD -> {
-                org.a2aproject.sdk.grpc.ListTasksResponse.Builder builder = org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder();
+                org.a2aproject.sdk.grpc.ListTasksResponse.Builder builder =
+                        org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
                 return new ListTasksResponse(id, ProtoUtils.FromProto.listTasksResult(builder));
             }
             case SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
+                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder =
+                        org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new CreateTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.taskPushNotificationConfig(builder));
+                return new CreateTaskPushNotificationConfigResponse(
+                        id, ProtoUtils.FromProto.taskPushNotificationConfig(builder));
             }
             case GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
+                org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder =
+                        org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new GetTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.taskPushNotificationConfig(builder));
+                return new GetTaskPushNotificationConfigResponse(
+                        id, ProtoUtils.FromProto.taskPushNotificationConfig(builder));
             }
             case SEND_MESSAGE_METHOD -> {
-                org.a2aproject.sdk.grpc.SendMessageResponse.Builder builder = org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder();
+                org.a2aproject.sdk.grpc.SendMessageResponse.Builder builder =
+                        org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
                 if (builder.hasMessage()) {
-                    return new SendMessageResponse(id, ProtoUtils.FromProto.message(builder.getMessage()));
+                    return new SendMessageResponse(
+                            id, ProtoUtils.FromProto.message(builder.getMessage()));
                 }
                 return new SendMessageResponse(id, ProtoUtils.FromProto.task(builder.getTask()));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.Builder builder = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.newBuilder();
+                org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.Builder builder =
+                        org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse
+                                .newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new ListTaskPushNotificationConfigsResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigsResult(builder));
+                return new ListTaskPushNotificationConfigsResponse(
+                        id, ProtoUtils.FromProto.listTaskPushNotificationConfigsResult(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id);
             }
             case GET_EXTENDED_AGENT_CARD_METHOD -> {
-                org.a2aproject.sdk.grpc.AgentCard.Builder builder = org.a2aproject.sdk.grpc.AgentCard.newBuilder();
+                org.a2aproject.sdk.grpc.AgentCard.Builder builder =
+                        org.a2aproject.sdk.grpc.AgentCard.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new GetExtendedAgentCardResponse(id, ProtoUtils.FromProto.agentCard(builder));
+                return new GetExtendedAgentCardResponse(
+                        id, ProtoUtils.FromProto.agentCard(builder));
             }
             default ->
-                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "' in response parsing.", getIdIfPossible(jsonRpc));
+                    throw new MethodNotFoundJsonMappingException(
+                            "Unsupported JSON-RPC method: '" + method + "' in response parsing.",
+                            getIdIfPossible(jsonRpc));
         }
     }
 
-    public static A2AResponse<?> parseError(JsonObject error, Object id, String method) throws JsonMappingException {
+    public static A2AResponse<?> parseError(JsonObject error, Object id, String method)
+            throws JsonMappingException {
         A2AError rpcError = processError(error);
         switch (method) {
             case GET_TASK_METHOD -> {
@@ -394,7 +459,8 @@ public class JSONRPCUtils {
                 return new DeleteTaskPushNotificationConfigResponse(id, rpcError);
             }
             default ->
-                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id);
+                    throw new MethodNotFoundJsonMappingException(
+                            "Unsupported JSON-RPC method: '" + method + "'", id);
         }
     }
 
@@ -422,14 +488,22 @@ public class JSONRPCUtils {
                     case INVALID_REQUEST -> new InvalidRequestError(code, message, details);
                     case METHOD_NOT_FOUND -> new MethodNotFoundError(code, message, details);
                     case INVALID_PARAMS -> new InvalidParamsError(code, message, details);
-                    case INTERNAL -> new org.a2aproject.sdk.spec.InternalError(code, message, details);
-                    case PUSH_NOTIFICATION_NOT_SUPPORTED -> new PushNotificationNotSupportedError(code, message, details);
-                    case UNSUPPORTED_OPERATION -> new UnsupportedOperationError(code, message, details);
-                    case CONTENT_TYPE_NOT_SUPPORTED -> new ContentTypeNotSupportedError(code, message, details);
-                    case INVALID_AGENT_RESPONSE -> new InvalidAgentResponseError(code, message, details);
-                    case EXTENDED_AGENT_CARD_NOT_CONFIGURED -> new ExtendedAgentCardNotConfiguredError(code, message, details);
-                    case EXTENSION_SUPPORT_REQUIRED -> new ExtensionSupportRequiredError(code, message, details);
-                    case VERSION_NOT_SUPPORTED -> new VersionNotSupportedError(code, message, details);
+                    case INTERNAL ->
+                            new org.a2aproject.sdk.spec.InternalError(code, message, details);
+                    case PUSH_NOTIFICATION_NOT_SUPPORTED ->
+                            new PushNotificationNotSupportedError(code, message, details);
+                    case UNSUPPORTED_OPERATION ->
+                            new UnsupportedOperationError(code, message, details);
+                    case CONTENT_TYPE_NOT_SUPPORTED ->
+                            new ContentTypeNotSupportedError(code, message, details);
+                    case INVALID_AGENT_RESPONSE ->
+                            new InvalidAgentResponseError(code, message, details);
+                    case EXTENDED_AGENT_CARD_NOT_CONFIGURED ->
+                            new ExtendedAgentCardNotConfiguredError(code, message, details);
+                    case EXTENSION_SUPPORT_REQUIRED ->
+                            new ExtensionSupportRequiredError(code, message, details);
+                    case VERSION_NOT_SUPPORTED ->
+                            new VersionNotSupportedError(code, message, details);
                     case TASK_NOT_CANCELABLE -> new TaskNotCancelableError(code, message, details);
                     case TASK_NOT_FOUND -> new TaskNotFoundError(message, details);
                 };
@@ -439,17 +513,29 @@ public class JSONRPCUtils {
         return new A2AError(A2AErrorCodes.INTERNAL.code(), message == null ? "" : message, details);
     }
 
-    protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
+    protected static void parseRequestBody(
+            JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id)
+            throws JsonProcessingException {
         parseJsonString(jsonRpc.toString(), builder, id);
     }
 
-    public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
+    public static void parseJsonString(
+            String body, com.google.protobuf.Message.Builder builder, Object id)
+            throws JsonProcessingException {
         parseJsonString(body, builder, id, false);
     }
 
-    public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id, boolean ignoringUnknownFields) throws JsonProcessingException {
+    public static void parseJsonString(
+            String body,
+            com.google.protobuf.Message.Builder builder,
+            Object id,
+            boolean ignoringUnknownFields)
+            throws JsonProcessingException {
         try {
-            JsonFormat.Parser parser = ignoringUnknownFields ? JsonFormat.parser().ignoringUnknownFields() : JsonFormat.parser();
+            JsonFormat.Parser parser =
+                    ignoringUnknownFields
+                            ? JsonFormat.parser().ignoringUnknownFields()
+                            : JsonFormat.parser();
             parser.merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
@@ -482,9 +568,13 @@ public class JSONRPCUtils {
      * @param id the request ID if it could be extracted, null otherwise
      * @return an appropriate JsonProcessingException subtype based on the error and ID availability
      */
-    private static JsonProcessingException convertProtoBufExceptionToJsonProcessingException(InvalidProtocolBufferException e, Object id) {
+    private static JsonProcessingException convertProtoBufExceptionToJsonProcessingException(
+            InvalidProtocolBufferException e, Object id) {
         // Log the original exception for debugging purposes
-        LOGGER.log(Level.FINE, "Converting protobuf parsing exception to JSON-RPC error. Request ID: {0}", id);
+        LOGGER.log(
+                Level.FINE,
+                "Converting protobuf parsing exception to JSON-RPC error. Request ID: {0}",
+                id);
         LOGGER.log(Level.FINE, "Original proto exception details", e);
 
         String message = e.getMessage();
@@ -493,10 +583,15 @@ public class JSONRPCUtils {
         }
 
         // Extract field name if present in error message - check common prefixes
-        String[] prefixes = {"Cannot find field: ", "Invalid value for", "Invalid enum value:", "Failed to parse"};
+        String[] prefixes = {
+            "Cannot find field: ", "Invalid value for", "Invalid enum value:", "Failed to parse"
+        };
         for (String prefix : prefixes) {
             if (message.contains(prefix)) {
-                return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
+                return new InvalidParamsJsonMappingException(
+                        ERROR_MESSAGE.formatted(
+                                message.substring(message.indexOf(prefix) + prefix.length())),
+                        id);
             }
         }
 
@@ -504,12 +599,14 @@ public class JSONRPCUtils {
         Matcher matcher = EXTRACT_WRONG_TYPE.matcher(message);
         if (matcher.matches() && matcher.group(1) != null) {
             // ID is null -> use empty string sentinel value (see javadoc above)
-            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(matcher.group(1)), Utils.defaultIfNull(id, ""));
+            return new InvalidParamsJsonMappingException(
+                    ERROR_MESSAGE.formatted(matcher.group(1)), Utils.defaultIfNull(id, ""));
         }
         matcher = EXTRACT_WRONG_VALUE.matcher(message);
         if (matcher.matches() && matcher.group(1) != null) {
             // ID is null -> use empty string sentinel value (see javadoc above)
-            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(matcher.group(1)), Utils.defaultIfNull(id, ""));
+            return new InvalidParamsJsonMappingException(
+                    ERROR_MESSAGE.formatted(matcher.group(1)), Utils.defaultIfNull(id, ""));
         }
 
         // Generic error - couldn't match specific patterns
@@ -558,18 +655,26 @@ public class JSONRPCUtils {
                 // when the client uses a UUID as the request ID (the default).
                 id = primitive.isNumber() ? primitive.getAsInt() : primitive.getAsString();
             } else {
-                throw new JsonMappingException(null, "Invalid 'id' type: " + jsonRpc.get("id").getClass().getSimpleName()
-                        + ". ID must be a JSON string or number, not an object or array.");
+                throw new JsonMappingException(
+                        null,
+                        "Invalid 'id' type: "
+                                + jsonRpc.get("id").getClass().getSimpleName()
+                                + ". ID must be a JSON string or number, not an object or array.");
             }
         }
         if (id == null) {
-            throw new JsonMappingException(null, "Request 'id' cannot be null. Use a string or number identifier.");
+            throw new JsonMappingException(
+                    null, "Request 'id' cannot be null. Use a string or number identifier.");
         }
         return id;
     }
 
-    public static String toJsonRPCRequest(@Nullable String requestId, String method, com.google.protobuf.@Nullable MessageOrBuilder payload) {
-        try (StringWriter result = new StringWriter(); JsonWriter output = GSON.newJsonWriter(result)) {
+    public static String toJsonRPCRequest(
+            @Nullable String requestId,
+            String method,
+            com.google.protobuf.@Nullable MessageOrBuilder payload) {
+        try (StringWriter result = new StringWriter();
+                JsonWriter output = GSON.newJsonWriter(result)) {
             output.beginObject();
             output.name("jsonrpc").value("2.0");
             String id = requestId;
@@ -581,38 +686,57 @@ public class JSONRPCUtils {
                 output.name("method").value(method);
             }
             if (payload != null) {
-                String resultValue = ProtoJsonUtils.toJson(
-                        JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), payload);
+                String resultValue =
+                        ProtoJsonUtils.toJson(
+                                JsonFormat.printer()
+                                        .alwaysPrintFieldsWithNoPresence()
+                                        .omittingInsignificantWhitespace(),
+                                payload);
                 output.name("params").jsonValue(resultValue);
             }
             output.endObject();
             return result.toString();
         } catch (IOException ex) {
             throw new RuntimeException(
-                    "Failed to serialize JSON-RPC request for method '" + method + "'. "
-                    + "This indicates an internal error in JSON generation. Request ID: " + requestId, ex);
+                    "Failed to serialize JSON-RPC request for method '"
+                            + method
+                            + "'. "
+                            + "This indicates an internal error in JSON generation. Request ID: "
+                            + requestId,
+                    ex);
         }
     }
 
-    public static String toJsonRPCResultResponse(@Nullable Object requestId, com.google.protobuf.MessageOrBuilder builder) {
-        try (StringWriter result = new StringWriter(); JsonWriter output = GSON.newJsonWriter(result)) {
+    public static String toJsonRPCResultResponse(
+            @Nullable Object requestId, com.google.protobuf.MessageOrBuilder builder) {
+        try (StringWriter result = new StringWriter();
+                JsonWriter output = GSON.newJsonWriter(result)) {
             output.beginObject();
             output.name("jsonrpc").value("2.0");
             JsonUtil.writeJsonRpcId(output, requestId);
-            String resultValue = ProtoJsonUtils.toJson(
-                    JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), builder);
+            String resultValue =
+                    ProtoJsonUtils.toJson(
+                            JsonFormat.printer()
+                                    .alwaysPrintFieldsWithNoPresence()
+                                    .omittingInsignificantWhitespace(),
+                            builder);
             output.name("result").jsonValue(resultValue);
             output.endObject();
             return result.toString();
         } catch (IOException ex) {
             throw new RuntimeException(
                     "Failed to serialize JSON-RPC success response. "
-                    + "Proto type: " + builder.getClass().getSimpleName() + ", Request ID: " + requestId, ex);
+                            + "Proto type: "
+                            + builder.getClass().getSimpleName()
+                            + ", Request ID: "
+                            + requestId,
+                    ex);
         }
     }
 
     public static String toJsonRPCErrorResponse(@Nullable Object requestId, A2AError error) {
-        try (StringWriter result = new StringWriter(); JsonWriter output = GSON.newJsonWriter(result)) {
+        try (StringWriter result = new StringWriter();
+                JsonWriter output = GSON.newJsonWriter(result)) {
             output.beginObject();
             output.name("jsonrpc").value("2.0");
             JsonUtil.writeJsonRpcId(output, requestId);
@@ -621,7 +745,8 @@ public class JSONRPCUtils {
             output.name("code").value(error.getCode());
             output.name("message").value(error.getMessage());
             A2AErrorCodes a2aErrorCode = A2AErrorCodes.fromCode(error.getCode());
-            String reason = a2aErrorCode != null ? a2aErrorCode.name() : A2AErrorCodes.INTERNAL.name();
+            String reason =
+                    a2aErrorCode != null ? a2aErrorCode.name() : A2AErrorCodes.INTERNAL.name();
             output.name("data");
             GSON.toJson(List.of(ErrorDetail.of(reason, error.getDetails())), List.class, output);
             output.endObject();
@@ -630,7 +755,11 @@ public class JSONRPCUtils {
         } catch (IOException ex) {
             throw new RuntimeException(
                     "Failed to serialize JSON-RPC error response. "
-                    + "Error code: " + error.getCode() + ", Request ID: " + requestId, ex);
+                            + "Error code: "
+                            + error.getCode()
+                            + ", Request ID: "
+                            + requestId,
+                    ex);
         }
     }
 }

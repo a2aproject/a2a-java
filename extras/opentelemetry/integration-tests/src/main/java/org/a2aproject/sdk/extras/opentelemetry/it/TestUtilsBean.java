@@ -1,13 +1,13 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.a2aproject.sdk.server.events.QueueManager;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * Test utilities for OpenTelemetry integration tests.
@@ -16,14 +16,11 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class TestUtilsBean {
 
-    @Inject
-    TaskStore taskStore;
+    @Inject TaskStore taskStore;
 
-    @Inject
-    QueueManager queueManager;
+    @Inject QueueManager queueManager;
 
-    @Inject
-    PushNotificationConfigStore pushNotificationConfigStore;
+    @Inject PushNotificationConfigStore pushNotificationConfigStore;
 
     public void saveTask(Task task) {
         taskStore.save(task, false);
@@ -51,8 +48,7 @@ public class TestUtilsBean {
 
     public void savePushNotificationConfig(String taskId, TaskPushNotificationConfig config) {
         pushNotificationConfigStore.setInfo(
-                TaskPushNotificationConfig.builder(config).taskId(taskId).build(),
-                null);
+                TaskPushNotificationConfig.builder(config).taskId(taskId).build(), null);
     }
 
     public void deletePushNotificationConfig(String taskId, String configId) {

@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.compat03.client.transport.grpc;
 
+import io.grpc.Channel;
+import java.util.function.Function;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransportConfig_v0_3;
 import org.a2aproject.sdk.util.Assert;
-import io.grpc.Channel;
-
-import java.util.function.Function;
 
 public class GrpcTransportConfig_v0_3 extends ClientTransportConfig_v0_3<GrpcTransport_v0_3> {
 

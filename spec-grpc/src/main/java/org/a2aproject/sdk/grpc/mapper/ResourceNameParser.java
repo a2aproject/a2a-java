@@ -21,7 +21,7 @@ public class ResourceNameParser {
     /**
      * Define the task name form its taskId as in "tasks/{taskId}".
      *
-     * @param taskId the taskId 
+     * @param taskId the taskId
      * @return the task name
      */
     public static String defineTaskName(String taskId) {
@@ -40,9 +40,10 @@ public class ResourceNameParser {
     public static String[] parseTaskPushNotificationConfigName(String resourceName) {
         String[] parts = resourceName.split("/");
         if (parts.length < 4) {
-            throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + resourceName);
+            throw new IllegalArgumentException(
+                    "Invalid name format for TaskPushNotificationConfig: " + resourceName);
         }
-        return new String[]{parts[1], parts[3]};
+        return new String[] {parts[1], parts[3]};
     }
 
     /**
@@ -65,17 +66,20 @@ public class ResourceNameParser {
             // "tasks/{taskId}" - use taskId as configId
             configId = taskId;
         } else if (parts.length < 4) {
-            throw new IllegalArgumentException("Invalid name format for GetTaskPushNotificationConfigRequest: " + resourceName);
+            throw new IllegalArgumentException(
+                    "Invalid name format for GetTaskPushNotificationConfigRequest: "
+                            + resourceName);
         } else {
             // "tasks/{taskId}/pushNotificationConfigs/{configId}"
             configId = parts[3];
         }
 
-        return new String[]{taskId, configId};
+        return new String[] {taskId, configId};
     }
+
     public static String defineGetTaskPushNotificationConfigName(String taskId, String configId) {
-        String name= "tasks/" + taskId ;
-        if(configId != null && !configId.isBlank()) {
+        String name = "tasks/" + taskId;
+        if (configId != null && !configId.isBlank()) {
             name = name + "/pushNotificationConfigs/" + configId;
         }
         return name;

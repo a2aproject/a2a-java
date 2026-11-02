@@ -1,14 +1,10 @@
 package org.a2aproject.sdk.server.auth;
 
-import org.jspecify.annotations.Nullable;
-import org.a2aproject.sdk.util.Assert;
-
 import java.util.Map;
+import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
-public record AuthenticatedUser(
-        String username,
-        Map<String, Object> attributes
-) implements User {
+public record AuthenticatedUser(String username, Map<String, Object> attributes) implements User {
 
     public AuthenticatedUser(String username) {
         this(username, Map.of());

@@ -2,7 +2,6 @@ package org.a2aproject.sdk.compat03.spec;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -16,13 +15,18 @@ public record TaskStatusUpdateEvent_v0_3(
         String contextId,
         @SerializedName("final") boolean isFinal,
         Map<String, Object> metadata,
-        String kind
-) implements EventKind_v0_3, StreamingEventKind_v0_3, UpdateEvent_v0_3 {
+        String kind)
+        implements EventKind_v0_3, StreamingEventKind_v0_3, UpdateEvent_v0_3 {
 
     public static final String KIND = "status-update";
 
-    public TaskStatusUpdateEvent_v0_3 (String taskId, TaskStatus_v0_3 status, String contextId, boolean isFinal,
-                                      @Nullable Map<String, Object> metadata, String kind) {
+    public TaskStatusUpdateEvent_v0_3(
+            String taskId,
+            TaskStatus_v0_3 status,
+            String contextId,
+            boolean isFinal,
+            @Nullable Map<String, Object> metadata,
+            String kind) {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("status", status);
         Assert.checkNotNullParam("contextId", contextId);
@@ -37,8 +41,12 @@ public record TaskStatusUpdateEvent_v0_3(
         this.metadata = metadata != null ? Map.copyOf(metadata) : null;
     }
 
-    public TaskStatusUpdateEvent_v0_3(String taskId, TaskStatus_v0_3 status, String contextId, boolean isFinal,
-                                      @Nullable Map<String, Object> metadata) {
+    public TaskStatusUpdateEvent_v0_3(
+            String taskId,
+            TaskStatus_v0_3 status,
+            String contextId,
+            boolean isFinal,
+            @Nullable Map<String, Object> metadata) {
         this(taskId, status, contextId, isFinal, metadata, KIND);
     }
 
@@ -49,8 +57,7 @@ public record TaskStatusUpdateEvent_v0_3(
         private boolean isFinal;
         private Map<String, Object> metadata;
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder(TaskStatusUpdateEvent_v0_3 existing) {
             this.taskId = existing.taskId;

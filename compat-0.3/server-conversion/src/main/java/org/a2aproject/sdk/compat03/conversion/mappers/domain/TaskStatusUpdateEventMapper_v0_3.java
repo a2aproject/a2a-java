@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.mapstruct.Mapper;
@@ -18,13 +18,16 @@ import org.mapstruct.Mapper;
  * Both versions have the same structure:
  * {@code TaskStatusUpdateEvent(taskId, status, contextId, isFinal, metadata)}.
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {TaskStatusMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {TaskStatusMapper_v0_3.class})
 public interface TaskStatusUpdateEventMapper_v0_3 {
 
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    TaskStatusUpdateEventMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(TaskStatusUpdateEventMapper_v0_3.class);
+    TaskStatusUpdateEventMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(TaskStatusUpdateEventMapper_v0_3.class);
 
     /**
      * Converts v0.3 TaskStatusUpdateEvent to v1.0 TaskStatusUpdateEvent.
@@ -40,11 +43,10 @@ public interface TaskStatusUpdateEventMapper_v0_3 {
         }
 
         return new TaskStatusUpdateEvent(
-            v03.taskId(),
-            TaskStatusMapper_v0_3.INSTANCE.toV10(v03.status()),
-            v03.contextId(),
-            v03.metadata()
-        );
+                v03.taskId(),
+                TaskStatusMapper_v0_3.INSTANCE.toV10(v03.status()),
+                v03.contextId(),
+                v03.metadata());
     }
 
     /**
@@ -61,11 +63,10 @@ public interface TaskStatusUpdateEventMapper_v0_3 {
         }
 
         return new TaskStatusUpdateEvent_v0_3(
-            v10.taskId(),
-            TaskStatusMapper_v0_3.INSTANCE.fromV10(v10.status()),
-            v10.contextId(),
-            v10.isFinal(),
-            v10.metadata()
-        );
+                v10.taskId(),
+                TaskStatusMapper_v0_3.INSTANCE.fromV10(v10.status()),
+                v10.contextId(),
+                v10.isFinal(),
+                v10.metadata());
     }
 }

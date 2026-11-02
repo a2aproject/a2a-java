@@ -8,9 +8,7 @@ import org.a2aproject.sdk.spec.EventKind;
  */
 public final class SendMessageResponse extends A2AResponse<EventKind> {
 
-    private SendMessageResponse() {
-    }
-
+    private SendMessageResponse() {}
 
     /**
      * Constructs response with all parameters.

@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-import java.util.Map;
-
 import com.google.gson.annotations.SerializedName;
-import org.a2aproject.sdk.util.Assert;
+import java.util.Map;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -33,8 +32,10 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://tools.ietf.org/html/rfc7515">RFC 7515 - JSON Web Signature</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentCardSignature(@Nullable Map<String, Object> header, @SerializedName("protected")String protectedHeader,
-                                 String signature) {
+public record AgentCardSignature(
+        @Nullable Map<String, Object> header,
+        @SerializedName("protected") String protectedHeader,
+        String signature) {
 
     /**
      * Compact constructor that validates required fields.
@@ -79,8 +80,7 @@ public record AgentCardSignature(@Nullable Map<String, Object> header, @Serializ
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the optional unprotected header with additional metadata.

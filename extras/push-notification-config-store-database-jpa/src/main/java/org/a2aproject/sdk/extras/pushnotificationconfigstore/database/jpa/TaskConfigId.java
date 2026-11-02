@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.extras.pushnotificationconfigstore.database.jpa;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.io.Serializable;
+import java.util.Objects;
 
 @Embeddable
 public class TaskConfigId implements Serializable {
@@ -16,8 +15,7 @@ public class TaskConfigId implements Serializable {
     private String configId;
 
     // No-argument constructor (required by JPA)
-    public TaskConfigId() {
-    }
+    public TaskConfigId() {}
 
     public TaskConfigId(String taskId, String configId) {
         this.taskId = taskId;
@@ -48,8 +46,7 @@ public class TaskConfigId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TaskConfigId that = (TaskConfigId) o;
-        return Objects.equals(taskId, that.taskId) &&
-               Objects.equals(configId, that.configId);
+        return Objects.equals(taskId, that.taskId) && Objects.equals(configId, that.configId);
     }
 
     @Override

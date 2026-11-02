@@ -2,7 +2,6 @@ package org.a2aproject.sdk.client.http.cdi;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.CDI;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
 

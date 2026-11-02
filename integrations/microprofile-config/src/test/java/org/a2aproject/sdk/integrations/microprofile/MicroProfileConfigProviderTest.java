@@ -6,12 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Optional;
-
-import jakarta.inject.Inject;
-
-import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.util.Optional;
+import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -27,14 +25,15 @@ public class MicroProfileConfigProviderTest {
     private static final String A2A_BLOCKING_RECONCILIATION_TIMEOUT_SECONDS =
             "a2a.blocking.reconciliation.timeout.seconds";
 
-    @Inject
-    A2AConfigProvider configProvider;
+    @Inject A2AConfigProvider configProvider;
 
     @Test
     public void testIsMicroProfileConfigProvider() {
         // Verify that when microprofile-config module is on classpath,
         // the injected A2AConfigProvider is the MicroProfile implementation
-        assertInstanceOf(MicroProfileConfigProvider.class, configProvider,
+        assertInstanceOf(
+                MicroProfileConfigProvider.class,
+                configProvider,
                 "A2AConfigProvider should be MicroProfileConfigProvider when module is present");
     }
 
@@ -43,15 +42,20 @@ public class MicroProfileConfigProviderTest {
         // Test that values from application.properties override defaults
         // The test application.properties sets a2a.executor.core-pool-size=15
         String value = configProvider.getValue(A2A_EXECUTOR_CORE_POOL_SIZE);
-        assertEquals("15", value, "Should get value from MicroProfile Config (application.properties)");
+        assertEquals(
+                "15", value, "Should get value from MicroProfile Config (application.properties)");
     }
 
     @Test
     public void testGetValueFallbackToDefaults() {
-        // Test that values not in application.properties fall back to META-INF/a2a-defaults.properties
+        // Test that values not in application.properties fall back to
+        // META-INF/a2a-defaults.properties
         // a2a.executor.max-pool-size is not in test application.properties, so should use default
         String value = configProvider.getValue(A2A_EXECUTOR_MAX_POOL_SIZE);
-        assertEquals("50", value, "Should fall back to default value from META-INF/a2a-defaults.properties");
+        assertEquals(
+                "50",
+                value,
+                "Should fall back to default value from META-INF/a2a-defaults.properties");
     }
 
     @Test
@@ -93,7 +97,8 @@ public class MicroProfileConfigProviderTest {
     @Test
     public void testGetValueThrowsForNonExistent() {
         // Test that required getValue() throws for non-existent property
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> configProvider.getValue("non.existent.property"),
                 "Should throw IllegalArgumentException for non-existent required property");
     }
@@ -106,7 +111,9 @@ public class MicroProfileConfigProviderTest {
         try {
             System.setProperty("a2a.test.system.property", "from-system-property");
             String value = configProvider.getValue("a2a.test.system.property");
-            assertEquals("from-system-property", value,
+            assertEquals(
+                    "from-system-property",
+                    value,
                     "System property should override application.properties");
         } finally {
             if (originalValue != null) {

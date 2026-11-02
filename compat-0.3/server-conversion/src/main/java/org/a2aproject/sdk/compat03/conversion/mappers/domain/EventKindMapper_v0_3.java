@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
@@ -28,12 +28,14 @@ import org.mapstruct.Mapper;
  * <p>
  * Uses instanceof dispatch to determine the concrete type and delegates to the appropriate mapper.
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {
-    TaskMapper_v0_3.class,
-    MessageMapper_v0_3.class,
-    TaskStatusUpdateEventMapper_v0_3.class,
-    TaskArtifactUpdateEventMapper_v0_3.class
-})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {
+            TaskMapper_v0_3.class,
+            MessageMapper_v0_3.class,
+            TaskStatusUpdateEventMapper_v0_3.class,
+            TaskArtifactUpdateEventMapper_v0_3.class
+        })
 public interface EventKindMapper_v0_3 {
 
     /**
@@ -65,7 +67,8 @@ public interface EventKindMapper_v0_3 {
             return TaskArtifactUpdateEventMapper_v0_3.INSTANCE.toV10(v03ArtifactUpdate);
         }
 
-        throw new InvalidRequestError(null, "Unrecognized EventKind type: " + v03.getClass().getName(), null);
+        throw new InvalidRequestError(
+                null, "Unrecognized EventKind type: " + v03.getClass().getName(), null);
     }
 
     /**
@@ -92,6 +95,7 @@ public interface EventKindMapper_v0_3 {
             return TaskArtifactUpdateEventMapper_v0_3.INSTANCE.fromV10(v10ArtifactUpdate);
         }
 
-        throw new InvalidRequestError(null, "Unrecognized EventKind type: " + v10.getClass().getName(), null);
+        throw new InvalidRequestError(
+                null, "Unrecognized EventKind type: " + v10.getClass().getName(), null);
     }
 }

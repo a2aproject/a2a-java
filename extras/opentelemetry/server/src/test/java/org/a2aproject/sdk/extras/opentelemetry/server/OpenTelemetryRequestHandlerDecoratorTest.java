@@ -3,8 +3,10 @@ package org.a2aproject.sdk.extras.opentelemetry.server;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.ERROR_TYPE;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_REQUEST_SYS_PROPERTY;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_RESPONSE_SYS_PROPERTY;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_PROTOCOL_VERSION;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_REQUEST;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_RESPONSE;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_TRANSPORT;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_END_SUFFIX;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.STREAMING_EVENT_SUFFIX;
 import static org.a2aproject.sdk.extras.opentelemetry.OtelSpanMocks.mockClosingSpanBuilder;
@@ -75,41 +77,28 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_PROTOCOL_VERSION;
-import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_TRANSPORT;
-
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetryRequestHandlerDecoratorTest {
 
-    @Mock
-    private Tracer tracer;
+    @Mock private Tracer tracer;
 
-    @Mock
-    private Span span;
+    @Mock private Span span;
 
-    @Mock
-    private SpanBuilder spanBuilder;
+    @Mock private SpanBuilder spanBuilder;
 
-    @Mock
-    private Scope scope;
+    @Mock private Scope scope;
 
-    @Mock
-    private SpanContext spanContext;
+    @Mock private SpanContext spanContext;
 
-    @Mock
-    private ServerCallContext context;
+    @Mock private ServerCallContext context;
 
-    @Mock
-    private RequestHandler delegate;
+    @Mock private RequestHandler delegate;
 
-    @Mock
-    private Meter meter;
+    @Mock private Meter meter;
 
-    @Mock
-    private DoubleHistogramBuilder histogramBuilder;
+    @Mock private DoubleHistogramBuilder histogramBuilder;
 
-    @Mock
-    private DoubleHistogram streamingHistogram;
+    @Mock private DoubleHistogram streamingHistogram;
 
     private TestableOpenTelemetryRequestHandlerDecorator decorator;
 
@@ -148,29 +137,32 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     /**
      * Concrete test implementation of the abstract decorator for testing purposes.
      */
-    static class TestableOpenTelemetryRequestHandlerDecorator extends OpenTelemetryRequestHandlerDecorator {
-        public TestableOpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer) {
+    static class TestableOpenTelemetryRequestHandlerDecorator
+            extends OpenTelemetryRequestHandlerDecorator {
+        public TestableOpenTelemetryRequestHandlerDecorator(
+                RequestHandler delegate, Tracer tracer) {
             super(delegate, tracer);
         }
 
-        public TestableOpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer, Meter meter) {
+        public TestableOpenTelemetryRequestHandlerDecorator(
+                RequestHandler delegate, Tracer tracer, Meter meter) {
             super(delegate, tracer, meter);
         }
     }
-
 
     @Nested
     class GetTaskTests {
         @Test
         void onGetTask_createsSpanAndDelegatesToHandler() throws A2AError {
             TaskQueryParams params = new TaskQueryParams("task-123", null);
-            Task result = Task.builder()
-                    .id("task-123")
-                    .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                    .history(Collections.emptyList())
-                    .artifacts(Collections.emptyList())
-                    .build();
+            Task result =
+                    Task.builder()
+                            .id("task-123")
+                            .contextId("ctx-1")
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                            .history(Collections.emptyList())
+                            .artifacts(Collections.emptyList())
+                            .build();
             when(delegate.onGetTask(params, context)).thenReturn(result);
 
             Task actualResult = decorator.onGetTask(params, context);
@@ -205,7 +197,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class ListTasksTests {
         @Test
         void onListTasks_createsSpanAndDelegatesToHandler() throws A2AError {
-            ListTasksParams params = new ListTasksParams(null, null, null, null, null, null, null, "test-tenant");
+            ListTasksParams params =
+                    new ListTasksParams(null, null, null, null, null, null, null, "test-tenant");
             ListTasksResult result = new ListTasksResult(Collections.emptyList(), 0, 0, null);
             when(delegate.onListTasks(params, context)).thenReturn(result);
 
@@ -221,7 +214,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onListTasks_withError_setsErrorStatus() throws A2AError {
-            ListTasksParams params = new ListTasksParams(null, null, null, null, null, null, null, "test-tenant");
+            ListTasksParams params =
+                    new ListTasksParams(null, null, null, null, null, null, null, "test-tenant");
             A2AError error = new InvalidRequestError("Invalid parameters");
             when(delegate.onListTasks(params, context)).thenThrow(error);
 
@@ -238,13 +232,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void onCancelTask_createsSpanAndDelegatesToHandler() throws A2AError {
             CancelTaskParams params = new CancelTaskParams("task-123");
-            Task result = Task.builder()
-                    .id("task-123")
-                    .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.TASK_STATE_CANCELED))
-                    .history(Collections.emptyList())
-                    .artifacts(Collections.emptyList())
-                    .build();
+            Task result =
+                    Task.builder()
+                            .id("task-123")
+                            .contextId("ctx-1")
+                            .status(new TaskStatus(TaskState.TASK_STATE_CANCELED))
+                            .history(Collections.emptyList())
+                            .artifacts(Collections.emptyList())
+                            .build();
             when(delegate.onCancelTask(params, context)).thenReturn(result);
 
             Task actualResult = decorator.onCancelTask(params, context);
@@ -275,21 +270,23 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class MessageSendTests {
         @Test
         void onMessageSend_createsSpanAndDelegatesToHandler() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .contextId("ctx-1")
-                    .taskId("task-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .contextId("ctx-1")
+                            .taskId("task-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
-            EventKind result = Task.builder()
-                    .id("task-123")
-                    .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                    .history(Collections.emptyList())
-                    .artifacts(Collections.emptyList())
-                    .build();
+            EventKind result =
+                    Task.builder()
+                            .id("task-123")
+                            .contextId("ctx-1")
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                            .history(Collections.emptyList())
+                            .artifacts(Collections.emptyList())
+                            .build();
             when(delegate.onMessageSend(params, context)).thenReturn(result);
 
             EventKind actualResult = decorator.onMessageSend(params, context);
@@ -303,13 +300,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onMessageSend_withError_setsErrorStatus() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .contextId("ctx-1")
-                    .taskId("task-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .contextId("ctx-1")
+                            .taskId("task-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             A2AError error = new InvalidRequestError("Invalid message");
             when(delegate.onMessageSend(params, context)).thenThrow(error);
@@ -326,18 +324,20 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class MessageSendStreamTests {
         @Test
         void onMessageSendStream_createsSpanAndWrapsPublisher() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .contextId("ctx-1")
-                    .taskId("task-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .contextId("ctx-1")
+                            .taskId("task-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
 
-            Flow.Publisher<StreamingEventKind> actualResult = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> actualResult =
+                    decorator.onMessageSendStream(params, context);
 
             assertNotNull(actualResult);
             verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD);
@@ -349,18 +349,21 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onMessageSendStream_withError_setsErrorStatus() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .contextId("ctx-1")
-                    .taskId("task-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .contextId("ctx-1")
+                            .taskId("task-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             A2AError error = new InvalidRequestError("Stream error");
             when(delegate.onMessageSendStream(params, context)).thenThrow(error);
 
-            assertThrows(InvalidRequestError.class, () -> decorator.onMessageSendStream(params, context));
+            assertThrows(
+                    InvalidRequestError.class,
+                    () -> decorator.onMessageSendStream(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
@@ -371,31 +374,39 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         @SuppressWarnings("unchecked")
         void onMessageSendStream_closingSpan_createdOnComplete() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            SpanBuilder closingSpanBuilder = mockClosingSpanBuilder(tracer,
-                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            SpanBuilder closingSpanBuilder =
+                    mockClosingSpanBuilder(
+                            tracer,
+                            A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                            closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             otelSubscriber.onComplete();
 
-            verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX);
+            verify(tracer)
+                    .spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX);
             verify(closingSpanBuilder).addLink(spanContext);
             verify(closingSpan).setStatus(StatusCode.OK);
             verify(closingSpan).end();
@@ -406,42 +417,54 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         @SuppressWarnings("unchecked")
         void onMessageSendStream_closingSpan_recordsEventsAndEndsOnError() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
-            StreamingEventKind eventItem = Message.builder()
-                    .role(Message.Role.ROLE_AGENT)
-                    .parts(List.of(new TextPart("event-data")))
-                    .messageId("event-msg-1")
-                    .build();
+            StreamingEventKind eventItem =
+                    Message.builder()
+                            .role(Message.Role.ROLE_AGENT)
+                            .parts(List.of(new TextPart("event-data")))
+                            .messageId("event-msg-1")
+                            .build();
 
             Span eventSpan = mock(Span.class);
-            SpanBuilder eventSpanBuilder = mockEventSpanBuilder(tracer,
-                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX, eventSpan);
+            SpanBuilder eventSpanBuilder =
+                    mockEventSpanBuilder(
+                            tracer,
+                            A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX,
+                            eventSpan);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             otelSubscriber.onNext(eventItem);
             Throwable error = new RuntimeException("stream failure");
             otelSubscriber.onError(error);
 
             verify(testSubscriber).onNext(eventItem);
-            verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX);
+            verify(tracer)
+                    .spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX);
             verify(eventSpanBuilder).setSpanKind(SpanKind.SERVER);
             verify(eventSpan).end();
             verify(closingSpan).setAttribute(ERROR_TYPE, RuntimeException.class.getName());
@@ -454,39 +477,50 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         @SuppressWarnings("unchecked")
         void onMessageSendStream_closingSpan_createdOnSubscriptionCancel() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
-            // Simulate onSubscribe — the OTel subscriber wraps the subscription before passing it down
+            // Simulate onSubscribe — the OTel subscriber wraps the subscription before passing it
+            // down
             Flow.Subscription rawSubscription = mock(Flow.Subscription.class);
             otelSubscriber.onSubscribe(rawSubscription);
 
             // Capture the wrapped subscription that was forwarded to the downstream subscriber
-            ArgumentCaptor<Flow.Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Flow.Subscription.class);
+            ArgumentCaptor<Flow.Subscription> subscriptionCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscription.class);
             verify(testSubscriber).onSubscribe(subscriptionCaptor.capture());
 
-            // Cancel via the wrapped subscription — this must produce the terminal span and histogram
+            // Cancel via the wrapped subscription — this must produce the terminal span and
+            // histogram
             subscriptionCaptor.getValue().cancel();
 
-            verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX);
+            verify(tracer)
+                    .spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX);
             verify(closingSpan).setStatus(StatusCode.OK);
             verify(closingSpan).end();
             verify(streamingHistogram).record(anyDouble(), any(Attributes.class));
@@ -497,31 +531,39 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         @SuppressWarnings("unchecked")
         void onMessageSendStream_closingSpan_cancelledTwiceOnlyEmitsOneSpan() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             Flow.Subscription rawSubscription = mock(Flow.Subscription.class);
             otelSubscriber.onSubscribe(rawSubscription);
 
-            ArgumentCaptor<Flow.Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Flow.Subscription.class);
+            ArgumentCaptor<Flow.Subscription> subscriptionCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscription.class);
             verify(testSubscriber).onSubscribe(subscriptionCaptor.capture());
 
             subscriptionCaptor.getValue().cancel();
@@ -536,40 +578,52 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         @SuppressWarnings("unchecked")
         void onMessageSendStream_closingSpan_recordsMultipleEventsOnComplete() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
-            StreamingEventKind event1 = Message.builder()
-                    .role(Message.Role.ROLE_AGENT)
-                    .parts(List.of(new TextPart("first event")))
-                    .messageId("event-1")
-                    .build();
-            StreamingEventKind event2 = Message.builder()
-                    .role(Message.Role.ROLE_AGENT)
-                    .parts(List.of(new TextPart("second event")))
-                    .messageId("event-2")
-                    .build();
+            StreamingEventKind event1 =
+                    Message.builder()
+                            .role(Message.Role.ROLE_AGENT)
+                            .parts(List.of(new TextPart("first event")))
+                            .messageId("event-1")
+                            .build();
+            StreamingEventKind event2 =
+                    Message.builder()
+                            .role(Message.Role.ROLE_AGENT)
+                            .parts(List.of(new TextPart("second event")))
+                            .messageId("event-2")
+                            .build();
 
             Span eventSpan = mock(Span.class);
-            SpanBuilder eventSpanBuilder = mockEventSpanBuilder(tracer,
-                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX, eventSpan);
+            SpanBuilder eventSpanBuilder =
+                    mockEventSpanBuilder(
+                            tracer,
+                            A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX,
+                            eventSpan);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             otelSubscriber.onNext(event1);
             otelSubscriber.onNext(event2);
@@ -577,7 +631,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
             verify(testSubscriber).onNext(event1);
             verify(testSubscriber).onNext(event2);
-            verify(tracer, times(2)).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX);
+            verify(tracer, times(2))
+                    .spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX);
             verify(eventSpanBuilder, times(2)).setSpanKind(SpanKind.SERVER);
             verify(eventSpan, times(2)).end();
             verify(closingSpan).setStatus(StatusCode.OK);
@@ -588,27 +643,36 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         @SuppressWarnings("unchecked")
-        void onMessageSendStream_closingSpan_delegateThrowOnComplete_recordsExceptionAndSetsErrorStatus() throws A2AError {
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-ex")
-                    .build();
+        void
+                onMessageSendStream_closingSpan_delegateThrowOnComplete_recordsExceptionAndSetsErrorStatus()
+                        throws A2AError {
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-ex")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             RuntimeException delegateError = new RuntimeException("delegate onComplete failure");
             doThrow(delegateError).when(testSubscriber).onComplete();
@@ -625,13 +689,22 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class SetTaskPushNotificationConfigTests {
         @Test
         void onSetTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
-            TaskPushNotificationConfig params = TaskPushNotificationConfig.builder()
-                    .id("config-1").taskId("task-123").url("http://example.com").build();
-            TaskPushNotificationConfig result = TaskPushNotificationConfig.builder()
-                    .id("config-1").taskId("task-123").url("http://example.com").build();
+            TaskPushNotificationConfig params =
+                    TaskPushNotificationConfig.builder()
+                            .id("config-1")
+                            .taskId("task-123")
+                            .url("http://example.com")
+                            .build();
+            TaskPushNotificationConfig result =
+                    TaskPushNotificationConfig.builder()
+                            .id("config-1")
+                            .taskId("task-123")
+                            .url("http://example.com")
+                            .build();
             when(delegate.onCreateTaskPushNotificationConfig(params, context)).thenReturn(result);
 
-            TaskPushNotificationConfig actualResult = decorator.onCreateTaskPushNotificationConfig(params, context);
+            TaskPushNotificationConfig actualResult =
+                    decorator.onCreateTaskPushNotificationConfig(params, context);
 
             assertEquals(result, actualResult);
             verify(tracer).spanBuilder(A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
@@ -643,12 +716,18 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onSetTaskPushNotificationConfig_withError_setsErrorStatus() throws A2AError {
-            TaskPushNotificationConfig params = TaskPushNotificationConfig.builder()
-                    .id("config-1").taskId("task-123").url("http://example.com").build();
+            TaskPushNotificationConfig params =
+                    TaskPushNotificationConfig.builder()
+                            .id("config-1")
+                            .taskId("task-123")
+                            .url("http://example.com")
+                            .build();
             A2AError error = new InvalidRequestError("Invalid config");
             when(delegate.onCreateTaskPushNotificationConfig(params, context)).thenThrow(error);
 
-            assertThrows(InvalidRequestError.class, () -> decorator.onCreateTaskPushNotificationConfig(params, context));
+            assertThrows(
+                    InvalidRequestError.class,
+                    () -> decorator.onCreateTaskPushNotificationConfig(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
@@ -660,12 +739,18 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class GetTaskPushNotificationConfigTests {
         @Test
         void onGetTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
-            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams("task-123", "config-1");
-            TaskPushNotificationConfig result = TaskPushNotificationConfig.builder()
-                    .id("config-1").taskId("task-123").url("http://example.com").build();
+            GetTaskPushNotificationConfigParams params =
+                    new GetTaskPushNotificationConfigParams("task-123", "config-1");
+            TaskPushNotificationConfig result =
+                    TaskPushNotificationConfig.builder()
+                            .id("config-1")
+                            .taskId("task-123")
+                            .url("http://example.com")
+                            .build();
             when(delegate.onGetTaskPushNotificationConfig(params, context)).thenReturn(result);
 
-            TaskPushNotificationConfig actualResult = decorator.onGetTaskPushNotificationConfig(params, context);
+            TaskPushNotificationConfig actualResult =
+                    decorator.onGetTaskPushNotificationConfig(params, context);
 
             assertEquals(result, actualResult);
             verify(tracer).spanBuilder(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
@@ -677,11 +762,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onGetTaskPushNotificationConfig_withError_setsErrorStatus() throws A2AError {
-            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams("task-123", "");
+            GetTaskPushNotificationConfigParams params =
+                    new GetTaskPushNotificationConfigParams("task-123", "");
             A2AError error = new TaskNotFoundError();
             when(delegate.onGetTaskPushNotificationConfig(params, context)).thenThrow(error);
 
-            assertThrows(TaskNotFoundError.class, () -> decorator.onGetTaskPushNotificationConfig(params, context));
+            assertThrows(
+                    TaskNotFoundError.class,
+                    () -> decorator.onGetTaskPushNotificationConfig(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
@@ -697,7 +785,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onSubscribeToTask(params, context)).thenReturn(publisher);
 
-            Flow.Publisher<StreamingEventKind> actualResult = decorator.onSubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> actualResult =
+                    decorator.onSubscribeToTask(params, context);
 
             assertNotNull(actualResult);
             verify(tracer).spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD);
@@ -713,7 +802,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             A2AError error = new TaskNotFoundError();
             when(delegate.onSubscribeToTask(params, context)).thenThrow(error);
 
-            assertThrows(TaskNotFoundError.class, () -> decorator.onSubscribeToTask(params, context));
+            assertThrows(
+                    TaskNotFoundError.class, () -> decorator.onSubscribeToTask(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
@@ -729,17 +819,23 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             when(delegate.onSubscribeToTask(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            SpanBuilder closingSpanBuilder = mockClosingSpanBuilder(tracer,
-                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            SpanBuilder closingSpanBuilder =
+                    mockClosingSpanBuilder(
+                            tracer,
+                            A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX,
+                            closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onSubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onSubscribeToTask(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             otelSubscriber.onComplete();
 
@@ -757,34 +853,45 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             TaskIdParams params = new TaskIdParams("task-123");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onSubscribeToTask(params, context)).thenReturn(publisher);
-            StreamingEventKind eventItem = Message.builder()
-                    .role(Message.Role.ROLE_AGENT)
-                    .parts(List.of(new TextPart("streamed-event")))
-                    .messageId("evt-1")
-                    .build();
+            StreamingEventKind eventItem =
+                    Message.builder()
+                            .role(Message.Role.ROLE_AGENT)
+                            .parts(List.of(new TextPart("streamed-event")))
+                            .messageId("evt-1")
+                            .build();
 
             Span eventSpan = mock(Span.class);
-            SpanBuilder eventSpanBuilder = mockEventSpanBuilder(tracer,
-                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX, eventSpan);
+            SpanBuilder eventSpanBuilder =
+                    mockEventSpanBuilder(
+                            tracer,
+                            A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX,
+                            eventSpan);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onSubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onSubscribeToTask(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             otelSubscriber.onNext(eventItem);
             Throwable error = new RuntimeException("subscribe failure");
             otelSubscriber.onError(error);
 
             verify(testSubscriber).onNext(eventItem);
-            verify(tracer).spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX);
+            verify(tracer)
+                    .spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX);
             verify(eventSpanBuilder).setSpanKind(SpanKind.SERVER);
             verify(eventSpan).end();
             verify(closingSpan).setAttribute(ERROR_TYPE, RuntimeException.class.getName());
@@ -802,26 +909,35 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             when(delegate.onSubscribeToTask(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decorator.onSubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decorator.onSubscribeToTask(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
-            // Simulate onSubscribe — the OTel subscriber wraps the subscription before passing it down
+            // Simulate onSubscribe — the OTel subscriber wraps the subscription before passing it
+            // down
             Flow.Subscription rawSubscription = mock(Flow.Subscription.class);
             otelSubscriber.onSubscribe(rawSubscription);
 
             // Capture the wrapped subscription forwarded to the downstream subscriber
-            ArgumentCaptor<Flow.Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Flow.Subscription.class);
+            ArgumentCaptor<Flow.Subscription> subscriptionCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscription.class);
             verify(testSubscriber).onSubscribe(subscriptionCaptor.capture());
 
-            // Cancel via the wrapped subscription — this must produce the terminal span and histogram
+            // Cancel via the wrapped subscription — this must produce the terminal span and
+            // histogram
             subscriptionCaptor.getValue().cancel();
 
             verify(tracer).spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX);
@@ -836,11 +952,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class ListTaskPushNotificationConfigsTests {
         @Test
         void onListTaskPushNotificationConfigs_createsSpanAndDelegatesToHandler() throws A2AError {
-            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams("task-123");
-            ListTaskPushNotificationConfigsResult result = new ListTaskPushNotificationConfigsResult(Collections.emptyList(), null);
+            ListTaskPushNotificationConfigsParams params =
+                    new ListTaskPushNotificationConfigsParams("task-123");
+            ListTaskPushNotificationConfigsResult result =
+                    new ListTaskPushNotificationConfigsResult(Collections.emptyList(), null);
             when(delegate.onListTaskPushNotificationConfigs(params, context)).thenReturn(result);
 
-            ListTaskPushNotificationConfigsResult actualResult = decorator.onListTaskPushNotificationConfigs(params, context);
+            ListTaskPushNotificationConfigsResult actualResult =
+                    decorator.onListTaskPushNotificationConfigs(params, context);
 
             assertEquals(result, actualResult);
             verify(tracer).spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
@@ -852,11 +971,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onListTaskPushNotificationConfigs_withError_setsErrorStatus() throws A2AError {
-            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams("task-123");
+            ListTaskPushNotificationConfigsParams params =
+                    new ListTaskPushNotificationConfigsParams("task-123");
             A2AError error = new InvalidRequestError("Invalid request");
             when(delegate.onListTaskPushNotificationConfigs(params, context)).thenThrow(error);
 
-            assertThrows(InvalidRequestError.class, () -> decorator.onListTaskPushNotificationConfigs(params, context));
+            assertThrows(
+                    InvalidRequestError.class,
+                    () -> decorator.onListTaskPushNotificationConfigs(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
@@ -868,7 +990,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class DeleteTaskPushNotificationConfigTests {
         @Test
         void onDeleteTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
-            DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams("task-123", "config-123");
+            DeleteTaskPushNotificationConfigParams params =
+                    new DeleteTaskPushNotificationConfigParams("task-123", "config-123");
             doNothing().when(delegate).onDeleteTaskPushNotificationConfig(params, context);
 
             decorator.onDeleteTaskPushNotificationConfig(params, context);
@@ -882,11 +1005,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onDeleteTaskPushNotificationConfig_withError_setsErrorStatus() throws A2AError {
-            DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams("task-123", "config-123");
+            DeleteTaskPushNotificationConfigParams params =
+                    new DeleteTaskPushNotificationConfigParams("task-123", "config-123");
             A2AError error = new TaskNotFoundError();
             doThrow(error).when(delegate).onDeleteTaskPushNotificationConfig(params, context);
 
-            assertThrows(TaskNotFoundError.class, () -> decorator.onDeleteTaskPushNotificationConfig(params, context));
+            assertThrows(
+                    TaskNotFoundError.class,
+                    () -> decorator.onDeleteTaskPushNotificationConfig(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
@@ -902,26 +1028,33 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             TestableOpenTelemetryRequestHandlerDecorator decoratorNoMeter =
                     new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer);
 
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test message")))
-                    .messageId("msg-123")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test message")))
+                            .messageId("msg-123")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
             when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
 
             Span closingSpan = mock(Span.class);
-            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, closingSpan);
+            mockClosingSpanBuilder(
+                    tracer,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                    closingSpan);
 
-            Flow.Publisher<StreamingEventKind> result = decoratorNoMeter.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    decoratorNoMeter.onMessageSendStream(params, context);
 
             Flow.Subscriber<StreamingEventKind> testSubscriber = mock(Flow.Subscriber.class);
             result.subscribe(testSubscriber);
 
-            ArgumentCaptor<Flow.Subscriber> subscriberCaptor = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            ArgumentCaptor<Flow.Subscriber> subscriberCaptor =
+                    ArgumentCaptor.forClass(Flow.Subscriber.class);
             verify(publisher).subscribe(subscriberCaptor.capture());
-            Flow.Subscriber<StreamingEventKind> otelSubscriber = (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
+            Flow.Subscriber<StreamingEventKind> otelSubscriber =
+                    (Flow.Subscriber<StreamingEventKind>) subscriberCaptor.getValue();
 
             otelSubscriber.onComplete();
 
@@ -941,11 +1074,12 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             when(context.getState()).thenReturn(state);
             when(context.getRequestedProtocolVersion()).thenReturn(null);
 
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test")))
-                    .messageId("msg-1")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test")))
+                            .messageId("msg-1")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             when(delegate.onMessageSend(params, context)).thenReturn(mock(EventKind.class));
 
@@ -959,11 +1093,12 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         void onMessageSend_setsGenaiVersionAttribute_whenVersionPresent() throws A2AError {
             when(context.getRequestedProtocolVersion()).thenReturn("1.0");
 
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test")))
-                    .messageId("msg-1")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test")))
+                            .messageId("msg-1")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             when(delegate.onMessageSend(params, context)).thenReturn(mock(EventKind.class));
 
@@ -973,14 +1108,17 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         }
 
         @Test
-        void onMessageSend_doesNotSetGenaiProtocolAttribute_whenTransportKeyAbsent() throws A2AError {
-            // context.getState() returns empty HashMap and getRequestedProtocolVersion() returns null from setUp
+        void onMessageSend_doesNotSetGenaiProtocolAttribute_whenTransportKeyAbsent()
+                throws A2AError {
+            // context.getState() returns empty HashMap and getRequestedProtocolVersion() returns
+            // null from setUp
 
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new TextPart("test")))
-                    .messageId("msg-1")
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(List.of(new TextPart("test")))
+                            .messageId("msg-1")
+                            .build();
             MessageSendParams params = new MessageSendParams(message, null, null, "");
             when(delegate.onMessageSend(params, context)).thenReturn(mock(EventKind.class));
 
@@ -996,13 +1134,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void allMethods_createAndEndSpans() throws A2AError {
             TaskQueryParams params = new TaskQueryParams("task-123", null);
-            Task result = Task.builder()
-                    .id("task-123")
-                    .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                    .history(Collections.emptyList())
-                    .artifacts(Collections.emptyList())
-                    .build();
+            Task result =
+                    Task.builder()
+                            .id("task-123")
+                            .contextId("ctx-1")
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                            .history(Collections.emptyList())
+                            .artifacts(Collections.emptyList())
+                            .build();
             when(delegate.onGetTask(params, context)).thenReturn(result);
 
             decorator.onGetTask(params, context);
@@ -1014,13 +1153,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void spanAttributes_setCorrectly() throws A2AError {
             TaskQueryParams params = new TaskQueryParams("task-123", null);
-            Task result = Task.builder()
-                    .id("task-123")
-                    .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                    .history(Collections.emptyList())
-                    .artifacts(Collections.emptyList())
-                    .build();
+            Task result =
+                    Task.builder()
+                            .id("task-123")
+                            .contextId("ctx-1")
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                            .history(Collections.emptyList())
+                            .artifacts(Collections.emptyList())
+                            .build();
             when(delegate.onGetTask(params, context)).thenReturn(result);
 
             decorator.onGetTask(params, context);

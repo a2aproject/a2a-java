@@ -68,14 +68,17 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     /**
      * @param meter optional meter for recording {@code gen_ai.client.operation.duration}; null disables metrics
      */
-    public OpenTelemetryClientTransport(ClientTransport delegate, Tracer tracer, @Nullable Meter meter) {
+    public OpenTelemetryClientTransport(
+            ClientTransport delegate, Tracer tracer, @Nullable Meter meter) {
         this.delegate = delegate;
         this.tracer = tracer;
-        this.operationDurationHistogram = meter == null ? null
-                : meter.histogramBuilder(GENAI_CLIENT_OPERATION_DURATION)
-                        .setUnit("s")
-                        .setDescription("Duration of A2A client operations")
-                        .build();
+        this.operationDurationHistogram =
+                meter == null
+                        ? null
+                        : meter.histogramBuilder(GENAI_CLIENT_OPERATION_DURATION)
+                                .setUnit("s")
+                                .setDescription("Duration of A2A client operations")
+                                .build();
     }
 
     private boolean extractRequest() {
@@ -87,10 +90,12 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.SEND_MESSAGE_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.SEND_MESSAGE_METHOD).setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.SEND_MESSAGE_METHOD);
         if (request.message() != null) {
             if (request.message().taskId() != null) {
@@ -105,8 +110,10 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             if (request.message().role() != null) {
                 spanBuilder.setAttribute(GENAI_ROLE, request.message().role().name());
             }
-            if (request.message().extensions() != null && !request.message().extensions().isEmpty()) {
-                spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", request.message().extensions()));
+            if (request.message().extensions() != null
+                    && !request.message().extensions().isEmpty()) {
+                spanBuilder.setAttribute(
+                        GENAI_EXTENSIONS, String.join(",", request.message().extensions()));
             }
             spanBuilder.setAttribute(GENAI_PARTS_NUMBER, request.message().parts().size());
         }
@@ -135,11 +142,17 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
-            Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
+    public void sendMessageStreaming(
+            MessageSendParams request,
+            Consumer<StreamingEventKind> eventConsumer,
+            Consumer<Throwable> errorConsumer,
+            @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.SEND_STREAMING_MESSAGE_METHOD);
         if (request.message() != null) {
             if (request.message().taskId() != null) {
@@ -154,8 +167,10 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             if (request.message().role() != null) {
                 spanBuilder.setAttribute(GENAI_ROLE, request.message().role().name());
             }
-            if (request.message().extensions() != null && !request.message().extensions().isEmpty()) {
-                spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", request.message().extensions()));
+            if (request.message().extensions() != null
+                    && !request.message().extensions().isEmpty()) {
+                spanBuilder.setAttribute(
+                        GENAI_EXTENSIONS, String.join(",", request.message().extensions()));
             }
             spanBuilder.setAttribute(GENAI_PARTS_NUMBER, request.message().parts().size());
         }
@@ -168,19 +183,28 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             SpanContext spanContext = span.getSpanContext();
             delegate.sendMessageStreaming(
                     request,
-                    new OpenTelemetryEventConsumer(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX,
-                            eventConsumer, tracer, spanContext),
-                    new OpenTelemetryTerminalConsumer(errorConsumer,
-                            new TerminalConsumerConfig(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
-                                    tracer, spanContext, startNanos, A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
-                                    operationDurationHistogram, terminated)),
-                    clientContext
-            );
+                    new OpenTelemetryEventConsumer(
+                            A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX,
+                            eventConsumer,
+                            tracer,
+                            spanContext),
+                    new OpenTelemetryTerminalConsumer(
+                            errorConsumer,
+                            new TerminalConsumerConfig(
+                                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
+                                    tracer,
+                                    spanContext,
+                                    startNanos,
+                                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
+                                    operationDurationHistogram,
+                                    terminated)),
+                    clientContext);
             span.setStatus(StatusCode.OK);
         } catch (Exception ex) {
             span.setStatus(StatusCode.ERROR, ex.getMessage());
             if (!terminated.get()) {
-                recordOperationDuration(startNanos, A2AMethods.SEND_STREAMING_MESSAGE_METHOD, false);
+                recordOperationDuration(
+                        startNanos, A2AMethods.SEND_STREAMING_MESSAGE_METHOD, false);
             }
             throw ex;
         } finally {
@@ -189,10 +213,12 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.GET_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.GET_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_METHOD);
         if (request.id() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.id());
@@ -222,10 +248,12 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.CANCEL_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.CANCEL_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.CANCEL_TASK_METHOD);
         if (request.id() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.id());
@@ -255,10 +283,12 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.LIST_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.LIST_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_METHOD);
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());
@@ -288,12 +318,16 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-            @Nullable ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(
+            TaskPushNotificationConfig request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD).setSpanKind(SpanKind.CLIENT);
-        spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
+        spanBuilder.setAttribute(
+                GENAI_OPERATION_NAME, A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         if (request.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.taskId());
         }
@@ -306,7 +340,8 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         Span span = spanBuilder.startSpan();
         boolean success = false;
         try (Scope scope = span.makeCurrent()) {
-            TaskPushNotificationConfig result = delegate.createTaskPushNotificationConfiguration(request, clientContext);
+            TaskPushNotificationConfig result =
+                    delegate.createTaskPushNotificationConfiguration(request, clientContext);
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
             }
@@ -320,17 +355,22 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             throw ex;
         } finally {
             span.end();
-            recordOperationDuration(startNanos, A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
+            recordOperationDuration(
+                    startNanos, A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
         }
     }
 
     @Override
-    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request,
-            @Nullable ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+            GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD).setSpanKind(SpanKind.CLIENT);
-        spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
+        spanBuilder.setAttribute(
+                GENAI_OPERATION_NAME, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         if (request.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.taskId());
         }
@@ -343,7 +383,8 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         Span span = spanBuilder.startSpan();
         boolean success = false;
         try (Scope scope = span.makeCurrent()) {
-            TaskPushNotificationConfig result = delegate.getTaskPushNotificationConfiguration(request, clientContext);
+            TaskPushNotificationConfig result =
+                    delegate.getTaskPushNotificationConfiguration(request, clientContext);
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
             }
@@ -357,17 +398,22 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             throw ex;
         } finally {
             span.end();
-            recordOperationDuration(startNanos, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
+            recordOperationDuration(
+                    startNanos, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
         }
     }
 
     @Override
-    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigsParams request,
-            @Nullable ClientCallContext context) throws A2AClientException {
+    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD).setSpanKind(SpanKind.CLIENT);
-        spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
+        spanBuilder.setAttribute(
+                GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());
         }
@@ -377,11 +423,13 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         Span span = spanBuilder.startSpan();
         boolean success = false;
         try (Scope scope = span.makeCurrent()) {
-            ListTaskPushNotificationConfigsResult result = delegate.listTaskPushNotificationConfigurations(request, clientContext);
+            ListTaskPushNotificationConfigsResult result =
+                    delegate.listTaskPushNotificationConfigurations(request, clientContext);
             if (result != null && extractResponse()) {
-                String responseValue = result.configs().stream()
-                        .map(TaskPushNotificationConfig::toString)
-                        .collect(Collectors.joining(","));
+                String responseValue =
+                        result.configs().stream()
+                                .map(TaskPushNotificationConfig::toString)
+                                .collect(Collectors.joining(","));
                 span.setAttribute(GENAI_RESPONSE, responseValue);
             }
             if (result != null) {
@@ -394,17 +442,22 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             throw ex;
         } finally {
             span.end();
-            recordOperationDuration(startNanos, A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
+            recordOperationDuration(
+                    startNanos, A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
         }
     }
 
     @Override
-    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
-            @Nullable ClientCallContext context) throws A2AClientException {
+    public void deleteTaskPushNotificationConfigurations(
+            DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD).setSpanKind(SpanKind.CLIENT);
-        spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
+        spanBuilder.setAttribute(
+                GENAI_OPERATION_NAME, A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());
         }
@@ -425,16 +478,23 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             throw ex;
         } finally {
             span.end();
-            recordOperationDuration(startNanos, A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
+            recordOperationDuration(
+                    startNanos, A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, success);
         }
     }
 
     @Override
-    public void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-            Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
+    public void subscribeToTask(
+            TaskIdParams request,
+            Consumer<StreamingEventKind> eventConsumer,
+            Consumer<Throwable> errorConsumer,
+            @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.SUBSCRIBE_TO_TASK_METHOD);
         if (request.id() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.id());
@@ -448,14 +508,22 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             SpanContext spanContext = span.getSpanContext();
             delegate.subscribeToTask(
                     request,
-                    new OpenTelemetryEventConsumer(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX,
-                            eventConsumer, tracer, spanContext),
-                    new OpenTelemetryTerminalConsumer(errorConsumer,
-                            new TerminalConsumerConfig(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX,
-                                    tracer, spanContext, startNanos, A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
-                                    operationDurationHistogram, terminated)),
-                    clientContext
-            );
+                    new OpenTelemetryEventConsumer(
+                            A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX,
+                            eventConsumer,
+                            tracer,
+                            spanContext),
+                    new OpenTelemetryTerminalConsumer(
+                            errorConsumer,
+                            new TerminalConsumerConfig(
+                                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX,
+                                    tracer,
+                                    spanContext,
+                                    startNanos,
+                                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
+                                    operationDurationHistogram,
+                                    terminated)),
+                    clientContext);
             span.setStatus(StatusCode.OK);
         } catch (Exception ex) {
             span.setStatus(StatusCode.ERROR, ex.getMessage());
@@ -469,10 +537,14 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(
+            GetExtendedAgentCardParams params, @Nullable ClientCallContext context)
+            throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         long startNanos = System.nanoTime();
-        SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD).setSpanKind(SpanKind.CLIENT);
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD)
+                        .setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD);
         Span span = spanBuilder.startSpan();
         boolean success = false;
@@ -496,7 +568,8 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     private void recordOperationDuration(long startNanos, String operationName, boolean success) {
-        StreamingEventAttributes.recordDuration(operationDurationHistogram, startNanos, operationName, success);
+        StreamingEventAttributes.recordDuration(
+                operationDurationHistogram, startNanos, operationName, success);
     }
 
     private ClientCallContext createContext(@Nullable ClientCallContext context) {
@@ -518,8 +591,11 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         private final SpanContext parentSpanContext;
         private final String name;
 
-        OpenTelemetryEventConsumer(String name, Consumer<StreamingEventKind> delegate,
-                Tracer tracer, SpanContext parentSpanContext) {
+        OpenTelemetryEventConsumer(
+                String name,
+                Consumer<StreamingEventKind> delegate,
+                Tracer tracer,
+                SpanContext parentSpanContext) {
             this.delegate = delegate;
             this.tracer = tracer;
             this.parentSpanContext = parentSpanContext;
@@ -528,10 +604,11 @@ public class OpenTelemetryClientTransport implements ClientTransport {
 
         @Override
         public void accept(StreamingEventKind t) {
-            SpanBuilder builder = tracer.spanBuilder(name)
-                    .setSpanKind(SpanKind.CLIENT)
-                    .addLink(parentSpanContext)
-                    .setAttribute(GENAI_STREAMING_EVENT, t.kind());
+            SpanBuilder builder =
+                    tracer.spanBuilder(name)
+                            .setSpanKind(SpanKind.CLIENT)
+                            .addLink(parentSpanContext)
+                            .setAttribute(GENAI_STREAMING_EVENT, t.kind());
             StreamingEventAttributes.apply(builder, t);
             Span eventSpan = builder.startSpan();
             try (Scope ignored = eventSpan.makeCurrent()) {
@@ -547,8 +624,13 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         }
     }
 
-    private record TerminalConsumerConfig(String name, Tracer tracer, SpanContext parentSpanContext,
-            long startNanos, String operationName, @Nullable DoubleHistogram operationDurationHistogram,
+    private record TerminalConsumerConfig(
+            String name,
+            Tracer tracer,
+            SpanContext parentSpanContext,
+            long startNanos,
+            String operationName,
+            @Nullable DoubleHistogram operationDurationHistogram,
             AtomicBoolean terminated) {}
 
     private static class OpenTelemetryTerminalConsumer implements Consumer<Throwable> {
@@ -566,10 +648,12 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             if (!config.terminated().compareAndSet(false, true)) {
                 return;
             }
-            Span closingSpan = config.tracer().spanBuilder(config.name())
-                    .setSpanKind(SpanKind.CLIENT)
-                    .addLink(config.parentSpanContext())
-                    .startSpan();
+            Span closingSpan =
+                    config.tracer()
+                            .spanBuilder(config.name())
+                            .setSpanKind(SpanKind.CLIENT)
+                            .addLink(config.parentSpanContext())
+                            .startSpan();
             try (Scope ignored = closingSpan.makeCurrent()) {
                 if (t == null) {
                     closingSpan.setStatus(StatusCode.OK);
@@ -581,8 +665,11 @@ public class OpenTelemetryClientTransport implements ClientTransport {
                 }
             } finally {
                 closingSpan.end();
-                StreamingEventAttributes.recordDuration(config.operationDurationHistogram(),
-                        config.startNanos(), config.operationName(), t == null);
+                StreamingEventAttributes.recordDuration(
+                        config.operationDurationHistogram(),
+                        config.startNanos(),
+                        config.operationName(),
+                        t == null);
             }
         }
     }

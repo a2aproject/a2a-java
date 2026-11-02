@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -30,11 +29,12 @@ class StreamingEventKindSerializationTest {
     @Test
     void testTaskSerialization() throws JsonProcessingException {
         // Create a Task
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
 
         // Serialize as StreamingEventKind
         String json = JsonUtil.toJsonStreamingEvent(task);
@@ -60,13 +60,14 @@ class StreamingEventKindSerializationTest {
     @Test
     void testMessageSerialization() throws JsonProcessingException {
         // Create a Message
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("Hello, agent!")))
-                .taskId("task-789")
-                .messageId("msg-123")
-                .contextId("context-456")
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("Hello, agent!")))
+                        .taskId("task-789")
+                        .messageId("msg-123")
+                        .contextId("context-456")
+                        .build();
 
         // Serialize as StreamingEventKind
         String json = JsonUtil.toJsonStreamingEvent(message);
@@ -93,11 +94,12 @@ class StreamingEventKindSerializationTest {
     @Test
     void testTaskStatusUpdateEventSerialization() throws JsonProcessingException {
         // Create a TaskStatusUpdateEvent
-        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
-                .taskId("task-abc")
-                .contextId("context-def")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        TaskStatusUpdateEvent statusEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-abc")
+                        .contextId("context-def")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
         // Serialize as StreamingEventKind
         String json = JsonUtil.toJsonStreamingEvent(statusEvent);
@@ -124,17 +126,19 @@ class StreamingEventKindSerializationTest {
     @Test
     void testTaskArtifactUpdateEventSerialization() throws JsonProcessingException {
         // Create a TaskArtifactUpdateEvent
-        Artifact artifact = Artifact.builder()
-                .artifactId("artifact-xyz")
-                .name("Test Artifact")
-                .parts(List.of(new TextPart("Artifact content")))
-                .build();
+        Artifact artifact =
+                Artifact.builder()
+                        .artifactId("artifact-xyz")
+                        .name("Test Artifact")
+                        .parts(List.of(new TextPart("Artifact content")))
+                        .build();
 
-        TaskArtifactUpdateEvent artifactEvent = TaskArtifactUpdateEvent.builder()
-                .taskId("task-123")
-                .contextId("context-456")
-                .artifact(artifact)
-                .build();
+        TaskArtifactUpdateEvent artifactEvent =
+                TaskArtifactUpdateEvent.builder()
+                        .taskId("task-123")
+                        .contextId("context-456")
+                        .artifact(artifact)
+                        .build();
 
         // Serialize as StreamingEventKind
         String json = JsonUtil.toJsonStreamingEvent(artifactEvent);
@@ -154,21 +158,23 @@ class StreamingEventKindSerializationTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, deserialized);
         TaskArtifactUpdateEvent deserializedEvent = (TaskArtifactUpdateEvent) deserialized;
         assertEquals(artifactEvent.taskId(), deserializedEvent.taskId());
-        assertEquals(artifactEvent.artifact().artifactId(), deserializedEvent.artifact().artifactId());
+        assertEquals(
+                artifactEvent.artifact().artifactId(), deserializedEvent.artifact().artifactId());
     }
 
     @Test
     void testUnwrappedTaskDeserialization() throws JsonProcessingException {
         // Test that unwrapped Task format (direct deserialization) still works
-        String json = """
-            {
-              "id": "task-unwrapped",
-              "contextId": "context-999",
-              "status": {
-                "state": "TASK_STATE_COMPLETED"
-              }
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-unwrapped",
+                  "contextId": "context-999",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  }
+                }
+                """;
 
         // Deserialize as StreamingEventKind
         StreamingEventKind deserialized = JsonUtil.fromJson(json, StreamingEventKind.class);
@@ -184,18 +190,19 @@ class StreamingEventKindSerializationTest {
     @Test
     void testUnwrappedMessageDeserialization() throws JsonProcessingException {
         // Test that unwrapped Message format (direct deserialization) still works
-        String json = """
-            {
-              "role": "ROLE_AGENT",
-              "parts": [
+        String json =
+                """
                 {
-                  "text": "Unwrapped message"
+                  "role": "ROLE_AGENT",
+                  "parts": [
+                    {
+                      "text": "Unwrapped message"
+                    }
+                  ],
+                  "messageId": "msg-unwrapped",
+                  "taskId": "task-999"
                 }
-              ],
-              "messageId": "msg-unwrapped",
-              "taskId": "task-999"
-            }
-            """;
+                """;
 
         // Deserialize as StreamingEventKind
         StreamingEventKind deserialized = JsonUtil.fromJson(json, StreamingEventKind.class);
@@ -211,15 +218,16 @@ class StreamingEventKindSerializationTest {
     @Test
     void testUnwrappedTaskStatusUpdateEventDeserialization() throws JsonProcessingException {
         // Test that unwrapped TaskStatusUpdateEvent format still works
-        String json = """
-            {
-              "taskId": "task-status-unwrapped",
-              "contextId": "context-999",
-              "status": {
-                "state": "TASK_STATE_WORKING"
-              }
-            }
-            """;
+        String json =
+                """
+                {
+                  "taskId": "task-status-unwrapped",
+                  "contextId": "context-999",
+                  "status": {
+                    "state": "TASK_STATE_WORKING"
+                  }
+                }
+                """;
 
         // Deserialize as StreamingEventKind
         StreamingEventKind deserialized = JsonUtil.fromJson(json, StreamingEventKind.class);
@@ -235,20 +243,21 @@ class StreamingEventKindSerializationTest {
     @Test
     void testUnwrappedTaskArtifactUpdateEventDeserialization() throws JsonProcessingException {
         // Test that unwrapped TaskArtifactUpdateEvent format still works
-        String json = """
-            {
-              "taskId": "task-artifact-unwrapped",
-              "contextId": "context-999",
-              "artifact": {
-                "artifactId": "artifact-unwrapped",
-                "parts": [
-                  {
-                    "text": "Unwrapped artifact"
+        String json =
+                """
+                {
+                  "taskId": "task-artifact-unwrapped",
+                  "contextId": "context-999",
+                  "artifact": {
+                    "artifactId": "artifact-unwrapped",
+                    "parts": [
+                      {
+                        "text": "Unwrapped artifact"
+                      }
+                    ]
                   }
-                ]
-              }
-            }
-            """;
+                }
+                """;
 
         // Deserialize as StreamingEventKind
         StreamingEventKind deserialized = JsonUtil.fromJson(json, StreamingEventKind.class);

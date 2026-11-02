@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.params;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.mapstruct.Mapper;
@@ -42,7 +42,8 @@ public interface TaskQueryParamsMapper_v0_3 {
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    TaskQueryParamsMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(TaskQueryParamsMapper_v0_3.class);
+    TaskQueryParamsMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(TaskQueryParamsMapper_v0_3.class);
 
     /**
      * Converts v0.3 {@code TaskQueryParams} to v1.0 {@code TaskQueryParams}.

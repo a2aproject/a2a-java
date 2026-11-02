@@ -15,8 +15,7 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
     private boolean closedEvent;
 
     // Default constructor for JSON deserialization
-    public ReplicatedEventQueueItem() {
-    }
+    public ReplicatedEventQueueItem() {}
 
     // Constructor for creating from A2A StreamingEventKind objects
     public ReplicatedEventQueueItem(String taskId, StreamingEventKind event) {
@@ -48,10 +47,11 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
             this.error = jsonRpcError;
             this.closedEvent = false;
         } else {
-            throw new IllegalArgumentException("Event must be StreamingEventKind, A2AError, or QueueClosedEvent, got: " + event.getClass());
+            throw new IllegalArgumentException(
+                    "Event must be StreamingEventKind, A2AError, or QueueClosedEvent, got: "
+                            + event.getClass());
         }
     }
-
 
     public String getTaskId() {
         return taskId;
@@ -161,11 +161,16 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
 
     @Override
     public String toString() {
-        return "ReplicatedEventQueueItem{" +
-                "taskId='" + taskId + '\'' +
-                ", event=" + event +
-                ", error=" + error +
-                ", closedEvent=" + closedEvent +
-                '}';
+        return "ReplicatedEventQueueItem{"
+                + "taskId='"
+                + taskId
+                + '\''
+                + ", event="
+                + event
+                + ", error="
+                + error
+                + ", closedEvent="
+                + closedEvent
+                + '}';
     }
 }

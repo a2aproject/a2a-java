@@ -7,5 +7,4 @@ import io.quarkus.test.junit.QuarkusIntegrationTest;
  * Runs in native mode with @QuarkusIntegrationTest annotation.
  */
 @QuarkusIntegrationTest
-class OpenTelemetryA2AIT extends OpenTelemetryA2ABaseTest {
-}
+class OpenTelemetryA2AIT extends OpenTelemetryA2ABaseTest {}

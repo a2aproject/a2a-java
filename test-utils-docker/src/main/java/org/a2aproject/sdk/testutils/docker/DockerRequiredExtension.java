@@ -33,7 +33,8 @@ public class DockerRequiredExtension implements ExecutionCondition {
         if (!dockerAvailable) {
             // Docker/Podman not available and skip NOT requested - ABORT test
             throw new TestAbortedException(
-                    "Docker/Podman is not available. Use -DskipDockerTests=true to skip these tests.");
+                    "Docker/Podman is not available. Use -DskipDockerTests=true to skip these"
+                            + " tests.");
         }
 
         // Docker/Podman available and skip not requested - RUN test

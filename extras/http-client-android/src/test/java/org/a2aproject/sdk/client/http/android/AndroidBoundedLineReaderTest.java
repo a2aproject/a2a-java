@@ -24,17 +24,20 @@ public class AndroidBoundedLineReaderTest {
 
     static {
         try {
-            Class<?> builderClass = Class.forName(
-                    "org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient$AndroidBuilder");
-            READ_BOUNDED_LINE = builderClass.getDeclaredMethod(
-                    "readBoundedLine", InputStream.class, BoundedLineAccumulator.class);
+            Class<?> builderClass =
+                    Class.forName(
+                            "org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient$AndroidBuilder");
+            READ_BOUNDED_LINE =
+                    builderClass.getDeclaredMethod(
+                            "readBoundedLine", InputStream.class, BoundedLineAccumulator.class);
             READ_BOUNDED_LINE.setAccessible(true);
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
     }
 
-    private static boolean readBoundedLineRaw(InputStream is, BoundedLineAccumulator accumulator) throws Exception {
+    private static boolean readBoundedLineRaw(InputStream is, BoundedLineAccumulator accumulator)
+            throws Exception {
         try {
             return (Boolean) READ_BOUNDED_LINE.invoke(null, is, accumulator);
         } catch (java.lang.reflect.InvocationTargetException e) {

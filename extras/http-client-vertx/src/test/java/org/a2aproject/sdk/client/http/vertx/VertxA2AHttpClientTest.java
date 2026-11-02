@@ -28,9 +28,11 @@ public class VertxA2AHttpClientTest {
 
     @Test
     public void testVertxParameterConstructorNullThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new VertxA2AHttpClient(null);
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    new VertxA2AHttpClient(null);
+                });
     }
 
     @Test
@@ -78,10 +80,11 @@ public class VertxA2AHttpClientTest {
     @Test
     public void testBuilderMethodChaining() {
         try (VertxA2AHttpClient client = new VertxA2AHttpClient()) {
-            A2AHttpClient.GetBuilder builder = client.createGet()
-                    .url("https://example.com")
-                    .addHeader("Accept", "application/json")
-                    .addHeader("Authorization", "Bearer token");
+            A2AHttpClient.GetBuilder builder =
+                    client.createGet()
+                            .url("https://example.com")
+                            .addHeader("Accept", "application/json")
+                            .addHeader("Authorization", "Bearer token");
             assertNotNull(builder);
         }
     }

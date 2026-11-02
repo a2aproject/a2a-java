@@ -8,22 +8,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.protobuf.Struct;
-import com.google.protobuf.Value;
-
 import org.a2aproject.sdk.grpc.SendMessageConfiguration;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.AgentSkill;
-import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.DataPart;
@@ -32,6 +29,7 @@ import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
+import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
@@ -43,35 +41,43 @@ import org.junit.jupiter.api.Test;
 
 public class ToProtoTest {
 
-    private static final Message SIMPLE_MESSAGE = Message.builder()
-            .role(Message.Role.ROLE_USER)
-            .parts(Collections.singletonList(new TextPart("tell me a joke")))
-            .contextId("context-1234")
-            .messageId("message-1234")
-            .build();
+    private static final Message SIMPLE_MESSAGE =
+            Message.builder()
+                    .role(Message.Role.ROLE_USER)
+                    .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                    .contextId("context-1234")
+                    .messageId("message-1234")
+                    .build();
 
     @Test
     public void convertAgentCard() {
-        AgentCard agentCard = AgentCard.builder()
-                .name("Hello World Agent")
-                .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999", "", "123")))
-                .version("1.0.0")
-                .documentationUrl("http://example.com/docs")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
-                .defaultInputModes(Collections.singletonList("text"))
-                .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(AgentSkill.builder()
-                        .id("hello_world")
-                        .name("Returns hello world")
-                        .description("just returns hello world")
-                        .tags(Collections.singletonList("hello world"))
-                        .examples(List.of("hi", "hello world"))
-                        .build()))
-                .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("Hello World Agent")
+                        .description("Just a hello world agent")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface(
+                                                "jsonrpc", "http://localhost:9999", "", "123")))
+                        .version("1.0.0")
+                        .documentationUrl("http://example.com/docs")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(true)
+                                        .build())
+                        .defaultInputModes(Collections.singletonList("text"))
+                        .defaultOutputModes(Collections.singletonList("text"))
+                        .skills(
+                                Collections.singletonList(
+                                        AgentSkill.builder()
+                                                .id("hello_world")
+                                                .name("Returns hello world")
+                                                .description("just returns hello world")
+                                                .tags(Collections.singletonList("hello world"))
+                                                .examples(List.of("hi", "hello world"))
+                                                .build()))
+                        .build();
         org.a2aproject.sdk.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
@@ -86,39 +92,54 @@ public class ToProtoTest {
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
         // protocolVersion is now in AgentInterface
-        agentCard = AgentCard.builder()
-                .name("Hello World Agent")
-                .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
-                .version("1.0.0")
-                .documentationUrl("http://example.com/docs")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
-                .defaultInputModes(Collections.singletonList("text"))
-                .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(AgentSkill.builder()
-                        .id("hello_world")
-                        .name("Returns hello world")
-                        .description("just returns hello world")
-                        .tags(Collections.singletonList("hello world"))
-                        .examples(List.of("hi", "hello world"))
-                        .build()))
-                //                .iconUrl("http://example.com/icon.svg")
-                .securitySchemes(Map.of("basic", HTTPAuthSecurityScheme.builder().scheme("basic").description("Basic Auth").build()))
-                .securityRequirements(List.of(SecurityRequirement.builder()
-                        .scheme("oauth",
-                                List.of("read"))
-                        .build()))
-                .build();
+        agentCard =
+                AgentCard.builder()
+                        .name("Hello World Agent")
+                        .description("Just a hello world agent")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("jsonrpc", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .documentationUrl("http://example.com/docs")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(true)
+                                        .build())
+                        .defaultInputModes(Collections.singletonList("text"))
+                        .defaultOutputModes(Collections.singletonList("text"))
+                        .skills(
+                                Collections.singletonList(
+                                        AgentSkill.builder()
+                                                .id("hello_world")
+                                                .name("Returns hello world")
+                                                .description("just returns hello world")
+                                                .tags(Collections.singletonList("hello world"))
+                                                .examples(List.of("hi", "hello world"))
+                                                .build()))
+                        //                .iconUrl("http://example.com/icon.svg")
+                        .securitySchemes(
+                                Map.of(
+                                        "basic",
+                                        HTTPAuthSecurityScheme.builder()
+                                                .scheme("basic")
+                                                .description("Basic Auth")
+                                                .build()))
+                        .securityRequirements(
+                                List.of(
+                                        SecurityRequirement.builder()
+                                                .scheme("oauth", List.of("read"))
+                                                .build()))
+                        .build();
         result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
         assertEquals(1, result.getSupportedInterfacesList().size());
         assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
         assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
-        assertEquals(CURRENT_PROTOCOL_VERSION, result.getSupportedInterfacesList().get(0).getProtocolVersion());
+        assertEquals(
+                CURRENT_PROTOCOL_VERSION,
+                result.getSupportedInterfacesList().get(0).getProtocolVersion());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
@@ -129,43 +150,75 @@ public class ToProtoTest {
         assertEquals(1, result.getSecurityRequirementsCount());
         assertEquals(1, result.getSecurityRequirements(0).getSchemesMap().size());
         assertEquals(true, result.getSecurityRequirements(0).getSchemesMap().containsKey("oauth"));
-        assertEquals(1, result.getSecurityRequirements(0).getSchemesMap().get("oauth").getListCount());
-        assertEquals("read", result.getSecurityRequirements(0).getSchemesMap().get("oauth").getList(0));
+        assertEquals(
+                1, result.getSecurityRequirements(0).getSchemesMap().get("oauth").getListCount());
+        assertEquals(
+                "read", result.getSecurityRequirements(0).getSchemesMap().get("oauth").getList(0));
         assertEquals(1, result.getSecuritySchemesMap().size());
         assertEquals(true, result.getSecuritySchemesMap().containsKey("basic"));
-        assertEquals(result.getSecuritySchemesMap().get("basic").getApiKeySecurityScheme().getDefaultInstanceForType(), result.getSecuritySchemesMap().get("basic").getApiKeySecurityScheme());
-        assertEquals(result.getSecuritySchemesMap().get("basic").getOauth2SecurityScheme().getDefaultInstanceForType(), result.getSecuritySchemesMap().get("basic").getOauth2SecurityScheme());
-        assertEquals("basic", result.getSecuritySchemesMap().get("basic").getHttpAuthSecurityScheme().getScheme());
-        assertEquals("Basic Auth", result.getSecuritySchemesMap().get("basic").getHttpAuthSecurityScheme().getDescription());
+        assertEquals(
+                result.getSecuritySchemesMap()
+                        .get("basic")
+                        .getApiKeySecurityScheme()
+                        .getDefaultInstanceForType(),
+                result.getSecuritySchemesMap().get("basic").getApiKeySecurityScheme());
+        assertEquals(
+                result.getSecuritySchemesMap()
+                        .get("basic")
+                        .getOauth2SecurityScheme()
+                        .getDefaultInstanceForType(),
+                result.getSecuritySchemesMap().get("basic").getOauth2SecurityScheme());
+        assertEquals(
+                "basic",
+                result.getSecuritySchemesMap()
+                        .get("basic")
+                        .getHttpAuthSecurityScheme()
+                        .getScheme());
+        assertEquals(
+                "Basic Auth",
+                result.getSecuritySchemesMap()
+                        .get("basic")
+                        .getHttpAuthSecurityScheme()
+                        .getDescription());
     }
 
     @Test
     public void convertTask() {
-        Task task = Task.builder().id("cancel-task-123")
-                .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("cancel-task-123")
+                        .contextId("session-xyz")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
         org.a2aproject.sdk.grpc.Task result = ProtoUtils.ToProto.task(task);
         assertEquals("session-xyz", result.getContextId());
         assertEquals("cancel-task-123", result.getId());
-        assertEquals(org.a2aproject.sdk.grpc.TaskState.TASK_STATE_SUBMITTED, result.getStatus().getState());
+        assertEquals(
+                org.a2aproject.sdk.grpc.TaskState.TASK_STATE_SUBMITTED,
+                result.getStatus().getState());
         assertEquals(0, result.getArtifactsCount());
         assertEquals(0, result.getHistoryCount());
-        task = Task.builder().id("cancel-task-123")
-                .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .artifacts(List.of(Artifact.builder()
-                        .artifactId("11")
-                        .name("artefact")
-                        .parts(new TextPart("text"))
-                        .build()))
-                .history(List.of(SIMPLE_MESSAGE))
-                .metadata(Collections.emptyMap())
-                .build();
+        task =
+                Task.builder()
+                        .id("cancel-task-123")
+                        .contextId("session-xyz")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .artifacts(
+                                List.of(
+                                        Artifact.builder()
+                                                .artifactId("11")
+                                                .name("artefact")
+                                                .parts(new TextPart("text"))
+                                                .build()))
+                        .history(List.of(SIMPLE_MESSAGE))
+                        .metadata(Collections.emptyMap())
+                        .build();
         result = ProtoUtils.ToProto.task(task);
         assertEquals("session-xyz", result.getContextId());
         assertEquals("cancel-task-123", result.getId());
-        assertEquals(org.a2aproject.sdk.grpc.TaskState.TASK_STATE_SUBMITTED, result.getStatus().getState());
+        assertEquals(
+                org.a2aproject.sdk.grpc.TaskState.TASK_STATE_SUBMITTED,
+                result.getStatus().getState());
         assertEquals(1, result.getArtifactsCount());
         assertEquals("11", result.getArtifacts(0).getArtifactId());
         assertEquals("artefact", result.getArtifacts(0).getName());
@@ -197,11 +250,12 @@ public class ToProtoTest {
         assertEquals(false, result.getParts(0).hasRaw());
         assertEquals(false, result.getParts(0).hasUrl());
         assertEquals(false, result.getParts(0).hasData());
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_AGENT)
-                .parts(Collections.singletonList(new TextPart("tell me a joke")))
-                .messageId("message-1234")
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_AGENT)
+                        .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                        .messageId("message-1234")
+                        .build();
         result = ProtoUtils.ToProto.message(message);
         assertEquals("", result.getContextId());
         assertEquals("message-1234", result.getMessageId());
@@ -219,20 +273,26 @@ public class ToProtoTest {
 
         org.a2aproject.sdk.grpc.Message result = ProtoUtils.ToProto.message(message);
 
-        assertEquals(Value.KindCase.NULL_VALUE,
-                result.getParts(0).getData().getStructValue().getFieldsOrThrow("attributeId").getKindCase());
-        assertEquals(Value.KindCase.NULL_VALUE,
+        assertEquals(
+                Value.KindCase.NULL_VALUE,
+                result.getParts(0)
+                        .getData()
+                        .getStructValue()
+                        .getFieldsOrThrow("attributeId")
+                        .getKindCase());
+        assertEquals(
+                Value.KindCase.NULL_VALUE,
                 result.getParts(0).getMetadata().getFieldsOrThrow("optional").getKindCase());
-        assertEquals(Value.KindCase.NULL_VALUE,
+        assertEquals(
+                Value.KindCase.NULL_VALUE,
                 result.getMetadata().getFieldsOrThrow("optional").getKindCase());
         assertEquals(message, ProtoUtils.FromProto.message(result));
     }
 
     @Test
     public void convertMessageWithAbsentOrEmptyMetadata() {
-        org.a2aproject.sdk.grpc.Message.Builder builder = ProtoUtils.ToProto.message(SIMPLE_MESSAGE)
-                .toBuilder()
-                .clearMetadata();
+        org.a2aproject.sdk.grpc.Message.Builder builder =
+                ProtoUtils.ToProto.message(SIMPLE_MESSAGE).toBuilder().clearMetadata();
 
         assertNull(ProtoUtils.FromProto.message(builder).metadata());
         builder.setMetadata(Struct.getDefaultInstance());
@@ -242,25 +302,33 @@ public class ToProtoTest {
     @Test
     public void convertTaskWithExplicitNulls() {
         Message message = messageWithExplicitNulls();
-        Task task = Task.builder()
-                .id("task-null")
-                .contextId("context-null")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, message,
-                        OffsetDateTime.parse("2026-09-21T00:00:00Z")))
-                .history(List.of(message))
-                .artifacts(List.of(Artifact.builder()
-                        .artifactId("artifact-null")
-                        .parts(message.parts())
+        Task task =
+                Task.builder()
+                        .id("task-null")
+                        .contextId("context-null")
+                        .status(
+                                new TaskStatus(
+                                        TaskState.TASK_STATE_COMPLETED,
+                                        message,
+                                        OffsetDateTime.parse("2026-09-21T00:00:00Z")))
+                        .history(List.of(message))
+                        .artifacts(
+                                List.of(
+                                        Artifact.builder()
+                                                .artifactId("artifact-null")
+                                                .parts(message.parts())
+                                                .metadata(message.metadata())
+                                                .build()))
                         .metadata(message.metadata())
-                        .build()))
-                .metadata(message.metadata())
-                .build();
+                        .build();
 
         org.a2aproject.sdk.grpc.Task result = ProtoUtils.ToProto.task(task);
 
-        assertEquals(Value.KindCase.NULL_VALUE,
+        assertEquals(
+                Value.KindCase.NULL_VALUE,
                 result.getMetadata().getFieldsOrThrow("optional").getKindCase());
-        assertEquals(Value.KindCase.NULL_VALUE,
+        assertEquals(
+                Value.KindCase.NULL_VALUE,
                 result.getArtifacts(0).getMetadata().getFieldsOrThrow("optional").getKindCase());
         assertEquals(task, ProtoUtils.FromProto.task(result));
     }
@@ -268,7 +336,10 @@ public class ToProtoTest {
     private Message messageWithExplicitNulls() {
         Map<String, Object> data = new HashMap<>();
         data.put("attributeId", null);
-        data.put("items", Arrays.asList(null, Collections.singletonMap("optional", null), Map.of(), List.of()));
+        data.put(
+                "items",
+                Arrays.asList(
+                        null, Collections.singletonMap("optional", null), Map.of(), List.of()));
         Map<String, Object> metadata = Collections.singletonMap("optional", null);
         return Message.builder()
                 .messageId("message-null")
@@ -281,23 +352,26 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskPushNotificationConfig() {
-        TaskPushNotificationConfig taskPushConfig = TaskPushNotificationConfig.builder()
-                .id("xyz")
-                .taskId("push-task-123")
-                .url("http://example.com")
-                .build();
-        org.a2aproject.sdk.grpc.TaskPushNotificationConfig result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
+        TaskPushNotificationConfig taskPushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("xyz")
+                        .taskId("push-task-123")
+                        .url("http://example.com")
+                        .build();
+        org.a2aproject.sdk.grpc.TaskPushNotificationConfig result =
+                ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("push-task-123", result.getTaskId());
         assertEquals("xyz", result.getId());
         assertEquals("http://example.com", result.getUrl());
         assertEquals(false, result.hasAuthentication());
-        taskPushConfig = TaskPushNotificationConfig.builder()
-                .id("xyz")
-                .taskId("push-task-123")
-                .url("http://example.com")
-                .token("AAAAAA")
-                .authentication(new AuthenticationInfo("jwt", "credentials"))
-                .build();
+        taskPushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("xyz")
+                        .taskId("push-task-123")
+                        .url("http://example.com")
+                        .token("AAAAAA")
+                        .authentication(new AuthenticationInfo("jwt", "credentials"))
+                        .build();
         result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("push-task-123", result.getTaskId());
         assertEquals("xyz", result.getId());
@@ -310,14 +384,18 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskArtifactUpdateEvent() {
-        TaskArtifactUpdateEvent task = TaskArtifactUpdateEvent.builder()
-                .taskId("task-123")
-                .contextId("session-123")
-                .artifact(Artifact.builder()
-                        .artifactId("11")
-                        .parts(new TextPart("text"))
-                        .build()).build();
-        org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent result = ProtoUtils.ToProto.taskArtifactUpdateEvent(task);
+        TaskArtifactUpdateEvent task =
+                TaskArtifactUpdateEvent.builder()
+                        .taskId("task-123")
+                        .contextId("session-123")
+                        .artifact(
+                                Artifact.builder()
+                                        .artifactId("11")
+                                        .parts(new TextPart("text"))
+                                        .build())
+                        .build();
+        org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent result =
+                ProtoUtils.ToProto.taskArtifactUpdateEvent(task);
         assertEquals("task-123", result.getTaskId());
         assertEquals("session-123", result.getContextId());
         assertNotNull(result.getArtifact());
@@ -329,26 +407,25 @@ public class ToProtoTest {
     @Test
     public void convertTaskStatusUpdateEvent() {
         TaskStatus completedStatus = new TaskStatus(TaskState.TASK_STATE_COMPLETED);
-        TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent(
-                "1234",
-                completedStatus,
-                "xyz",
-                null
-        );
-        org.a2aproject.sdk.grpc.TaskStatusUpdateEvent result = ProtoUtils.ToProto.taskStatusUpdateEvent(tsue);
+        TaskStatusUpdateEvent tsue =
+                new TaskStatusUpdateEvent("1234", completedStatus, "xyz", null);
+        org.a2aproject.sdk.grpc.TaskStatusUpdateEvent result =
+                ProtoUtils.ToProto.taskStatusUpdateEvent(tsue);
         assertEquals("1234", result.getTaskId());
         assertEquals("xyz", result.getContextId());
         // Note: isFinal field has been removed from the proto (field 4 is reserved)
         // It is now derived from status.state().isFinal()
-        assertEquals(org.a2aproject.sdk.grpc.TaskState.TASK_STATE_COMPLETED, result.getStatus().getState());
+        assertEquals(
+                org.a2aproject.sdk.grpc.TaskState.TASK_STATE_COMPLETED,
+                result.getStatus().getState());
     }
 
     @Test
     public void convertSendMessageConfiguration() {
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .build();
-        SendMessageConfiguration result = ProtoUtils.ToProto.messageSendConfiguration(configuration);
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder().acceptedOutputModes(List.of("text")).build();
+        SendMessageConfiguration result =
+                ProtoUtils.ToProto.messageSendConfiguration(configuration);
         assertFalse(result.getReturnImmediately());
         assertEquals(1, result.getAcceptedOutputModesCount());
         assertEquals("text", result.getAcceptedOutputModesBytes(0).toStringUtf8());
@@ -357,12 +434,10 @@ public class ToProtoTest {
     @Test
     public void convertTaskTimestampStatus() {
         OffsetDateTime expectedTimestamp = OffsetDateTime.parse("2024-10-05T12:34:56Z");
-        TaskStatus testStatus = new TaskStatus(TaskState.TASK_STATE_COMPLETED, null, expectedTimestamp);
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(testStatus)
-                .build();
+        TaskStatus testStatus =
+                new TaskStatus(TaskState.TASK_STATE_COMPLETED, null, expectedTimestamp);
+        Task task =
+                Task.builder().id("task-123").contextId("context-456").status(testStatus).build();
 
         org.a2aproject.sdk.grpc.Task grpcTask = ProtoUtils.ToProto.task(task);
         task = ProtoUtils.FromProto.task(grpcTask);
@@ -374,10 +449,8 @@ public class ToProtoTest {
 
     @Test
     public void convertDeleteTaskPushNotificationConfigRequest() {
-        DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(
-                "task-123",
-                "config-456"
-        );
+        DeleteTaskPushNotificationConfigParams params =
+                new DeleteTaskPushNotificationConfigParams("task-123", "config-456");
 
         org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest result =
                 ProtoUtils.ToProto.deleteTaskPushNotificationConfigRequest(params);
@@ -394,7 +467,8 @@ public class ToProtoTest {
 
     @Test
     public void convertListTaskPushNotificationConfigsRequest() {
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams("task-789");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams("task-789");
 
         org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest result =
                 ProtoUtils.ToProto.listTaskPushNotificationConfigsRequest(params);

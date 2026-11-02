@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
  * <p>
  * Tests the exception class for database/storage system failures.
  */
-class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPersistenceException> {
+class TaskPersistenceExceptionTest
+        extends AbstractTaskStoreExceptionTest<TaskPersistenceException> {
 
     @Override
     protected TaskPersistenceException createException(String taskId, String message) {
@@ -20,7 +21,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     }
 
     @Override
-    protected TaskPersistenceException createException(String taskId, String message, Throwable cause) {
+    protected TaskPersistenceException createException(
+            String taskId, String message, Throwable cause) {
         return new TaskPersistenceException(taskId, message, cause);
     }
 
@@ -55,7 +57,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testConstructor_messageAndCause() {
         RuntimeException cause = new RuntimeException("Timeout");
-        TaskPersistenceException exception = new TaskPersistenceException("Operation failed", cause);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("Operation failed", cause);
 
         assertEquals("Operation failed", exception.getMessage());
         assertSame(cause, exception.getCause());
@@ -64,7 +67,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
 
     @Test
     void testConstructor_taskIdAndMessage() {
-        TaskPersistenceException exception = new TaskPersistenceException("task-123", "Save failed");
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-123", "Save failed");
 
         assertEquals("Save failed", exception.getMessage());
         assertEquals("task-123", exception.getTaskId());
@@ -74,8 +78,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testConstructor_taskIdMessageAndCause() {
         RuntimeException cause = new RuntimeException("Disk error");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-456", "Persistence failed", cause);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-456", "Persistence failed", cause);
 
         assertEquals("Persistence failed", exception.getMessage());
         assertEquals("task-456", exception.getTaskId());
@@ -93,7 +97,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
 
     @Test
     void testInheritance_taskIdFieldAccessible() {
-        TaskPersistenceException exception = new TaskPersistenceException("task-xyz", "Test message");
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-xyz", "Test message");
         // Should be accessible via TaskStoreException parent class
         assertEquals("task-xyz", exception.getTaskId());
     }
@@ -103,8 +108,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_connectionTimeout() {
         RuntimeException timeout = new RuntimeException("Connection timeout after 30s");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-123", "Database connection timeout", timeout);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-123", "Database connection timeout", timeout);
 
         assertFullContext(exception, "task-123", timeout);
         assertMessageContains(exception, "timeout");
@@ -113,8 +118,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_deadlock() {
         RuntimeException deadlock = new RuntimeException("Deadlock detected");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-456", "Transaction deadlock", deadlock);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-456", "Transaction deadlock", deadlock);
 
         assertMessageContains(exception, "deadlock");
     }
@@ -122,8 +127,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_lockTimeout() {
         RuntimeException lockTimeout = new RuntimeException("Lock wait timeout exceeded");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-789", "Failed to acquire row lock", lockTimeout);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-789", "Failed to acquire row lock", lockTimeout);
 
         assertMessageContains(exception, "lock");
     }
@@ -131,8 +136,11 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_networkPartition() {
         RuntimeException networkError = new RuntimeException("Network unreachable");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-abc", "Database host unreachable due to network partition", networkError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-abc",
+                        "Database host unreachable due to network partition",
+                        networkError);
 
         assertMessageContains(exception, "network");
     }
@@ -140,8 +148,9 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_poolExhausted() {
         RuntimeException poolError = new RuntimeException("Connection pool exhausted");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-def", "No database connections available", poolError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-def", "No database connections available", poolError);
 
         assertMessageContains(exception, "connections available");
     }
@@ -149,17 +158,18 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_diskFull() {
         RuntimeException diskError = new RuntimeException("No space left on device");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-123", "Cannot write task: disk full", diskError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-123", "Cannot write task: disk full", diskError);
 
         assertMessageContains(exception, "disk full");
     }
 
     @Test
     void testScenario_uniqueConstraint() {
-        RuntimeException constraintError = new RuntimeException("Duplicate entry for key 'PRIMARY'");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-456", "Task ID already exists", constraintError);
+        RuntimeException constraintError =
+                new RuntimeException("Duplicate entry for key 'PRIMARY'");
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-456", "Task ID already exists", constraintError);
 
         assertMessageContains(exception, "already exists");
     }
@@ -167,8 +177,9 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_foreignKeyViolation() {
         RuntimeException fkError = new RuntimeException("Cannot add or update child row");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-789", "Foreign key constraint violation", fkError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-789", "Foreign key constraint violation", fkError);
 
         assertMessageContains(exception, "constraint");
     }
@@ -176,8 +187,9 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_permissionDenied() {
         RuntimeException permError = new RuntimeException("Access denied for user 'app'");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-abc", "Insufficient database permissions", permError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-abc", "Insufficient database permissions", permError);
 
         assertMessageContains(exception, "permission");
     }
@@ -185,8 +197,11 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_schemaIncompatibility() {
         RuntimeException schemaError = new RuntimeException("Column 'new_field' does not exist");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-def", "Database schema incompatible with application version", schemaError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-def",
+                        "Database schema incompatible with application version",
+                        schemaError);
 
         assertMessageContains(exception, "schema");
     }
@@ -194,8 +209,9 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     @Test
     void testScenario_quotaExceeded() {
         RuntimeException quotaError = new RuntimeException("Storage quota exceeded");
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-ghi", "Database storage limit reached", quotaError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-ghi", "Database storage limit reached", quotaError);
 
         assertMessageContains(exception, "storage limit");
     }
@@ -204,9 +220,10 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
 
     @Test
     void testMessage_connectionError() {
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-123",
-                "Failed to connect to database at jdbc:postgresql://localhost:5432/a2a");
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-123",
+                        "Failed to connect to database at jdbc:postgresql://localhost:5432/a2a");
 
         assertMessageContains(exception, "connect to database");
         assertMessageContains(exception, "jdbc:postgresql");
@@ -214,18 +231,19 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
 
     @Test
     void testMessage_transactionRollback() {
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-123",
-                "Transaction rolled back due to deadlock");
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-123", "Transaction rolled back due to deadlock");
 
         assertMessageContains(exception, "Transaction rolled back");
     }
 
     @Test
     void testMessage_constraintViolation() {
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-123",
-                "Unique constraint violation: task_id 'task-123' already exists in table 'tasks'");
+        TaskPersistenceException exception =
+                new TaskPersistenceException(
+                        "task-123",
+                        "Unique constraint violation: task_id 'task-123' already exists in table"
+                                + " 'tasks'");
 
         assertMessageContains(exception, "Unique constraint");
         assertMessageContains(exception, "already exists");
@@ -237,8 +255,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
     void testCauseChain_withContext() {
         RuntimeException sqlError = new RuntimeException("SQL state: 08006 - Connection failure");
         RuntimeException jdbcError = new RuntimeException("JDBC connection error", sqlError);
-        TaskPersistenceException exception = new TaskPersistenceException(
-                "task-xyz", "Database operation failed", jdbcError);
+        TaskPersistenceException exception =
+                new TaskPersistenceException("task-xyz", "Database operation failed", jdbcError);
 
         assertEquals("task-xyz", exception.getTaskId());
         assertSame(jdbcError, exception.getCause());
@@ -249,8 +267,8 @@ class TaskPersistenceExceptionTest extends AbstractTaskStoreExceptionTest<TaskPe
 
     @Test
     void testNullSafety_nullTaskId() {
-        TaskPersistenceException exception = new TaskPersistenceException(
-                null, "Generic database error");
+        TaskPersistenceException exception =
+                new TaskPersistenceException(null, "Generic database error");
 
         assertNull(exception.getTaskId());
         assertEquals("Generic database error", exception.getMessage());

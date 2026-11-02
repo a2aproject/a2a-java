@@ -2,7 +2,6 @@ package org.a2aproject.sdk.server.tasks;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,7 +12,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.jspecify.annotations.Nullable;
 
@@ -48,7 +46,8 @@ import org.jspecify.annotations.Nullable;
 public class DefaultPushNotificationUrlValidator implements PushNotificationUrlValidator {
 
     static final String ALLOWED_SCHEMES_KEY = "a2a.push-notification.url.allowed-schemes";
-    static final String ALLOW_PRIVATE_KEY = "a2a.push-notification.url.allow-private-network-targets";
+    static final String ALLOW_PRIVATE_KEY =
+            "a2a.push-notification.url.allow-private-network-targets";
     static final String DNS_CACHE_TTL_KEY = "a2a.push-notification.url.dns-cache-ttl-seconds";
 
     private static final Set<String> DEFAULT_ALLOWED_SCHEMES = Set.of("https");
@@ -63,13 +62,11 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
     private static final int IPV6_ULA_MASK = 0xFE;
     private static final int IPV6_ULA_PREFIX = 0xFC;
 
-    @Inject
-    @Nullable A2AConfigProvider configProvider;
+    @Inject @Nullable A2AConfigProvider configProvider;
 
     private final Map<String, DnsCacheEntry> dnsCache = new ConcurrentHashMap<>();
 
-    public DefaultPushNotificationUrlValidator() {
-    }
+    public DefaultPushNotificationUrlValidator() {}
 
     private record DnsCacheEntry(InetAddress[] addresses, long expiresAtNanos) {
         boolean isExpired() {
@@ -90,7 +87,10 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
         Set<String> allowed = getAllowedSchemes();
         if (scheme == null || !allowed.contains(scheme.toLowerCase(Locale.ROOT))) {
             throw new IllegalArgumentException(
-                    "Push notification URL scheme '" + scheme + "' is not allowed; allowed: " + allowed);
+                    "Push notification URL scheme '"
+                            + scheme
+                            + "' is not allowed; allowed: "
+                            + allowed);
         }
 
         String host = uri.getHost();
@@ -115,17 +115,21 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
         if (configProvider == null) {
             return DEFAULT_ALLOWED_SCHEMES;
         }
-        return configProvider.getOptionalValue(ALLOWED_SCHEMES_KEY)
-                .map(value -> {
-                    Set<String> schemes = new HashSet<>();
-                    for (String s : value.split(",")) {
-                        String trimmed = s.trim().toLowerCase(Locale.ROOT);
-                        if (!trimmed.isEmpty()) {
-                            schemes.add(trimmed);
-                        }
-                    }
-                    return schemes.isEmpty() ? DEFAULT_ALLOWED_SCHEMES : Set.copyOf(schemes);
-                })
+        return configProvider
+                .getOptionalValue(ALLOWED_SCHEMES_KEY)
+                .map(
+                        value -> {
+                            Set<String> schemes = new HashSet<>();
+                            for (String s : value.split(",")) {
+                                String trimmed = s.trim().toLowerCase(Locale.ROOT);
+                                if (!trimmed.isEmpty()) {
+                                    schemes.add(trimmed);
+                                }
+                            }
+                            return schemes.isEmpty()
+                                    ? DEFAULT_ALLOWED_SCHEMES
+                                    : Set.copyOf(schemes);
+                        })
                 .orElse(DEFAULT_ALLOWED_SCHEMES);
     }
 
@@ -143,12 +147,14 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
             addresses = InetAddress.getAllByName(host);
         } catch (UnknownHostException e) {
             dnsCache.remove(host);
-            throw new IllegalArgumentException("Cannot resolve push notification URL host: " + host);
+            throw new IllegalArgumentException(
+                    "Cannot resolve push notification URL host: " + host);
         }
 
         if (ttlSeconds > 0) {
             long expiresAt = System.nanoTime() + ttlSeconds * 1_000_000_000L;
-            dnsCache.put(host, new DnsCacheEntry(Arrays.copyOf(addresses, addresses.length), expiresAt));
+            dnsCache.put(
+                    host, new DnsCacheEntry(Arrays.copyOf(addresses, addresses.length), expiresAt));
         }
         return addresses;
     }
@@ -157,15 +163,17 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
         if (configProvider == null) {
             return DEFAULT_DNS_CACHE_TTL_SECONDS;
         }
-        return configProvider.getOptionalValue(DNS_CACHE_TTL_KEY)
-                .map(value -> {
-                    try {
-                        long ttl = Long.parseLong(value.trim());
-                        return ttl < 0 ? DEFAULT_DNS_CACHE_TTL_SECONDS : ttl;
-                    } catch (NumberFormatException e) {
-                        return DEFAULT_DNS_CACHE_TTL_SECONDS;
-                    }
-                })
+        return configProvider
+                .getOptionalValue(DNS_CACHE_TTL_KEY)
+                .map(
+                        value -> {
+                            try {
+                                long ttl = Long.parseLong(value.trim());
+                                return ttl < 0 ? DEFAULT_DNS_CACHE_TTL_SECONDS : ttl;
+                            } catch (NumberFormatException e) {
+                                return DEFAULT_DNS_CACHE_TTL_SECONDS;
+                            }
+                        })
                 .orElse(DEFAULT_DNS_CACHE_TTL_SECONDS);
     }
 
@@ -173,7 +181,8 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
         if (configProvider == null) {
             return false;
         }
-        return configProvider.getOptionalValue(ALLOW_PRIVATE_KEY)
+        return configProvider
+                .getOptionalValue(ALLOW_PRIVATE_KEY)
                 .map(Boolean::parseBoolean)
                 .orElse(false);
     }
@@ -192,7 +201,8 @@ public class DefaultPushNotificationUrlValidator implements PushNotificationUrlV
         if (bytes.length == 4) {
             int first = bytes[0] & 0xFF;
             int second = bytes[1] & 0xFF;
-            if (first == RFC6598_FIRST_OCTET && (second & RFC6598_SECOND_OCTET_MASK) == RFC6598_SECOND_OCTET_VALUE) {
+            if (first == RFC6598_FIRST_OCTET
+                    && (second & RFC6598_SECOND_OCTET_MASK) == RFC6598_SECOND_OCTET_VALUE) {
                 return true;
             }
         }

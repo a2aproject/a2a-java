@@ -2,7 +2,6 @@ package org.a2aproject.sdk.spec;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.util.HttpHeaderUtils;
 import org.jspecify.annotations.Nullable;
@@ -51,8 +50,7 @@ public class A2AClientHTTPError extends A2AClientError {
     /**
      * The raw HTTP response body, may be {@code null}.
      */
-    @Nullable
-    private final String responseBody;
+    @Nullable private final String responseBody;
 
     /**
      * The HTTP response headers.
@@ -67,8 +65,11 @@ public class A2AClientHTTPError extends A2AClientError {
      * @param responseBody the raw HTTP response body, may be {@code null}
      * @param responseHeaders the HTTP response headers
      */
-    public A2AClientHTTPError(int code, String message, @Nullable String responseBody,
-                              Map<String, List<String>> responseHeaders) {
+    public A2AClientHTTPError(
+            int code,
+            String message,
+            @Nullable String responseBody,
+            Map<String, List<String>> responseHeaders) {
         Assert.checkNotNullParam("message", message);
         Assert.checkNotNullParam("responseHeaders", responseHeaders);
         this.code = code;

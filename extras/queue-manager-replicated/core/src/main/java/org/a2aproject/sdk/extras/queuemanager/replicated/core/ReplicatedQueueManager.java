@@ -6,7 +6,6 @@ import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent;
 import org.a2aproject.sdk.server.events.DefaultTaskStreamLifecycleHook;
 import org.a2aproject.sdk.server.events.EventEnqueueHook;
@@ -49,24 +48,33 @@ public class ReplicatedQueueManager implements QueueManager {
         this.streamLifecycleHook = null;
     }
 
-    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy,
-                                    TaskStateProvider taskStateProvider,
-                                    MainEventBus mainEventBus) {
-        this(replicationStrategy, taskStateProvider, mainEventBus, new DefaultTaskStreamLifecycleHook());
+    public ReplicatedQueueManager(
+            ReplicationStrategy replicationStrategy,
+            TaskStateProvider taskStateProvider,
+            MainEventBus mainEventBus) {
+        this(
+                replicationStrategy,
+                taskStateProvider,
+                mainEventBus,
+                new DefaultTaskStreamLifecycleHook());
     }
 
     @Inject
-    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy,
-                                    TaskStateProvider taskStateProvider,
-                                    MainEventBus mainEventBus,
-                                    TaskStreamLifecycleHook streamLifecycleHook) {
+    public ReplicatedQueueManager(
+            ReplicationStrategy replicationStrategy,
+            TaskStateProvider taskStateProvider,
+            MainEventBus mainEventBus,
+            TaskStreamLifecycleHook streamLifecycleHook) {
         this.replicationStrategy = replicationStrategy;
         this.taskStateProvider = taskStateProvider;
         this.streamLifecycleHook = streamLifecycleHook;
-        this.delegate = new InMemoryQueueManager(
-                new ReplicatingEventQueueFactory(), taskStateProvider, mainEventBus, streamLifecycleHook);
+        this.delegate =
+                new InMemoryQueueManager(
+                        new ReplicatingEventQueueFactory(),
+                        taskStateProvider,
+                        mainEventBus,
+                        streamLifecycleHook);
     }
-
 
     @Override
     public void add(String taskId, EventQueue queue) {
@@ -109,8 +117,10 @@ public class ReplicatedQueueManager implements QueueManager {
                 && !replicatedEvent.isTaskEvent()
                 && !taskStateProvider.isTaskActive(replicatedEvent.getTaskId())) {
             // Task is no longer active - skip processing this replicated event
-            // This prevents creating queues for tasks that have been finalized beyond the grace period
-            LOGGER.debug("Skipping replicated event for inactive task {}", replicatedEvent.getTaskId());
+            // This prevents creating queues for tasks that have been finalized beyond the grace
+            // period
+            LOGGER.debug(
+                    "Skipping replicated event for inactive task {}", replicatedEvent.getTaskId());
             return;
         }
 
@@ -125,26 +135,32 @@ public class ReplicatedQueueManager implements QueueManager {
         //
         // If MainQueue doesn't exist, create it. This handles late-arriving replicated events
         // for tasks that were created on another instance.
-        EventQueue childQueue = null;  // Track ChildQueue we might create
+        EventQueue childQueue = null; // Track ChildQueue we might create
         EventQueue mainQueue = delegate.get(replicatedEvent.getTaskId());
         try {
             if (mainQueue == null) {
-                LOGGER.debug("Creating MainQueue for replicated event on task {}", replicatedEvent.getTaskId());
-                childQueue = delegate.createOrTap(replicatedEvent.getTaskId());  // Creates MainQueue + returns ChildQueue
-                mainQueue = delegate.get(replicatedEvent.getTaskId());          // Get MainQueue from map
+                LOGGER.debug(
+                        "Creating MainQueue for replicated event on task {}",
+                        replicatedEvent.getTaskId());
+                childQueue =
+                        delegate.createOrTap(
+                                replicatedEvent
+                                        .getTaskId()); // Creates MainQueue + returns ChildQueue
+                mainQueue = delegate.get(replicatedEvent.getTaskId()); // Get MainQueue from map
             }
 
             if (mainQueue != null) {
                 mainQueue.enqueueItem(replicatedEvent);
             } else {
                 LOGGER.warn(
-                        "MainQueue not found for task {}, cannot enqueue replicated event. This may happen if the queue was already cleaned up.",
+                        "MainQueue not found for task {}, cannot enqueue replicated event. This may"
+                                + " happen if the queue was already cleaned up.",
                         replicatedEvent.getTaskId());
             }
         } finally {
             if (childQueue != null) {
                 try {
-                    childQueue.close();  // Close the ChildQueue we created (not MainQueue!)
+                    childQueue.close(); // Close the ChildQueue we created (not MainQueue!)
                 } catch (Exception ignore) {
                     // The close is safe, but print a stacktrace just in case
                     if (LOGGER.isDebugEnabled()) {
@@ -170,33 +186,39 @@ public class ReplicatedQueueManager implements QueueManager {
      *
      * @param event the task finalized event containing the task ID and final Task
      */
-    public void onTaskFinalized(@Observes(during = TransactionPhase.AFTER_SUCCESS) TaskFinalizedEvent event) {
+    public void onTaskFinalized(
+            @Observes(during = TransactionPhase.AFTER_SUCCESS) TaskFinalizedEvent event) {
         String taskId = event.getTaskId();
-        org.a2aproject.sdk.spec.Task finalTask = (org.a2aproject.sdk.spec.Task) event.getTask();  // Cast from Object
+        org.a2aproject.sdk.spec.Task finalTask =
+                (org.a2aproject.sdk.spec.Task) event.getTask(); // Cast from Object
 
-        LOGGER.debug("Task {} finalized - sending TaskStatusUpdateEvent then poison pill (QueueClosedEvent) after transaction commit", taskId);
+        LOGGER.debug(
+                "Task {} finalized - sending TaskStatusUpdateEvent then poison pill"
+                        + " (QueueClosedEvent) after transaction commit",
+                taskId);
 
         // Convert final Task to TaskStatusUpdateEvent to match local event distribution
         // This ensures remote instances receive the same event type as local instances
-        org.a2aproject.sdk.spec.TaskStatusUpdateEvent finalStatusEvent = org.a2aproject.sdk.spec.TaskStatusUpdateEvent.builder()
-                .taskId(taskId)
-                .contextId(finalTask.contextId())
-                .status(finalTask.status())
-                .build();
+        org.a2aproject.sdk.spec.TaskStatusUpdateEvent finalStatusEvent =
+                org.a2aproject.sdk.spec.TaskStatusUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId(finalTask.contextId())
+                        .status(finalTask.status())
+                        .build();
 
         // Send TaskStatusUpdateEvent FIRST to ensure it arrives before poison pill
         replicationStrategy.send(taskId, finalStatusEvent);
 
         // Then send poison pill
         // The transaction has committed, so the final state is guaranteed to be in the database
-        org.a2aproject.sdk.server.events.QueueClosedEvent closedEvent = new org.a2aproject.sdk.server.events.QueueClosedEvent(taskId);
+        org.a2aproject.sdk.server.events.QueueClosedEvent closedEvent =
+                new org.a2aproject.sdk.server.events.QueueClosedEvent(taskId);
         replicationStrategy.send(taskId, closedEvent);
     }
 
     @Override
     public EventQueue.EventQueueBuilder getEventQueueBuilder(String taskId) {
-        return QueueManager.super.getEventQueueBuilder(taskId)
-                .hook(new ReplicationHook(taskId));
+        return QueueManager.super.getEventQueueBuilder(taskId).hook(new ReplicationHook(taskId));
     }
 
     @Override
@@ -213,12 +235,11 @@ public class ReplicatedQueueManager implements QueueManager {
 
             // Call createBaseEventQueueBuilder() directly to avoid infinite recursion
             // (getEventQueueBuilder() would delegate back to this factory, creating a loop)
-            // The base builder already includes: taskId, cleanup callback, taskStateProvider, mainEventBus
-            return delegate.createBaseEventQueueBuilder(taskId)
-                    .hook(new ReplicationHook(taskId));
+            // The base builder already includes: taskId, cleanup callback, taskStateProvider,
+            // mainEventBus
+            return delegate.createBaseEventQueueBuilder(taskId).hook(new ReplicationHook(taskId));
         }
     }
-
 
     private class ReplicationHook implements EventEnqueueHook {
         private final String taskId;

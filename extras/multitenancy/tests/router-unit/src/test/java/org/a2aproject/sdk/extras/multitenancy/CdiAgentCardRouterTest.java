@@ -4,13 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Collections;
-import java.util.List;
-
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
-
+import java.util.Collections;
+import java.util.List;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.multitenancy.Tenant;
@@ -25,9 +23,10 @@ class CdiAgentCardRouterTest {
     private SeContainer container;
 
     private void startContainer(Class<?>... beanClasses) {
-        SeContainerInitializer initializer = SeContainerInitializer.newInstance()
-                .disableDiscovery()
-                .addBeanClasses(CdiAgentCardRouter.class);
+        SeContainerInitializer initializer =
+                SeContainerInitializer.newInstance()
+                        .disableDiscovery()
+                        .addBeanClasses(CdiAgentCardRouter.class);
         for (Class<?> beanClass : beanClasses) {
             initializer.addBeanClasses(beanClass);
         }
@@ -117,49 +116,62 @@ class CdiAgentCardRouterTest {
 
     @Test
     void publicCardWithPublicQualifierResolvesToTenantSpecific() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, PublicQualifiedTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class,
+                PublicQualifiedTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertEquals("acme-public-qualified", router.resolvePublicCard("acme").name());
     }
 
     @Test
     void publicCardWithBothPublicAndExtendedQualifierResolvesToTenantSpecific() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, PublicAndExtendedTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class,
+                PublicAndExtendedTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertEquals("acme-both", router.resolvePublicCard("acme").name());
     }
 
     @Test
     void explicitPublicCardTakesPrecedenceOverBareTenantCard() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, BareAndPublicQualifiedTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class,
+                BareAndPublicQualifiedTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertEquals("acme-public-qualified", router.resolvePublicCard("acme").name());
     }
 
     @Test
     void duplicatePublicQualifiedCardsThrows() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, DuplicatePublicQualifiedTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class,
+                DuplicatePublicQualifiedTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertThrows(IllegalStateException.class, () -> router.resolvePublicCard("acme"));
     }
 
     @Test
     void duplicateBareTenantCardsThrows() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, DuplicateBareTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class, DuplicateBareTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertThrows(IllegalStateException.class, () -> router.resolvePublicCard("acme"));
     }
 
     @Test
     void duplicateExtendedTenantCardsThrows() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, DuplicateExtendedTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class,
+                DuplicateExtendedTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         assertThrows(IllegalStateException.class, () -> router.resolveExtendedCard("acme"));
     }
 
     @Test
     void dualQualifiedCardResolvedByBothPublicAndExtended() {
-        startContainer(DefaultPublicAndExtendedCardProducer.class, PublicAndExtendedTenantCardProducer.class);
+        startContainer(
+                DefaultPublicAndExtendedCardProducer.class,
+                PublicAndExtendedTenantCardProducer.class);
         CdiAgentCardRouter router = container.select(CdiAgentCardRouter.class).get();
         AgentCard publicCard = router.resolvePublicCard("acme");
         AgentCard extendedCard = router.resolveExtendedCard("acme");
@@ -172,7 +184,9 @@ class CdiAgentCardRouterTest {
                 .name(name)
                 .description(name)
                 .version("1.0.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:8080")))
+                .supportedInterfaces(
+                        Collections.singletonList(
+                                new AgentInterface("jsonrpc", "http://localhost:8080")))
                 .capabilities(AgentCapabilities.builder().build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))

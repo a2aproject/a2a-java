@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -48,7 +47,10 @@ public class TaskNotCancelableError extends A2AProtocolError {
      * @param message the error message (defaults to "Task cannot be canceled" if null)
      * @param details additional error details (optional)
      */
-    public TaskNotCancelableError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public TaskNotCancelableError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.TASK_NOT_CANCELABLE.code()),
                 defaultIfNull(message, "Task cannot be canceled"),
@@ -63,5 +65,4 @@ public class TaskNotCancelableError extends A2AProtocolError {
     public TaskNotCancelableError(String message) {
         this(null, message, null);
     }
-
 }

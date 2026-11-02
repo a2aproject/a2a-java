@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
@@ -81,7 +80,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Integration tests for DefaultRequestHandler focusing on AUTH_REQUIRED workflow.
@@ -93,18 +91,20 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 public class DefaultRequestHandlerTest {
 
-    private static final MessageSendConfiguration DEFAULT_CONFIG = MessageSendConfiguration.builder()
-        .returnImmediately(true)
-        .acceptedOutputModes(List.of())
-        .build();
+    private static final MessageSendConfiguration DEFAULT_CONFIG =
+            MessageSendConfiguration.builder()
+                    .returnImmediately(true)
+                    .acceptedOutputModes(List.of())
+                    .build();
 
     private static final ServerCallContext NULL_CONTEXT = null;
 
-    private static final Message MESSAGE = Message.builder()
-        .messageId("111")
-        .role(Message.Role.ROLE_AGENT)
-        .parts(new TextPart("test message"))
-        .build();
+    private static final Message MESSAGE =
+            Message.builder()
+                    .messageId("111")
+                    .role(Message.Role.ROLE_AGENT)
+                    .parts(new TextPart("test message"))
+                    .build();
 
     // Test infrastructure components
     protected AgentExecutor executor;
@@ -121,28 +121,34 @@ public class DefaultRequestHandlerTest {
 
     @Test
     public void authorizeTaskAccessRejectsWhitespaceOnlyTaskId() {
-        assertThrows(InvalidParamsError.class,
-                () -> requestHandler.authorizeTaskAccess(" ", NULL_CONTEXT, TaskOperation.SUBSCRIBE_TO_TASK));
+        assertThrows(
+                InvalidParamsError.class,
+                () ->
+                        requestHandler.authorizeTaskAccess(
+                                " ", NULL_CONTEXT, TaskOperation.SUBSCRIBE_TO_TASK));
     }
 
     @BeforeEach
     public void init() {
         // Create test AgentExecutor with mocked execute/cancel methods
-        executor = new AgentExecutor() {
-            @Override
-            public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
-                if (agentExecutorExecute != null) {
-                    agentExecutorExecute.invoke(context, agentEmitter);
-                }
-            }
+        executor =
+                new AgentExecutor() {
+                    @Override
+                    public void execute(RequestContext context, AgentEmitter agentEmitter)
+                            throws A2AError {
+                        if (agentExecutorExecute != null) {
+                            agentExecutorExecute.invoke(context, agentEmitter);
+                        }
+                    }
 
-            @Override
-            public void cancel(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
-                if (agentExecutorCancel != null) {
-                    agentExecutorCancel.invoke(context, agentEmitter);
-                }
-            }
-        };
+                    @Override
+                    public void cancel(RequestContext context, AgentEmitter agentEmitter)
+                            throws A2AError {
+                        if (agentExecutorCancel != null) {
+                            agentExecutorCancel.invoke(context, agentEmitter);
+                        }
+                    }
+                };
 
         // Set up infrastructure
         InMemoryTaskStore inMemoryTaskStore = new InMemoryTaskStore();
@@ -153,21 +159,24 @@ public class DefaultRequestHandlerTest {
         // Create MainEventBus and MainEventBusProcessor
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(inMemoryTaskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         // Create DefaultRequestHandler
-        requestHandler = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .pushConfigStore(pushConfigStore)
-                .pushNotificationsEnabled(true)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .authorizationRequired(false)
-                .build();
+        requestHandler =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(true)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .authorizationRequired(false)
+                        .build();
     }
 
     @AfterEach
@@ -193,7 +202,8 @@ public class DefaultRequestHandlerTest {
         A2AConfigProvider configProvider = mock(A2AConfigProvider.class);
         when(configProvider.getValue("a2a.blocking.agent.timeout.seconds")).thenReturn("30");
         when(configProvider.getValue("a2a.blocking.consumption.timeout.seconds")).thenReturn("5");
-        when(configProvider.getValue("a2a.blocking.reconciliation.timeout.seconds")).thenReturn("7");
+        when(configProvider.getValue("a2a.blocking.reconciliation.timeout.seconds"))
+                .thenReturn("7");
 
         DefaultRequestHandler handler = new DefaultRequestHandler();
         handler.configProvider = configProvider;
@@ -215,18 +225,20 @@ public class DefaultRequestHandlerTest {
 
     @ParameterizedTest
     @CsvSource({"41,8,3", "0,0,0"})
-    void testBuilderOverridesBlockingTimeouts(int agentTimeout, int consumptionTimeout, int reconciliationTimeout) {
-        DefaultRequestHandler handler = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .agentCompletionTimeoutSeconds(agentTimeout)
-                .consumptionCompletionTimeoutSeconds(consumptionTimeout)
-                .reconciliationTimeoutSeconds(reconciliationTimeout)
-                .build();
+    void testBuilderOverridesBlockingTimeouts(
+            int agentTimeout, int consumptionTimeout, int reconciliationTimeout) {
+        DefaultRequestHandler handler =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .agentCompletionTimeoutSeconds(agentTimeout)
+                        .consumptionCompletionTimeoutSeconds(consumptionTimeout)
+                        .reconciliationTimeoutSeconds(reconciliationTimeout)
+                        .build();
 
         assertEquals(agentTimeout, handler.agentCompletionTimeoutSeconds);
         assertEquals(consumptionTimeout, handler.consumptionCompletionTimeoutSeconds);
@@ -237,48 +249,61 @@ public class DefaultRequestHandlerTest {
     void testBuilderRejectsNegativeBlockingTimeouts() {
         DefaultRequestHandler.Builder builder = DefaultRequestHandler.builder();
 
-        assertThrows(IllegalArgumentException.class, () -> builder.agentCompletionTimeoutSeconds(-1));
-        assertThrows(IllegalArgumentException.class, () -> builder.consumptionCompletionTimeoutSeconds(-1));
-        assertThrows(IllegalArgumentException.class, () -> builder.reconciliationTimeoutSeconds(-1));
+        assertThrows(
+                IllegalArgumentException.class, () -> builder.agentCompletionTimeoutSeconds(-1));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> builder.consumptionCompletionTimeoutSeconds(-1));
+        assertThrows(
+                IllegalArgumentException.class, () -> builder.reconciliationTimeoutSeconds(-1));
     }
 
     @Test
     void testBuilderStartsManuallyConstructedMainEventBusProcessor() throws Exception {
         InMemoryTaskStore manualTaskStore = new InMemoryTaskStore();
-        PushNotificationConfigStore manualPushConfigStore = new InMemoryPushNotificationConfigStore();
+        PushNotificationConfigStore manualPushConfigStore =
+                new InMemoryPushNotificationConfigStore();
         MainEventBus manualMainEventBus = new MainEventBus();
-        InMemoryQueueManager manualQueueManager = new InMemoryQueueManager(manualTaskStore, manualMainEventBus);
-        MainEventBusProcessor manualProcessor = new MainEventBusProcessor(
-            manualMainEventBus, manualTaskStore, PushNotificationSender.NOOP, manualQueueManager);
+        InMemoryQueueManager manualQueueManager =
+                new InMemoryQueueManager(manualTaskStore, manualMainEventBus);
+        MainEventBusProcessor manualProcessor =
+                new MainEventBusProcessor(
+                        manualMainEventBus,
+                        manualTaskStore,
+                        PushNotificationSender.NOOP,
+                        manualQueueManager);
 
         try {
-            AgentExecutor manualAgentExecutor = new AgentExecutor() {
-                @Override
-                public void execute(RequestContext context, AgentEmitter agentEmitter) {
-                    agentEmitter.sendMessage("manual lifecycle response");
-                }
+            AgentExecutor manualAgentExecutor =
+                    new AgentExecutor() {
+                        @Override
+                        public void execute(RequestContext context, AgentEmitter agentEmitter) {
+                            agentEmitter.sendMessage("manual lifecycle response");
+                        }
 
-                @Override
-                public void cancel(RequestContext context, AgentEmitter agentEmitter) {
-                    throw new AssertionError("Cancel should not be invoked");
-                }
-            };
-            DefaultRequestHandler manualRequestHandler = DefaultRequestHandler.builder()
-                    .agentExecutor(manualAgentExecutor)
-                    .taskStore(manualTaskStore)
-                    .queueManager(manualQueueManager)
-                    .pushConfigStore(manualPushConfigStore)
-                    .mainEventBusProcessor(manualProcessor)
-                    .executor(internalExecutor)
-                    .eventConsumerExecutor(internalExecutor)
-                    .authorizationRequired(false)
-                    .build();
+                        @Override
+                        public void cancel(RequestContext context, AgentEmitter agentEmitter) {
+                            throw new AssertionError("Cancel should not be invoked");
+                        }
+                    };
+            DefaultRequestHandler manualRequestHandler =
+                    DefaultRequestHandler.builder()
+                            .agentExecutor(manualAgentExecutor)
+                            .taskStore(manualTaskStore)
+                            .queueManager(manualQueueManager)
+                            .pushConfigStore(manualPushConfigStore)
+                            .mainEventBusProcessor(manualProcessor)
+                            .executor(internalExecutor)
+                            .eventConsumerExecutor(internalExecutor)
+                            .authorizationRequired(false)
+                            .build();
             manualRequestHandler.agentCompletionTimeoutSeconds = 5;
             manualRequestHandler.consumptionCompletionTimeoutSeconds = 2;
             manualRequestHandler.reconciliationTimeoutSeconds = 1;
 
-            EventKind eventKind = manualRequestHandler.onMessageSend(
-                MessageSendParams.builder().message(MESSAGE).build(), NULL_CONTEXT);
+            EventKind eventKind =
+                    manualRequestHandler.onMessageSend(
+                            MessageSendParams.builder().message(MESSAGE).build(), NULL_CONTEXT);
 
             assertInstanceOf(Message.class, eventKind);
             assertEquals(Message.Role.ROLE_AGENT, ((Message) eventKind).role());
@@ -302,31 +327,31 @@ public class DefaultRequestHandlerTest {
         CountDownLatch authRequiredEmitted = new CountDownLatch(1);
         CountDownLatch continueAgent = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            // Emit AUTH_REQUIRED - client should receive immediately
-            emitter.requiresAuth(Message.builder()
-                .role(Message.Role.ROLE_AGENT)
-                .parts(new TextPart("Please authenticate with OAuth provider"))
-                .build());
-            authRequiredEmitted.countDown();
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    // Emit AUTH_REQUIRED - client should receive immediately
+                    emitter.requiresAuth(
+                            Message.builder()
+                                    .role(Message.Role.ROLE_AGENT)
+                                    .parts(new TextPart("Please authenticate with OAuth provider"))
+                                    .build());
+                    authRequiredEmitted.countDown();
 
-            // Agent continues processing (simulating waiting for out-of-band auth)
-            try {
-                continueAgent.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+                    // Agent continues processing (simulating waiting for out-of-band auth)
+                    try {
+                        continueAgent.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
 
-            // Complete after "auth received"
-            emitter.complete();
-        };
+                    // Complete after "auth received"
+                    emitter.complete();
+                };
 
         // Create MessageSendParams
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build();
 
         // Act: Send message (non-streaming)
         EventKind eventKind = requestHandler.onMessageSend(params, NULL_CONTEXT);
@@ -336,20 +361,26 @@ public class DefaultRequestHandlerTest {
         assertInstanceOf(Task.class, eventKind, "Result should be a Task");
         Task result = (Task) eventKind;
 
-        assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, result.status().state(),
-            "Task should be in AUTH_REQUIRED state");
-        assertTrue(authRequiredEmitted.await(2, TimeUnit.SECONDS),
-            "AUTH_REQUIRED should be emitted quickly");
+        assertEquals(
+                TaskState.TASK_STATE_AUTH_REQUIRED,
+                result.status().state(),
+                "Task should be in AUTH_REQUIRED state");
+        assertTrue(
+                authRequiredEmitted.await(2, TimeUnit.SECONDS),
+                "AUTH_REQUIRED should be emitted quickly");
 
         // Verify agent still running (continueAgent latch not counted down yet)
-        assertFalse(continueAgent.await(100, TimeUnit.MILLISECONDS),
-            "Agent should still be waiting (not completed yet)");
+        assertFalse(
+                continueAgent.await(100, TimeUnit.MILLISECONDS),
+                "Agent should still be waiting (not completed yet)");
 
         // Verify TaskStore has AUTH_REQUIRED state
         Task storedTask = taskStore.get(result.id());
         assertNotNull(storedTask, "Task should be persisted in TaskStore");
-        assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, storedTask.status().state(),
-            "TaskStore should have AUTH_REQUIRED state");
+        assertEquals(
+                TaskState.TASK_STATE_AUTH_REQUIRED,
+                storedTask.status().state(),
+                "TaskStore should have AUTH_REQUIRED state");
 
         // Release agent to complete
         continueAgent.countDown();
@@ -357,8 +388,10 @@ public class DefaultRequestHandlerTest {
         // Wait for completion and verify final state
         Thread.sleep(1000); // Allow time for completion to process through MainEventBus
         Task finalTask = taskStore.get(result.id());
-        assertEquals(TaskState.TASK_STATE_COMPLETED, finalTask.status().state(),
-            "TaskStore should have COMPLETED state after agent finishes");
+        assertEquals(
+                TaskState.TASK_STATE_COMPLETED,
+                finalTask.status().state(),
+                "TaskStore should have COMPLETED state after agent finishes");
     }
 
     /**
@@ -375,40 +408,39 @@ public class DefaultRequestHandlerTest {
         CountDownLatch authEmitted = new CountDownLatch(1);
         CountDownLatch continueAgent = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            // Emit AUTH_REQUIRED
-            emitter.requiresAuth(Message.builder()
-                .role(Message.Role.ROLE_AGENT)
-                .parts(new TextPart("Authenticate required"))
-                .build());
-            authEmitted.countDown();
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    // Emit AUTH_REQUIRED
+                    emitter.requiresAuth(
+                            Message.builder()
+                                    .role(Message.Role.ROLE_AGENT)
+                                    .parts(new TextPart("Authenticate required"))
+                                    .build());
+                    authEmitted.countDown();
 
-            // Wait for test to tap queue
-            try {
-                continueAgent.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+                    // Wait for test to tap queue
+                    try {
+                        continueAgent.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
 
-            // Emit late artifact after AUTH_REQUIRED
-            emitter.addArtifact(List.of(new TextPart("Late artifact after auth")));
-            emitter.complete();
-        };
+                    // Emit late artifact after AUTH_REQUIRED
+                    emitter.addArtifact(List.of(new TextPart("Late artifact after auth")));
+                    emitter.complete();
+                };
 
         // Create MessageSendParams
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build();
 
         // Act: Send message, get AUTH_REQUIRED response
         EventKind eventKind = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
 
-        assertTrue(authEmitted.await(2, TimeUnit.SECONDS),
-            "AUTH_REQUIRED should be emitted");
+        assertTrue(authEmitted.await(2, TimeUnit.SECONDS), "AUTH_REQUIRED should be emitted");
 
         // Tap into the queue (simulates client resubscription after AUTH_REQUIRED)
         EventQueue tappedQueue = queueManager.tap(task.id());
@@ -423,18 +455,21 @@ public class DefaultRequestHandlerTest {
         EventQueueItem item = tappedQueue.dequeueEventItem(5000);
         assertNotNull(item, "Should receive late artifact event");
         Event event = item.getEvent();
-        assertInstanceOf(TaskArtifactUpdateEvent.class, event,
-            "First event should be TaskArtifactUpdateEvent");
+        assertInstanceOf(
+                TaskArtifactUpdateEvent.class,
+                event,
+                "First event should be TaskArtifactUpdateEvent");
 
         // Second event should be completion
         item = tappedQueue.dequeueEventItem(5000);
         assertNotNull(item, "Should receive completion event");
         event = item.getEvent();
-        assertInstanceOf(TaskStatusUpdateEvent.class, event,
-            "Second event should be TaskStatusUpdateEvent");
-        assertEquals(TaskState.TASK_STATE_COMPLETED,
-            ((TaskStatusUpdateEvent) event).status().state(),
-            "Task should be completed");
+        assertInstanceOf(
+                TaskStatusUpdateEvent.class, event, "Second event should be TaskStatusUpdateEvent");
+        assertEquals(
+                TaskState.TASK_STATE_COMPLETED,
+                ((TaskStatusUpdateEvent) event).status().state(),
+                "Task should be completed");
     }
 
     /**
@@ -450,45 +485,45 @@ public class DefaultRequestHandlerTest {
         CountDownLatch authEmitted = new CountDownLatch(1);
         CountDownLatch continueAgent = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            // Emit AUTH_REQUIRED
-            emitter.requiresAuth();
-            authEmitted.countDown();
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    // Emit AUTH_REQUIRED
+                    emitter.requiresAuth();
+                    authEmitted.countDown();
 
-            // Wait for test to verify AUTH_REQUIRED persisted
-            try {
-                continueAgent.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+                    // Wait for test to verify AUTH_REQUIRED persisted
+                    try {
+                        continueAgent.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
 
-            // Continue working (simulating auth received out-of-band)
-            emitter.startWork();
+                    // Continue working (simulating auth received out-of-band)
+                    emitter.startWork();
 
-            // Complete the task
-            emitter.complete();
-        };
+                    // Complete the task
+                    emitter.complete();
+                };
 
         // Create MessageSendParams
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build();
 
         // Act: Send message
         EventKind eventKind = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
 
-        assertTrue(authEmitted.await(2, TimeUnit.SECONDS),
-            "AUTH_REQUIRED should be emitted");
+        assertTrue(authEmitted.await(2, TimeUnit.SECONDS), "AUTH_REQUIRED should be emitted");
 
         // Assert: Verify AUTH_REQUIRED state persisted
         Task storedTask1 = taskStore.get(task.id());
         assertNotNull(storedTask1, "Task should be in TaskStore");
-        assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, storedTask1.status().state(),
-            "TaskStore should have AUTH_REQUIRED state");
+        assertEquals(
+                TaskState.TASK_STATE_AUTH_REQUIRED,
+                storedTask1.status().state(),
+                "TaskStore should have AUTH_REQUIRED state");
 
         // Release agent to continue
         continueAgent.countDown();
@@ -498,16 +533,20 @@ public class DefaultRequestHandlerTest {
 
         // Verify WORKING state persisted
         Task storedTask2 = taskStore.get(task.id());
-        // Note: WORKING might be skipped if processing is fast, so we accept either WORKING or COMPLETED
+        // Note: WORKING might be skipped if processing is fast, so we accept either WORKING or
+        // COMPLETED
         TaskState state2 = storedTask2.status().state();
-        assertTrue(state2 == TaskState.TASK_STATE_WORKING || state2 == TaskState.TASK_STATE_COMPLETED,
-            "TaskStore should have WORKING or COMPLETED state");
+        assertTrue(
+                state2 == TaskState.TASK_STATE_WORKING || state2 == TaskState.TASK_STATE_COMPLETED,
+                "TaskStore should have WORKING or COMPLETED state");
 
         // Wait a bit more and verify final COMPLETED state
         Thread.sleep(500);
         Task storedTask3 = taskStore.get(task.id());
-        assertEquals(TaskState.TASK_STATE_COMPLETED, storedTask3.status().state(),
-            "TaskStore should have COMPLETED state after agent finishes");
+        assertEquals(
+                TaskState.TASK_STATE_COMPLETED,
+                storedTask3.status().state(),
+                "TaskStore should have COMPLETED state after agent finishes");
     }
 
     /**
@@ -524,42 +563,42 @@ public class DefaultRequestHandlerTest {
         CountDownLatch authEmitted = new CountDownLatch(1);
         CountDownLatch continueAgent = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            // Emit AUTH_REQUIRED
-            emitter.requiresAuth();
-            authEmitted.countDown();
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    // Emit AUTH_REQUIRED
+                    emitter.requiresAuth();
+                    authEmitted.countDown();
 
-            // Wait briefly (simulating auth happening out-of-band)
-            try {
-                continueAgent.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+                    // Wait briefly (simulating auth happening out-of-band)
+                    try {
+                        continueAgent.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
 
-            // Continue streaming artifacts
-            emitter.addArtifact(List.of(new TextPart("Artifact 1")));
-            emitter.addArtifact(List.of(new TextPart("Artifact 2")));
-            emitter.complete();
-        };
+                    // Continue streaming artifacts
+                    emitter.addArtifact(List.of(new TextPart("Artifact 1")));
+                    emitter.addArtifact(List.of(new TextPart("Artifact 2")));
+                    emitter.complete();
+                };
 
         // Create MessageSendParams
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build();
 
         // Act: Send message with streaming enabled
         EventKind eventKind = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, eventKind);
         Task result = (Task) eventKind;
 
-        assertTrue(authEmitted.await(2, TimeUnit.SECONDS),
-            "AUTH_REQUIRED should be emitted");
+        assertTrue(authEmitted.await(2, TimeUnit.SECONDS), "AUTH_REQUIRED should be emitted");
 
         // Verify AUTH_REQUIRED received
-        assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, result.status().state(),
-            "Should receive AUTH_REQUIRED state");
+        assertEquals(
+                TaskState.TASK_STATE_AUTH_REQUIRED,
+                result.status().state(),
+                "Should receive AUTH_REQUIRED state");
 
         // Tap queue to receive subsequent events
         EventQueue tappedQueue = queueManager.tap(result.id());
@@ -581,8 +620,9 @@ public class DefaultRequestHandlerTest {
         assertNotNull(completionItem, "Should receive completion");
         Event completionEvent = completionItem.getEvent();
         assertInstanceOf(TaskStatusUpdateEvent.class, completionEvent);
-        assertEquals(TaskState.TASK_STATE_COMPLETED,
-            ((TaskStatusUpdateEvent) completionEvent).status().state());
+        assertEquals(
+                TaskState.TASK_STATE_COMPLETED,
+                ((TaskStatusUpdateEvent) completionEvent).status().state());
     }
 
     /**
@@ -599,48 +639,47 @@ public class DefaultRequestHandlerTest {
         CountDownLatch authEmitted = new CountDownLatch(1);
         CountDownLatch continueAgent = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            // Emit AUTH_REQUIRED
-            emitter.requiresAuth();
-            authEmitted.countDown();
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    // Emit AUTH_REQUIRED
+                    emitter.requiresAuth();
+                    authEmitted.countDown();
 
-            // Wait for test to simulate disconnect and resubscribe
-            try {
-                continueAgent.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+                    // Wait for test to simulate disconnect and resubscribe
+                    try {
+                        continueAgent.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
 
-            // Emit late events after "client reconnect"
-            emitter.addArtifact(List.of(new TextPart("Event after reconnect")));
-            emitter.complete();
-        };
+                    // Emit late events after "client reconnect"
+                    emitter.addArtifact(List.of(new TextPart("Event after reconnect")));
+                    emitter.complete();
+                };
 
         // Create MessageSendParams
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build();
 
         // Act: Send message, get AUTH_REQUIRED
         EventKind eventKind = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
 
-        assertTrue(authEmitted.await(2, TimeUnit.SECONDS),
-            "AUTH_REQUIRED should be emitted");
+        assertTrue(authEmitted.await(2, TimeUnit.SECONDS), "AUTH_REQUIRED should be emitted");
 
-        assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, task.status().state(),
-            "Should receive AUTH_REQUIRED state");
+        assertEquals(
+                TaskState.TASK_STATE_AUTH_REQUIRED,
+                task.status().state(),
+                "Should receive AUTH_REQUIRED state");
 
         // Simulate client disconnect by just waiting
         Thread.sleep(100);
 
         // Client reconnects: tap into queue (resubscription)
         EventQueue resubscribedQueue = queueManager.tap(task.id());
-        assertNotNull(resubscribedQueue,
-            "Should be able to resubscribe after AUTH_REQUIRED");
+        assertNotNull(resubscribedQueue, "Should be able to resubscribe after AUTH_REQUIRED");
 
         // Release agent to continue
         continueAgent.countDown();
@@ -648,18 +687,21 @@ public class DefaultRequestHandlerTest {
         // Assert: Late events arrive on resubscribed queue
         EventQueueItem item = resubscribedQueue.dequeueEventItem(5000);
         assertNotNull(item, "Should receive late artifact on resubscribed queue");
-        assertInstanceOf(TaskArtifactUpdateEvent.class, item.getEvent(),
-            "Should receive artifact update event");
+        assertInstanceOf(
+                TaskArtifactUpdateEvent.class,
+                item.getEvent(),
+                "Should receive artifact update event");
 
         // Verify completion arrives
         EventQueueItem completionItem = resubscribedQueue.dequeueEventItem(5000);
         assertNotNull(completionItem, "Should receive completion event");
         Event completionEvent = completionItem.getEvent();
-        assertInstanceOf(TaskStatusUpdateEvent.class, completionEvent,
-            "Should receive status update event");
-        assertEquals(TaskState.TASK_STATE_COMPLETED,
-            ((TaskStatusUpdateEvent) completionEvent).status().state(),
-            "Task should be completed");
+        assertInstanceOf(
+                TaskStatusUpdateEvent.class, completionEvent, "Should receive status update event");
+        assertEquals(
+                TaskState.TASK_STATE_COMPLETED,
+                ((TaskStatusUpdateEvent) completionEvent).status().state(),
+                "Task should be completed");
     }
 
     /**
@@ -670,33 +712,37 @@ public class DefaultRequestHandlerTest {
      */
     @Test
     void testRejectMismatchingContextId() throws Exception {
-        // Arrange: Create an initial task – agent stays active (working) so the task is NOT terminal
+        // Arrange: Create an initial task – agent stays active (working) so the task is NOT
+        // terminal
         CountDownLatch agentStarted = new CountDownLatch(1);
         CountDownLatch agentRelease = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.startWork();
-            agentStarted.countDown();
-            try {
-                agentRelease.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.startWork();
+                    agentStarted.countDown();
+                    try {
+                        agentRelease.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    emitter.complete();
+                };
 
-        Message initialMessage = Message.builder()
-            .messageId("msg-1")
-            .role(Message.Role.ROLE_USER)
-            .contextId("original-context")
-            .parts(new TextPart("initial message"))
-            .build();
+        Message initialMessage =
+                Message.builder()
+                        .messageId("msg-1")
+                        .role(Message.Role.ROLE_USER)
+                        .contextId("original-context")
+                        .parts(new TextPart("initial message"))
+                        .build();
 
         // returnImmediately=true so onMessageSend returns quickly (on first event)
-        MessageSendParams initialParams = MessageSendParams.builder()
-            .message(initialMessage)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams initialParams =
+                MessageSendParams.builder()
+                        .message(initialMessage)
+                        .configuration(DEFAULT_CONFIG)
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -709,21 +755,25 @@ public class DefaultRequestHandlerTest {
             // Act & Assert: Send a follow-up message with matching taskId but wrong contextId
             // The task is still WORKING, so the terminal guard does NOT fire.
             // The contextId mismatch guard should fire instead.
-            Message mismatchedMessage = Message.builder()
-                .messageId("msg-2")
-                .role(Message.Role.ROLE_USER)
-                .taskId(task.id())
-                .contextId("wrong-context-does-not-exist")
-                .parts(new TextPart("follow-up message"))
-                .build();
+            Message mismatchedMessage =
+                    Message.builder()
+                            .messageId("msg-2")
+                            .role(Message.Role.ROLE_USER)
+                            .taskId(task.id())
+                            .contextId("wrong-context-does-not-exist")
+                            .parts(new TextPart("follow-up message"))
+                            .build();
 
-            MessageSendParams mismatchedParams = MessageSendParams.builder()
-                .message(mismatchedMessage)
-                .configuration(DEFAULT_CONFIG)
-                .build();
+            MessageSendParams mismatchedParams =
+                    MessageSendParams.builder()
+                            .message(mismatchedMessage)
+                            .configuration(DEFAULT_CONFIG)
+                            .build();
 
-            InvalidParamsError error = assertThrows(InvalidParamsError.class,
-                () -> requestHandler.onMessageSend(mismatchedParams, NULL_CONTEXT));
+            InvalidParamsError error =
+                    assertThrows(
+                            InvalidParamsError.class,
+                            () -> requestHandler.onMessageSend(mismatchedParams, NULL_CONTEXT));
             assertTrue(error.getMessage().contains(task.id()));
         } finally {
             // Release agent so it completes and doesn't leak
@@ -738,28 +788,37 @@ public class DefaultRequestHandlerTest {
     private void assertSendMessageToTerminalStateThrows(TaskState terminalState) throws Exception {
         CountDownLatch agentCompleted = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            switch (terminalState) {
-                case TASK_STATE_COMPLETED -> emitter.complete();
-                case TASK_STATE_CANCELED  -> emitter.cancel();
-                case TASK_STATE_REJECTED  -> emitter.reject();
-                // Use fail() (no-arg) which emits TaskStatusUpdateEvent(FAILED) via the normal path,
-                // ensuring the task state is persisted to the store before we query it.
-                case TASK_STATE_FAILED    -> emitter.fail();
-                default -> throw new IllegalArgumentException("Unexpected state: " + terminalState);
-            }
-            agentCompleted.countDown();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    switch (terminalState) {
+                        case TASK_STATE_COMPLETED -> emitter.complete();
+                        case TASK_STATE_CANCELED -> emitter.cancel();
+                        case TASK_STATE_REJECTED -> emitter.reject();
+                        // Use fail() (no-arg) which emits TaskStatusUpdateEvent(FAILED) via the
+                        // normal path,
+                        // ensuring the task state is persisted to the store before we query it.
+                        case TASK_STATE_FAILED -> emitter.fail();
+                        default ->
+                                throw new IllegalArgumentException(
+                                        "Unexpected state: " + terminalState);
+                    }
+                    agentCompleted.countDown();
+                };
 
-        Message initialMessage = Message.builder()
-            .messageId("msg-initial-" + terminalState)
-            .role(Message.Role.ROLE_USER)
-            .parts(new TextPart("create task"))
-            .build();
+        Message initialMessage =
+                Message.builder()
+                        .messageId("msg-initial-" + terminalState)
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("create task"))
+                        .build();
 
-        EventKind result = requestHandler.onMessageSend(
-            MessageSendParams.builder().message(initialMessage).configuration(DEFAULT_CONFIG).build(),
-            NULL_CONTEXT);
+        EventKind result =
+                requestHandler.onMessageSend(
+                        MessageSendParams.builder()
+                                .message(initialMessage)
+                                .configuration(DEFAULT_CONFIG)
+                                .build(),
+                        NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
         final String finalTaskId = task.id();
@@ -769,33 +828,44 @@ public class DefaultRequestHandlerTest {
 
         Task storedTask = taskStore.get(finalTaskId);
         assertNotNull(storedTask);
-        assertEquals(terminalState, storedTask.status().state(),
-            "Task should be in " + terminalState + " state");
+        assertEquals(
+                terminalState,
+                storedTask.status().state(),
+                "Task should be in " + terminalState + " state");
 
         // Reset: agent executor must NOT be called on the follow-up
-        agentExecutorExecute = (context, emitter) -> {
-            throw new AssertionError("AgentExecutor must NOT be invoked for a terminal task");
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    throw new AssertionError(
+                            "AgentExecutor must NOT be invoked for a terminal task");
+                };
 
-        Message followUpMessage = Message.builder()
-            .messageId("msg-followup-" + terminalState)
-            .role(Message.Role.ROLE_USER)
-            .taskId(finalTaskId)
-            .parts(new TextPart("follow-up to terminal task"))
-            .build();
+        Message followUpMessage =
+                Message.builder()
+                        .messageId("msg-followup-" + terminalState)
+                        .role(Message.Role.ROLE_USER)
+                        .taskId(finalTaskId)
+                        .parts(new TextPart("follow-up to terminal task"))
+                        .build();
 
-        MessageSendParams followUpParams = MessageSendParams.builder()
-            .message(followUpMessage)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams followUpParams =
+                MessageSendParams.builder()
+                        .message(followUpMessage)
+                        .configuration(DEFAULT_CONFIG)
+                        .build();
 
-        UnsupportedOperationError error = assertThrows(UnsupportedOperationError.class,
-            () -> requestHandler.onMessageSend(followUpParams, NULL_CONTEXT),
-            "Expected UnsupportedOperationError when sending message to a " + terminalState + " task");
+        UnsupportedOperationError error =
+                assertThrows(
+                        UnsupportedOperationError.class,
+                        () -> requestHandler.onMessageSend(followUpParams, NULL_CONTEXT),
+                        "Expected UnsupportedOperationError when sending message to a "
+                                + terminalState
+                                + " task");
 
         assertNotNull(error.getMessage(), "Error message should not be null");
-        assertTrue(error.getMessage().contains(finalTaskId),
-            "Error message should reference the task id");
+        assertTrue(
+                error.getMessage().contains(finalTaskId),
+                "Error message should reference the task id");
     }
 
     /**
@@ -837,25 +907,27 @@ public class DefaultRequestHandlerTest {
      */
     @Test
     void testSendMessage_WithNonExistentTaskId_ThrowsTaskNotFoundError() {
-        agentExecutorExecute = (context, emitter) -> {
-            throw new AssertionError("AgentExecutor must NOT be invoked when taskId is unknown");
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    throw new AssertionError(
+                            "AgentExecutor must NOT be invoked when taskId is unknown");
+                };
 
-        Message message = Message.builder()
-            .messageId("msg-unknown-task")
-            .role(Message.Role.ROLE_USER)
-            .taskId("does-not-exist-99999")
-            .parts(new TextPart("hello"))
-            .build();
+        Message message =
+                Message.builder()
+                        .messageId("msg-unknown-task")
+                        .role(Message.Role.ROLE_USER)
+                        .taskId("does-not-exist-99999")
+                        .parts(new TextPart("hello"))
+                        .build();
 
-        MessageSendParams params = MessageSendParams.builder()
-            .message(message)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(DEFAULT_CONFIG).build();
 
-        assertThrows(TaskNotFoundError.class,
-            () -> requestHandler.onMessageSend(params, NULL_CONTEXT),
-            "Expected TaskNotFoundError when SendMessage references a non-existent taskId");
+        assertThrows(
+                TaskNotFoundError.class,
+                () -> requestHandler.onMessageSend(params, NULL_CONTEXT),
+                "Expected TaskNotFoundError when SendMessage references a non-existent taskId");
     }
 
     /**
@@ -867,21 +939,24 @@ public class DefaultRequestHandlerTest {
         // Arrange: Create and complete an initial task
         CountDownLatch agentCompleted = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.complete();
-            agentCompleted.countDown();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.complete();
+                    agentCompleted.countDown();
+                };
 
-        Message initialMessage = Message.builder()
-            .messageId("msg-initial-stream")
-            .role(Message.Role.ROLE_USER)
-            .parts(new TextPart("create task for stream test"))
-            .build();
+        Message initialMessage =
+                Message.builder()
+                        .messageId("msg-initial-stream")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("create task for stream test"))
+                        .build();
 
-        MessageSendParams initialParams = MessageSendParams.builder()
-            .message(initialMessage)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams initialParams =
+                MessageSendParams.builder()
+                        .message(initialMessage)
+                        .configuration(DEFAULT_CONFIG)
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -896,26 +971,31 @@ public class DefaultRequestHandlerTest {
         assertEquals(TaskState.TASK_STATE_COMPLETED, storedTask.status().state());
 
         // Reset: agent executor must NOT be called
-        agentExecutorExecute = (context, emitter) -> {
-            throw new AssertionError("AgentExecutor must NOT be invoked for a terminal task");
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    throw new AssertionError(
+                            "AgentExecutor must NOT be invoked for a terminal task");
+                };
 
         // Act & Assert: streaming follow-up to a terminal task must also be rejected
-        Message followUpMessage = Message.builder()
-            .messageId("msg-followup-stream")
-            .role(Message.Role.ROLE_USER)
-            .taskId(task.id())
-            .parts(new TextPart("streaming follow-up to completed task"))
-            .build();
+        Message followUpMessage =
+                Message.builder()
+                        .messageId("msg-followup-stream")
+                        .role(Message.Role.ROLE_USER)
+                        .taskId(task.id())
+                        .parts(new TextPart("streaming follow-up to completed task"))
+                        .build();
 
-        MessageSendParams followUpParams = MessageSendParams.builder()
-            .message(followUpMessage)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams followUpParams =
+                MessageSendParams.builder()
+                        .message(followUpMessage)
+                        .configuration(DEFAULT_CONFIG)
+                        .build();
 
-        assertThrows(UnsupportedOperationError.class,
-            () -> requestHandler.onMessageSendStream(followUpParams, NULL_CONTEXT),
-            "Expected UnsupportedOperationError when streaming message to a completed task");
+        assertThrows(
+                UnsupportedOperationError.class,
+                () -> requestHandler.onMessageSendStream(followUpParams, NULL_CONTEXT),
+                "Expected UnsupportedOperationError when streaming message to a completed task");
     }
 
     /**
@@ -925,25 +1005,28 @@ public class DefaultRequestHandlerTest {
      */
     @Test
     void testSendMessageStream_WithNonExistentTaskId_ThrowsTaskNotFoundError() {
-        agentExecutorExecute = (context, emitter) -> {
-            throw new AssertionError("AgentExecutor must NOT be invoked when taskId is unknown");
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    throw new AssertionError(
+                            "AgentExecutor must NOT be invoked when taskId is unknown");
+                };
 
-        Message message = Message.builder()
-            .messageId("msg-stream-unknown-task")
-            .role(Message.Role.ROLE_USER)
-            .taskId("does-not-exist-stream-99999")
-            .parts(new TextPart("hello"))
-            .build();
+        Message message =
+                Message.builder()
+                        .messageId("msg-stream-unknown-task")
+                        .role(Message.Role.ROLE_USER)
+                        .taskId("does-not-exist-stream-99999")
+                        .parts(new TextPart("hello"))
+                        .build();
 
-        MessageSendParams params = MessageSendParams.builder()
-            .message(message)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(DEFAULT_CONFIG).build();
 
-        assertThrows(TaskNotFoundError.class,
-            () -> requestHandler.onMessageSendStream(params, NULL_CONTEXT),
-            "Expected TaskNotFoundError when onMessageSendStream references a non-existent taskId");
+        assertThrows(
+                TaskNotFoundError.class,
+                () -> requestHandler.onMessageSendStream(params, NULL_CONTEXT),
+                "Expected TaskNotFoundError when onMessageSendStream references a non-existent"
+                        + " taskId");
     }
 
     /**
@@ -960,34 +1043,37 @@ public class DefaultRequestHandlerTest {
     @NullAndEmptySource
     void testSendMessage_WithBlankTaskId_TreatedAsNewTask(String taskId) throws Exception {
         CountDownLatch agentCompleted = new CountDownLatch(1);
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.complete();
-            agentCompleted.countDown();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.complete();
+                    agentCompleted.countDown();
+                };
 
-        Message message = Message.builder()
-            .messageId("msg-blank-task-id")
-            .role(Message.Role.ROLE_USER)
-            .taskId(taskId)
-            .contextId("")
-            .parts(new TextPart("hello"))
-            .build();
+        Message message =
+                Message.builder()
+                        .messageId("msg-blank-task-id")
+                        .role(Message.Role.ROLE_USER)
+                        .taskId(taskId)
+                        .contextId("")
+                        .parts(new TextPart("hello"))
+                        .build();
 
-        MessageSendParams params = MessageSendParams.builder()
-            .message(message)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(DEFAULT_CONFIG).build();
 
         EventKind result = requestHandler.onMessageSend(params, contextWithEffectiveCard(true));
 
-        assertInstanceOf(Task.class, result, "A blank taskId should start a new task, not fail lookup");
+        assertInstanceOf(
+                Task.class, result, "A blank taskId should start a new task, not fail lookup");
         Task task = (Task) result;
         assertNotNull(task.id());
         assertFalse(task.id().isEmpty(), "A newly generated taskId must not be blank");
         assertNotNull(task.contextId());
         assertFalse(task.contextId().isEmpty(), "A newly generated contextId must not be blank");
 
-        assertTrue(agentCompleted.await(5, TimeUnit.SECONDS), "Agent should have been invoked for a new task");
+        assertTrue(
+                agentCompleted.await(5, TimeUnit.SECONDS),
+                "Agent should have been invoked for a new task");
         assertNull(taskStore.get(""), "No task should ever be stored under the empty-string id");
     }
 
@@ -998,23 +1084,23 @@ public class DefaultRequestHandlerTest {
     @NullAndEmptySource
     void testSendMessageStream_WithBlankTaskId_TreatedAsNewTask(String taskId) throws Exception {
         CountDownLatch agentCompleted = new CountDownLatch(1);
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.complete();
-            agentCompleted.countDown();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.complete();
+                    agentCompleted.countDown();
+                };
 
-        Message message = Message.builder()
-            .messageId("msg-stream-blank-task-id")
-            .role(Message.Role.ROLE_USER)
-            .taskId(taskId)
-            .contextId("")
-            .parts(new TextPart("hello"))
-            .build();
+        Message message =
+                Message.builder()
+                        .messageId("msg-stream-blank-task-id")
+                        .role(Message.Role.ROLE_USER)
+                        .taskId(taskId)
+                        .contextId("")
+                        .parts(new TextPart("hello"))
+                        .build();
 
-        MessageSendParams params = MessageSendParams.builder()
-            .message(message)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(DEFAULT_CONFIG).build();
 
         CountDownLatch streamDone = new CountDownLatch(1);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -1022,36 +1108,41 @@ public class DefaultRequestHandlerTest {
 
         Flow.Publisher<StreamingEventKind> publisher =
                 requestHandler.onMessageSendStream(params, contextWithEffectiveCard(true));
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription s) {
-                s.request(Long.MAX_VALUE);
-            }
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription s) {
+                        s.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(StreamingEventKind item) {
-                if (item instanceof Task t) {
-                    taskIdRef.set(t.id());
-                } else if (item instanceof TaskStatusUpdateEvent e) {
-                    taskIdRef.set(e.taskId());
-                }
-            }
+                    @Override
+                    public void onNext(StreamingEventKind item) {
+                        if (item instanceof Task t) {
+                            taskIdRef.set(t.id());
+                        } else if (item instanceof TaskStatusUpdateEvent e) {
+                            taskIdRef.set(e.taskId());
+                        }
+                    }
 
-            @Override
-            public void onError(Throwable t) {
-                errorRef.set(t);
-                streamDone.countDown();
-            }
+                    @Override
+                    public void onError(Throwable t) {
+                        errorRef.set(t);
+                        streamDone.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                streamDone.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        streamDone.countDown();
+                    }
+                });
 
         assertTrue(streamDone.await(5, TimeUnit.SECONDS), "Stream should complete");
-        assertNull(errorRef.get(), "A blank taskId should start a new task, not fail lookup: " + errorRef.get());
-        assertTrue(agentCompleted.await(5, TimeUnit.SECONDS), "Agent should have been invoked for a new task");
+        assertNull(
+                errorRef.get(),
+                "A blank taskId should start a new task, not fail lookup: " + errorRef.get());
+        assertTrue(
+                agentCompleted.await(5, TimeUnit.SECONDS),
+                "Agent should have been invoked for a new task");
         assertNotNull(taskIdRef.get());
         assertFalse(taskIdRef.get().isEmpty(), "A newly generated taskId must not be blank");
         assertNull(taskStore.get(""), "No task should ever be stored under the empty-string id");
@@ -1072,36 +1163,41 @@ public class DefaultRequestHandlerTest {
         CountDownLatch firstAgentStarted = new CountDownLatch(1);
         CountDownLatch releaseFirstAgent = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.startWork();
-            firstAgentStarted.countDown();
-            try {
-                releaseFirstAgent.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.startWork();
+                    firstAgentStarted.countDown();
+                    try {
+                        releaseFirstAgent.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    emitter.complete();
+                };
 
-        Message initialMessage = Message.builder()
-            .messageId("msg-initial-ctx-verify")
-            .role(Message.Role.ROLE_USER)
-            .contextId(originalContextId)
-            .parts(new TextPart("initial message"))
-            .build();
+        Message initialMessage =
+                Message.builder()
+                        .messageId("msg-initial-ctx-verify")
+                        .role(Message.Role.ROLE_USER)
+                        .contextId(originalContextId)
+                        .parts(new TextPart("initial message"))
+                        .build();
 
-        MessageSendParams initialParams = MessageSendParams.builder()
-            .message(initialMessage)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams initialParams =
+                MessageSendParams.builder()
+                        .message(initialMessage)
+                        .configuration(DEFAULT_CONFIG)
+                        .build();
 
         EventKind initialResult = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
         assertInstanceOf(Task.class, initialResult);
         Task existingTask = (Task) initialResult;
 
         // Verify the task was stored with the expected contextId
-        assertEquals(originalContextId, existingTask.contextId(),
-            "Initial task must have the original contextId");
+        assertEquals(
+                originalContextId,
+                existingTask.contextId(),
+                "Initial task must have the original contextId");
 
         // Wait until the first agent is actively running (task is non-terminal/WORKING)
         assertTrue(firstAgentStarted.await(5, TimeUnit.SECONDS), "First agent should start");
@@ -1110,39 +1206,39 @@ public class DefaultRequestHandlerTest {
         AtomicReference<String> observedContextId = new AtomicReference<>();
         CountDownLatch followUpAgentDone = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            observedContextId.set(context.getContextId());
-            emitter.complete();
-            followUpAgentDone.countDown();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    observedContextId.set(context.getContextId());
+                    emitter.complete();
+                    followUpAgentDone.countDown();
+                };
 
         // Act: follow-up message with taskId only, NO contextId
-        Message followUp = Message.builder()
-            .messageId("follow-up-msg-ctx-verify")
-            .role(Message.Role.ROLE_USER)
-            .taskId(existingTask.id())
-            // NOTE: intentionally NO .contextId(...)
-            .parts(new TextPart("follow up"))
-            .build();
+        Message followUp =
+                Message.builder()
+                        .messageId("follow-up-msg-ctx-verify")
+                        .role(Message.Role.ROLE_USER)
+                        .taskId(existingTask.id())
+                        // NOTE: intentionally NO .contextId(...)
+                        .parts(new TextPart("follow up"))
+                        .build();
 
-        MessageSendParams followUpParams = MessageSendParams.builder()
-            .message(followUp)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams followUpParams =
+                MessageSendParams.builder().message(followUp).configuration(DEFAULT_CONFIG).build();
 
         // Release the first agent so the task reaches a non-terminal state that
         // allows a follow-up (the test uses WORKING state, then we send a second message;
         // but the spec only allows follow-up to non-terminal tasks so we send before
         // completion by driving the task to SUBMITTED first via direct store manipulation).
         // Instead: pre-store the task directly to control state precisely.
-        Task workingTask = new Task(
-            existingTask.id(),
-            originalContextId,
-            new TaskStatus(TaskState.TASK_STATE_WORKING),
-            null,
-            null,
-            null
-        );
+        Task workingTask =
+                new Task(
+                        existingTask.id(),
+                        originalContextId,
+                        new TaskStatus(TaskState.TASK_STATE_WORKING),
+                        null,
+                        null,
+                        null);
         taskStore.save(workingTask, false);
 
         EventKind result = requestHandler.onMessageSend(followUpParams, NULL_CONTEXT);
@@ -1150,15 +1246,19 @@ public class DefaultRequestHandlerTest {
         // Assert: the task returned must still have the ORIGINAL contextId
         assertInstanceOf(Task.class, result);
         Task returned = (Task) result;
-        assertEquals(originalContextId, returned.contextId(),
-            "Task's contextId must be preserved after follow-up without contextId");
+        assertEquals(
+                originalContextId,
+                returned.contextId(),
+                "Task's contextId must be preserved after follow-up without contextId");
 
         // Wait for follow-up agent to run and capture its observed contextId
         assertTrue(followUpAgentDone.await(5, TimeUnit.SECONDS), "Follow-up agent should complete");
 
         // And the agent's view of the contextId must match the original
-        assertEquals(originalContextId, observedContextId.get(),
-            "Agent should see the original contextId, not a freshly generated one");
+        assertEquals(
+                originalContextId,
+                observedContextId.get(),
+                "Agent should see the original contextId, not a freshly generated one");
 
         // Cleanup: release the first agent
         releaseFirstAgent.countDown();
@@ -1172,43 +1272,65 @@ public class DefaultRequestHandlerTest {
 
     static ServerCallContext contextWithEffectiveCard(boolean pushNotifications) {
         ServerCallContext context = contextWithVersion("1.0");
-        context.attachEffectiveAgentCard(null, AgentCard.builder()
-                .name("test").description("Test agent").version("1.0")
-                .supportedInterfaces(List.of()).skills(List.of())
-                .defaultInputModes(List.of("text")).defaultOutputModes(List.of("text"))
-                .capabilities(AgentCapabilities.builder().pushNotifications(pushNotifications).build())
-                .build());
+        context.attachEffectiveAgentCard(
+                null,
+                AgentCard.builder()
+                        .name("test")
+                        .description("Test agent")
+                        .version("1.0")
+                        .supportedInterfaces(List.of())
+                        .skills(List.of())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .pushNotifications(pushNotifications)
+                                        .build())
+                        .build());
         return context;
     }
 
     @ParameterizedTest(name = "streaming={0}, advertised={1}, enabled={2}, store={3}")
     @CsvSource({
-            "false, false, true, true", "true, false, true, true",
-            "false, true, false, true", "true, true, false, true",
-            "false, true, true, false", "true, true, true, false"
+        "false, false, true, true", "true, false, true, true",
+        "false, true, false, true", "true, true, false, true",
+        "false, true, true, false", "true, true, true, false"
     })
     void embeddedPushRequiresEffectiveCardAndConfiguredSupport(
             boolean streaming, boolean advertised, boolean enabled, boolean hasStore) {
-        DefaultRequestHandler handler = DefaultRequestHandler.builder()
-                .agentExecutor(executor).taskStore(taskStore).queueManager(queueManager)
-                .pushConfigStore(hasStore ? pushConfigStore : null).pushNotificationsEnabled(enabled)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor).eventConsumerExecutor(internalExecutor)
-                .build();
-        MessageSendParams params = MessageSendParams.builder().message(MESSAGE)
-                .configuration(MessageSendConfiguration.builder()
-                        .taskPushNotificationConfig(TaskPushNotificationConfig.builder()
-                                .url("https://example.com/push").build()).build())
-                .build();
+        DefaultRequestHandler handler =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(hasStore ? pushConfigStore : null)
+                        .pushNotificationsEnabled(enabled)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(MESSAGE)
+                        .configuration(
+                                MessageSendConfiguration.builder()
+                                        .taskPushNotificationConfig(
+                                                TaskPushNotificationConfig.builder()
+                                                        .url("https://example.com/push")
+                                                        .build())
+                                        .build())
+                        .build();
         ServerCallContext context = contextWithEffectiveCard(advertised);
 
-        assertThrows(PushNotificationNotSupportedError.class, () -> {
-            if (streaming) {
-                handler.onMessageSendStream(params, context);
-            } else {
-                handler.onMessageSend(params, context);
-            }
-        });
+        assertThrows(
+                PushNotificationNotSupportedError.class,
+                () -> {
+                    if (streaming) {
+                        handler.onMessageSendStream(params, context);
+                    } else {
+                        handler.onMessageSend(params, context);
+                    }
+                });
     }
 
     /**
@@ -1219,45 +1341,53 @@ public class DefaultRequestHandlerTest {
     void testVersionStored_OnCreateTaskPushNotificationConfig() throws Exception {
         // Arrange: create a task directly in the store so the handler can find it
         String taskId = "version-test-task-1";
-        Task task = new Task(
-            taskId,
-            "ctx-1",
-            new TaskStatus(TaskState.TASK_STATE_WORKING),
-            null,
-            null,
-            null
-        );
+        Task task =
+                new Task(
+                        taskId,
+                        "ctx-1",
+                        new TaskStatus(TaskState.TASK_STATE_WORKING),
+                        null,
+                        null,
+                        null);
         taskStore.save(task, false);
 
-        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
-            .id("")
-            .taskId(taskId)
-            .url("http://example.com/webhook")
-            .build();
+        TaskPushNotificationConfig pushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("")
+                        .taskId(taskId)
+                        .url("http://example.com/webhook")
+                        .build();
 
         // Act
         requestHandler.onCreateTaskPushNotificationConfig(pushConfig, contextWithVersion("1.0"));
 
         // Assert: version is stored; configId defaults to taskId when id is empty
-        assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
-            "Protocol version should be stored for the push notification config");
+        assertEquals(
+                "1.0",
+                pushConfigStore.getProtocolVersion(taskId, taskId),
+                "Protocol version should be stored for the push notification config");
     }
 
     @Test
     void testGetTaskPushNotificationConfigDefaultsMissingIdToTaskId() throws Exception {
         String taskId = "get-default-config-id";
-        taskStore.save(Task.builder()
-                .id(taskId)
-                .contextId("ctx-get-default-config-id")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build(), false);
-        requestHandler.onCreateTaskPushNotificationConfig(TaskPushNotificationConfig.builder()
-                .taskId(taskId)
-                .url("http://example.com/get-default-config-id")
-                .build(), NULL_CONTEXT);
+        taskStore.save(
+                Task.builder()
+                        .id(taskId)
+                        .contextId("ctx-get-default-config-id")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build(),
+                false);
+        requestHandler.onCreateTaskPushNotificationConfig(
+                TaskPushNotificationConfig.builder()
+                        .taskId(taskId)
+                        .url("http://example.com/get-default-config-id")
+                        .build(),
+                NULL_CONTEXT);
 
-        TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(
-                new GetTaskPushNotificationConfigParams(taskId), NULL_CONTEXT);
+        TaskPushNotificationConfig result =
+                requestHandler.onGetTaskPushNotificationConfig(
+                        new GetTaskPushNotificationConfigParams(taskId), NULL_CONTEXT);
 
         assertEquals(taskId, result.id());
         assertEquals("http://example.com/get-default-config-id", result.url());
@@ -1265,22 +1395,27 @@ public class DefaultRequestHandlerTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    void testGetTaskPushNotificationConfigDefaultsMissingIdToTaskIdWithEffectiveCard(String configId)
-            throws Exception {
+    void testGetTaskPushNotificationConfigDefaultsMissingIdToTaskIdWithEffectiveCard(
+            String configId) throws Exception {
         String taskId = "get-default-config-id-with-card";
-        taskStore.save(Task.builder()
-                .id(taskId)
-                .contextId("ctx-get-default-config-id-with-card")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build(), false);
-        requestHandler.onCreateTaskPushNotificationConfig(TaskPushNotificationConfig.builder()
-                .taskId(taskId)
-                .url("http://example.com/get-default-config-id-with-card")
-                .build(), NULL_CONTEXT);
+        taskStore.save(
+                Task.builder()
+                        .id(taskId)
+                        .contextId("ctx-get-default-config-id-with-card")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build(),
+                false);
+        requestHandler.onCreateTaskPushNotificationConfig(
+                TaskPushNotificationConfig.builder()
+                        .taskId(taskId)
+                        .url("http://example.com/get-default-config-id-with-card")
+                        .build(),
+                NULL_CONTEXT);
 
-        TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(
-            new GetTaskPushNotificationConfigParams(taskId, configId),
-            contextWithEffectiveCard(true));
+        TaskPushNotificationConfig result =
+                requestHandler.onGetTaskPushNotificationConfig(
+                        new GetTaskPushNotificationConfigParams(taskId, configId),
+                        contextWithEffectiveCard(true));
 
         assertEquals(taskId, result.id());
         assertEquals("http://example.com/get-default-config-id-with-card", result.url());
@@ -1295,19 +1430,19 @@ public class DefaultRequestHandlerTest {
         // Arrange: agent completes immediately
         agentExecutorExecute = (context, emitter) -> emitter.complete();
 
-        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
-            .id("")
-            .url("http://example.com/webhook")
-            .build();
-        MessageSendConfiguration config = MessageSendConfiguration.builder()
-            .returnImmediately(true)
-            .acceptedOutputModes(List.of())
-            .taskPushNotificationConfig(pushConfig)
-            .build();
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(config)
-            .build();
+        TaskPushNotificationConfig pushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("")
+                        .url("http://example.com/webhook")
+                        .build();
+        MessageSendConfiguration config =
+                MessageSendConfiguration.builder()
+                        .returnImmediately(true)
+                        .acceptedOutputModes(List.of())
+                        .taskPushNotificationConfig(pushConfig)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(config).build();
 
         // Act
         EventKind eventKind = requestHandler.onMessageSend(params, contextWithVersion("1.0"));
@@ -1317,8 +1452,10 @@ public class DefaultRequestHandlerTest {
         Task result = (Task) eventKind;
         String taskId = result.id();
 
-        assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
-            "Protocol version should be stored when push config is provided via onMessageSend");
+        assertEquals(
+                "1.0",
+                pushConfigStore.getProtocolVersion(taskId, taskId),
+                "Protocol version should be stored when push config is provided via onMessageSend");
     }
 
     /**
@@ -1331,21 +1468,20 @@ public class DefaultRequestHandlerTest {
         CountDownLatch agentStarted = new CountDownLatch(1);
         CountDownLatch agentRelease = new CountDownLatch(1);
 
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.startWork();
-            agentStarted.countDown();
-            try {
-                agentRelease.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.startWork();
+                    agentStarted.countDown();
+                    try {
+                        agentRelease.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    emitter.complete();
+                };
 
-        MessageSendParams initialParams = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(DEFAULT_CONFIG)
-            .build();
+        MessageSendParams initialParams =
+                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build();
 
         EventKind initialResult = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
         assertInstanceOf(Task.class, initialResult);
@@ -1357,34 +1493,41 @@ public class DefaultRequestHandlerTest {
             agentExecutorExecute = (context, emitter) -> emitter.complete();
 
             // Follow-up message WITH push config and version context
-            TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
-                .id("")
-                .url("http://example.com/webhook")
-                .build();
-            MessageSendConfiguration followUpConfig = MessageSendConfiguration.builder()
-                .returnImmediately(true)
-                .acceptedOutputModes(List.of())
-                .taskPushNotificationConfig(pushConfig)
-                .build();
-            Message followUpMsg = Message.builder()
-                .messageId("follow-up-version-test")
-                .role(Message.Role.ROLE_USER)
-                .taskId(existingTask.id())
-                .parts(new TextPart("follow up"))
-                .build();
-            MessageSendParams followUpParams = MessageSendParams.builder()
-                .message(followUpMsg)
-                .configuration(followUpConfig)
-                .build();
+            TaskPushNotificationConfig pushConfig =
+                    TaskPushNotificationConfig.builder()
+                            .id("")
+                            .url("http://example.com/webhook")
+                            .build();
+            MessageSendConfiguration followUpConfig =
+                    MessageSendConfiguration.builder()
+                            .returnImmediately(true)
+                            .acceptedOutputModes(List.of())
+                            .taskPushNotificationConfig(pushConfig)
+                            .build();
+            Message followUpMsg =
+                    Message.builder()
+                            .messageId("follow-up-version-test")
+                            .role(Message.Role.ROLE_USER)
+                            .taskId(existingTask.id())
+                            .parts(new TextPart("follow up"))
+                            .build();
+            MessageSendParams followUpParams =
+                    MessageSendParams.builder()
+                            .message(followUpMsg)
+                            .configuration(followUpConfig)
+                            .build();
 
             // Act
-            EventKind result = requestHandler.onMessageSend(followUpParams, contextWithVersion("1.0"));
+            EventKind result =
+                    requestHandler.onMessageSend(followUpParams, contextWithVersion("1.0"));
 
             // Assert
             assertInstanceOf(Task.class, result);
             String taskId = existingTask.id();
-            assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
-                "Protocol version should be stored for push config on existing task");
+            assertEquals(
+                    "1.0",
+                    pushConfigStore.getProtocolVersion(taskId, taskId),
+                    "Protocol version should be stored for push config on existing task");
         } finally {
             agentRelease.countDown();
         }
@@ -1399,62 +1542,66 @@ public class DefaultRequestHandlerTest {
         // Arrange: agent completes immediately
         agentExecutorExecute = (context, emitter) -> emitter.complete();
 
-        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
-            .id("")
-            .url("http://example.com/webhook")
-            .build();
-        MessageSendConfiguration config = MessageSendConfiguration.builder()
-            .returnImmediately(true)
-            .acceptedOutputModes(List.of())
-            .taskPushNotificationConfig(pushConfig)
-            .build();
-        MessageSendParams params = MessageSendParams.builder()
-            .message(MESSAGE)
-            .configuration(config)
-            .build();
+        TaskPushNotificationConfig pushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("")
+                        .url("http://example.com/webhook")
+                        .build();
+        MessageSendConfiguration config =
+                MessageSendConfiguration.builder()
+                        .returnImmediately(true)
+                        .acceptedOutputModes(List.of())
+                        .taskPushNotificationConfig(pushConfig)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(config).build();
 
         // Act
-        Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(
-            params, contextWithVersion("1.0"));
+        Flow.Publisher<StreamingEventKind> publisher =
+                requestHandler.onMessageSendStream(params, contextWithVersion("1.0"));
 
         AtomicReference<String> taskIdRef = new AtomicReference<>();
         CountDownLatch streamDone = new CountDownLatch(1);
-        publisher.subscribe(new Flow.Subscriber<>() {
-            Flow.Subscription subscription;
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription s) {
-                subscription = s;
-                s.request(Long.MAX_VALUE);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription s) {
+                        subscription = s;
+                        s.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(StreamingEventKind item) {
-                if (item instanceof Task t) {
-                    taskIdRef.set(t.id());
-                } else if (item instanceof TaskStatusUpdateEvent e) {
-                    taskIdRef.set(e.taskId());
-                }
-            }
+                    @Override
+                    public void onNext(StreamingEventKind item) {
+                        if (item instanceof Task t) {
+                            taskIdRef.set(t.id());
+                        } else if (item instanceof TaskStatusUpdateEvent e) {
+                            taskIdRef.set(e.taskId());
+                        }
+                    }
 
-            @Override
-            public void onError(Throwable t) {
-                streamDone.countDown();
-            }
+                    @Override
+                    public void onError(Throwable t) {
+                        streamDone.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                streamDone.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        streamDone.countDown();
+                    }
+                });
 
         assertTrue(streamDone.await(5, TimeUnit.SECONDS), "Stream should complete");
         String taskId = taskIdRef.get();
         assertNotNull(taskId, "Should have received a task ID from the stream");
 
         // Assert
-        assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
-            "Protocol version should be stored when push config is provided via onMessageSendStream");
+        assertEquals(
+                "1.0",
+                pushConfigStore.getProtocolVersion(taskId, taskId),
+                "Protocol version should be stored when push config is provided via"
+                        + " onMessageSendStream");
     }
 
     @Test
@@ -1462,7 +1609,8 @@ public class DefaultRequestHandlerTest {
         Task task = taskWithHistory("task-hl-limit");
         taskStore.save(task, false);
 
-        Task result = requestHandler.onGetTask(new TaskQueryParams("task-hl-limit", 2), NULL_CONTEXT);
+        Task result =
+                requestHandler.onGetTask(new TaskQueryParams("task-hl-limit", 2), NULL_CONTEXT);
 
         assertEquals(2, result.history().size());
         assertEquals("msg-2", result.history().get(0).messageId());
@@ -1474,7 +1622,8 @@ public class DefaultRequestHandlerTest {
         Task task = taskWithHistory("task-hl-zero");
         taskStore.save(task, false);
 
-        Task result = requestHandler.onGetTask(new TaskQueryParams("task-hl-zero", 0), NULL_CONTEXT);
+        Task result =
+                requestHandler.onGetTask(new TaskQueryParams("task-hl-zero", 0), NULL_CONTEXT);
 
         assertNotNull(result.history());
         assertTrue(result.history().isEmpty());
@@ -1485,13 +1634,23 @@ public class DefaultRequestHandlerTest {
                 .id(id)
                 .contextId("ctx-history")
                 .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .history(List.of(
-                        Message.builder().messageId("msg-1").role(Message.Role.ROLE_USER)
-                                .parts(new TextPart("one")).build(),
-                        Message.builder().messageId("msg-2").role(Message.Role.ROLE_AGENT)
-                                .parts(new TextPart("two")).build(),
-                        Message.builder().messageId("msg-3").role(Message.Role.ROLE_AGENT)
-                                .parts(new TextPart("three")).build()))
+                .history(
+                        List.of(
+                                Message.builder()
+                                        .messageId("msg-1")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("one"))
+                                        .build(),
+                                Message.builder()
+                                        .messageId("msg-2")
+                                        .role(Message.Role.ROLE_AGENT)
+                                        .parts(new TextPart("two"))
+                                        .build(),
+                                Message.builder()
+                                        .messageId("msg-3")
+                                        .role(Message.Role.ROLE_AGENT)
+                                        .parts(new TextPart("three"))
+                                        .build()))
                 .artifacts(List.of())
                 .build();
     }
@@ -1501,51 +1660,65 @@ public class DefaultRequestHandlerTest {
         // Regression: two concurrent cancels of the same task must serialize on a
         // per-task lock so the second one observes the CANCELED terminal state and fails
         // with TaskNotCancelableError instead of both acting on the pre-transition state.
-        Task workingTask = Task.builder()
-                .id("task-cancel-lock")
-                .contextId("ctx-cancel")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .history(List.of())
-                .artifacts(List.of())
-                .build();
+        Task workingTask =
+                Task.builder()
+                        .id("task-cancel-lock")
+                        .contextId("ctx-cancel")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .history(List.of())
+                        .artifacts(List.of())
+                        .build();
         taskStore.save(workingTask, false);
 
         CountDownLatch cancelEntered = new CountDownLatch(1);
         CountDownLatch releaseCancel = new CountDownLatch(1);
 
-        agentExecutorCancel = (context, emitter) -> {
-            cancelEntered.countDown();
-            try {
-                releaseCancel.await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            emitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, emitter) -> {
+                    cancelEntered.countDown();
+                    try {
+                        releaseCancel.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    emitter.cancel();
+                };
 
         ExecutorService cancelExec = Executors.newFixedThreadPool(2);
         try {
             CountDownLatch firstDone = new CountDownLatch(1);
-            Future<Task> first = cancelExec.submit(() -> {
-                try {
-                    Task result = requestHandler.onCancelTask(
-                            new CancelTaskParams("task-cancel-lock"), NULL_CONTEXT);
-                    firstDone.countDown();
-                    return result;
-                } catch (A2AError e) {
-                    firstDone.countDown();
-                    throw e;
-                }
-            });
+            Future<Task> first =
+                    cancelExec.submit(
+                            () -> {
+                                try {
+                                    Task result =
+                                            requestHandler.onCancelTask(
+                                                    new CancelTaskParams("task-cancel-lock"),
+                                                    NULL_CONTEXT);
+                                    firstDone.countDown();
+                                    return result;
+                                } catch (A2AError e) {
+                                    firstDone.countDown();
+                                    throw e;
+                                }
+                            });
 
-            // Wait until the first cancel is inside agentExecutor.cancel() (holding the per-task lock)
-            assertTrue(cancelEntered.await(5, TimeUnit.SECONDS),
+            // Wait until the first cancel is inside agentExecutor.cancel() (holding the per-task
+            // lock)
+            assertTrue(
+                    cancelEntered.await(5, TimeUnit.SECONDS),
                     "First cancel should enter agentExecutor.cancel()");
 
             // The second cancel must block on the per-task lock while the first is in progress
-            Future<Task> second = cancelExec.submit(() -> requestHandler.onCancelTask(
-                    new CancelTaskParams("task-cancel-lock"), NULL_CONTEXT));
-            assertThrows(TimeoutException.class, () -> second.get(300, TimeUnit.MILLISECONDS),
+            Future<Task> second =
+                    cancelExec.submit(
+                            () ->
+                                    requestHandler.onCancelTask(
+                                            new CancelTaskParams("task-cancel-lock"),
+                                            NULL_CONTEXT));
+            assertThrows(
+                    TimeoutException.class,
+                    () -> second.get(300, TimeUnit.MILLISECONDS),
                     "Second cancel should not complete while the first holds the per-task lock");
 
             // Release the first cancel so it can enqueue CANCELED and finish
@@ -1555,7 +1728,9 @@ public class DefaultRequestHandlerTest {
 
             // The second cancel now observes the terminal state and is rejected
             ExecutionException ex = assertThrows(ExecutionException.class, second::get);
-            assertInstanceOf(TaskNotCancelableError.class, ex.getCause(),
+            assertInstanceOf(
+                    TaskNotCancelableError.class,
+                    ex.getCause(),
                     "Second cancel should fail with TaskNotCancelableError");
         } finally {
             releaseCancel.countDown();
@@ -1565,34 +1740,38 @@ public class DefaultRequestHandlerTest {
 
     @Test
     void agentExecutorRouterRoutesToTenantSpecificExecutor() throws Exception {
-        AgentExecutor tenantExecutor = new AgentExecutor() {
-            @Override
-            public void execute(RequestContext context, AgentEmitter emitter) {
-                assertEquals("acme", context.getTenant());
-                emitter.complete();
-            }
+        AgentExecutor tenantExecutor =
+                new AgentExecutor() {
+                    @Override
+                    public void execute(RequestContext context, AgentEmitter emitter) {
+                        assertEquals("acme", context.getTenant());
+                        emitter.complete();
+                    }
 
-            @Override
-            public void cancel(RequestContext context, AgentEmitter emitter) {
-            }
-        };
+                    @Override
+                    public void cancel(RequestContext context, AgentEmitter emitter) {}
+                };
 
-        requestHandler = buildHandlerWithRouter(tenant -> {
-            if ("acme".equals(tenant)) {
-                return tenantExecutor;
-            }
-            return executor;
-        });
+        requestHandler =
+                buildHandlerWithRouter(
+                        tenant -> {
+                            if ("acme".equals(tenant)) {
+                                return tenantExecutor;
+                            }
+                            return executor;
+                        });
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-tenant")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(DEFAULT_CONFIG)
-                .tenant("acme")
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-tenant")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(DEFAULT_CONFIG)
+                        .tenant("acme")
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -1604,29 +1783,34 @@ public class DefaultRequestHandlerTest {
     void cancelFlowSetsTenantOnRequestContext() throws Exception {
         AtomicReference<String> capturedTenant = new AtomicReference<>();
 
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.startWork();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.startWork();
+                };
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-cancel-tenant")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(DEFAULT_CONFIG)
-                .tenant("acme")
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-cancel-tenant")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(DEFAULT_CONFIG)
+                        .tenant("acme")
+                        .build();
 
         requestHandler.onMessageSend(params, NULL_CONTEXT);
         Task task = taskStore.list(ListTasksParams.builder().build(), NULL_CONTEXT).tasks().get(0);
 
-        agentExecutorCancel = (context, emitter) -> {
-            capturedTenant.set(context.getTenant());
-            emitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, emitter) -> {
+                    capturedTenant.set(context.getTenant());
+                    emitter.cancel();
+                };
 
-        requestHandler.onCancelTask(new CancelTaskParams(task.id(), "acme", Map.of()), NULL_CONTEXT);
+        requestHandler.onCancelTask(
+                new CancelTaskParams(task.id(), "acme", Map.of()), NULL_CONTEXT);
         assertEquals("acme", capturedTenant.get());
     }
 
@@ -1634,21 +1818,24 @@ public class DefaultRequestHandlerTest {
     void agentExecutorRouterNullTenantFallsBackToDefault() throws Exception {
         AtomicReference<String> capturedTenant = new AtomicReference<>("not-set");
 
-        agentExecutorExecute = (context, emitter) -> {
-            capturedTenant.set(context.getTenant());
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    capturedTenant.set(context.getTenant());
+                    emitter.complete();
+                };
 
         requestHandler = buildHandlerWithRouter(tenant -> executor);
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-null-tenant")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(DEFAULT_CONFIG)
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-null-tenant")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(DEFAULT_CONFIG)
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -1660,22 +1847,25 @@ public class DefaultRequestHandlerTest {
     void agentExecutorRouterPropagatesUnknownTenantToContext() throws Exception {
         AtomicReference<String> capturedTenant = new AtomicReference<>();
 
-        agentExecutorExecute = (context, emitter) -> {
-            capturedTenant.set(context.getTenant());
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    capturedTenant.set(context.getTenant());
+                    emitter.complete();
+                };
 
         requestHandler = buildHandlerWithRouter(tenant -> executor);
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-unknown-tenant")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(DEFAULT_CONFIG)
-                .tenant("unknown")
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-unknown-tenant")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(DEFAULT_CONFIG)
+                        .tenant("unknown")
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -1687,61 +1877,67 @@ public class DefaultRequestHandlerTest {
     void agentExecutorRouterWorksWithStreaming() throws Exception {
         AtomicReference<String> capturedTenant = new AtomicReference<>();
 
-        AgentExecutor tenantExecutor = new AgentExecutor() {
-            @Override
-            public void execute(RequestContext context, AgentEmitter emitter) {
-                capturedTenant.set(context.getTenant());
-                emitter.complete();
-            }
+        AgentExecutor tenantExecutor =
+                new AgentExecutor() {
+                    @Override
+                    public void execute(RequestContext context, AgentEmitter emitter) {
+                        capturedTenant.set(context.getTenant());
+                        emitter.complete();
+                    }
 
-            @Override
-            public void cancel(RequestContext context, AgentEmitter emitter) {
-            }
-        };
+                    @Override
+                    public void cancel(RequestContext context, AgentEmitter emitter) {}
+                };
 
-        requestHandler = buildHandlerWithRouter(tenant -> {
-            if ("acme".equals(tenant)) {
-                return tenantExecutor;
-            }
-            return executor;
-        });
+        requestHandler =
+                buildHandlerWithRouter(
+                        tenant -> {
+                            if ("acme".equals(tenant)) {
+                                return tenantExecutor;
+                            }
+                            return executor;
+                        });
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-stream-tenant")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(MessageSendConfiguration.builder()
-                        .returnImmediately(true)
-                        .acceptedOutputModes(List.of())
-                        .build())
-                .tenant("acme")
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-stream-tenant")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(
+                                MessageSendConfiguration.builder()
+                                        .returnImmediately(true)
+                                        .acceptedOutputModes(List.of())
+                                        .build())
+                        .tenant("acme")
+                        .build();
 
         CountDownLatch streamDone = new CountDownLatch(1);
         ServerCallContext streamContext = contextWithVersion("1.0");
-        Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(params, streamContext);
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription s) {
-                s.request(Long.MAX_VALUE);
-            }
+        Flow.Publisher<StreamingEventKind> publisher =
+                requestHandler.onMessageSendStream(params, streamContext);
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription s) {
+                        s.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(StreamingEventKind item) {
-            }
+                    @Override
+                    public void onNext(StreamingEventKind item) {}
 
-            @Override
-            public void onError(Throwable t) {
-                streamDone.countDown();
-            }
+                    @Override
+                    public void onError(Throwable t) {
+                        streamDone.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                streamDone.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        streamDone.countDown();
+                    }
+                });
 
         assertTrue(streamDone.await(5, TimeUnit.SECONDS), "Stream should complete");
         assertEquals("acme", capturedTenant.get());
@@ -1749,19 +1945,22 @@ public class DefaultRequestHandlerTest {
 
     @Test
     void noRouterUsesDefaultExecutor() throws Exception {
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.complete();
+                };
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-no-router")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(DEFAULT_CONFIG)
-                .tenant("acme")
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-no-router")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(DEFAULT_CONFIG)
+                        .tenant("acme")
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -1772,29 +1971,31 @@ public class DefaultRequestHandlerTest {
     void routerResolvedExecutorErrorSetsTaskFailed() throws Exception {
         CountDownLatch executorRan = new CountDownLatch(1);
 
-        AgentExecutor failingExecutor = new AgentExecutor() {
-            @Override
-            public void execute(RequestContext context, AgentEmitter emitter) {
-                executorRan.countDown();
-                emitter.fail();
-            }
+        AgentExecutor failingExecutor =
+                new AgentExecutor() {
+                    @Override
+                    public void execute(RequestContext context, AgentEmitter emitter) {
+                        executorRan.countDown();
+                        emitter.fail();
+                    }
 
-            @Override
-            public void cancel(RequestContext context, AgentEmitter emitter) {
-            }
-        };
+                    @Override
+                    public void cancel(RequestContext context, AgentEmitter emitter) {}
+                };
 
         requestHandler = buildHandlerWithRouter(tenant -> failingExecutor);
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-failing")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(DEFAULT_CONFIG)
-                .tenant("acme")
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-failing")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(DEFAULT_CONFIG)
+                        .tenant("acme")
+                        .build();
 
         EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
@@ -1822,24 +2023,28 @@ public class DefaultRequestHandlerTest {
      */
     @ParameterizedTest
     @CsvSource({"true", "false"})
-    void blockingSendStillReturnsCompletedTaskWhenFinalEventArrivesLate(boolean omitConfiguration) throws Exception {
+    void blockingSendStillReturnsCompletedTaskWhenFinalEventArrivesLate(boolean omitConfiguration)
+            throws Exception {
         AtomicReference<EventQueue> callerQueue = new AtomicReference<>();
-        useQueueManager(new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
-            @Override
-            public EventQueue createOrTap(String taskId) {
-                EventQueue queue = super.createOrTap(taskId);
-                callerQueue.compareAndSet(null, queue);
-                return queue;
-            }
-        });
+        useQueueManager(
+                new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
+                    @Override
+                    public EventQueue createOrTap(String taskId) {
+                        EventQueue queue = super.createOrTap(taskId);
+                        callerQueue.compareAndSet(null, queue);
+                        return queue;
+                    }
+                });
         AtomicBoolean callerQueueClosedInTime = new AtomicBoolean();
         holdEventsAfterWorkingUntilClosed(callerQueue, callerQueueClosedInTime);
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.submit();
-            emitter.startWork();
-            emitter.addArtifact(List.of(new TextPart("answer")), "answer-id", "answer", null);
-            emitter.complete();
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.submit();
+                    emitter.startWork();
+                    emitter.addArtifact(
+                            List.of(new TextPart("answer")), "answer-id", "answer", null);
+                    emitter.complete();
+                };
 
         MessageSendParams params = blockingParams("msg-blocking-final-event");
         if (omitConfiguration) {
@@ -1847,19 +2052,24 @@ public class DefaultRequestHandlerTest {
         }
         EventKind result = requestHandler.onMessageSend(params, NULL_CONTEXT);
 
-        assertTrue(callerQueueClosedInTime.get(), "the caller's queue was not closed while the final event was held");
+        assertTrue(
+                callerQueueClosedInTime.get(),
+                "the caller's queue was not closed while the final event was held");
         Task task = assertInstanceOf(Task.class, result);
         assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         assertEquals("answer-id", task.artifacts().get(0).artifactId());
-        assertEquals("answer", assertInstanceOf(TextPart.class, task.artifacts().get(0).parts().get(0)).text());
+        assertEquals(
+                "answer",
+                assertInstanceOf(TextPart.class, task.artifacts().get(0).parts().get(0)).text());
     }
 
     @Test
     void blockingSendWithoutFinalEventReturnsWorkingTaskAndAllowsResubscription() throws Exception {
         agentExecutorExecute = (context, emitter) -> emitter.startWork();
 
-        EventKind result = requestHandler.onMessageSend(blockingParams("msg-fire-and-forget"), NULL_CONTEXT);
+        EventKind result =
+                requestHandler.onMessageSend(blockingParams("msg-fire-and-forget"), NULL_CONTEXT);
 
         Task task = assertInstanceOf(Task.class, result);
         assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
@@ -1871,37 +2081,41 @@ public class DefaultRequestHandlerTest {
     private void useQueueManager(InMemoryQueueManager manager) {
         EventQueueUtil.stop(mainEventBusProcessor);
         queueManager = manager;
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore,
-                PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
-        requestHandler = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .pushConfigStore(pushConfigStore)
-                .pushNotificationsEnabled(true)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .authorizationRequired(false)
-                .build();
+        requestHandler =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(true)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .authorizationRequired(false)
+                        .build();
     }
 
-    private void holdEventsAfterWorkingUntilClosed(AtomicReference<EventQueue> callerQueue, AtomicBoolean closedInTime) {
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                if (event instanceof TaskStatusUpdateEvent statusUpdate
-                        && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
-                    // Hold the agent's next event in the bus until the handler has closed the caller's queue
-                    closedInTime.set(awaitClosed(callerQueue, Duration.ofSeconds(5)));
-                }
-            }
+    private void holdEventsAfterWorkingUntilClosed(
+            AtomicReference<EventQueue> callerQueue, AtomicBoolean closedInTime) {
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        if (event instanceof TaskStatusUpdateEvent statusUpdate
+                                && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
+                            // Hold the agent's next event in the bus until the handler has closed
+                            // the caller's queue
+                            closedInTime.set(awaitClosed(callerQueue, Duration.ofSeconds(5)));
+                        }
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {}
+                });
     }
 
     private static boolean awaitClosed(AtomicReference<EventQueue> queue, Duration timeout) {
@@ -1923,16 +2137,18 @@ public class DefaultRequestHandlerTest {
 
     private static MessageSendParams blockingParams(String messageId) {
         return MessageSendParams.builder()
-            .message(Message.builder()
-                .messageId(messageId)
-                .role(Message.Role.ROLE_USER)
-                .parts(new TextPart("hello"))
-                .build())
-            .configuration(MessageSendConfiguration.builder()
-                .returnImmediately(false)
-                .acceptedOutputModes(List.of())
-                .build())
-            .build();
+                .message(
+                        Message.builder()
+                                .messageId(messageId)
+                                .role(Message.Role.ROLE_USER)
+                                .parts(new TextPart("hello"))
+                                .build())
+                .configuration(
+                        MessageSendConfiguration.builder()
+                                .returnImmediately(false)
+                                .acceptedOutputModes(List.of())
+                                .build())
+                .build();
     }
 
     @Test
@@ -1946,15 +2162,20 @@ public class DefaultRequestHandlerTest {
         CountDownLatch agentReadyToBeInterrupted = new CountDownLatch(1);
         CountDownLatch agentWait = new CountDownLatch(1);
         try {
-            assertInterruptedTerminalEnqueueReportsError((context, emitter) -> {
-                agentReadyToBeInterrupted.countDown();
-                try {
-                    agentWait.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new UnsupportedOperationError();
-                }
-            }, UnsupportedOperationError.class, agentReadyToBeInterrupted, false, true);
+            assertInterruptedTerminalEnqueueReportsError(
+                    (context, emitter) -> {
+                        agentReadyToBeInterrupted.countDown();
+                        try {
+                            agentWait.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new UnsupportedOperationError();
+                        }
+                    },
+                    UnsupportedOperationError.class,
+                    agentReadyToBeInterrupted,
+                    false,
+                    true);
         } finally {
             agentWait.countDown();
         }
@@ -1965,124 +2186,153 @@ public class DefaultRequestHandlerTest {
             Class<? extends A2AError> expectedErrorClass,
             CountDownLatch agentReadyToBeInterrupted,
             boolean interruptBlockedTerminalEnqueue,
-            boolean returnImmediately) throws Exception {
+            boolean returnImmediately)
+            throws Exception {
         EventQueueUtil.stop(mainEventBusProcessor);
-        queueManager = new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
-            @Override
-            public EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
-                return super.createBaseEventQueueBuilder(taskId).queueSize(1);
-            }
-        };
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore,
-                PushNotificationSender.NOOP, queueManager);
+        queueManager =
+                new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus) {
+                    @Override
+                    public EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
+                        return super.createBaseEventQueueBuilder(taskId).queueSize(1);
+                    }
+                };
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
         CountDownLatch workingEventProcessing = new CountDownLatch(1);
         CountDownLatch releaseWorkingEvent = new CountDownLatch(1);
         CountDownLatch reportedErrorProcessed = new CountDownLatch(1);
         AtomicReference<A2AError> reportedError = new AtomicReference<>();
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                if (event instanceof TaskStatusUpdateEvent statusUpdate
-                        && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
-                    workingEventProcessing.countDown();
-                    try {
-                        releaseWorkingEvent.await();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        if (event instanceof TaskStatusUpdateEvent statusUpdate
+                                && statusUpdate.status().state() == TaskState.TASK_STATE_WORKING) {
+                            workingEventProcessing.countDown();
+                            try {
+                                releaseWorkingEvent.await();
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                        } else if (event instanceof A2AError error
+                                && expectedErrorClass.isInstance(error)) {
+                            reportedError.set(error);
+                            reportedErrorProcessed.countDown();
+                        }
                     }
-                } else if (event instanceof A2AError error && expectedErrorClass.isInstance(error)) {
-                    reportedError.set(error);
-                    reportedErrorProcessed.countDown();
-                }
-            }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {}
+                });
 
         CountDownLatch agentFinished = new CountDownLatch(1);
         AtomicReference<Thread> agentThread = new AtomicReference<>();
         AtomicReference<Boolean> interruptStatusAtPoolReturn = new AtomicReference<>(false);
-        Executor recordingExecutor = command -> internalExecutor.execute(() -> {
-            try {
-                command.run();
-            } finally {
-                interruptStatusAtPoolReturn.set(Thread.currentThread().isInterrupted());
-                Thread.interrupted();
-                agentFinished.countDown();
-            }
-        });
-        requestHandler = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .pushConfigStore(pushConfigStore)
-                .pushNotificationsEnabled(true)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(recordingExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .authorizationRequired(false)
-                .build();
+        Executor recordingExecutor =
+                command ->
+                        internalExecutor.execute(
+                                () -> {
+                                    try {
+                                        command.run();
+                                    } finally {
+                                        interruptStatusAtPoolReturn.set(
+                                                Thread.currentThread().isInterrupted());
+                                        Thread.interrupted();
+                                        agentFinished.countDown();
+                                    }
+                                });
+        requestHandler =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(true)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(recordingExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .authorizationRequired(false)
+                        .build();
 
         CountDownLatch executorRan = new CountDownLatch(1);
-        agentExecutorExecute = (context, emitter) -> {
-            agentThread.set(Thread.currentThread());
-            executorRan.countDown();
-            emitter.startWork();
-            agentAction.invoke(context, emitter);
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    agentThread.set(Thread.currentThread());
+                    executorRan.countDown();
+                    emitter.startWork();
+                    agentAction.invoke(context, emitter);
+                };
 
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .messageId("msg-interrupted-terminal-enqueue")
-                        .role(Message.Role.ROLE_USER)
-                        .parts(new TextPart("hello"))
-                        .build())
-                .configuration(MessageSendConfiguration.builder()
-                        .returnImmediately(returnImmediately)
-                        .acceptedOutputModes(List.of())
-                        .build())
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .messageId("msg-interrupted-terminal-enqueue")
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(new TextPart("hello"))
+                                        .build())
+                        .configuration(
+                                MessageSendConfiguration.builder()
+                                        .returnImmediately(returnImmediately)
+                                        .acceptedOutputModes(List.of())
+                                        .build())
+                        .build();
 
         ExecutorService controller = Executors.newSingleThreadExecutor();
         try {
-        Future<Boolean> poolInterruptStatus = controller.submit(() -> {
-                assertTrue(workingEventProcessing.await(5, TimeUnit.SECONDS),
-                        "Processor should hold the queue capacity after the WORKING event");
-                assertTrue(executorRan.await(5, TimeUnit.SECONDS), "Executor should have run");
-                Thread worker = agentThread.get();
-                assertNotNull(worker);
-                if (interruptBlockedTerminalEnqueue) {
-                    assertTrue(awaitThreadWaiting(worker, false),
-                            "Terminal enqueue should wait while the queue is full");
-                } else {
-                    assertNotNull(agentReadyToBeInterrupted);
-                    assertTrue(agentReadyToBeInterrupted.await(5, TimeUnit.SECONDS),
-                            "Agent should be ready to throw the protocol error");
-                }
+            Future<Boolean> poolInterruptStatus =
+                    controller.submit(
+                            () -> {
+                                assertTrue(
+                                        workingEventProcessing.await(5, TimeUnit.SECONDS),
+                                        "Processor should hold the queue capacity after the WORKING"
+                                                + " event");
+                                assertTrue(
+                                        executorRan.await(5, TimeUnit.SECONDS),
+                                        "Executor should have run");
+                                Thread worker = agentThread.get();
+                                assertNotNull(worker);
+                                if (interruptBlockedTerminalEnqueue) {
+                                    assertTrue(
+                                            awaitThreadWaiting(worker, false),
+                                            "Terminal enqueue should wait while the queue is full");
+                                } else {
+                                    assertNotNull(agentReadyToBeInterrupted);
+                                    assertTrue(
+                                            agentReadyToBeInterrupted.await(5, TimeUnit.SECONDS),
+                                            "Agent should be ready to throw the protocol error");
+                                }
 
-                worker.interrupt();
+                                worker.interrupt();
 
-                assertTrue(awaitThreadWaiting(worker, false),
-                        "Error enqueue should wait with the interrupt temporarily cleared");
-                releaseWorkingEvent.countDown();
-                assertTrue(agentFinished.await(5, TimeUnit.SECONDS), "Agent error reporting should finish");
-                return interruptStatusAtPoolReturn.get();
-            });
+                                assertTrue(
+                                        awaitThreadWaiting(worker, false),
+                                        "Error enqueue should wait with the interrupt temporarily"
+                                                + " cleared");
+                                releaseWorkingEvent.countDown();
+                                assertTrue(
+                                        agentFinished.await(5, TimeUnit.SECONDS),
+                                        "Agent error reporting should finish");
+                                return interruptStatusAtPoolReturn.get();
+                            });
 
             String taskId = "";
             if (returnImmediately) {
-                Task task = assertInstanceOf(Task.class, requestHandler.onMessageSend(params, NULL_CONTEXT));
+                Task task =
+                        assertInstanceOf(
+                                Task.class, requestHandler.onMessageSend(params, NULL_CONTEXT));
                 taskId = task.id();
             } else {
-                assertThrows(expectedErrorClass,
+                assertThrows(
+                        expectedErrorClass,
                         () -> requestHandler.onMessageSend(params, NULL_CONTEXT));
             }
 
-            assertTrue(reportedErrorProcessed.await(5, TimeUnit.SECONDS),
+            assertTrue(
+                    reportedErrorProcessed.await(5, TimeUnit.SECONDS),
                     "The agent error should be processed by the event bus");
             assertInstanceOf(expectedErrorClass, reportedError.get());
             if (returnImmediately) {
@@ -2090,22 +2340,32 @@ public class DefaultRequestHandlerTest {
                 assertNotNull(storedTask);
                 assertEquals(TaskState.TASK_STATE_FAILED, storedTask.status().state());
             }
-            assertFalse(poolInterruptStatus.get(5, TimeUnit.SECONDS),
-                    "The agent worker should return to the executor pool without an interrupt flag");
+            assertFalse(
+                    poolInterruptStatus.get(5, TimeUnit.SECONDS),
+                    "The agent worker should return to the executor pool without an interrupt"
+                            + " flag");
         } finally {
             releaseWorkingEvent.countDown();
             controller.shutdownNow();
         }
     }
 
-    private static boolean awaitThreadWaiting(Thread thread, boolean interrupted) throws InterruptedException {
+    private static boolean awaitThreadWaiting(Thread thread, boolean interrupted)
+            throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         do {
-            boolean waitingOrAcquiring = thread.getState() == Thread.State.WAITING
-                    || Arrays.stream(thread.getStackTrace()).anyMatch(frame ->
-                            frame.getClassName().equals("java.util.concurrent.Semaphore")
-                                    && (frame.getMethodName().equals("acquire")
-                                            || frame.getMethodName().equals("tryAcquire")));
+            boolean waitingOrAcquiring =
+                    thread.getState() == Thread.State.WAITING
+                            || Arrays.stream(thread.getStackTrace())
+                                    .anyMatch(
+                                            frame ->
+                                                    frame.getClassName()
+                                                                    .equals(
+                                                                            "java.util.concurrent.Semaphore")
+                                                            && (frame.getMethodName()
+                                                                            .equals("acquire")
+                                                                    || frame.getMethodName()
+                                                                            .equals("tryAcquire")));
             if (waitingOrAcquiring && thread.isInterrupted() == interrupted) {
                 return true;
             }
@@ -2130,83 +2390,103 @@ public class DefaultRequestHandlerTest {
 
     @Test
     void testPushConfigNotStoredWhenPushNotificationsDisabled() throws Exception {
-        DefaultRequestHandler handlerNoPush = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .pushConfigStore(pushConfigStore)
-                .pushNotificationsEnabled(false)
-                .authorizationRequired(false)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .build();
+        DefaultRequestHandler handlerNoPush =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(false)
+                        .authorizationRequired(false)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
 
         agentExecutorExecute = (context, emitter) -> emitter.complete();
 
-        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
-                .id("push-disabled-test")
-                .url("http://example.com/webhook")
-                .build();
-        MessageSendConfiguration config = MessageSendConfiguration.builder()
-                .returnImmediately(true)
-                .acceptedOutputModes(List.of())
-                .taskPushNotificationConfig(pushConfig)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(MESSAGE)
-                .configuration(config)
-                .build();
+        TaskPushNotificationConfig pushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("push-disabled-test")
+                        .url("http://example.com/webhook")
+                        .build();
+        MessageSendConfiguration config =
+                MessageSendConfiguration.builder()
+                        .returnImmediately(true)
+                        .acceptedOutputModes(List.of())
+                        .taskPushNotificationConfig(pushConfig)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(MESSAGE).configuration(config).build();
 
         EventKind result = handlerNoPush.onMessageSend(params, NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
 
-        assertTrue(pushConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(task.id())).configs().isEmpty(),
+        assertTrue(
+                pushConfigStore
+                        .getInfo(new ListTaskPushNotificationConfigsParams(task.id()))
+                        .configs()
+                        .isEmpty(),
                 "Push config should not be stored when pushNotificationsEnabled is false");
     }
 
     @Test
     void testCreatePushNotificationConfigRejectedWhenPushNotificationsDisabled() throws Exception {
-        DefaultRequestHandler handlerNoPush = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .pushConfigStore(pushConfigStore)
-                .pushNotificationsEnabled(false)
-                .authorizationRequired(false)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .build();
+        DefaultRequestHandler handlerNoPush =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(false)
+                        .authorizationRequired(false)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .build();
 
         agentExecutorExecute = (context, emitter) -> emitter.complete();
 
-        EventKind result = handlerNoPush.onMessageSend(
-                MessageSendParams.builder().message(MESSAGE).configuration(DEFAULT_CONFIG).build(),
-                NULL_CONTEXT);
+        EventKind result =
+                handlerNoPush.onMessageSend(
+                        MessageSendParams.builder()
+                                .message(MESSAGE)
+                                .configuration(DEFAULT_CONFIG)
+                                .build(),
+                        NULL_CONTEXT);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
 
-        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
-                .id("cfg-disabled")
-                .taskId(task.id())
-                .url("http://example.com/webhook")
-                .build();
+        TaskPushNotificationConfig pushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("cfg-disabled")
+                        .taskId(task.id())
+                        .url("http://example.com/webhook")
+                        .build();
 
-        assertThrows(UnsupportedOperationError.class,
+        assertThrows(
+                UnsupportedOperationError.class,
                 () -> handlerNoPush.onCreateTaskPushNotificationConfig(pushConfig, NULL_CONTEXT),
-                "CreateTaskPushNotificationConfig should throw UnsupportedOperationError when push is disabled");
+                "CreateTaskPushNotificationConfig should throw UnsupportedOperationError when push"
+                        + " is disabled");
     }
+
     @Test
     public void testListTasksFutureTimestampValidation() {
         Instant future = Instant.now().plusSeconds(60);
         ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(future).build();
-        InvalidParamsError error = assertThrows(InvalidParamsError.class,
-                () -> requestHandler.onListTasks(params, NULL_CONTEXT));
+        InvalidParamsError error =
+                assertThrows(
+                        InvalidParamsError.class,
+                        () -> requestHandler.onListTasks(params, NULL_CONTEXT));
         assertEquals("Invalid params", error.getMessage());
-        assertEquals(Map.of("parameter", "statusTimestampAfter", "reason", "Timestamp cannot be in the future"),
+        assertEquals(
+                Map.of(
+                        "parameter",
+                        "statusTimestampAfter",
+                        "reason",
+                        "Timestamp cannot be in the future"),
                 error.getDetails());
     }
-
 }

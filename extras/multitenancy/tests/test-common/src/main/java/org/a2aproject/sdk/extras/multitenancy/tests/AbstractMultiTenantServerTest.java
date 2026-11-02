@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,9 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-
-import io.restassured.RestAssured;
-import io.restassured.path.json.JsonPath;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.ClientEvent;
@@ -30,7 +29,6 @@ import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.Task;
-import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -107,9 +105,12 @@ public abstract class AbstractMultiTenantServerTest {
     public void concurrentRequestsForDifferentTenants() throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(3);
         try {
-            CompletableFuture<String> acme = CompletableFuture.supplyAsync(() -> sendQuietly(Tenants.ACME), pool);
-            CompletableFuture<String> beta = CompletableFuture.supplyAsync(() -> sendQuietly(Tenants.BETA), pool);
-            CompletableFuture<String> defaultFuture = CompletableFuture.supplyAsync(() -> sendQuietly(null), pool);
+            CompletableFuture<String> acme =
+                    CompletableFuture.supplyAsync(() -> sendQuietly(Tenants.ACME), pool);
+            CompletableFuture<String> beta =
+                    CompletableFuture.supplyAsync(() -> sendQuietly(Tenants.BETA), pool);
+            CompletableFuture<String> defaultFuture =
+                    CompletableFuture.supplyAsync(() -> sendQuietly(null), pool);
             assertEquals(Tenants.ACME, acme.get(30, TimeUnit.SECONDS));
             assertEquals(Tenants.BETA, beta.get(30, TimeUnit.SECONDS));
             assertEquals(Tenants.DEFAULT_LABEL, defaultFuture.get(30, TimeUnit.SECONDS));
@@ -122,22 +123,30 @@ public abstract class AbstractMultiTenantServerTest {
 
     @Test
     public void extendedCardKnownTenantResolvesToAcme() throws Exception {
-        assertEquals("acme-extended", getNonStreamingClient().getExtendedAgentCard(Tenants.ACME, null).name());
+        assertEquals(
+                "acme-extended",
+                getNonStreamingClient().getExtendedAgentCard(Tenants.ACME, null).name());
     }
 
     @Test
     public void extendedCardSecondTenantResolvesToBeta() throws Exception {
-        assertEquals("beta-extended", getNonStreamingClient().getExtendedAgentCard(Tenants.BETA, null).name());
+        assertEquals(
+                "beta-extended",
+                getNonStreamingClient().getExtendedAgentCard(Tenants.BETA, null).name());
     }
 
     @Test
     public void extendedCardUnknownTenantFallsBackToDefault() throws Exception {
-        assertEquals("default-extended", getNonStreamingClient().getExtendedAgentCard(Tenants.UNKNOWN, null).name());
+        assertEquals(
+                "default-extended",
+                getNonStreamingClient().getExtendedAgentCard(Tenants.UNKNOWN, null).name());
     }
 
     @Test
     public void extendedCardNullTenantUsesDefault() throws Exception {
-        assertEquals("default-extended", getNonStreamingClient().getExtendedAgentCard((String) null, null).name());
+        assertEquals(
+                "default-extended",
+                getNonStreamingClient().getExtendedAgentCard((String) null, null).name());
     }
 
     // ---------- public well-known card (HTTP only; gRPC overrides to no-ops) ----------
@@ -159,8 +168,11 @@ public abstract class AbstractMultiTenantServerTest {
 
     @Test
     public void publicCardUnknownTenantReturns404() {
-        RestAssured.given().when().get(wellKnownUrl("/.well-known/unknown-corp/agent-card.json"))
-                .then().statusCode(404);
+        RestAssured.given()
+                .when()
+                .get(wellKnownUrl("/.well-known/unknown-corp/agent-card.json"))
+                .then()
+                .statusCode(404);
     }
 
     // ---------- lifecycle ----------
@@ -185,12 +197,14 @@ public abstract class AbstractMultiTenantServerTest {
         }
     }
 
-    private String sendAndGetArtifactText(@Nullable String tenant, boolean streaming) throws Exception {
-        Message message = Message.builder()
-                .messageId(UUID.randomUUID().toString())
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("hello")))
-                .build();
+    private String sendAndGetArtifactText(@Nullable String tenant, boolean streaming)
+            throws Exception {
+        Message message =
+                Message.builder()
+                        .messageId(UUID.randomUUID().toString())
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("hello")))
+                        .build();
         MessageSendParams.Builder params = MessageSendParams.builder().message(message);
         if (tenant != null) {
             params.tenant(tenant);
@@ -198,23 +212,25 @@ public abstract class AbstractMultiTenantServerTest {
 
         List<String> artifactTexts = new ArrayList<>();
         CountDownLatch done = new CountDownLatch(1);
-        BiConsumer<ClientEvent, AgentCard> consumer = (event, card) -> {
-            Task task = null;
-            if (event instanceof TaskEvent te) {
-                task = te.getTask();
-            } else if (event instanceof TaskUpdateEvent tue) {
-                task = tue.getTask();
-            }
-            if (task != null && task.artifacts() != null && !task.artifacts().isEmpty()) {
-                Artifact artifact = task.artifacts().get(0);
-                if (!artifact.parts().isEmpty() && artifact.parts().get(0) instanceof TextPart tp) {
-                    artifactTexts.add(tp.text());
-                }
-            }
-            if (task != null && task.status() != null && task.status().state().isFinal()) {
-                done.countDown();
-            }
-        };
+        BiConsumer<ClientEvent, AgentCard> consumer =
+                (event, card) -> {
+                    Task task = null;
+                    if (event instanceof TaskEvent te) {
+                        task = te.getTask();
+                    } else if (event instanceof TaskUpdateEvent tue) {
+                        task = tue.getTask();
+                    }
+                    if (task != null && task.artifacts() != null && !task.artifacts().isEmpty()) {
+                        Artifact artifact = task.artifacts().get(0);
+                        if (!artifact.parts().isEmpty()
+                                && artifact.parts().get(0) instanceof TextPart tp) {
+                            artifactTexts.add(tp.text());
+                        }
+                    }
+                    if (task != null && task.status() != null && task.status().state().isFinal()) {
+                        done.countDown();
+                    }
+                };
 
         Client client = streaming ? getStreamingClient() : getNonStreamingClient();
         client.sendMessage(params.build(), List.of(consumer), null, null);
@@ -231,8 +247,14 @@ public abstract class AbstractMultiTenantServerTest {
     }
 
     private String getWellKnownCardName(String path) {
-        String body = RestAssured.given().when().get(wellKnownUrl(path))
-                .then().statusCode(200).extract().asString();
+        String body =
+                RestAssured.given()
+                        .when()
+                        .get(wellKnownUrl(path))
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .asString();
         String name = JsonPath.from(body).getString("name");
         assertNotNull(name, "Expected a card name in: " + body);
         return name;
@@ -257,18 +279,27 @@ public abstract class AbstractMultiTenantServerTest {
     }
 
     private Client buildClient(boolean streaming) {
-        AgentCard card = AgentCard.builder()
-                .name("multitenant-client-card")
-                .description("client-side card")
-                .version("1.0.0")
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .capabilities(AgentCapabilities.builder().streaming(true).extendedAgentCard(true).build())
-                .skills(List.of())
-                .supportedInterfaces(List.of(new AgentInterface(getTransportProtocol(), getTransportUrl())))
-                .build();
-        ClientBuilder builder = Client.builder(card)
-                .clientConfig(new ClientConfig.Builder().setStreaming(streaming).build());
+        AgentCard card =
+                AgentCard.builder()
+                        .name("multitenant-client-card")
+                        .description("client-side card")
+                        .version("1.0.0")
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .extendedAgentCard(true)
+                                        .build())
+                        .skills(List.of())
+                        .supportedInterfaces(
+                                List.of(
+                                        new AgentInterface(
+                                                getTransportProtocol(), getTransportUrl())))
+                        .build();
+        ClientBuilder builder =
+                Client.builder(card)
+                        .clientConfig(new ClientConfig.Builder().setStreaming(streaming).build());
         configureTransport(builder);
         try {
             return builder.build();

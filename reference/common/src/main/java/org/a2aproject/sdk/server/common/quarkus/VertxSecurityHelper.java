@@ -1,12 +1,5 @@
 package org.a2aproject.sdk.server.common.quarkus;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.InjectableContext;
 import io.quarkus.arc.ManagedContext;
@@ -15,6 +8,11 @@ import io.quarkus.vertx.http.runtime.security.ChallengeData;
 import io.quarkus.vertx.http.runtime.security.HttpAuthenticator;
 import io.vertx.core.Context;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * CDI helper for integrating Quarkus security with Vert.x Web routes.
@@ -68,11 +66,9 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public final class VertxSecurityHelper {
 
-    @Inject
-    Instance<HttpAuthenticator> httpAuthenticator;
+    @Inject Instance<HttpAuthenticator> httpAuthenticator;
 
-    @Inject
-    Instance<CurrentIdentityAssociation> currentIdentityAssociation;
+    @Inject Instance<CurrentIdentityAssociation> currentIdentityAssociation;
 
     public VertxSecurityHelper() {
         // CDI-managed constructor
@@ -112,7 +108,8 @@ public final class VertxSecurityHelper {
     public void runInRequestContext(RoutingContext ctx, Runnable task) {
         if (Context.isOnEventLoopThread()) {
             throw new IllegalStateException(
-                    "Cannot perform blocking authentication on event loop thread. Use blockingHandler().");
+                    "Cannot perform blocking authentication on event loop thread. Use"
+                            + " blockingHandler().");
         }
         ManagedContext requestContext = Arc.container().requestContext();
         boolean wasActive = requestContext.isActive();
@@ -121,7 +118,8 @@ public final class VertxSecurityHelper {
         }
         try {
             if (!httpAuthenticator.isUnsatisfied()) {
-                var identity = httpAuthenticator.get().attemptAuthentication(ctx).await().indefinitely();
+                var identity =
+                        httpAuthenticator.get().attemptAuthentication(ctx).await().indefinitely();
                 currentIdentityAssociation.get().setIdentity(identity);
             }
             task.run();
@@ -175,7 +173,8 @@ public final class VertxSecurityHelper {
     public void runInRequestContextDeferred(RoutingContext ctx, Runnable task) {
         if (Context.isOnEventLoopThread()) {
             throw new IllegalStateException(
-                    "Cannot perform blocking authentication on event loop thread. Use blockingHandler().");
+                    "Cannot perform blocking authentication on event loop thread. Use"
+                            + " blockingHandler().");
         }
         ManagedContext requestContext = Arc.container().requestContext();
         // If already active, capture the existing state; otherwise activate a fresh context.
@@ -183,23 +182,24 @@ public final class VertxSecurityHelper {
         // external manager (Quarkus request filter) from calling terminate() and destroying beans
         // while the ManagedExecutor agent thread is still running. Actual destruction is deferred
         // to the SSE response endHandler / closeHandler.
-        InjectableContext.ContextState state = requestContext.isActive()
-                ? requestContext.getState()
-                : requestContext.activate();
+        InjectableContext.ContextState state =
+                requestContext.isActive() ? requestContext.getState() : requestContext.activate();
 
         AtomicBoolean destroyed = new AtomicBoolean(false);
-        Runnable cleanup = () -> {
-            if (destroyed.compareAndSet(false, true)) {
-                requestContext.destroy(state);
-            }
-        };
+        Runnable cleanup =
+                () -> {
+                    if (destroyed.compareAndSet(false, true)) {
+                        requestContext.destroy(state);
+                    }
+                };
 
         ctx.response().endHandler(v -> cleanup.run());
         ctx.response().closeHandler(v -> cleanup.run());
 
         try {
             if (!httpAuthenticator.isUnsatisfied()) {
-                var identity = httpAuthenticator.get().attemptAuthentication(ctx).await().indefinitely();
+                var identity =
+                        httpAuthenticator.get().attemptAuthentication(ctx).await().indefinitely();
                 currentIdentityAssociation.get().setIdentity(identity);
             }
             task.run();
@@ -236,23 +236,21 @@ public final class VertxSecurityHelper {
     public void handleAuthError(RoutingContext ctx, Exception e) {
         if (!ctx.response().ended()) {
             if (e instanceof io.quarkus.security.ForbiddenException) {
-                ctx.response()
-                    .setStatusCode(403)
-                    .end();
+                ctx.response().setStatusCode(403).end();
             } else {
                 int status = 401;
                 if (!httpAuthenticator.isUnsatisfied()) {
-                    ChallengeData challenge = httpAuthenticator.get().getChallenge(ctx).await().indefinitely();
+                    ChallengeData challenge =
+                            httpAuthenticator.get().getChallenge(ctx).await().indefinitely();
                     if (challenge != null) {
                         status = challenge.status;
-                        for(Map.Entry<CharSequence, String> header : challenge.getHeaders().entrySet()) {
+                        for (Map.Entry<CharSequence, String> header :
+                                challenge.getHeaders().entrySet()) {
                             ctx.response().putHeader(header.getKey(), header.getValue());
                         }
                     }
                 }
-                ctx.response()
-                    .setStatusCode(status)
-                    .end();
+                ctx.response().setStatusCode(status).end();
             }
         }
     }
@@ -264,10 +262,7 @@ public final class VertxSecurityHelper {
      */
     public static void handleGenericError(RoutingContext ctx) {
         if (!ctx.response().ended()) {
-            ctx.response()
-                .setStatusCode(500)
-                .end("Internal Server Error");
+            ctx.response().setStatusCode(500).end("Internal Server Error");
         }
     }
-
 }

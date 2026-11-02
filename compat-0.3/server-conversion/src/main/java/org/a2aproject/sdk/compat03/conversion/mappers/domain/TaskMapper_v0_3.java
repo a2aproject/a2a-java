@@ -2,9 +2,8 @@ package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Task_v0_3;
@@ -31,7 +30,9 @@ import org.mapstruct.Mapper;
  *   <li>{@link Message} history list via {@link MessageMapper_v0_3}</li>
  * </ul>
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {TaskStatusMapper_v0_3.class, ArtifactMapper_v0_3.class, MessageMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {TaskStatusMapper_v0_3.class, ArtifactMapper_v0_3.class, MessageMapper_v0_3.class})
 public interface TaskMapper_v0_3 {
 
     /**
@@ -52,26 +53,27 @@ public interface TaskMapper_v0_3 {
             return null;
         }
 
-        List<Artifact> artifacts = v03.artifacts() != null
-            ? v03.artifacts().stream()
-                .map(ArtifactMapper_v0_3.INSTANCE::toV10)
-                .collect(Collectors.toList())
-            : null;
+        List<Artifact> artifacts =
+                v03.artifacts() != null
+                        ? v03.artifacts().stream()
+                                .map(ArtifactMapper_v0_3.INSTANCE::toV10)
+                                .collect(Collectors.toList())
+                        : null;
 
-        List<Message> history = v03.history() != null
-            ? v03.history().stream()
-                .map(MessageMapper_v0_3.INSTANCE::toV10)
-                .collect(Collectors.toList())
-            : null;
+        List<Message> history =
+                v03.history() != null
+                        ? v03.history().stream()
+                                .map(MessageMapper_v0_3.INSTANCE::toV10)
+                                .collect(Collectors.toList())
+                        : null;
 
         return new Task(
-            v03.id(),
-            v03.contextId(),
-            TaskStatusMapper_v0_3.INSTANCE.toV10(v03.status()),
-            artifacts,
-            history,
-            v03.metadata()
-        );
+                v03.id(),
+                v03.contextId(),
+                TaskStatusMapper_v0_3.INSTANCE.toV10(v03.status()),
+                artifacts,
+                history,
+                v03.metadata());
     }
 
     /**
@@ -87,25 +89,26 @@ public interface TaskMapper_v0_3 {
             return null;
         }
 
-        List<Artifact_v0_3> artifacts = v10.artifacts() != null
-            ? v10.artifacts().stream()
-                .map(ArtifactMapper_v0_3.INSTANCE::fromV10)
-                .collect(Collectors.toList())
-            : null;
+        List<Artifact_v0_3> artifacts =
+                v10.artifacts() != null
+                        ? v10.artifacts().stream()
+                                .map(ArtifactMapper_v0_3.INSTANCE::fromV10)
+                                .collect(Collectors.toList())
+                        : null;
 
-        List<Message_v0_3> history = v10.history() != null
-            ? v10.history().stream()
-                .map(MessageMapper_v0_3.INSTANCE::fromV10)
-                .collect(Collectors.toList())
-            : null;
+        List<Message_v0_3> history =
+                v10.history() != null
+                        ? v10.history().stream()
+                                .map(MessageMapper_v0_3.INSTANCE::fromV10)
+                                .collect(Collectors.toList())
+                        : null;
 
         return new Task_v0_3(
-            v10.id(),
-            v10.contextId(),
-            TaskStatusMapper_v0_3.INSTANCE.fromV10(v10.status()),
-            artifacts,
-            history,
-            v10.metadata()
-        );
+                v10.id(),
+                v10.contextId(),
+                TaskStatusMapper_v0_3.INSTANCE.fromV10(v10.status()),
+                artifacts,
+                history,
+                v10.metadata());
     }
 }

@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.server.util.async;
 
+import jakarta.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import jakarta.inject.Qualifier;
 
 /**
  * CDI qualifier for internal async executor beans.
@@ -14,5 +13,4 @@ import jakarta.inject.Qualifier;
  */
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Internal {
-}
+public @interface Internal {}

@@ -7,10 +7,8 @@ import org.jspecify.annotations.Nullable;
  * Defines a security scheme using OpenID Connect.
  */
 public record OpenIdConnectSecurityScheme_v0_3(
-        String openIdConnectUrl,
-        @Nullable String description,
-        String type
-) implements SecurityScheme_v0_3 {
+        String openIdConnectUrl, @Nullable String description, String type)
+        implements SecurityScheme_v0_3 {
 
     public static final String TYPE = "openIdConnect";
 

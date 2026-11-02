@@ -3,9 +3,7 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * A2A Protocol error indicating that a client requested use of an extension marked as required
@@ -39,7 +37,10 @@ public class ExtensionSupportRequiredError extends A2AProtocolError {
      * @param message the error message (defaults to standard message if null)
      * @param details additional error details (optional)
      */
-    public ExtensionSupportRequiredError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public ExtensionSupportRequiredError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED.code()),
                 defaultIfNull(message, "Extension support required but not declared"),

@@ -5,7 +5,9 @@ import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransportConfigBuilder_v0_3;
 import org.jspecify.annotations.Nullable;
 
-public class RestTransportConfigBuilder_v0_3 extends ClientTransportConfigBuilder_v0_3<RestTransportConfig_v0_3, RestTransportConfigBuilder_v0_3> {
+public class RestTransportConfigBuilder_v0_3
+        extends ClientTransportConfigBuilder_v0_3<
+                RestTransportConfig_v0_3, RestTransportConfigBuilder_v0_3> {
 
     private @Nullable A2AHttpClient httpClient;
 

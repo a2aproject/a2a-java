@@ -2,18 +2,16 @@ package org.a2aproject.sdk.compat03.server.grpc.quarkus;
 
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.stub.StreamObserver;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.transport.grpc.context.GrpcContextKeys_v0_3;
 import org.a2aproject.sdk.compat03.transport.grpc.handler.CallContextFactory_v0_3;
@@ -26,8 +24,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 @ApplicationScoped
 public class QuarkusCallContextFactory_v0_3 implements CallContextFactory_v0_3 {
 
-    @Inject
-    private Instance<SecurityIdentity> securityIdentityInstance;
+    @Inject private Instance<SecurityIdentity> securityIdentityInstance;
 
     @Override
     public <V> ServerCallContext create(StreamObserver<V> responseObserver) {
@@ -58,7 +55,10 @@ public class QuarkusCallContextFactory_v0_3 implements CallContextFactory_v0_3 {
                     if (key.endsWith(Metadata.BINARY_HEADER_SUFFIX)) {
                         continue;
                     }
-                    headers.put(key, grpcMetadata.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
+                    headers.put(
+                            key,
+                            grpcMetadata.get(
+                                    Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
                 }
                 state.put("headers", headers);
             }
@@ -72,6 +72,7 @@ public class QuarkusCallContextFactory_v0_3 implements CallContextFactory_v0_3 {
             }
         }
 
-        return new ServerCallContext(user, state, new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
+        return new ServerCallContext(
+                user, state, new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
     }
 }

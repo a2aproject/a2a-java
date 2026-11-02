@@ -17,8 +17,10 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#oauth-flows-object">OpenAPI OAuth Flows Object</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record OAuthFlows(@Nullable AuthorizationCodeOAuthFlow authorizationCode, @Nullable ClientCredentialsOAuthFlow clientCredentials,
-                         @Nullable DeviceCodeOAuthFlow deviceCode) {
+public record OAuthFlows(
+        @Nullable AuthorizationCodeOAuthFlow authorizationCode,
+        @Nullable ClientCredentialsOAuthFlow clientCredentials,
+        @Nullable DeviceCodeOAuthFlow deviceCode) {
 
     /**
      * Create a new Builder
@@ -40,8 +42,7 @@ public record OAuthFlows(@Nullable AuthorizationCodeOAuthFlow authorizationCode,
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the authorization code flow configuration.
@@ -75,7 +76,6 @@ public record OAuthFlows(@Nullable AuthorizationCodeOAuthFlow authorizationCode,
             this.deviceCode = deviceCode;
             return this;
         }
-
 
         /**
          * Builds a new immutable OAuthFlows instance.

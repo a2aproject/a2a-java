@@ -5,10 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.Artifact;
@@ -22,6 +19,8 @@ import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper for emitting events from AgentExecutor implementations.
@@ -126,19 +125,23 @@ public class AgentEmitter {
         boolean isFinal = taskState.isFinal();
         // Check terminal state first (fail fast)
         if (terminalStateReached.get()) {
-            throw new IllegalStateException("Cannot update task status - terminal state already reached");
-        }
-        
-        // Claim the terminal transition atomically without holding a lock during queue backpressure.
-        if (isFinal && !terminalStateReached.compareAndSet(false, true)) {
-            throw new IllegalStateException("Cannot update task status - terminal state already reached");
+            throw new IllegalStateException(
+                    "Cannot update task status - terminal state already reached");
         }
 
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId(taskId)
-                .contextId(contextId)
-                .status(new TaskStatus(taskState, message, null))
-                .build();
+        // Claim the terminal transition atomically without holding a lock during queue
+        // backpressure.
+        if (isFinal && !terminalStateReached.compareAndSet(false, true)) {
+            throw new IllegalStateException(
+                    "Cannot update task status - terminal state already reached");
+        }
+
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId(contextId)
+                        .status(new TaskStatus(taskState, message, null))
+                        .build();
         if (isFinal) {
             enqueueTerminalEvent(event);
         } else {
@@ -199,7 +202,11 @@ public class AgentEmitter {
      * @param name optional artifact name
      * @param metadata optional metadata map
      */
-    public void addArtifact(List<Part<?>> parts, @Nullable String artifactId, @Nullable String name, @Nullable Map<String, Object> metadata) {
+    public void addArtifact(
+            List<Part<?>> parts,
+            @Nullable String artifactId,
+            @Nullable String name,
+            @Nullable Map<String, Object> metadata) {
         addArtifact(parts, artifactId, name, metadata, null, null);
     }
 
@@ -213,25 +220,30 @@ public class AgentEmitter {
      * @param append whether to append to an existing artifact
      * @param lastChunk whether this is the last chunk in a streaming sequence
      */
-    public void addArtifact(List<Part<?>> parts, @Nullable String artifactId, @Nullable String name, @Nullable Map<String, Object> metadata,
-                            @Nullable Boolean append, @Nullable Boolean lastChunk) {
+    public void addArtifact(
+            List<Part<?>> parts,
+            @Nullable String artifactId,
+            @Nullable String name,
+            @Nullable Map<String, Object> metadata,
+            @Nullable Boolean append,
+            @Nullable Boolean lastChunk) {
         if (artifactId == null) {
             artifactId = UUID.randomUUID().toString();
         }
-        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
-                .taskId(taskId)
-                .contextId(contextId)
-                .artifact(
-                        Artifact.builder()
-                                .artifactId(artifactId)
-                                .name(name)
-                                .parts(parts)
-                                .metadata(metadata)
-                                .build()
-                )
-                .append(append)
-                .lastChunk(lastChunk)
-                .build();
+        TaskArtifactUpdateEvent event =
+                TaskArtifactUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId(contextId)
+                        .artifact(
+                                Artifact.builder()
+                                        .artifactId(artifactId)
+                                        .name(name)
+                                        .parts(parts)
+                                        .metadata(metadata)
+                                        .build())
+                        .append(append)
+                        .lastChunk(lastChunk)
+                        .build();
         eventQueue.enqueueEvent(event);
     }
 
@@ -300,7 +312,8 @@ public class AgentEmitter {
      */
     public void fail(A2AError error) {
         if (!tryFail(error)) {
-            throw new IllegalStateException("Cannot update task status - terminal state already reached");
+            throw new IllegalStateException(
+                    "Cannot update task status - terminal state already reached");
         }
         // Status transition happens automatically in MainEventBusProcessor
         // The error event is terminal and will trigger FAILED state transition
@@ -559,12 +572,18 @@ public class AgentEmitter {
      */
     public void sendMessage(Message message) {
         if (message.taskId() != null && !message.taskId().equals(taskId)) {
-            LOGGER.error("Message taskId mismatch: expected={}, actual={}", taskId, message.taskId());
-            throw new IllegalArgumentException("Message taskId does not match the emitter's taskId");
+            LOGGER.error(
+                    "Message taskId mismatch: expected={}, actual={}", taskId, message.taskId());
+            throw new IllegalArgumentException(
+                    "Message taskId does not match the emitter's taskId");
         }
         if (message.contextId() != null && !message.contextId().equals(contextId)) {
-            LOGGER.error("Message contextId mismatch: expected={}, actual={}", contextId, message.contextId());
-            throw new IllegalArgumentException("Message contextId does not match the emitter's contextId");
+            LOGGER.error(
+                    "Message contextId mismatch: expected={}, actual={}",
+                    contextId,
+                    message.contextId());
+            throw new IllegalArgumentException(
+                    "Message contextId does not match the emitter's contextId");
         }
         eventQueue.enqueueEvent(message);
     }
@@ -641,9 +660,7 @@ public class AgentEmitter {
      * @return a Task.Builder with id and contextId already set
      */
     public Task.Builder taskBuilder() {
-        return Task.builder()
-                .id(taskId)
-                .contextId(contextId);
+        return Task.builder().id(taskId).contextId(contextId);
     }
 
     /**
@@ -669,10 +686,11 @@ public class AgentEmitter {
      * @return a Message.Builder with common agent fields already set
      */
     public Message.Builder messageBuilder() {
-        Message.Builder builder = Message.builder()
-                .contextId(contextId)
-                .role(Message.Role.ROLE_AGENT)
-                .messageId(UUID.randomUUID().toString());
+        Message.Builder builder =
+                Message.builder()
+                        .contextId(contextId)
+                        .role(Message.Role.ROLE_AGENT)
+                        .messageId(UUID.randomUUID().toString());
 
         // Only set taskId if present (messages can exist without tasks)
         if (taskId != null) {
@@ -681,5 +699,4 @@ public class AgentEmitter {
 
         return builder;
     }
-
 }

@@ -86,25 +86,18 @@ import org.jspecify.annotations.Nullable;
 @Priority(100)
 public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHandler {
 
-    @Inject
-    @Delegate
-    @Any
-    private RequestHandler delegate;
+    @Inject @Delegate @Any private RequestHandler delegate;
 
-    @Inject
-    private Tracer tracer;
+    @Inject private Tracer tracer;
 
-    @Inject
-    private Instance<Meter> meterInstance;
+    @Inject private Instance<Meter> meterInstance;
 
-    @Nullable
-    private volatile DoubleHistogram streamingDurationHistogram;
+    @Nullable private volatile DoubleHistogram streamingDurationHistogram;
 
     /**
      * Default constructor for CDI.
      */
-    public OpenTelemetryRequestHandlerDecorator() {
-    }
+    public OpenTelemetryRequestHandlerDecorator() {}
 
     /**
      * Constructor for testing without metrics.
@@ -123,7 +116,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
      * @param tracer the tracer to use
      * @param meter optional meter for streaming duration histogram; null disables metrics
      */
-    public OpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer, @Nullable Meter meter) {
+    public OpenTelemetryRequestHandlerDecorator(
+            RequestHandler delegate, Tracer tracer, @Nullable Meter meter) {
         this.delegate = delegate;
         this.tracer = tracer;
         this.streamingDurationHistogram = buildStreamingDurationHistogram(meter);
@@ -131,10 +125,13 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
 
     @Nullable
     private DoubleHistogram streamingDurationHistogram() {
-        if (streamingDurationHistogram == null && meterInstance != null && meterInstance.isResolvable()) {
+        if (streamingDurationHistogram == null
+                && meterInstance != null
+                && meterInstance.isResolvable()) {
             synchronized (this) {
                 if (streamingDurationHistogram == null) {
-                    streamingDurationHistogram = buildStreamingDurationHistogram(meterInstance.get());
+                    streamingDurationHistogram =
+                            buildStreamingDurationHistogram(meterInstance.get());
                 }
             }
         }
@@ -148,15 +145,17 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         }
         return meter.histogramBuilder(GENAI_STREAMING_DURATION)
                 .setUnit("s")
-                .setDescription("Duration of A2A streaming operations from initiation to last event")
+                .setDescription(
+                        "Duration of A2A streaming operations from initiation to last event")
                 .build();
     }
 
     @Override
     public Task onGetTask(TaskQueryParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.GET_TASK_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_METHOD);
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.GET_TASK_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_METHOD);
 
         if (params.id() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.id());
@@ -187,10 +186,12 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.LIST_TASK_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_METHOD);
+    public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context)
+            throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.LIST_TASK_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_METHOD);
 
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
@@ -221,9 +222,10 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
 
     @Override
     public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.CANCEL_TASK_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.CANCEL_TASK_METHOD);
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.CANCEL_TASK_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(GENAI_OPERATION_NAME, A2AMethods.CANCEL_TASK_METHOD);
 
         if (params.id() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.id());
@@ -254,10 +256,12 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.SEND_MESSAGE_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.SEND_MESSAGE_METHOD);
+    public EventKind onMessageSend(MessageSendParams params, ServerCallContext context)
+            throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.SEND_MESSAGE_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(GENAI_OPERATION_NAME, A2AMethods.SEND_MESSAGE_METHOD);
 
         if (params.message() != null) {
             if (params.message().taskId() != null) {
@@ -273,7 +277,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
                 spanBuilder.setAttribute(GENAI_ROLE, params.message().role().name());
             }
             if (params.message().extensions() != null && !params.message().extensions().isEmpty()) {
-                spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", params.message().extensions()));
+                spanBuilder.setAttribute(
+                        GENAI_EXTENSIONS, String.join(",", params.message().extensions()));
             }
             spanBuilder.setAttribute(GENAI_PARTS_NUMBER, params.message().parts().size());
         }
@@ -303,10 +308,13 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public Flow.Publisher<StreamingEventKind> onMessageSendStream(MessageSendParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.SEND_STREAMING_MESSAGE_METHOD);
+    public Flow.Publisher<StreamingEventKind> onMessageSendStream(
+            MessageSendParams params, ServerCallContext context) throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(
+                                GENAI_OPERATION_NAME, A2AMethods.SEND_STREAMING_MESSAGE_METHOD);
 
         if (params.message() != null) {
             if (params.message().taskId() != null) {
@@ -322,7 +330,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
                 spanBuilder.setAttribute(GENAI_ROLE, params.message().role().name());
             }
             if (params.message().extensions() != null && !params.message().extensions().isEmpty()) {
-                spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", params.message().extensions()));
+                spanBuilder.setAttribute(
+                        GENAI_EXTENSIONS, String.join(",", params.message().extensions()));
             }
             spanBuilder.setAttribute(GENAI_PARTS_NUMBER, params.message().parts().size());
         }
@@ -335,7 +344,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         long startNanos = System.nanoTime();
 
         try (Scope scope = span.makeCurrent()) {
-            Flow.Publisher<StreamingEventKind> result = delegate.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> result =
+                    delegate.onMessageSendStream(params, context);
 
             if (extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, "Stream publisher created");
@@ -343,12 +353,20 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
 
             span.setStatus(StatusCode.OK);
             SpanContext spanContext = span.getSpanContext();
-            return new OpenTelemetryStreamPublisher(result,
-                    new StreamingSpanConfig(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
-                            spanContext, streamingDurationHistogram(), startNanos));
+            return new OpenTelemetryStreamPublisher(
+                    result,
+                    new StreamingSpanConfig(
+                            tracer,
+                            A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
+                            spanContext,
+                            streamingDurationHistogram(),
+                            startNanos));
         } catch (A2AError error) {
-            StreamingEventAttributes.recordDuration(streamingDurationHistogram(),
-                    startNanos, A2AMethods.SEND_STREAMING_MESSAGE_METHOD, false);
+            StreamingEventAttributes.recordDuration(
+                    streamingDurationHistogram(),
+                    startNanos,
+                    A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
+                    false);
             span.setAttribute(ERROR_TYPE, error.getMessage());
             span.setStatus(StatusCode.ERROR, error.getMessage());
             throw error;
@@ -358,10 +376,14 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+    public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
+            TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(
+                                GENAI_OPERATION_NAME,
+                                A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         if (params.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.taskId());
@@ -377,7 +399,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         Span span = spanBuilder.startSpan();
 
         try (Scope scope = span.makeCurrent()) {
-            TaskPushNotificationConfig result = delegate.onCreateTaskPushNotificationConfig(params, context);
+            TaskPushNotificationConfig result =
+                    delegate.onCreateTaskPushNotificationConfig(params, context);
 
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
@@ -395,10 +418,14 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public TaskPushNotificationConfig onGetTaskPushNotificationConfig(GetTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+    public TaskPushNotificationConfig onGetTaskPushNotificationConfig(
+            GetTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(
+                                GENAI_OPERATION_NAME,
+                                A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         if (params.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.taskId());
@@ -414,7 +441,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         Span span = spanBuilder.startSpan();
 
         try (Scope scope = span.makeCurrent()) {
-            TaskPushNotificationConfig result = delegate.onGetTaskPushNotificationConfig(params, context);
+            TaskPushNotificationConfig result =
+                    delegate.onGetTaskPushNotificationConfig(params, context);
 
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
@@ -432,10 +460,12 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public Flow.Publisher<StreamingEventKind> onSubscribeToTask(TaskIdParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.SUBSCRIBE_TO_TASK_METHOD);
+    public Flow.Publisher<StreamingEventKind> onSubscribeToTask(
+            TaskIdParams params, ServerCallContext context) throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(GENAI_OPERATION_NAME, A2AMethods.SUBSCRIBE_TO_TASK_METHOD);
 
         if (params.id() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.id());
@@ -457,12 +487,20 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
 
             span.setStatus(StatusCode.OK);
             SpanContext spanContext = span.getSpanContext();
-            return new OpenTelemetryStreamPublisher(result,
-                    new StreamingSpanConfig(tracer, A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
-                            spanContext, streamingDurationHistogram(), startNanos));
+            return new OpenTelemetryStreamPublisher(
+                    result,
+                    new StreamingSpanConfig(
+                            tracer,
+                            A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
+                            spanContext,
+                            streamingDurationHistogram(),
+                            startNanos));
         } catch (A2AError error) {
-            StreamingEventAttributes.recordDuration(streamingDurationHistogram(),
-                    startNanos, A2AMethods.SUBSCRIBE_TO_TASK_METHOD, false);
+            StreamingEventAttributes.recordDuration(
+                    streamingDurationHistogram(),
+                    startNanos,
+                    A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
+                    false);
             span.setAttribute(ERROR_TYPE, error.getMessage());
             span.setStatus(StatusCode.ERROR, error.getMessage());
             throw error;
@@ -472,10 +510,15 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(ListTaskPushNotificationConfigsParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+    public ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(
+            ListTaskPushNotificationConfigsParams params, ServerCallContext context)
+            throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(
+                                GENAI_OPERATION_NAME,
+                                A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
@@ -488,7 +531,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         Span span = spanBuilder.startSpan();
 
         try (Scope scope = span.makeCurrent()) {
-            ListTaskPushNotificationConfigsResult result = delegate.onListTaskPushNotificationConfigs(params, context);
+            ListTaskPushNotificationConfigsResult result =
+                    delegate.onListTaskPushNotificationConfigs(params, context);
 
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
@@ -506,10 +550,15 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public void onDeleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
-        var spanBuilder = tracer.spanBuilder(A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(GENAI_OPERATION_NAME, A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+    public void onDeleteTaskPushNotificationConfig(
+            DeleteTaskPushNotificationConfigParams params, ServerCallContext context)
+            throws A2AError {
+        var spanBuilder =
+                tracer.spanBuilder(A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
+                        .setSpanKind(SpanKind.SERVER)
+                        .setAttribute(
+                                GENAI_OPERATION_NAME,
+                                A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
@@ -532,8 +581,9 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context,
-            TaskOperation operation) throws A2AError {
+    public void authorizeTaskAccess(
+            @Nullable String requestedTaskId, ServerCallContext context, TaskOperation operation)
+            throws A2AError {
         delegate.authorizeTaskAccess(requestedTaskId, context, operation);
     }
 
@@ -545,7 +595,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         return Boolean.getBoolean(EXTRACT_RESPONSE_SYS_PROPERTY);
     }
 
-    private static void applyTransportAttributes(SpanBuilder spanBuilder, ServerCallContext context) {
+    private static void applyTransportAttributes(
+            SpanBuilder spanBuilder, ServerCallContext context) {
         Map<String, Object> state = context.getState();
         Object transport = state.get(ServerCallContext.TRANSPORT_KEY);
         if (transport instanceof TransportProtocol tp) {
@@ -557,15 +608,21 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         }
     }
 
-    private record StreamingSpanConfig(Tracer tracer, String spanName, SpanContext parentSpanContext,
-            @Nullable DoubleHistogram streamingDurationHistogram, long startNanos) {}
+    private record StreamingSpanConfig(
+            Tracer tracer,
+            String spanName,
+            SpanContext parentSpanContext,
+            @Nullable DoubleHistogram streamingDurationHistogram,
+            long startNanos) {}
 
-    private static class OpenTelemetryStreamPublisher implements Flow.Publisher<StreamingEventKind> {
+    private static class OpenTelemetryStreamPublisher
+            implements Flow.Publisher<StreamingEventKind> {
 
         private final Flow.Publisher<StreamingEventKind> delegate;
         private final StreamingSpanConfig config;
 
-        OpenTelemetryStreamPublisher(Flow.Publisher<StreamingEventKind> delegate, StreamingSpanConfig config) {
+        OpenTelemetryStreamPublisher(
+                Flow.Publisher<StreamingEventKind> delegate, StreamingSpanConfig config) {
             this.delegate = delegate;
             this.config = config;
         }
@@ -576,52 +633,61 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         }
     }
 
-    private static class OpenTelemetryStreamSubscriber implements Flow.Subscriber<StreamingEventKind> {
+    private static class OpenTelemetryStreamSubscriber
+            implements Flow.Subscriber<StreamingEventKind> {
 
-        private static final Logger LOGGER = Logger.getLogger(OpenTelemetryStreamSubscriber.class.getName());
+        private static final Logger LOGGER =
+                Logger.getLogger(OpenTelemetryStreamSubscriber.class.getName());
 
         private final Flow.Subscriber<? super StreamingEventKind> delegate;
         private final StreamingSpanConfig config;
         private final AtomicBoolean terminated = new AtomicBoolean(false);
 
-        OpenTelemetryStreamSubscriber(Flow.Subscriber<? super StreamingEventKind> delegate, StreamingSpanConfig config) {
+        OpenTelemetryStreamSubscriber(
+                Flow.Subscriber<? super StreamingEventKind> delegate, StreamingSpanConfig config) {
             this.delegate = delegate;
             this.config = config;
         }
 
         @Override
         public void onSubscribe(Flow.Subscription subscription) {
-            delegate.onSubscribe(new Flow.Subscription() {
-                @Override
-                public void request(long n) {
-                    subscription.request(n);
-                }
-
-                @Override
-                public void cancel() {
-                    if (terminated.compareAndSet(false, true)) {
-                        recordStreamingDuration(true);
-                        Span closingSpan = config.tracer().spanBuilder(config.spanName() + STREAMING_END_SUFFIX)
-                                .setSpanKind(SpanKind.SERVER)
-                                .addLink(config.parentSpanContext())
-                                .startSpan();
-                        try (Scope ignored = closingSpan.makeCurrent()) {
-                            closingSpan.setStatus(StatusCode.OK);
-                        } finally {
-                            closingSpan.end();
+            delegate.onSubscribe(
+                    new Flow.Subscription() {
+                        @Override
+                        public void request(long n) {
+                            subscription.request(n);
                         }
-                    }
-                    subscription.cancel();
-                }
-            });
+
+                        @Override
+                        public void cancel() {
+                            if (terminated.compareAndSet(false, true)) {
+                                recordStreamingDuration(true);
+                                Span closingSpan =
+                                        config.tracer()
+                                                .spanBuilder(
+                                                        config.spanName() + STREAMING_END_SUFFIX)
+                                                .setSpanKind(SpanKind.SERVER)
+                                                .addLink(config.parentSpanContext())
+                                                .startSpan();
+                                try (Scope ignored = closingSpan.makeCurrent()) {
+                                    closingSpan.setStatus(StatusCode.OK);
+                                } finally {
+                                    closingSpan.end();
+                                }
+                            }
+                            subscription.cancel();
+                        }
+                    });
         }
 
         @Override
         public void onNext(StreamingEventKind item) {
-            SpanBuilder builder = config.tracer().spanBuilder(config.spanName() + STREAMING_EVENT_SUFFIX)
-                    .setSpanKind(SpanKind.SERVER)
-                    .addLink(config.parentSpanContext())
-                    .setAttribute(GENAI_STREAMING_EVENT, item.kind());
+            SpanBuilder builder =
+                    config.tracer()
+                            .spanBuilder(config.spanName() + STREAMING_EVENT_SUFFIX)
+                            .setSpanKind(SpanKind.SERVER)
+                            .addLink(config.parentSpanContext())
+                            .setAttribute(GENAI_STREAMING_EVENT, item.kind());
             StreamingEventAttributes.apply(builder, item);
             Span span = builder.startSpan();
             try (Scope ignored = span.makeCurrent()) {
@@ -639,14 +705,19 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         @Override
         public void onError(Throwable throwable) {
             if (!terminated.compareAndSet(false, true)) {
-                LOGGER.warning("onError() received after stream termination (publisher protocol violation); ignoring: " + throwable);
+                LOGGER.warning(
+                        "onError() received after stream termination (publisher protocol"
+                                + " violation); ignoring: "
+                                + throwable);
                 return;
             }
             recordStreamingDuration(false);
-            Span closingSpan = config.tracer().spanBuilder(config.spanName() + STREAMING_END_SUFFIX)
-                    .setSpanKind(SpanKind.SERVER)
-                    .addLink(config.parentSpanContext())
-                    .startSpan();
+            Span closingSpan =
+                    config.tracer()
+                            .spanBuilder(config.spanName() + STREAMING_END_SUFFIX)
+                            .setSpanKind(SpanKind.SERVER)
+                            .addLink(config.parentSpanContext())
+                            .startSpan();
             try (Scope ignored = closingSpan.makeCurrent()) {
                 closingSpan.setAttribute(ERROR_TYPE, throwable.getClass().getName());
                 closingSpan.setStatus(StatusCode.ERROR, throwable.getMessage());
@@ -665,10 +736,12 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
                 return;
             }
             recordStreamingDuration(true);
-            Span closingSpan = config.tracer().spanBuilder(config.spanName() + STREAMING_END_SUFFIX)
-                    .setSpanKind(SpanKind.SERVER)
-                    .addLink(config.parentSpanContext())
-                    .startSpan();
+            Span closingSpan =
+                    config.tracer()
+                            .spanBuilder(config.spanName() + STREAMING_END_SUFFIX)
+                            .setSpanKind(SpanKind.SERVER)
+                            .addLink(config.parentSpanContext())
+                            .startSpan();
             try (Scope ignored = closingSpan.makeCurrent()) {
                 delegate.onComplete();
                 closingSpan.setStatus(StatusCode.OK);
@@ -682,8 +755,11 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         }
 
         private void recordStreamingDuration(boolean success) {
-            StreamingEventAttributes.recordDuration(config.streamingDurationHistogram(),
-                    config.startNanos(), config.spanName(), success);
+            StreamingEventAttributes.recordDuration(
+                    config.streamingDurationHistogram(),
+                    config.startNanos(),
+                    config.spanName(),
+                    success);
         }
     }
 }

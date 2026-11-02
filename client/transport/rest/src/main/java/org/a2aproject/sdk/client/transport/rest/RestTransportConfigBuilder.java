@@ -63,7 +63,8 @@ import org.jspecify.annotations.Nullable;
  * @see A2AHttpClient
  * @see org.a2aproject.sdk.client.http.JdkA2AHttpClient
  */
-public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<RestTransportConfig, RestTransportConfigBuilder> {
+public class RestTransportConfigBuilder
+        extends ClientTransportConfigBuilder<RestTransportConfig, RestTransportConfigBuilder> {
 
     private @Nullable A2AHttpClient httpClient;
     private A2AHttpClientConfiguration httpClientConfiguration = A2AHttpClientConfiguration.DEFAULT;
@@ -102,9 +103,11 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
     }
 
     /** Sets the configuration used when this builder creates the HTTP client. */
-    public RestTransportConfigBuilder httpClientConfiguration(A2AHttpClientConfiguration httpClientConfiguration) {
-        this.httpClientConfiguration = org.a2aproject.sdk.util.Assert.checkNotNullParam(
-                "httpClientConfiguration", httpClientConfiguration);
+    public RestTransportConfigBuilder httpClientConfiguration(
+            A2AHttpClientConfiguration httpClientConfiguration) {
+        this.httpClientConfiguration =
+                org.a2aproject.sdk.util.Assert.checkNotNullParam(
+                        "httpClientConfiguration", httpClientConfiguration);
         return this;
     }
 

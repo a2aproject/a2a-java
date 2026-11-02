@@ -27,7 +27,8 @@ public class MultiTenantJSONRPCTest extends AbstractMultiTenantServerTest {
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(JSONRPCTransport.class,
+        builder.withTransport(
+                JSONRPCTransport.class,
                 new JSONRPCTransportConfigBuilder().httpClient(new JdkA2AHttpClient()));
     }
 }

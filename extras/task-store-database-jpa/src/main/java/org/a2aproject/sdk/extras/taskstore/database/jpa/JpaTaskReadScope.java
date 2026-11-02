@@ -11,9 +11,7 @@ public sealed interface JpaTaskReadScope {
         }
     }
 
-    record All() implements JpaTaskReadScope {
-    }
+    record All() implements JpaTaskReadScope {}
 
-    record None() implements JpaTaskReadScope {
-    }
+    record None() implements JpaTaskReadScope {}
 }

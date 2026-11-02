@@ -15,9 +15,7 @@ import org.a2aproject.sdk.spec.A2AError;
  */
 public final class DeleteTaskPushNotificationConfigResponse extends A2AResponse<Void> {
 
-    private DeleteTaskPushNotificationConfigResponse() {
-    }
-
+    private DeleteTaskPushNotificationConfigResponse() {}
 
     /**
      * Creates a new DeleteTaskPushNotificationConfigResponse with full JSON-RPC parameters.
@@ -27,7 +25,8 @@ public final class DeleteTaskPushNotificationConfigResponse extends A2AResponse<
      * @param result the result (always null/Void for this response type)
      * @param error the error if the request failed, null on success
      */
-    public DeleteTaskPushNotificationConfigResponse(String jsonrpc, Object id, Void result,A2AError error) {
+    public DeleteTaskPushNotificationConfigResponse(
+            String jsonrpc, Object id, Void result, A2AError error) {
         super(jsonrpc, id, result, error, Void.class);
     }
 
@@ -49,5 +48,4 @@ public final class DeleteTaskPushNotificationConfigResponse extends A2AResponse<
     public DeleteTaskPushNotificationConfigResponse(Object id) {
         this(null, id, null, null);
     }
-
 }

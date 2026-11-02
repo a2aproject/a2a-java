@@ -22,7 +22,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.TaskEvent;
@@ -61,7 +60,8 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
 
     protected abstract String getTransportUrl();
 
-    protected abstract void configureTransportWithCredentials(ClientBuilder builder, String username, String password);
+    protected abstract void configureTransportWithCredentials(
+            ClientBuilder builder, String username, String password);
 
     protected Client createClient(String username, String password) throws A2AClientException {
         AgentCard agentCard = fetchAgentCardFromServer();
@@ -74,11 +74,13 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
     protected AgentCard fetchAgentCardFromServer() {
         try {
             HttpClient httpClient = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(getTransportUrl() + "/.well-known/agent-card.json"))
-                    .GET()
-                    .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(getTransportUrl() + "/.well-known/agent-card.json"))
+                            .GET()
+                            .build();
+            HttpResponse<String> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Failed to fetch agent card: " + response.statusCode());
             }
@@ -89,36 +91,44 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
     }
 
     protected static String getEncodedCredentials(String username, String password) {
-        return Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder()
+                .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
 
     protected Task sendMessageAndGetTask(Client client, String messageText) throws Exception {
-        Message message = Message.builder()
-                .messageId(UUID.randomUUID().toString())
-                .role(Message.Role.ROLE_USER)
-                .parts(new TextPart("a2a-local:" + messageText))
-                .build();
+        Message message =
+                Message.builder()
+                        .messageId(UUID.randomUUID().toString())
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("a2a-local:" + messageText))
+                        .build();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Task> receivedTask = new AtomicReference<>();
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
-        client.sendMessage(message, List.of((event, agentCard) -> {
-            if (event instanceof TaskEvent te) {
-                receivedTask.set(te.getTask());
-                if (te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+        client.sendMessage(
+                message,
+                List.of(
+                        (event, agentCard) -> {
+                            if (event instanceof TaskEvent te) {
+                                receivedTask.set(te.getTask());
+                                if (te.getTask().status().state()
+                                        == TaskState.TASK_STATE_COMPLETED) {
+                                    latch.countDown();
+                                }
+                            } else if (event instanceof TaskUpdateEvent tue) {
+                                receivedTask.set(tue.getTask());
+                                if (tue.getTask().status().state()
+                                        == TaskState.TASK_STATE_COMPLETED) {
+                                    latch.countDown();
+                                }
+                            }
+                        }),
+                error -> {
+                    errorRef.set(error);
                     latch.countDown();
-                }
-            } else if (event instanceof TaskUpdateEvent tue) {
-                receivedTask.set(tue.getTask());
-                if (tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
-                    latch.countDown();
-                }
-            }
-        }), error -> {
-            errorRef.set(error);
-            latch.countDown();
-        });
+                });
 
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Task should complete within timeout");
         assertNull(errorRef.get(), "Should not have received an error: " + errorRef.get());
@@ -145,8 +155,10 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
         Task task = sendMessageAndGetTask(clientA, "non-owner-get-test");
 
         Client clientB = createClient(USER_B, USER_B_PASSWORD);
-        A2AClientException error = assertThrows(A2AClientException.class, () ->
-                clientB.getTask(new TaskQueryParams(task.id())));
+        A2AClientException error =
+                assertThrows(
+                        A2AClientException.class,
+                        () -> clientB.getTask(new TaskQueryParams(task.id())));
         assertInstanceOf(TaskNotFoundError.class, error.getCause());
     }
 
@@ -171,8 +183,10 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
         Task task = sendMessageAndGetTask(clientA, "non-owner-cancel-test");
 
         Client clientB = createClient(USER_B, USER_B_PASSWORD);
-        A2AClientException error = assertThrows(A2AClientException.class, () ->
-                clientB.cancelTask(new CancelTaskParams(task.id())));
+        A2AClientException error =
+                assertThrows(
+                        A2AClientException.class,
+                        () -> clientB.cancelTask(new CancelTaskParams(task.id())));
         assertInstanceOf(TaskNotFoundError.class, error.getCause());
     }
 
@@ -207,10 +221,14 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
 
         Client clientB = createClient(USER_B, USER_B_PASSWORD);
 
-        A2AClientException unauthorizedError = assertThrows(A2AClientException.class, () ->
-                clientB.getTask(new TaskQueryParams(task.id())));
-        A2AClientException notFoundError = assertThrows(A2AClientException.class, () ->
-                clientB.getTask(new TaskQueryParams(UUID.randomUUID().toString())));
+        A2AClientException unauthorizedError =
+                assertThrows(
+                        A2AClientException.class,
+                        () -> clientB.getTask(new TaskQueryParams(task.id())));
+        A2AClientException notFoundError =
+                assertThrows(
+                        A2AClientException.class,
+                        () -> clientB.getTask(new TaskQueryParams(UUID.randomUUID().toString())));
 
         assertInstanceOf(TaskNotFoundError.class, unauthorizedError.getCause());
         assertInstanceOf(TaskNotFoundError.class, notFoundError.getCause());

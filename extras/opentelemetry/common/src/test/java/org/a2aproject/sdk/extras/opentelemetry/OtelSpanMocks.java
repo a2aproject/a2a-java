@@ -17,14 +17,14 @@ import io.opentelemetry.context.Scope;
 /** Shared Mockito helpers for OTel span builder stubs used in client and server tests. */
 public final class OtelSpanMocks {
 
-    private OtelSpanMocks() {
-    }
+    private OtelSpanMocks() {}
 
     /**
      * Stubs {@code tracer.spanBuilder(spanName)} to return a builder that produces {@code closingSpan},
      * with status and scope stubs that cover both success and error paths.
      */
-    public static SpanBuilder mockClosingSpanBuilder(Tracer tracer, String spanName, Span closingSpan) {
+    public static SpanBuilder mockClosingSpanBuilder(
+            Tracer tracer, String spanName, Span closingSpan) {
         SpanBuilder closingSpanBuilder = mock(SpanBuilder.class);
         when(tracer.spanBuilder(spanName)).thenReturn(closingSpanBuilder);
         when(closingSpanBuilder.setSpanKind(any(SpanKind.class))).thenReturn(closingSpanBuilder);
@@ -32,7 +32,9 @@ public final class OtelSpanMocks {
         when(closingSpanBuilder.startSpan()).thenReturn(closingSpan);
         // lenient: success/error path coverage varies per test
         lenient().when(closingSpan.setStatus(any(StatusCode.class))).thenReturn(closingSpan);
-        lenient().when(closingSpan.setStatus(any(StatusCode.class), anyString())).thenReturn(closingSpan);
+        lenient()
+                .when(closingSpan.setStatus(any(StatusCode.class), anyString()))
+                .thenReturn(closingSpan);
         when(closingSpan.makeCurrent()).thenReturn(mock(Scope.class));
         return closingSpanBuilder;
     }

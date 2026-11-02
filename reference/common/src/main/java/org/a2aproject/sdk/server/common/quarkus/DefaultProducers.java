@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.server.common.quarkus;
 
+import io.quarkus.arc.DefaultBean;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
-import io.quarkus.arc.DefaultBean;
 
 /**
  * Contains beans annotated with the Quarkus @DefaultBean annotation, in order to avoid
@@ -20,12 +19,13 @@ public class DefaultProducers {
     @Produces
     @DefaultBean
     public AgentExecutor createDefaultAgentExecutor() {
-        throw new IllegalStateException(wrap("Please provide your own AgentExecutor implementation"));
+        throw new IllegalStateException(
+                wrap("Please provide your own AgentExecutor implementation"));
     }
 
     private String wrap(String s) {
-        return s +
-                " as a CDI bean. Your bean will automatically take precedence over this @DefaultBean " +
-                "annotated implementation.";
+        return s
+                + " as a CDI bean. Your bean will automatically take precedence over this"
+                + " @DefaultBean annotated implementation.";
     }
 }

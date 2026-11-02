@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec;
 
 import java.time.Instant;
-
 import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -25,11 +24,11 @@ public record ListTasksParams(
         @Nullable Integer historyLength,
         @Nullable Instant statusTimestampAfter,
         @Nullable Boolean includeArtifacts,
-        @Nullable String tenant
-) {
+        @Nullable String tenant) {
     private static final int MIN_PAGE_SIZE = 1;
     private static final int MAX_PAGE_SIZE = 100;
     private static final int DEFAULT_PAGE_SIZE = 50;
+
     /**
      * Compact constructor for validation.
      * Validates that the tenant parameter is not null and parameters are within valid ranges.
@@ -48,16 +47,24 @@ public record ListTasksParams(
         Utils.validateTenant(tenant);
         // Validate pageSize (1-100)
         if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
-            throw new InvalidParamsError(null,
-                "pageSize must be between " + MIN_PAGE_SIZE + " and " + MAX_PAGE_SIZE + ", got: " + pageSize, null);
+            throw new InvalidParamsError(
+                    null,
+                    "pageSize must be between "
+                            + MIN_PAGE_SIZE
+                            + " and "
+                            + MAX_PAGE_SIZE
+                            + ", got: "
+                            + pageSize,
+                    null);
         }
 
         // Validate historyLength (>= 0)
         if (historyLength != null && historyLength < 0) {
-            throw new InvalidParamsError(null,
-                "historyLength must be non-negative, got: " + historyLength, null);
+            throw new InvalidParamsError(
+                    null, "historyLength must be non-negative, got: " + historyLength, null);
         }
     }
+
     /**
      * Default constructor for listing all tasks.
      */
@@ -129,8 +136,7 @@ public record ListTasksParams(
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the contextId.
@@ -226,8 +232,15 @@ public record ListTasksParams(
          * @return a new ListTasksParams instance
          */
         public ListTasksParams build() {
-            return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
-                    statusTimestampAfter, includeArtifacts, tenant);
+            return new ListTasksParams(
+                    contextId,
+                    status,
+                    pageSize,
+                    pageToken,
+                    historyLength,
+                    statusTimestampAfter,
+                    includeArtifacts,
+                    tenant);
         }
     }
 }

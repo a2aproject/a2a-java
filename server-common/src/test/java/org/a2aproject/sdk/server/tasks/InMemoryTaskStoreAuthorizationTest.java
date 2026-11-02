@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
@@ -24,11 +23,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class InMemoryTaskStoreAuthorizationTest {
 
-    @Mock
-    private TaskAuthorizationProvider authorizationProvider;
+    @Mock private TaskAuthorizationProvider authorizationProvider;
 
-    @Mock
-    private ServerCallContext context;
+    @Mock private ServerCallContext context;
 
     private InMemoryTaskStore store;
 
@@ -53,11 +50,14 @@ class InMemoryTaskStoreAuthorizationTest {
         store.save(testTask("task-2"), false);
         store.save(testTask("task-3"), false);
 
-        when(authorizationProvider.checkRead(eq(context), eq("task-1"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-1"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(true);
-        when(authorizationProvider.checkRead(eq(context), eq("task-2"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-2"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(false);
-        when(authorizationProvider.checkRead(eq(context), eq("task-3"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-3"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(true);
 
         ListTasksParams params = new ListTasksParams();
@@ -88,15 +88,20 @@ class InMemoryTaskStoreAuthorizationTest {
             store.save(testTask("task-" + i), false);
         }
 
-        when(authorizationProvider.checkRead(eq(context), eq("task-1"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-1"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(true);
-        when(authorizationProvider.checkRead(eq(context), eq("task-2"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-2"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(false);
-        when(authorizationProvider.checkRead(eq(context), eq("task-3"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-3"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(true);
-        when(authorizationProvider.checkRead(eq(context), eq("task-4"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-4"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(false);
-        when(authorizationProvider.checkRead(eq(context), eq("task-5"), eq(TaskOperation.LIST_TASKS)))
+        when(authorizationProvider.checkRead(
+                        eq(context), eq("task-5"), eq(TaskOperation.LIST_TASKS)))
                 .thenReturn(true);
 
         ListTasksParams params = new ListTasksParams();

@@ -9,7 +9,8 @@ import org.mapstruct.Mapping;
  * <p>
  * Uses CommonFieldMapper for struct conversion (params field).
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {A2ACommonFieldMapper.class})
 public interface AgentExtensionMapper {
@@ -21,7 +22,11 @@ public interface AgentExtensionMapper {
      * <p>
      * Maps params field via struct conversion.
      */
-    @Mapping(target = "params", source = "params", conditionExpression = "java(domain.params() != null)", qualifiedByName = "mapToStruct")
+    @Mapping(
+            target = "params",
+            source = "params",
+            conditionExpression = "java(domain.params() != null)",
+            qualifiedByName = "mapToStruct")
     org.a2aproject.sdk.grpc.AgentExtension toProto(org.a2aproject.sdk.spec.AgentExtension domain);
 
     /**

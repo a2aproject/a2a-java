@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.server.requesthandlers;
 
-
+import io.quarkus.arc.profile.IfBuildProfile;
+import jakarta.enterprise.context.Dependent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -14,9 +15,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-
-import jakarta.enterprise.context.Dependent;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
@@ -24,12 +22,12 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
-import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.server.events.EventQueueUtil;
 import org.a2aproject.sdk.server.events.InMemoryQueueManager;
 import org.a2aproject.sdk.server.events.MainEventBus;
 import org.a2aproject.sdk.server.events.MainEventBusProcessor;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
 import org.a2aproject.sdk.server.tasks.InMemoryPushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
@@ -47,7 +45,6 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TextPart;
-import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,19 +53,22 @@ public class AbstractA2ARequestHandlerTest {
 
     protected static final AgentCard CARD = createAgentCard(true, true);
 
-    protected static final Task MINIMAL_TASK = Task.builder()
-            .id("task-123")
-            .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-            .build();
+    protected static final Task MINIMAL_TASK =
+            Task.builder()
+                    .id("task-123")
+                    .contextId("session-xyz")
+                    .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                    .build();
 
-    protected static final Message MESSAGE = Message.builder()
-            .messageId("111")
-            .role(Message.Role.ROLE_AGENT)
-            .parts(new TextPart("test message"))
-            .build();
+    protected static final Message MESSAGE =
+            Message.builder()
+                    .messageId("111")
+                    .role(Message.Role.ROLE_AGENT)
+                    .parts(new TextPart("test message"))
+                    .build();
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
-    private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
+    private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES =
+            "/a2a-requesthandler-test.properties";
 
     protected AgentExecutor executor;
     protected TaskStore taskStore;
@@ -84,21 +84,24 @@ public class AbstractA2ARequestHandlerTest {
 
     @BeforeEach
     public void init() {
-        executor = new AgentExecutor() {
-            @Override
-            public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
-                if (agentExecutorExecute != null) {
-                    agentExecutorExecute.invoke(context, agentEmitter);
-                }
-            }
+        executor =
+                new AgentExecutor() {
+                    @Override
+                    public void execute(RequestContext context, AgentEmitter agentEmitter)
+                            throws A2AError {
+                        if (agentExecutorExecute != null) {
+                            agentExecutorExecute.invoke(context, agentEmitter);
+                        }
+                    }
 
-            @Override
-            public void cancel(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
-                if (agentExecutorCancel != null) {
-                    agentExecutorCancel.invoke(context, agentEmitter);
-                }
-            }
-        };
+                    @Override
+                    public void cancel(RequestContext context, AgentEmitter agentEmitter)
+                            throws A2AError {
+                        if (agentExecutorCancel != null) {
+                            agentExecutorCancel.invoke(context, agentEmitter);
+                        }
+                    }
+                };
 
         InMemoryTaskStore inMemoryTaskStore = new InMemoryTaskStore();
         taskStore = inMemoryTaskStore;
@@ -106,25 +109,29 @@ public class AbstractA2ARequestHandlerTest {
         // Create push notification components BEFORE MainEventBusProcessor
         httpClient = new TestHttpClient();
         PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
-        BasePushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient, PushNotificationUrlValidator.ALLOW_ALL);
+        BasePushNotificationSender pushSender =
+                new BasePushNotificationSender(
+                        pushConfigStore, httpClient, PushNotificationUrlValidator.ALLOW_ALL);
 
         // Create MainEventBus and MainEventBusProcessor (production code path)
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(inMemoryTaskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, pushSender, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(mainEventBus, taskStore, pushSender, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
-        requestHandler = DefaultRequestHandler.builder()
-                .agentExecutor(executor)
-                .taskStore(taskStore)
-                .queueManager(queueManager)
-                .pushConfigStore(pushConfigStore)
-                .pushNotificationsEnabled(true)
-                .mainEventBusProcessor(mainEventBusProcessor)
-                .executor(internalExecutor)
-                .eventConsumerExecutor(internalExecutor)
-                .authorizationRequired(false)
-                .build();
+        requestHandler =
+                DefaultRequestHandler.builder()
+                        .agentExecutor(executor)
+                        .taskStore(taskStore)
+                        .queueManager(queueManager)
+                        .pushConfigStore(pushConfigStore)
+                        .pushNotificationsEnabled(true)
+                        .mainEventBusProcessor(mainEventBusProcessor)
+                        .executor(internalExecutor)
+                        .eventConsumerExecutor(internalExecutor)
+                        .authorizationRequired(false)
+                        .build();
     }
 
     @AfterEach
@@ -140,28 +147,34 @@ public class AbstractA2ARequestHandlerTest {
 
     protected static AgentCard createAgentCard(boolean streaming, boolean pushNotifications) {
         String preferredTransport = loadPreferredTransportFromProperties();
-        AgentCard.Builder builder = AgentCard.builder()
-                .name("test-card")
-                .description("A test agent card")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, "http://example.com")))
-                .version("1.0")
-                .documentationUrl("http://example.com/docs")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(streaming)
-                        .pushNotifications(pushNotifications)
-                        .build())
-                .defaultInputModes(new ArrayList<>())
-                .defaultOutputModes(new ArrayList<>())
-                .skills(new ArrayList<>());
+        AgentCard.Builder builder =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("A test agent card")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface(
+                                                preferredTransport, "http://example.com")))
+                        .version("1.0")
+                        .documentationUrl("http://example.com/docs")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(streaming)
+                                        .pushNotifications(pushNotifications)
+                                        .build())
+                        .defaultInputModes(new ArrayList<>())
+                        .defaultOutputModes(new ArrayList<>())
+                        .skills(new ArrayList<>());
         return builder.build();
     }
 
     private static String loadPreferredTransportFromProperties() {
-        URL url = AbstractA2ARequestHandlerTest.class.getResource(A2A_REQUESTHANDLER_TEST_PROPERTIES);
+        URL url =
+                AbstractA2ARequestHandlerTest.class.getResource(A2A_REQUESTHANDLER_TEST_PROPERTIES);
         Assertions.assertNotNull(url);
         Properties properties = new Properties();
         try {
-            try (InputStream in = url.openStream()){
+            try (InputStream in = url.openStream()) {
                 properties.load(in);
             }
         } catch (IOException e) {
@@ -198,7 +211,8 @@ public class AbstractA2ARequestHandlerTest {
     @Dependent
     @IfBuildProfile("test")
     protected static class TestHttpClient implements A2AHttpClient {
-        public final List<StreamingEventKind> events = Collections.synchronizedList(new ArrayList<>());
+        public final List<StreamingEventKind> events =
+                Collections.synchronizedList(new ArrayList<>());
         public volatile CountDownLatch latch;
 
         @Override
@@ -218,6 +232,7 @@ public class AbstractA2ARequestHandlerTest {
 
         class TestPostBuilder implements A2AHttpClient.PostBuilder {
             private volatile String body;
+
             @Override
             public PostBuilder body(String body) {
                 this.body = body;
@@ -228,7 +243,8 @@ public class AbstractA2ARequestHandlerTest {
             public A2AHttpResponse post() throws IOException, InterruptedException {
                 try {
                     // Parse StreamResponse format to extract the streaming event
-                    // The body contains a wrapper with one of: task, message, statusUpdate, artifactUpdate
+                    // The body contains a wrapper with one of: task, message, statusUpdate,
+                    // artifactUpdate
                     StreamingEventKind event = JsonUtil.fromJson(body, StreamingEventKind.class);
                     events.add(event);
                     return new A2AHttpResponse() {
@@ -257,7 +273,11 @@ public class AbstractA2ARequestHandlerTest {
             }
 
             @Override
-            public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
+            public CompletableFuture<Void> postAsyncSSE(
+                    Consumer<ServerSentEvent> messageConsumer,
+                    Consumer<Throwable> errorConsumer,
+                    Runnable completeRunnable)
+                    throws IOException, InterruptedException {
                 return null;
             }
 
@@ -275,7 +295,6 @@ public class AbstractA2ARequestHandlerTest {
             public PostBuilder addHeaders(Map<String, String> headers) {
                 return this;
             }
-
         }
     }
 }

@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
@@ -44,8 +43,12 @@ public class AuthInterceptorTest {
         }
 
         @Override
-        public PayloadAndHeaders intercept(String methodName, Object payload, Map<String, String> headers,
-                                           AgentCard agentCard, ClientCallContext clientCallContext) {
+        public PayloadAndHeaders intercept(
+                String methodName,
+                Object payload,
+                Map<String, String> headers,
+                AgentCard agentCard,
+                ClientCallContext clientCallContext) {
             Map<String, String> updatedHeaders = new HashMap<>(headers);
             updatedHeaders.put(headerName, headerValue);
             return new PayloadAndHeaders(payload, updatedHeaders);
@@ -61,8 +64,14 @@ public class AuthInterceptorTest {
         final String expectedHeaderKey;
         final String expectedHeaderValue;
 
-        AuthTestCase(String url, String sessionId, String schemeName, String credential,
-                    SecurityScheme securityScheme, String expectedHeaderKey, String expectedHeaderValue) {
+        AuthTestCase(
+                String url,
+                String sessionId,
+                String schemeName,
+                String credential,
+                SecurityScheme securityScheme,
+                String expectedHeaderKey,
+                String expectedHeaderValue) {
             this.url = url;
             this.sessionId = sessionId;
             this.schemeName = schemeName;
@@ -75,77 +84,90 @@ public class AuthInterceptorTest {
 
     @Test
     public void testAPIKeySecurityScheme() {
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                APIKeySecurityScheme.TYPE,
-                "secret-api-key",
-                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "API Key authentication"),
-                "X-API-Key",
-                "secret-api-key"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        APIKeySecurityScheme.TYPE,
+                        "secret-api-key",
+                        new APIKeySecurityScheme(
+                                APIKeySecurityScheme.Location.HEADER,
+                                "X-API-Key",
+                                "API Key authentication"),
+                        "X-API-Key",
+                        "secret-api-key");
         testSecurityScheme(authTestCase);
     }
 
     @Test
     public void testAPIKeySecurityScheme_SafeHeaderName_Authorization() {
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                APIKeySecurityScheme.TYPE,
-                "secret-api-key",
-                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "Authorization", "API Key authentication"),
-                "Authorization",
-                "secret-api-key"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        APIKeySecurityScheme.TYPE,
+                        "secret-api-key",
+                        new APIKeySecurityScheme(
+                                APIKeySecurityScheme.Location.HEADER,
+                                "Authorization",
+                                "API Key authentication"),
+                        "Authorization",
+                        "secret-api-key");
         testSecurityScheme(authTestCase);
     }
 
     @Test
     public void testAPIKeySecurityScheme_SafeHeaderName_XAuthToken() {
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                APIKeySecurityScheme.TYPE,
-                "secret-api-key",
-                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-Auth-Token", "API Key authentication"),
-                "X-Auth-Token",
-                "secret-api-key"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        APIKeySecurityScheme.TYPE,
+                        "secret-api-key",
+                        new APIKeySecurityScheme(
+                                APIKeySecurityScheme.Location.HEADER,
+                                "X-Auth-Token",
+                                "API Key authentication"),
+                        "X-Auth-Token",
+                        "secret-api-key");
         testSecurityScheme(authTestCase);
     }
-
 
     @Test
     public void testAPIKeySecurityScheme_CaseInsensitiveHeaderName() {
         // Test that lowercase header names are accepted (case-insensitive comparison)
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                APIKeySecurityScheme.TYPE,
-                "secret-api-key",
-                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "x-api-key", "API Key authentication"),
-                "x-api-key",
-                "secret-api-key"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        APIKeySecurityScheme.TYPE,
+                        "secret-api-key",
+                        new APIKeySecurityScheme(
+                                APIKeySecurityScheme.Location.HEADER,
+                                "x-api-key",
+                                "API Key authentication"),
+                        "x-api-key",
+                        "secret-api-key");
         testSecurityScheme(authTestCase);
     }
 
     @Test
     public void testAPIKeySecurityScheme_CaseInsensitiveHeaderName_Authorization() {
         // Test that lowercase "authorization" is accepted
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                APIKeySecurityScheme.TYPE,
-                "secret-api-key",
-                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "authorization", "API Key authentication"),
-                "authorization",
-                "secret-api-key"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        APIKeySecurityScheme.TYPE,
+                        "secret-api-key",
+                        new APIKeySecurityScheme(
+                                APIKeySecurityScheme.Location.HEADER,
+                                "authorization",
+                                "API Key authentication"),
+                        "authorization",
+                        "secret-api-key");
         testSecurityScheme(authTestCase);
     }
-
 
     @Test
     public void testAPIKeySecurityScheme_UnsafeHeaderName_Rejected() {
@@ -156,24 +178,20 @@ public class AuthInterceptorTest {
         credentialStore.setCredential(sessionId, schemeName, credential);
 
         // Use an unsafe header name that's not in the allowlist
-        SecurityScheme securityScheme = new APIKeySecurityScheme(
-            APIKeySecurityScheme.Location.HEADER,
-            "X-Malicious-Redirect-Header",
-            "Unsafe header"
-        );
+        SecurityScheme securityScheme =
+                new APIKeySecurityScheme(
+                        APIKeySecurityScheme.Location.HEADER,
+                        "X-Malicious-Redirect-Header",
+                        "Unsafe header");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
 
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-                "SendMessage",
-                requestPayload,
-                headers,
-                agentCard,
-                context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
         // Credential should NOT be injected for unsafe header name
@@ -190,24 +208,18 @@ public class AuthInterceptorTest {
         credentialStore.setCredential(sessionId, schemeName, credential);
 
         // API key in query parameter location should not be injected as header
-        SecurityScheme securityScheme = new APIKeySecurityScheme(
-            APIKeySecurityScheme.Location.QUERY,
-            "api_key",
-            "Query parameter API key"
-        );
+        SecurityScheme securityScheme =
+                new APIKeySecurityScheme(
+                        APIKeySecurityScheme.Location.QUERY, "api_key", "Query parameter API key");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
 
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-                "SendMessage",
-                requestPayload,
-                headers,
-                agentCard,
-                context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
         // Credential should NOT be injected as header for query location
@@ -224,24 +236,20 @@ public class AuthInterceptorTest {
         credentialStore.setCredential(sessionId, schemeName, credential);
 
         // API key in cookie location should not be injected as header
-        SecurityScheme securityScheme = new APIKeySecurityScheme(
-            APIKeySecurityScheme.Location.COOKIE,
-            "session_token",
-            "Cookie-based API key"
-        );
+        SecurityScheme securityScheme =
+                new APIKeySecurityScheme(
+                        APIKeySecurityScheme.Location.COOKIE,
+                        "session_token",
+                        "Cookie-based API key");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
 
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-                "SendMessage",
-                requestPayload,
-                headers,
-                agentCard,
-                context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
         // Credential should NOT be injected as header for cookie location
@@ -251,79 +259,82 @@ public class AuthInterceptorTest {
 
     @Test
     public void testOAuth2SecurityScheme() {
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                OAuth2SecurityScheme.TYPE,
-                "secret-oauth-access-token",
-                new OAuth2SecurityScheme(OAuthFlows.builder().build(), "OAuth2 authentication", null),
-                "Authorization",
-                "Bearer secret-oauth-access-token"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        OAuth2SecurityScheme.TYPE,
+                        "secret-oauth-access-token",
+                        new OAuth2SecurityScheme(
+                                OAuthFlows.builder().build(), "OAuth2 authentication", null),
+                        "Authorization",
+                        "Bearer secret-oauth-access-token");
         testSecurityScheme(authTestCase);
     }
 
     @Test
     public void testOidcSecurityScheme() {
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                OpenIdConnectSecurityScheme.TYPE,
-                "secret-oidc-id-token",
-                new OpenIdConnectSecurityScheme("http://provider.com/.well-known/openid-configuration", "OIDC authentication"),
-                "Authorization",
-                "Bearer secret-oidc-id-token"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        OpenIdConnectSecurityScheme.TYPE,
+                        "secret-oidc-id-token",
+                        new OpenIdConnectSecurityScheme(
+                                "http://provider.com/.well-known/openid-configuration",
+                                "OIDC authentication"),
+                        "Authorization",
+                        "Bearer secret-oidc-id-token");
         testSecurityScheme(authTestCase);
     }
 
     @Test
     public void testBearerSecurityScheme() {
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                "bearer",
-                "bearer-token-123",
-                new HTTPAuthSecurityScheme(null, "bearer", "Bearer token authentication"),
-                "Authorization",
-                "Bearer bearer-token-123"
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        "bearer",
+                        "bearer-token-123",
+                        new HTTPAuthSecurityScheme(null, "bearer", "Bearer token authentication"),
+                        "Authorization",
+                        "Bearer bearer-token-123");
         testSecurityScheme(authTestCase);
     }
 
     @Test
     public void testBasicAuthSecurityScheme() {
         // Credential should be pre-encoded base64("testuser:testpass") = "dGVzdHVzZXI6dGVzdHBhc3M="
-        AuthTestCase authTestCase = new AuthTestCase(
-                "http://agent.com/rpc",
-                "session-id",
-                "basic",
-                "dGVzdHVzZXI6dGVzdHBhc3M=",
-                new HTTPAuthSecurityScheme(null, "basic", "HTTP Basic authentication"),
-                "Authorization",
-                "Basic dGVzdHVzZXI6dGVzdHBhc3M="
-        );
+        AuthTestCase authTestCase =
+                new AuthTestCase(
+                        "http://agent.com/rpc",
+                        "session-id",
+                        "basic",
+                        "dGVzdHVzZXI6dGVzdHBhc3M=",
+                        new HTTPAuthSecurityScheme(null, "basic", "HTTP Basic authentication"),
+                        "Authorization",
+                        "Basic dGVzdHVzZXI6dGVzdHBhc3M=");
         testSecurityScheme(authTestCase);
     }
 
     private void testSecurityScheme(AuthTestCase authTestCase) {
-        credentialStore.setCredential(authTestCase.sessionId, authTestCase.schemeName, authTestCase.credential);
+        credentialStore.setCredential(
+                authTestCase.sessionId, authTestCase.schemeName, authTestCase.credential);
 
         AgentCard agentCard = createAgentCard(authTestCase.schemeName, authTestCase.securityScheme);
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
-        ClientCallContext context = new ClientCallContext(Map.of("sessionId", authTestCase.sessionId), Map.of());
+        ClientCallContext context =
+                new ClientCallContext(Map.of("sessionId", authTestCase.sessionId), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-                "SendMessage",
-                requestPayload,
-                headers,
-                agentCard,
-                context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
-        assertEquals(authTestCase.expectedHeaderValue, result.getHeaders().get(authTestCase.expectedHeaderKey));
+        assertEquals(
+                authTestCase.expectedHeaderValue,
+                result.getHeaders().get(authTestCase.expectedHeaderKey));
     }
 
     @Test
@@ -331,13 +342,13 @@ public class AuthInterceptorTest {
         Map<String, Object> requestPayload = Map.of("foo", "bar");
         Map<String, String> headers = Map.of("foo", "bar");
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-                "SendMessage",
-                requestPayload,
-                headers,
-                null, // no agent card
-                new ClientCallContext(Map.of(), Map.of())
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage",
+                        requestPayload,
+                        headers,
+                        null, // no agent card
+                        new ClientCallContext(Map.of(), Map.of()));
 
         // should be unchanged
         assertEquals(requestPayload, result.getPayload());
@@ -356,7 +367,8 @@ public class AuthInterceptorTest {
         assertEquals(credential, retrievedCredential);
 
         // wrong session ID
-        ClientCallContext wrongContext = new ClientCallContext(Map.of("sessionId", "wrong-session"), Map.of());
+        ClientCallContext wrongContext =
+                new ClientCallContext(Map.of("sessionId", "wrong-session"), Map.of());
         retrievedCredential = credentialStore.getCredential(schemeName, wrongContext);
         assertNull(retrievedCredential);
 
@@ -383,13 +395,8 @@ public class AuthInterceptorTest {
         Map<String, Object> payload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
 
-        PayloadAndHeaders result = interceptor.intercept(
-                "SendMessage",
-                payload,
-                headers,
-                null,
-                null
-        );
+        PayloadAndHeaders result =
+                interceptor.intercept("SendMessage", payload, headers, null, null);
 
         assertEquals(payload, result.getPayload());
         assertEquals(headerValue, result.getHeaders().get(headerName));
@@ -404,30 +411,32 @@ public class AuthInterceptorTest {
         credentialStore.setCredential(sessionId, schemeName, credential);
 
         // Create agent card with security requirement but no scheme definition
-        AgentCard agentCard = AgentCard.builder()
-            .name("missing")
-            .description("Uses missing scheme definition")
-            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc", "")))
-            .version("1.0")
-            .capabilities(AgentCapabilities.builder().build())
-            .defaultInputModes(List.of("text"))
-            .defaultOutputModes(List.of("text"))
-            .skills(List.of())
-            .securityRequirements(List.of(SecurityRequirement.builder().scheme(schemeName, List.of()).build()))
-            .securitySchemes(Map.of()) // no security schemes
-            .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("missing")
+                        .description("Uses missing scheme definition")
+                        .supportedInterfaces(
+                                List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc", "")))
+                        .version("1.0")
+                        .capabilities(AgentCapabilities.builder().build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .securityRequirements(
+                                List.of(
+                                        SecurityRequirement.builder()
+                                                .scheme(schemeName, List.of())
+                                                .build()))
+                        .securitySchemes(Map.of()) // no security schemes
+                        .build();
 
         Map<String, Object> requestPayload = Map.of("foo", "bar");
         Map<String, String> headers = Map.of("fizz", "buzz");
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-            "SendMessage",
-            requestPayload,
-            headers,
-            agentCard,
-            context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
         assertEquals(headers, result.getHeaders());
@@ -436,20 +445,21 @@ public class AuthInterceptorTest {
     @Test
     void testNoCredentialAvailable() {
         String schemeName = "apikey";
-        SecurityScheme securityScheme = new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "API Key authentication");
+        SecurityScheme securityScheme =
+                new APIKeySecurityScheme(
+                        APIKeySecurityScheme.Location.HEADER,
+                        "X-API-Key",
+                        "API Key authentication");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
 
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
-        ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
+        ClientCallContext context =
+                new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-            "SendMessage",
-            requestPayload,
-            headers,
-            agentCard,
-            context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
         assertEquals(headers, result.getHeaders()); // headers should be unchanged
@@ -458,29 +468,28 @@ public class AuthInterceptorTest {
     @Test
     void testNoAgentCardSecuritySpecified() {
         // Arrange
-        AgentCard agentCard = AgentCard.builder()
-            .name("nosecuritybot")
-            .description("A bot with no security requirements")
-            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
-            .version("1.0")
-            .capabilities(AgentCapabilities.builder().build())
-            .defaultInputModes(List.of("text"))
-            .defaultOutputModes(List.of("text"))
-            .skills(List.of())
-            .securityRequirements(null) // no security info
-            .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("nosecuritybot")
+                        .description("A bot with no security requirements")
+                        .supportedInterfaces(
+                                List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
+                        .version("1.0")
+                        .capabilities(AgentCapabilities.builder().build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .securityRequirements(null) // no security info
+                        .build();
 
         Map<String, Object> requestPayload = Map.of("test", "payload");
         Map<String, String> headers = Map.of();
-        ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
+        ClientCallContext context =
+                new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
 
-        PayloadAndHeaders result = authInterceptor.intercept(
-            "SendMessage",
-            requestPayload,
-            headers,
-            agentCard,
-            context
-        );
+        PayloadAndHeaders result =
+                authInterceptor.intercept(
+                        "SendMessage", requestPayload, headers, agentCard, context);
 
         assertEquals(requestPayload, result.getPayload());
         assertEquals(headers, result.getHeaders());
@@ -491,16 +500,20 @@ public class AuthInterceptorTest {
      */
     private AgentCard createAgentCard(String schemeName, SecurityScheme securityScheme) {
         return AgentCard.builder()
-            .name(schemeName + "bot")
-            .description("A bot that uses " + schemeName)
-            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
-            .version("1.0")
-            .capabilities(AgentCapabilities.builder().build())
-            .defaultInputModes(List.of("text"))
-            .defaultOutputModes(List.of("text"))
-            .skills(List.of())
-            .securityRequirements(List.of(SecurityRequirement.builder().scheme(schemeName, List.of()).build()))
-            .securitySchemes(Map.of(schemeName, securityScheme))
-            .build();
+                .name(schemeName + "bot")
+                .description("A bot that uses " + schemeName)
+                .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
+                .version("1.0")
+                .capabilities(AgentCapabilities.builder().build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .securityRequirements(
+                        List.of(
+                                SecurityRequirement.builder()
+                                        .scheme(schemeName, List.of())
+                                        .build()))
+                .securitySchemes(Map.of(schemeName, securityScheme))
+                .build();
     }
 }

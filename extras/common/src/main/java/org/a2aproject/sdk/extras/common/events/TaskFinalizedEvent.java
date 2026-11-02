@@ -10,7 +10,8 @@ package org.a2aproject.sdk.extras.common.events;
  */
 public class TaskFinalizedEvent {
     private final String taskId;
-    private final Object task;  // Task type from org.a2aproject.sdk.spec - using Object to avoid dependency
+    private final Object
+            task; // Task type from org.a2aproject.sdk.spec - using Object to avoid dependency
 
     public TaskFinalizedEvent(String taskId, Object task) {
         this.taskId = taskId;

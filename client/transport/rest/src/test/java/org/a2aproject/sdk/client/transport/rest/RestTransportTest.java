@@ -1,12 +1,11 @@
 package org.a2aproject.sdk.client.transport.rest;
 
-
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.CANCEL_TASK_TEST_REQUEST;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.CANCEL_TASK_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.GET_TASK_TEST_RESPONSE;
-import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASKS_TEST_RESPONSE;
+import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_TEST_REQUEST;
@@ -32,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
@@ -47,7 +45,6 @@ import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
-import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
 import org.a2aproject.sdk.spec.FileWithUri;
@@ -66,6 +63,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,26 +76,33 @@ public class RestTransportTest {
     private static final Logger LOGGER = Logger.getLogger(RestTransportTest.class.getName());
     private static final Throwable SENTINEL = new RuntimeException("not yet called");
     private ClientAndServer server;
-    private static final AgentCard CARD = AgentCard.builder()
-                .name("Hello World Agent")
-                .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new org.a2aproject.sdk.spec.AgentInterface("HTTP+JSON", "http://localhost:4001")))
-                .version("1.0.0")
-                .documentationUrl("http://example.com/docs")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
-                .defaultInputModes(Collections.singletonList("text"))
-                .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(AgentSkill.builder()
-                                .id("hello_world")
-                                .name("Returns hello world")
-                                .description("just returns hello world")
-                                .tags(Collections.singletonList("hello world"))
-                                .examples(List.of("hi", "hello world"))
-                                .build()))
-                .build();
+    private static final AgentCard CARD =
+            AgentCard.builder()
+                    .name("Hello World Agent")
+                    .description("Just a hello world agent")
+                    .supportedInterfaces(
+                            Collections.singletonList(
+                                    new org.a2aproject.sdk.spec.AgentInterface(
+                                            "HTTP+JSON", "http://localhost:4001")))
+                    .version("1.0.0")
+                    .documentationUrl("http://example.com/docs")
+                    .capabilities(
+                            AgentCapabilities.builder()
+                                    .streaming(true)
+                                    .pushNotifications(true)
+                                    .build())
+                    .defaultInputModes(Collections.singletonList("text"))
+                    .defaultOutputModes(Collections.singletonList("text"))
+                    .skills(
+                            Collections.singletonList(
+                                    AgentSkill.builder()
+                                            .id("hello_world")
+                                            .name("Returns hello world")
+                                            .description("just returns hello world")
+                                            .tags(Collections.singletonList("hello world"))
+                                            .examples(List.of("hi", "hello world"))
+                                            .build()))
+                    .build();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -116,38 +121,38 @@ public class RestTransportTest {
 
     @Test
     public void configBuilderEnablesRedirectFollowing() {
-        assertTrue(new RestTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
+        assertTrue(
+                new RestTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
     }
 
-    public RestTransportTest() {
-    }
+    public RestTransportTest() {}
 
     /**
      * Test of sendMessage method, of class JSONRestTransport.
      */
     @Test
     public void testSendMessage() throws Exception {
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("tell me a joke")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .taskId("")
-                .build();
-        this.server.when(
-                request()
-                        .withMethod("POST")
-                        .withPath("/message:send")
-                        .withBody(JsonBody.json(SEND_MESSAGE_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-        )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_TEST_RESPONSE)
-                );
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .taskId("")
+                        .build();
+        this.server
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/message:send")
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
+                .respond(response().withStatusCode(200).withBody(SEND_MESSAGE_TEST_RESPONSE));
         MessageSendParams messageSendParams = new MessageSendParams(message, null, null, "");
         ClientCallContext context = null;
-        
+
         RestTransport instance = new RestTransport(CARD);
         EventKind result = instance.sendMessage(messageSendParams, context);
         assertEquals("task", result.kind());
@@ -177,20 +182,21 @@ public class RestTransportTest {
      */
     @Test
     public void testCancelTask() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("POST")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64:cancel")
-                        .withBody(JsonBody.json(CANCEL_TASK_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-        )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(CANCEL_TASK_TEST_RESPONSE)
-                );
+        this.server
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64:cancel")
+                                .withBody(
+                                        JsonBody.json(
+                                                CANCEL_TASK_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
+                .respond(response().withStatusCode(200).withBody(CANCEL_TASK_TEST_RESPONSE));
         ClientCallContext context = null;
         RestTransport instance = new RestTransport(CARD);
-        Task task = instance.cancelTask(new CancelTaskParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), context);
+        Task task =
+                instance.cancelTask(
+                        new CancelTaskParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
         assertNull(task.status().message());
@@ -203,17 +209,13 @@ public class RestTransportTest {
      */
     @Test
     public void testGetTask() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("GET")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64")
-                        .withQueryStringParameter("historyLength", "5")
-        )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(GET_TASK_TEST_RESPONSE)
-                );
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64")
+                                .withQueryStringParameter("historyLength", "5"))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
         ClientCallContext context = null;
         TaskQueryParams request = new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64", 5);
         RestTransport instance = new RestTransport(CARD);
@@ -230,7 +232,9 @@ public class RestTransportTest {
         assertNull(artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
         assertTrue(artifact.parts().get(0) instanceof org.a2aproject.sdk.spec.TextPart);
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart) artifact.parts().get(0)).text());
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
         assertEquals("message", history.kind());
@@ -256,42 +260,44 @@ public class RestTransportTest {
      */
     @Test
     public void testSendMessageStreaming() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("POST")
-                        .withPath("/message:stream")
-                        .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-        )
+        this.server
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/message:stream")
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_STREAMING_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("tell me some jokes")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(true)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("tell me some jokes")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(true)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
-        Consumer<StreamingEventKind> eventHandler = event -> {
-            receivedEvent.set(event);
-            latch.countDown();
-        };
-        Consumer<Throwable> errorHandler = error -> {
-        };
+        Consumer<StreamingEventKind> eventHandler =
+                event -> {
+                    receivedEvent.set(event);
+                    latch.countDown();
+                };
+        Consumer<Throwable> errorHandler = error -> {};
         client.sendMessageStreaming(params, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
@@ -308,26 +314,31 @@ public class RestTransportTest {
     @Test
     public void testCreateTaskPushNotificationConfiguration() throws Exception {
         LOGGER.info("Testing CreateTaskPushNotificationConfiguration");
-        this.server.when(
-                request()
-                        .withMethod("POST")
-                        .withPath("/tenant/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
-                        .withBody(JsonBody.json(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-        )
+        this.server
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath(
+                                        "/tenant/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+                                .withBody(
+                                        JsonBody.json(
+                                                SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
-                );
+                                .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
         RestTransport client = new RestTransport(CARD);
-        TaskPushNotificationConfig pushedConfig = TaskPushNotificationConfig.builder()
-                .id("default-config-id")
-                .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .url("https://example.com/callback")
-                .authentication(new AuthenticationInfo("jwt", null))
-                .tenant("tenant")
-                .build();
-        TaskPushNotificationConfig taskPushNotificationConfig = client.createTaskPushNotificationConfiguration(pushedConfig, null);
+        TaskPushNotificationConfig pushedConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("default-config-id")
+                        .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .url("https://example.com/callback")
+                        .authentication(new AuthenticationInfo("jwt", null))
+                        .tenant("tenant")
+                        .build();
+        TaskPushNotificationConfig taskPushNotificationConfig =
+                client.createTaskPushNotificationConfiguration(pushedConfig, null);
         assertNotNull(taskPushNotificationConfig);
         assertEquals("https://example.com/callback", taskPushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = taskPushNotificationConfig.authentication();
@@ -339,20 +350,23 @@ public class RestTransportTest {
      */
     @Test
     public void testGetTaskPushNotificationConfiguration() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("GET")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
-        )
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath(
+                                        "/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10"))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
-                );
+                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
-                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10"), null);
+        TaskPushNotificationConfig taskPushNotificationConfig =
+                client.getTaskPushNotificationConfiguration(
+                        new GetTaskPushNotificationConfigParams(
+                                "de38c76d-d54c-436c-8b9f-4c2703648d64", "10"),
+                        null);
         assertNotNull(taskPushNotificationConfig);
         assertEquals("https://example.com/callback", taskPushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = taskPushNotificationConfig.authentication();
@@ -368,20 +382,26 @@ public class RestTransportTest {
     @Test
     public void testGetTaskPushNotificationConfigurationWithEmptyId() throws Exception {
         assertGetTaskPushNotificationConfigurationWithDefaultId(
-                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", ""));
+                new GetTaskPushNotificationConfigParams(
+                        "de38c76d-d54c-436c-8b9f-4c2703648d64", ""));
     }
 
     private void assertGetTaskPushNotificationConfigurationWithDefaultId(
             GetTaskPushNotificationConfigParams params) throws Exception {
-        this.server.when(request()
-                        .withMethod("GET")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath(
+                                        "/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/"))
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(params, null);
+        TaskPushNotificationConfig config =
+                client.getTaskPushNotificationConfiguration(params, null);
 
         assertEquals("https://example.com/callback", config.url());
     }
@@ -391,20 +411,23 @@ public class RestTransportTest {
      */
     @Test
     public void testListTaskPushNotificationConfigurations() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("GET")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
-        )
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath(
+                                        "/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs"))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
-                );
+                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        ListTaskPushNotificationConfigsResult result = client.listTaskPushNotificationConfigurations(
-                new ListTaskPushNotificationConfigsParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
+        ListTaskPushNotificationConfigsResult result =
+                client.listTaskPushNotificationConfigurations(
+                        new ListTaskPushNotificationConfigsParams(
+                                "de38c76d-d54c-436c-8b9f-4c2703648d64"),
+                        null);
         assertEquals(2, result.configs().size());
         TaskPushNotificationConfig config0 = result.configs().get(0);
         assertNotNull(config0);
@@ -427,18 +450,19 @@ public class RestTransportTest {
     @Test
     public void testDeleteTaskPushNotificationConfigurations() throws Exception {
         LOGGER.info("Testing deleteTaskPushNotificationConfigurations");
-        this.server.when(
-                request()
-                        .withMethod("DELETE")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
-        )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                );
+        this.server
+                .when(
+                        request()
+                                .withMethod("DELETE")
+                                .withPath(
+                                        "/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10"))
+                .respond(response().withStatusCode(200));
         ClientCallContext context = null;
         RestTransport instance = new RestTransport(CARD);
-        instance.deleteTaskPushNotificationConfigurations(new DeleteTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10"), context);
+        instance.deleteTaskPushNotificationConfigurations(
+                new DeleteTaskPushNotificationConfigParams(
+                        "de38c76d-d54c-436c-8b9f-4c2703648d64", "10"),
+                context);
     }
 
     /**
@@ -448,34 +472,32 @@ public class RestTransportTest {
     public void testSubscribe() throws Exception {
         LOGGER.info("Testing subscribeToTask");
 
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/tasks/task-1234:subscribe")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/tasks/task-1234:subscribe"))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
-                );
+                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
         TaskIdParams taskIdParams = new TaskIdParams("task-1234");
 
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
-        Consumer<StreamingEventKind> eventHandler = event -> {
-            receivedEvent.set(event);
-            latch.countDown();
-        };
+        Consumer<StreamingEventKind> eventHandler =
+                event -> {
+                    receivedEvent.set(event);
+                    latch.countDown();
+                };
         Consumer<Throwable> errorHandler = error -> {};
         client.subscribeToTask(taskIdParams, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);
 
-        StreamingEventKind eventKind = receivedEvent.get();;
+        StreamingEventKind eventKind = receivedEvent.get();
+        ;
         assertNotNull(eventKind);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
@@ -489,7 +511,9 @@ public class RestTransportTest {
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof org.a2aproject.sdk.spec.TextPart);
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart) part).text());
     }
 
     /**
@@ -497,47 +521,54 @@ public class RestTransportTest {
      */
     @Test
     public void testSendMessageStreamingCompletion() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("POST")
-                        .withPath("/message:stream")
-                        .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-        )
+        this.server
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/message:stream")
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_STREAMING_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("tell me some jokes")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(true)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("tell me some jokes")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(true)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
         CountDownLatch eventLatch = new CountDownLatch(1);
         CountDownLatch completionLatch = new CountDownLatch(1);
         AtomicReference<Throwable> completionValue = new AtomicReference<>(SENTINEL);
         Consumer<StreamingEventKind> eventHandler = event -> eventLatch.countDown();
-        Consumer<Throwable> errorHandler = error -> {
-            completionValue.set(error);
-            completionLatch.countDown();
-        };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    completionValue.set(error);
+                    completionLatch.countDown();
+                };
         client.sendMessageStreaming(params, eventHandler, errorHandler, null);
 
         assertTrue(eventLatch.await(10, TimeUnit.SECONDS), "Should receive streaming event");
-        assertTrue(completionLatch.await(10, TimeUnit.SECONDS), "Error handler should be called on stream completion");
-        assertNull(completionValue.get(), "Error handler should be called with null for successful completion");
+        assertTrue(
+                completionLatch.await(10, TimeUnit.SECONDS),
+                "Error handler should be called on stream completion");
+        assertNull(
+                completionValue.get(),
+                "Error handler should be called with null for successful completion");
     }
 
     /**
@@ -545,17 +576,13 @@ public class RestTransportTest {
      */
     @Test
     public void testSubscribeToTaskCompletion() throws Exception {
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/tasks/task-1234:subscribe")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/tasks/task-1234:subscribe"))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
-                );
+                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
         TaskIdParams taskIdParams = new TaskIdParams("task-1234");
@@ -564,15 +591,20 @@ public class RestTransportTest {
         CountDownLatch completionLatch = new CountDownLatch(1);
         AtomicReference<Throwable> completionValue = new AtomicReference<>(SENTINEL);
         Consumer<StreamingEventKind> eventHandler = event -> eventLatch.countDown();
-        Consumer<Throwable> errorHandler = error -> {
-            completionValue.set(error);
-            completionLatch.countDown();
-        };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    completionValue.set(error);
+                    completionLatch.countDown();
+                };
         client.subscribeToTask(taskIdParams, eventHandler, errorHandler, null);
 
         assertTrue(eventLatch.await(10, TimeUnit.SECONDS), "Should receive streaming event");
-        assertTrue(completionLatch.await(10, TimeUnit.SECONDS), "Error handler should be called on stream completion");
-        assertNull(completionValue.get(), "Error handler should be called with null for successful completion");
+        assertTrue(
+                completionLatch.await(10, TimeUnit.SECONDS),
+                "Error handler should be called on stream completion");
+        assertNull(
+                completionValue.get(),
+                "Error handler should be called with null for successful completion");
     }
 
     /**
@@ -583,32 +615,30 @@ public class RestTransportTest {
         LOGGER.info("Testing ExtensionSupportRequiredError unmarshalling");
 
         // Mock server returns HTTP 400 with ExtensionSupportRequiredError
-        String errorResponseBody = """
+        String errorResponseBody =
+                """
                 {
                     "error": "org.a2aproject.sdk.spec.ExtensionSupportRequiredError",
                     "message": "Extension required: https://example.com/test-extension"
                 }
                 """;
 
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/message:send")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/message:send"))
                 .respond(
                         response()
                                 .withStatusCode(400)
                                 .withHeader("Content-Type", "application/json")
-                                .withBody(errorResponseBody)
-                );
+                                .withBody(errorResponseBody));
 
         RestTransport client = new RestTransport(CARD);
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("test message")))
-                .contextId("context-test")
-                .messageId("message-test")
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("test message")))
+                        .contextId("context-test")
+                        .messageId("message-test")
+                        .build();
         MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Should throw A2AClientException with ExtensionSupportRequiredError as cause
@@ -618,7 +648,8 @@ public class RestTransportTest {
         } catch (A2AClientException e) {
             // Verify the cause is ExtensionSupportRequiredError
             assertInstanceOf(ExtensionSupportRequiredError.class, e.getCause());
-            ExtensionSupportRequiredError extensionError = (ExtensionSupportRequiredError) e.getCause();
+            ExtensionSupportRequiredError extensionError =
+                    (ExtensionSupportRequiredError) e.getCause();
             assertTrue(extensionError.getMessage().contains("https://example.com/test-extension"));
         }
     }
@@ -631,32 +662,30 @@ public class RestTransportTest {
         LOGGER.info("Testing VersionNotSupportedError unmarshalling");
 
         // Mock server returns HTTP 501 with VersionNotSupportedError
-        String errorResponseBody = """
+        String errorResponseBody =
+                """
                 {
                     "error": "org.a2aproject.sdk.spec.VersionNotSupportedError",
                     "message": "Protocol version 2.0 is not supported. This agent supports version 1.0"
                 }
                 """;
 
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/message:send")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/message:send"))
                 .respond(
                         response()
                                 .withStatusCode(501)
                                 .withHeader("Content-Type", "application/json")
-                                .withBody(errorResponseBody)
-                );
+                                .withBody(errorResponseBody));
 
         RestTransport client = new RestTransport(CARD);
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("test message")))
-                .contextId("context-test")
-                .messageId("message-test")
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("test message")))
+                        .contextId("context-test")
+                        .messageId("message-test")
+                        .build();
         MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Should throw A2AClientException with VersionNotSupportedError as cause
@@ -680,48 +709,47 @@ public class RestTransportTest {
         LOGGER.info("Testing VersionNotSupportedError unmarshalling in streaming");
 
         // Mock server returns HTTP 200 with error event in SSE stream
-        String streamResponseBody = """
+        String streamResponseBody =
+                """
                 data: {"kind":"error","error":"org.a2aproject.sdk.spec.VersionNotSupportedError","message":"Protocol version 2.0 is not supported. This agent supports version 1.0"}
 
                 """;
 
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/message:stream")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/message:stream"))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(streamResponseBody)
-                );
+                                .withBody(streamResponseBody));
 
         RestTransport client = new RestTransport(CARD);
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("test message")))
-                .contextId("context-test")
-                .messageId("message-test")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(true)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("test message")))
+                        .contextId("context-test")
+                        .messageId("message-test")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(true)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
-        Consumer<StreamingEventKind> eventHandler = event -> {
-            // Should not receive events, only error
-        };
-        Consumer<Throwable> errorHandler = error -> {
-            receivedError.set(error);
-            latch.countDown();
-        };
+        Consumer<StreamingEventKind> eventHandler =
+                event -> {
+                    // Should not receive events, only error
+                };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    receivedError.set(error);
+                    latch.countDown();
+                };
         client.sendMessageStreaming(params, eventHandler, errorHandler, null);
 
         boolean errorReceived = latch.await(10, TimeUnit.SECONDS);
@@ -730,7 +758,8 @@ public class RestTransportTest {
         assertInstanceOf(A2AClientException.class, receivedError.get());
         A2AClientException clientException = (A2AClientException) receivedError.get();
         assertInstanceOf(VersionNotSupportedError.class, clientException.getCause());
-        VersionNotSupportedError versionError = (VersionNotSupportedError) clientException.getCause();
+        VersionNotSupportedError versionError =
+                (VersionNotSupportedError) clientException.getCause();
         assertTrue(versionError.getMessage().contains("2.0"));
         assertTrue(versionError.getMessage().contains("1.0"));
     }
@@ -744,22 +773,27 @@ public class RestTransportTest {
         Instant cutoff = Instant.parse("2026-10-01T00:00:00Z");
         AtomicReference<Object> capturedPayload = new AtomicReference<>();
 
-        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
-            @Override
-            public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard,
-                    ClientCallContext clientCallContext) {
-                capturedPayload.set(payload);
-                return new PayloadAndHeaders(payload, headers);
-            }
-        };
+        ClientCallInterceptor capturingInterceptor =
+                new ClientCallInterceptor() {
+                    @Override
+                    public PayloadAndHeaders intercept(
+                            String methodName,
+                            Object payload,
+                            java.util.Map<String, String> headers,
+                            AgentCard agentCard,
+                            ClientCallContext clientCallContext) {
+                        capturedPayload.set(payload);
+                        return new PayloadAndHeaders(payload, headers);
+                    }
+                };
 
-        this.server.when(
-                request().withMethod("GET").withPath("/tasks")
-        ).respond(response().withStatusCode(200).withBody(LIST_TASKS_TEST_RESPONSE));
+        this.server
+                .when(request().withMethod("GET").withPath("/tasks"))
+                .respond(response().withStatusCode(200).withBody(LIST_TASKS_TEST_RESPONSE));
 
         AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
-        RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+        RestTransport client =
+                new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
 
         ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(cutoff).build();
         client.listTasks(params, null);
@@ -777,37 +811,52 @@ public class RestTransportTest {
      * pageSize and pageToken so interceptors see the complete request.
      */
     @Test
-    public void testListTaskPushNotificationConfigurationsProtoBuilderIncludesPagination() throws Exception {
+    public void testListTaskPushNotificationConfigurationsProtoBuilderIncludesPagination()
+            throws Exception {
         AtomicReference<Object> capturedPayload = new AtomicReference<>();
 
-        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
-            @Override
-            public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard,
-                    ClientCallContext clientCallContext) {
-                capturedPayload.set(payload);
-                return new PayloadAndHeaders(payload, headers);
-            }
-        };
+        ClientCallInterceptor capturingInterceptor =
+                new ClientCallInterceptor() {
+                    @Override
+                    public PayloadAndHeaders intercept(
+                            String methodName,
+                            Object payload,
+                            java.util.Map<String, String> headers,
+                            AgentCard agentCard,
+                            ClientCallContext clientCallContext) {
+                        capturedPayload.set(payload);
+                        return new PayloadAndHeaders(payload, headers);
+                    }
+                };
 
-        this.server.when(
-                request().withMethod("GET")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
-        ).respond(response().withStatusCode(200).withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath(
+                                        "/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs"))
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
-        RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+        RestTransport client =
+                new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
 
-        ListTaskPushNotificationConfigsParams params = ListTaskPushNotificationConfigsParams.builder()
-                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .pageSize(10)
-                .pageToken("next-page-token")
-                .build();
+        ListTaskPushNotificationConfigsParams params =
+                ListTaskPushNotificationConfigsParams.builder()
+                        .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .pageSize(10)
+                        .pageToken("next-page-token")
+                        .build();
         client.listTaskPushNotificationConfigurations(params, null);
 
         assertNotNull(capturedPayload.get());
         org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest proto =
-                ((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder) capturedPayload.get()).build();
+                ((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder)
+                                capturedPayload.get())
+                        .build();
         assertEquals(10, proto.getPageSize(), "proto builder must set pageSize");
         assertEquals("next-page-token", proto.getPageToken(), "proto builder must set pageToken");
     }
@@ -820,22 +869,17 @@ public class RestTransportTest {
     @Test
     public void testListTasksIncludesStatusTimestampAfterQueryParam() throws Exception {
         Instant cutoff = Instant.parse("2026-10-01T00:00:00Z");
-        this.server.when(
-                request()
-                        .withMethod("GET")
-                        .withPath("/tasks")
-                        .withQueryStringParameter("statusTimestampAfter", "2026-10-01T00:00:00Z")
-        )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(LIST_TASKS_TEST_RESPONSE)
-                );
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/tasks")
+                                .withQueryStringParameter(
+                                        "statusTimestampAfter", "2026-10-01T00:00:00Z"))
+                .respond(response().withStatusCode(200).withBody(LIST_TASKS_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        ListTasksParams params = ListTasksParams.builder()
-                .statusTimestampAfter(cutoff)
-                .build();
+        ListTasksParams params = ListTasksParams.builder().statusTimestampAfter(cutoff).build();
 
         var result = client.listTasks(params, null);
         assertEquals(1, result.tasks().size());
@@ -848,28 +892,31 @@ public class RestTransportTest {
      * without the fix the mock will not match and the client throws an exception.
      */
     @Test
-    public void testListTaskPushNotificationConfigurationsIncludesPaginationQueryParams() throws Exception {
-        this.server.when(
-                request()
-                        .withMethod("GET")
-                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
-                        .withQueryStringParameter("pageSize", "10")
-                        .withQueryStringParameter("pageToken", "next-page-token")
-        )
+    public void testListTaskPushNotificationConfigurationsIncludesPaginationQueryParams()
+            throws Exception {
+        this.server
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath(
+                                        "/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+                                .withQueryStringParameter("pageSize", "10")
+                                .withQueryStringParameter("pageToken", "next-page-token"))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
-                );
+                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         RestTransport client = new RestTransport(CARD);
-        ListTaskPushNotificationConfigsParams params = ListTaskPushNotificationConfigsParams.builder()
-                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                .pageSize(10)
-                .pageToken("next-page-token")
-                .build();
+        ListTaskPushNotificationConfigsParams params =
+                ListTaskPushNotificationConfigsParams.builder()
+                        .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .pageSize(10)
+                        .pageToken("next-page-token")
+                        .build();
 
-        ListTaskPushNotificationConfigsResult result = client.listTaskPushNotificationConfigurations(params, null);
+        ListTaskPushNotificationConfigsResult result =
+                client.listTaskPushNotificationConfigurations(params, null);
         assertEquals(2, result.configs().size());
     }
 }

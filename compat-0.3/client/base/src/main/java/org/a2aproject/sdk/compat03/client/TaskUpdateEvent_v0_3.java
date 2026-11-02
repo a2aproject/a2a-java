@@ -33,5 +33,4 @@ public final class TaskUpdateEvent_v0_3 implements ClientEvent_v0_3 {
     public UpdateEvent_v0_3 getUpdateEvent() {
         return updateEvent;
     }
-
 }

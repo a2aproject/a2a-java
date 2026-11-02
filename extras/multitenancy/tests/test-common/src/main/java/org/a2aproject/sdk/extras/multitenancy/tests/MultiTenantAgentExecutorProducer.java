@@ -1,12 +1,10 @@
 package org.a2aproject.sdk.extras.multitenancy.tests;
 
-import java.util.List;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
-import org.a2aproject.sdk.server.multitenancy.Tenant;
+import java.util.List;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.a2aproject.sdk.spec.TextPart;
 
 /**

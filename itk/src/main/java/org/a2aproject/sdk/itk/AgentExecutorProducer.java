@@ -1,5 +1,10 @@
 package org.a2aproject.sdk.itk;
 
+import io.grpc.ManagedChannelBuilder;
+import itk.InstructionOuterClass.CallAgent;
+import itk.InstructionOuterClass.Instruction;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -9,10 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
@@ -27,8 +28,8 @@ import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder
 import org.a2aproject.sdk.client.transport.rest.RestTransport;
 import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
 import org.a2aproject.sdk.compat03.A2A_v0_3;
-import org.a2aproject.sdk.compat03.client.Client_v0_3;
 import org.a2aproject.sdk.compat03.client.ClientEvent_v0_3;
+import org.a2aproject.sdk.compat03.client.Client_v0_3;
 import org.a2aproject.sdk.compat03.client.MessageEvent_v0_3;
 import org.a2aproject.sdk.compat03.client.TaskEvent_v0_3;
 import org.a2aproject.sdk.compat03.client.TaskUpdateEvent_v0_3;
@@ -60,11 +61,6 @@ import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.grpc.ManagedChannelBuilder;
-
-import itk.InstructionOuterClass.CallAgent;
-import itk.InstructionOuterClass.Instruction;
 
 @ApplicationScoped
 public class AgentExecutorProducer {
@@ -115,12 +111,15 @@ public class AgentExecutorProducer {
                 if (shouldHold(instruction)) {
                     LOGGER.info("Holding task {} as requested", emitter.getTaskId());
 
-                    Message holdMsg = emitter.newAgentMessage(
-                            List.of(new TextPart(response + "\ntask-finished")), null);
+                    Message holdMsg =
+                            emitter.newAgentMessage(
+                                    List.of(new TextPart(response + "\ntask-finished")), null);
                     emitter.updateStatus(TaskState.TASK_STATE_WORKING, holdMsg);
 
                     for (int i = 0; i < HOLD_ITERATIONS; i++) {
-                        LOGGER.info("Emitting periodic status update for held task {}", emitter.getTaskId());
+                        LOGGER.info(
+                                "Emitting periodic status update for held task {}",
+                                emitter.getTaskId());
                         try {
                             Thread.sleep(HOLD_INTERVAL_MS);
                         } catch (InterruptedException e) {
@@ -130,12 +129,13 @@ public class AgentExecutorProducer {
                         }
                     }
                     LOGGER.info("Held task {} timed out, auto-completing", emitter.getTaskId());
-                    Message completeMsg = emitter.newAgentMessage(
-                            List.of(new TextPart(response + "\ntask-finished")), null);
+                    Message completeMsg =
+                            emitter.newAgentMessage(
+                                    List.of(new TextPart(response + "\ntask-finished")), null);
                     emitter.complete(completeMsg);
                 } else {
-                    Message completeMsg = emitter.newAgentMessage(
-                            List.of(new TextPart(response)), null);
+                    Message completeMsg =
+                            emitter.newAgentMessage(List.of(new TextPart(response)), null);
                     emitter.complete(completeMsg);
                 }
             } catch (TimeoutException e) {
@@ -143,15 +143,21 @@ public class AgentExecutorProducer {
                 emitter.fail();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOGGER.error("Task {} interrupted while calling remote agent", emitter.getTaskId(), e);
+                LOGGER.error(
+                        "Task {} interrupted while calling remote agent", emitter.getTaskId(), e);
                 emitter.fail();
             } catch (ExecutionException e) {
-                LOGGER.error("Remote agent call failed for task {}: {}",
-                        emitter.getTaskId(), e.getCause().getMessage(), e.getCause());
+                LOGGER.error(
+                        "Remote agent call failed for task {}: {}",
+                        emitter.getTaskId(),
+                        e.getCause().getMessage(),
+                        e.getCause());
                 emitter.fail();
             } catch (Exception e) {
-                LOGGER.error("Unexpected error handling instruction for task {}",
-                        emitter.getTaskId(), e);
+                LOGGER.error(
+                        "Unexpected error handling instruction for task {}",
+                        emitter.getTaskId(),
+                        e);
                 emitter.fail();
             }
         }
@@ -220,18 +226,22 @@ public class AgentExecutorProducer {
             AgentCard remoteCard = A2A.getAgentCard(call.getAgentCardUri());
 
             if (remoteCard.supportedInterfaces().isEmpty()) {
-                LOGGER.info("Agent {} has no supportedInterfaces, falling back to v0.3 client", call.getAgentCardUri());
+                LOGGER.info(
+                        "Agent {} has no supportedInterfaces, falling back to v0.3 client",
+                        call.getAgentCardUri());
                 return handleCallAgentV03(call);
             }
 
-            ClientConfig.Builder configBuilder = new ClientConfig.Builder()
-                    .setStreaming(call.getStreaming() || isGrpc(call.getTransport()))
-                    .setUseClientPreference(true);
+            ClientConfig.Builder configBuilder =
+                    new ClientConfig.Builder()
+                            .setStreaming(call.getStreaming() || isGrpc(call.getTransport()))
+                            .setUseClientPreference(true);
 
             if (call.hasPushNotification()) {
                 String url = call.getPushNotification().getUrl();
                 if (url.isEmpty()) {
-                    throw new IllegalArgumentException("URL not specified in push_notification behavior");
+                    throw new IllegalArgumentException(
+                            "URL not specified in push_notification behavior");
                 }
                 if (!url.startsWith("http://") && !url.startsWith("https://")) {
                     url = "http://" + url;
@@ -244,45 +254,55 @@ public class AgentExecutorProducer {
                                 .build());
             }
 
-            var clientBuilder = Client.builder(remoteCard)
-                    .clientConfig(configBuilder.build());
+            var clientBuilder = Client.builder(remoteCard).clientConfig(configBuilder.build());
 
             addTransport(clientBuilder, call.getTransport());
 
             byte[] instBytes = call.getInstruction().toByteArray();
-            Message wrappedMsg = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(List.of(new FilePart(
-                            new FileWithBytes("application/x-protobuf", "instruction.bin", instBytes))))
-                    .build();
+            Message wrappedMsg =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(
+                                    List.of(
+                                            new FilePart(
+                                                    new FileWithBytes(
+                                                            "application/x-protobuf",
+                                                            "instruction.bin",
+                                                            instBytes))))
+                            .build();
 
             CompletableFuture<List<String>> resultFuture = new CompletableFuture<>();
             List<String> responses = Collections.synchronizedList(new ArrayList<>());
 
-            clientBuilder.addConsumer((event, card) -> {
-                List<String> texts = extractTextFromEvent(event);
-                if (call.hasResubscribe()) {
-                    String finished = findTaskFinishedText(texts);
-                    if (finished != null) {
-                        responses.add(finished);
-                        if (!resultFuture.isDone()) {
+            clientBuilder.addConsumer(
+                    (event, card) -> {
+                        List<String> texts = extractTextFromEvent(event);
+                        if (call.hasResubscribe()) {
+                            String finished = findTaskFinishedText(texts);
+                            if (finished != null) {
+                                responses.add(finished);
+                                if (!resultFuture.isDone()) {
+                                    resultFuture.complete(responses);
+                                }
+                                return;
+                            }
+                        }
+                        responses.addAll(texts);
+                        if (!resultFuture.isDone() && isTerminalEvent(event)) {
                             resultFuture.complete(responses);
                         }
-                        return;
-                    }
-                }
-                responses.addAll(texts);
-                if (!resultFuture.isDone() && isTerminalEvent(event)) {
-                    resultFuture.complete(responses);
-                }
-            });
-            clientBuilder.streamingErrorHandler(error -> {
-                LOGGER.error("Streaming error calling {} via {}",
-                        call.getAgentCardUri(), call.getTransport(), error);
-                if (!resultFuture.isDone()) {
-                    resultFuture.completeExceptionally(error);
-                }
-            });
+                    });
+            clientBuilder.streamingErrorHandler(
+                    error -> {
+                        LOGGER.error(
+                                "Streaming error calling {} via {}",
+                                call.getAgentCardUri(),
+                                call.getTransport(),
+                                error);
+                        if (!resultFuture.isDone()) {
+                            resultFuture.completeExceptionally(error);
+                        }
+                    });
 
             try (Client client = clientBuilder.build()) {
                 client.sendMessage(wrappedMsg, (TaskPushNotificationConfig) null, null, null);
@@ -294,66 +314,79 @@ public class AgentExecutorProducer {
         private List<String> handleCallAgentV03(CallAgent call) throws Exception {
             AgentCard_v0_3 v03Card = A2A_v0_3.getAgentCard(call.getAgentCardUri());
 
-            ClientConfig_v0_3.Builder configBuilder = new ClientConfig_v0_3.Builder()
-                    .setStreaming(call.getStreaming() || isGrpc(call.getTransport()))
-                    .setUseClientPreference(true);
+            ClientConfig_v0_3.Builder configBuilder =
+                    new ClientConfig_v0_3.Builder()
+                            .setStreaming(call.getStreaming() || isGrpc(call.getTransport()))
+                            .setUseClientPreference(true);
 
             PushNotificationConfig_v0_3 pushConfig = null;
             if (call.hasPushNotification()) {
                 String url = call.getPushNotification().getUrl();
                 if (url.isEmpty()) {
-                    throw new IllegalArgumentException("URL not specified in push_notification behavior");
+                    throw new IllegalArgumentException(
+                            "URL not specified in push_notification behavior");
                 }
                 if (!url.startsWith("http://") && !url.startsWith("https://")) {
                     url = "http://" + url;
                 }
-                pushConfig = new PushNotificationConfig_v0_3.Builder()
-                        .id(UUID.randomUUID().toString())
-                        .url(url + "/notifications")
-                        .token("itk-token")
-                        .build();
+                pushConfig =
+                        new PushNotificationConfig_v0_3.Builder()
+                                .id(UUID.randomUUID().toString())
+                                .url(url + "/notifications")
+                                .token("itk-token")
+                                .build();
                 configBuilder.setPushNotificationConfig(pushConfig);
             }
 
-            var clientBuilder = Client_v0_3.builder(v03Card)
-                    .clientConfig(configBuilder.build());
+            var clientBuilder = Client_v0_3.builder(v03Card).clientConfig(configBuilder.build());
 
             addTransportV03(clientBuilder, call.getTransport());
 
             byte[] instBytes = call.getInstruction().toByteArray();
             String instBase64 = Base64.getEncoder().encodeToString(instBytes);
-            Message_v0_3 wrappedMsg = new Message_v0_3.Builder()
-                    .role(Message_v0_3.Role.USER)
-                    .parts(List.of(new FilePart_v0_3(
-                            new FileWithBytes_v0_3("application/x-protobuf", "instruction.bin", instBase64))))
-                    .build();
+            Message_v0_3 wrappedMsg =
+                    new Message_v0_3.Builder()
+                            .role(Message_v0_3.Role.USER)
+                            .parts(
+                                    List.of(
+                                            new FilePart_v0_3(
+                                                    new FileWithBytes_v0_3(
+                                                            "application/x-protobuf",
+                                                            "instruction.bin",
+                                                            instBase64))))
+                            .build();
 
             CompletableFuture<List<String>> resultFuture = new CompletableFuture<>();
             List<String> responses = Collections.synchronizedList(new ArrayList<>());
 
-            clientBuilder.addConsumer((event, card) -> {
-                List<String> texts = extractTextFromEventV03(event);
-                if (call.hasResubscribe()) {
-                    String finished = findTaskFinishedText(texts);
-                    if (finished != null) {
-                        responses.add(finished);
-                        if (!resultFuture.isDone()) {
+            clientBuilder.addConsumer(
+                    (event, card) -> {
+                        List<String> texts = extractTextFromEventV03(event);
+                        if (call.hasResubscribe()) {
+                            String finished = findTaskFinishedText(texts);
+                            if (finished != null) {
+                                responses.add(finished);
+                                if (!resultFuture.isDone()) {
+                                    resultFuture.complete(responses);
+                                }
+                                return;
+                            }
+                        }
+                        responses.addAll(texts);
+                        if (!resultFuture.isDone() && isTerminalEventV03(event)) {
                             resultFuture.complete(responses);
                         }
-                        return;
-                    }
-                }
-                responses.addAll(texts);
-                if (!resultFuture.isDone() && isTerminalEventV03(event)) {
-                    resultFuture.complete(responses);
-                }
-            });
-            clientBuilder.streamingErrorHandler(error -> {
-                LOGGER.error("Streaming error calling v0.3 agent {}", call.getAgentCardUri(), error);
-                if (!resultFuture.isDone()) {
-                    resultFuture.completeExceptionally(error);
-                }
-            });
+                    });
+            clientBuilder.streamingErrorHandler(
+                    error -> {
+                        LOGGER.error(
+                                "Streaming error calling v0.3 agent {}",
+                                call.getAgentCardUri(),
+                                error);
+                        if (!resultFuture.isDone()) {
+                            resultFuture.completeExceptionally(error);
+                        }
+                    });
 
             Client_v0_3 client = clientBuilder.build();
             try {
@@ -383,11 +416,15 @@ public class AgentExecutorProducer {
             if (event instanceof MessageEvent me) {
                 message = me.getMessage();
             } else if (event instanceof TaskEvent te) {
-                if (te.getTask() != null && te.getTask().status() != null && te.getTask().status().message() != null) {
+                if (te.getTask() != null
+                        && te.getTask().status() != null
+                        && te.getTask().status().message() != null) {
                     message = te.getTask().status().message();
                 }
             } else if (event instanceof TaskUpdateEvent tue) {
-                if (tue.getTask() != null && tue.getTask().status() != null && tue.getTask().status().message() != null) {
+                if (tue.getTask() != null
+                        && tue.getTask().status() != null
+                        && tue.getTask().status().message() != null) {
                     message = tue.getTask().status().message();
                 }
             }
@@ -423,10 +460,14 @@ public class AgentExecutorProducer {
                 return true;
             }
             if (event instanceof TaskEvent te) {
-                return te.getTask() != null && te.getTask().status() != null && te.getTask().status().state().isFinal();
+                return te.getTask() != null
+                        && te.getTask().status() != null
+                        && te.getTask().status().state().isFinal();
             }
             if (event instanceof TaskUpdateEvent tue) {
-                return tue.getTask() != null && tue.getTask().status() != null && tue.getTask().status().state().isFinal();
+                return tue.getTask() != null
+                        && tue.getTask().status() != null
+                        && tue.getTask().status().state().isFinal();
             }
             return false;
         }
@@ -439,7 +480,9 @@ public class AgentExecutorProducer {
             List<String> texts = new ArrayList<>();
             if (message != null && message.parts() != null) {
                 for (Part_v0_3<?> part : message.parts()) {
-                    if (part instanceof TextPart_v0_3 tp && tp.text() != null && !tp.text().isEmpty()) {
+                    if (part instanceof TextPart_v0_3 tp
+                            && tp.text() != null
+                            && !tp.text().isEmpty()) {
                         texts.add(tp.text());
                     }
                 }
@@ -453,11 +496,15 @@ public class AgentExecutorProducer {
             if (event instanceof MessageEvent_v0_3 me) {
                 message = me.getMessage();
             } else if (event instanceof TaskEvent_v0_3 te) {
-                if (te.getTask() != null && te.getTask().status() != null && te.getTask().status().message() != null) {
+                if (te.getTask() != null
+                        && te.getTask().status() != null
+                        && te.getTask().status().message() != null) {
                     message = te.getTask().status().message();
                 }
             } else if (event instanceof TaskUpdateEvent_v0_3 tue) {
-                if (tue.getTask() != null && tue.getTask().status() != null && tue.getTask().status().message() != null) {
+                if (tue.getTask() != null
+                        && tue.getTask().status() != null
+                        && tue.getTask().status().message() != null) {
                     message = tue.getTask().status().message();
                 }
             }
@@ -470,41 +517,60 @@ public class AgentExecutorProducer {
                 return true;
             }
             if (event instanceof TaskEvent_v0_3 te) {
-                return te.getTask() != null && te.getTask().status() != null && te.getTask().status().state().isFinal();
+                return te.getTask() != null
+                        && te.getTask().status() != null
+                        && te.getTask().status().state().isFinal();
             }
             if (event instanceof TaskUpdateEvent_v0_3 tue) {
-                return tue.getTask() != null && tue.getTask().status() != null && tue.getTask().status().state().isFinal();
+                return tue.getTask() != null
+                        && tue.getTask().status() != null
+                        && tue.getTask().status().state().isFinal();
             }
             return false;
         }
 
         @SuppressWarnings("unchecked")
-        private void addTransport(org.a2aproject.sdk.client.ClientBuilder builder, String transport) {
+        private void addTransport(
+                org.a2aproject.sdk.client.ClientBuilder builder, String transport) {
             switch (transport.toUpperCase()) {
-                case "GRPC" -> builder.withTransport(GrpcTransport.class,
-                        new GrpcTransportConfigBuilder()
-                                .channelFactory(url -> ManagedChannelBuilder.forTarget(url)
-                                        .usePlaintext()
-                                        .build()));
-                case "REST", "HTTP_JSON", "HTTP+JSON" -> builder.withTransport(
-                        RestTransport.class, new RestTransportConfigBuilder());
-                default -> builder.withTransport(JSONRPCTransport.class,
-                        new JSONRPCTransportConfigBuilder());
+                case "GRPC" ->
+                        builder.withTransport(
+                                GrpcTransport.class,
+                                new GrpcTransportConfigBuilder()
+                                        .channelFactory(
+                                                url ->
+                                                        ManagedChannelBuilder.forTarget(url)
+                                                                .usePlaintext()
+                                                                .build()));
+                case "REST", "HTTP_JSON", "HTTP+JSON" ->
+                        builder.withTransport(
+                                RestTransport.class, new RestTransportConfigBuilder());
+                default ->
+                        builder.withTransport(
+                                JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
             }
         }
 
         @SuppressWarnings("unchecked")
-        private void addTransportV03(org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3 builder, String transport) {
+        private void addTransportV03(
+                org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3 builder, String transport) {
             switch (transport.toUpperCase()) {
-                case "GRPC" -> builder.withTransport(GrpcTransport_v0_3.class,
-                        new GrpcTransportConfigBuilder_v0_3()
-                                .channelFactory(url -> ManagedChannelBuilder.forTarget(url)
-                                        .usePlaintext()
-                                        .build()));
-                case "REST", "HTTP_JSON", "HTTP+JSON" -> builder.withTransport(
-                        RestTransport_v0_3.class, new RestTransportConfigBuilder_v0_3());
-                default -> builder.withTransport(JSONRPCTransport_v0_3.class,
-                        new JSONRPCTransportConfigBuilder_v0_3());
+                case "GRPC" ->
+                        builder.withTransport(
+                                GrpcTransport_v0_3.class,
+                                new GrpcTransportConfigBuilder_v0_3()
+                                        .channelFactory(
+                                                url ->
+                                                        ManagedChannelBuilder.forTarget(url)
+                                                                .usePlaintext()
+                                                                .build()));
+                case "REST", "HTTP_JSON", "HTTP+JSON" ->
+                        builder.withTransport(
+                                RestTransport_v0_3.class, new RestTransportConfigBuilder_v0_3());
+                default ->
+                        builder.withTransport(
+                                JSONRPCTransport_v0_3.class,
+                                new JSONRPCTransportConfigBuilder_v0_3());
             }
         }
     }

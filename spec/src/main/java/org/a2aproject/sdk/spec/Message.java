@@ -3,9 +3,8 @@ package org.a2aproject.sdk.spec;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -35,14 +34,16 @@ import org.jspecify.annotations.Nullable;
  * @param extensions list of protocol extensions used in this message
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record Message(Role role, List<Part<?>> parts,
+public record Message(
+        Role role,
+        List<Part<?>> parts,
         String messageId,
         @Nullable String contextId,
         @Nullable String taskId,
         @Nullable List<String> referenceTaskIds,
         @Nullable Map<String, Object> metadata,
-        @Nullable List<String> extensions
-        ) implements EventKind, StreamingEventKind {
+        @Nullable List<String> extensions)
+        implements EventKind, StreamingEventKind {
 
     /**
      * The identifier when used in streaming responses
@@ -137,28 +138,19 @@ public record Message(Role role, List<Part<?>> parts,
      */
     public static class Builder {
 
-        private @Nullable
-        Role role;
-        private @Nullable
-        List<Part<?>> parts;
-        private @Nullable
-        String messageId;
-        private @Nullable
-        String contextId;
-        private @Nullable
-        String taskId;
-        private @Nullable
-        List<String> referenceTaskIds;
-        private @Nullable
-        Map<String, Object> metadata;
-        private @Nullable
-        List<String> extensions;
+        private @Nullable Role role;
+        private @Nullable List<Part<?>> parts;
+        private @Nullable String messageId;
+        private @Nullable String contextId;
+        private @Nullable String taskId;
+        private @Nullable List<String> referenceTaskIds;
+        private @Nullable Map<String, Object> metadata;
+        private @Nullable List<String> extensions;
 
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Creates a new Builder initialized with values from an existing Message.

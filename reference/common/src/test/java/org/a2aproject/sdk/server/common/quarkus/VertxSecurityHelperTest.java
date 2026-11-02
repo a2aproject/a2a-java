@@ -10,10 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import jakarta.enterprise.inject.Instance;
-
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.ArcContainer;
 import io.quarkus.arc.InjectableContext;
@@ -22,6 +18,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.enterprise.inject.Instance;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -37,18 +35,13 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class VertxSecurityHelperTest {
 
-    @Mock
-    ArcContainer arcContainer;
-    @Mock
-    ManagedContext requestContext;
-    @Mock
-    InjectableContext.ContextState contextState;
-    @Mock
-    RoutingContext routingContext;
-    @Mock
-    HttpServerResponse response;
-    @Mock
-    Instance<io.quarkus.vertx.http.runtime.security.HttpAuthenticator> httpAuthenticator;
+    @Mock ArcContainer arcContainer;
+    @Mock ManagedContext requestContext;
+    @Mock InjectableContext.ContextState contextState;
+    @Mock RoutingContext routingContext;
+    @Mock HttpServerResponse response;
+    @Mock Instance<io.quarkus.vertx.http.runtime.security.HttpAuthenticator> httpAuthenticator;
+
     @Mock
     Instance<io.quarkus.security.identity.CurrentIdentityAssociation> currentIdentityAssociation;
 
@@ -75,14 +68,20 @@ class VertxSecurityHelperTest {
         when(routingContext.response()).thenReturn(response);
         when(httpAuthenticator.isUnsatisfied()).thenReturn(true);
 
-        doAnswer(inv -> {
-            capturedEndHandler.set(inv.getArgument(0));
-            return response;
-        }).when(response).endHandler(any());
-        doAnswer(inv -> {
-            capturedCloseHandler.set(inv.getArgument(0));
-            return response;
-        }).when(response).closeHandler(any());
+        doAnswer(
+                        inv -> {
+                            capturedEndHandler.set(inv.getArgument(0));
+                            return response;
+                        })
+                .when(response)
+                .endHandler(any());
+        doAnswer(
+                        inv -> {
+                            capturedCloseHandler.set(inv.getArgument(0));
+                            return response;
+                        })
+                .when(response)
+                .closeHandler(any());
 
         helper = new VertxSecurityHelper();
         helper.httpAuthenticator = httpAuthenticator;
@@ -188,10 +187,14 @@ class VertxSecurityHelperTest {
             when(requestContext.isActive()).thenReturn(false);
             doAnswer(inv -> contextState).when(requestContext).activate();
 
-            assertThrows(RuntimeException.class, () ->
-                    helper.runInRequestContextDeferred(routingContext, () -> {
-                        throw new RuntimeException("task failed");
-                    }));
+            assertThrows(
+                    RuntimeException.class,
+                    () ->
+                            helper.runInRequestContextDeferred(
+                                    routingContext,
+                                    () -> {
+                                        throw new RuntimeException("task failed");
+                                    }));
 
             verify(requestContext).destroy(contextState);
             verify(requestContext).deactivate();
@@ -202,10 +205,14 @@ class VertxSecurityHelperTest {
             when(requestContext.isActive()).thenReturn(false);
             doAnswer(inv -> contextState).when(requestContext).activate();
 
-            assertThrows(RuntimeException.class, () ->
-                    helper.runInRequestContextDeferred(routingContext, () -> {
-                        throw new RuntimeException();
-                    }));
+            assertThrows(
+                    RuntimeException.class,
+                    () ->
+                            helper.runInRequestContextDeferred(
+                                    routingContext,
+                                    () -> {
+                                        throw new RuntimeException();
+                                    }));
 
             capturedEndHandler.get().handle(null);
 
@@ -228,8 +235,9 @@ class VertxSecurityHelperTest {
         void eventLoopThread_throwsIllegalStateException() {
             vertxContextStatic.when(Context::isOnEventLoopThread).thenReturn(true);
 
-            assertThrows(IllegalStateException.class, () ->
-                    helper.runInRequestContextDeferred(routingContext, () -> {}));
+            assertThrows(
+                    IllegalStateException.class,
+                    () -> helper.runInRequestContextDeferred(routingContext, () -> {}));
         }
 
         @Test
@@ -271,10 +279,14 @@ class VertxSecurityHelperTest {
         void taskException_stillTerminatesWhenFreshContext() {
             when(requestContext.isActive()).thenReturn(false);
 
-            assertThrows(RuntimeException.class, () ->
-                    helper.runInRequestContext(routingContext, () -> {
-                        throw new RuntimeException("task failed");
-                    }));
+            assertThrows(
+                    RuntimeException.class,
+                    () ->
+                            helper.runInRequestContext(
+                                    routingContext,
+                                    () -> {
+                                        throw new RuntimeException("task failed");
+                                    }));
 
             verify(requestContext).terminate();
         }
@@ -283,8 +295,9 @@ class VertxSecurityHelperTest {
         void eventLoopThread_throwsIllegalStateException() {
             vertxContextStatic.when(Context::isOnEventLoopThread).thenReturn(true);
 
-            assertThrows(IllegalStateException.class, () ->
-                    helper.runInRequestContext(routingContext, () -> {}));
+            assertThrows(
+                    IllegalStateException.class,
+                    () -> helper.runInRequestContext(routingContext, () -> {}));
         }
     }
 }

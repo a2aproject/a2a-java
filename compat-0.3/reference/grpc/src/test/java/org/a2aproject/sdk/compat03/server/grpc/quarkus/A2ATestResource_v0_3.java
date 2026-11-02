@@ -2,8 +2,6 @@ package org.a2aproject.sdk.compat03.server.grpc.quarkus;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,14 +15,14 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import org.a2aproject.sdk.compat03.conversion.TestUtilsBean_v0_3;
+import org.a2aproject.sdk.compat03.transport.grpc.handler.GrpcHandler_v0_3;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
-import org.a2aproject.sdk.compat03.transport.grpc.handler.GrpcHandler_v0_3;
 
 /**
  * Exposes the {@link TestUtilsBean_v0_3} via JAX-RS REST endpoints for testing the gRPC server.
@@ -33,8 +31,7 @@ import org.a2aproject.sdk.compat03.transport.grpc.handler.GrpcHandler_v0_3;
 @Path("/test")
 @ApplicationScoped
 public class A2ATestResource_v0_3 {
-    @Inject
-    TestUtilsBean_v0_3 testUtilsBean;
+    @Inject TestUtilsBean_v0_3 testUtilsBean;
 
     private final AtomicInteger streamingSubscribedCount = new AtomicInteger(0);
 
@@ -42,7 +39,6 @@ public class A2ATestResource_v0_3 {
     public void init() {
         GrpcHandler_v0_3.setStreamingSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
     }
-
 
     @POST
     @Path("/task")
@@ -74,9 +70,7 @@ public class A2ATestResource_v0_3 {
             return Response.status(404).build();
         }
         testUtilsBean.deleteTask(taskId);
-        return Response.ok()
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build();
+        return Response.ok().header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -88,7 +82,8 @@ public class A2ATestResource_v0_3 {
 
     @POST
     @Path("/queue/enqueueTaskStatusUpdateEvent/{taskId}")
-    public Response enqueueTaskStatusUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
+    public Response enqueueTaskStatusUpdateEvent(@PathParam("taskId") String taskId, String body)
+            throws Exception {
         TaskStatusUpdateEvent event = JsonUtil.fromJson(body, TaskStatusUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
         return Response.ok().build();
@@ -96,7 +91,8 @@ public class A2ATestResource_v0_3 {
 
     @POST
     @Path("/queue/enqueueTaskArtifactUpdateEvent/{taskId}")
-    public Response enqueueTaskArtifactUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
+    public Response enqueueTaskArtifactUpdateEvent(@PathParam("taskId") String taskId, String body)
+            throws Exception {
         TaskArtifactUpdateEvent event = JsonUtil.fromJson(body, TaskArtifactUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
         return Response.ok().build();
@@ -119,22 +115,23 @@ public class A2ATestResource_v0_3 {
 
     @DELETE
     @Path("/task/{taskId}/config/{configId}")
-    public Response deleteTaskPushNotificationConfig(@PathParam("taskId") String taskId, @PathParam("configId") String configId) {
+    public Response deleteTaskPushNotificationConfig(
+            @PathParam("taskId") String taskId, @PathParam("configId") String configId) {
         Task task = testUtilsBean.getTask(taskId);
         if (task == null) {
             return Response.status(404).build();
         }
         testUtilsBean.deleteTaskPushNotificationConfig(taskId, configId);
-        return Response.ok()
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build();
+        return Response.ok().header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
     }
 
     @POST
     @Path("/task/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body) throws Exception {
-        TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
+    public Response savePushNotificationConfigInStore(
+            @PathParam("taskId") String taskId, String body) throws Exception {
+        TaskPushNotificationConfig notificationConfig =
+                JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
         if (notificationConfig == null) {
             return Response.status(404).build();
         }

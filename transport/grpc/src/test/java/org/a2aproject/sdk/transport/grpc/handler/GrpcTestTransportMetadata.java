@@ -8,5 +8,4 @@ public class GrpcTestTransportMetadata implements TransportMetadata {
     public String getTransportProtocol() {
         return TransportProtocol.GRPC.asString();
     }
-
 }

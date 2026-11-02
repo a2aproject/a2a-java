@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.MockTaskStateProvider;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
@@ -49,9 +48,10 @@ public class EventQueueTest {
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
 
-    private static final String TASK_ID = "123";  // Must match MINIMAL_TASK id
+    private static final String TASK_ID = "123"; // Must match MINIMAL_TASK id
 
-    private static final String MINIMAL_TASK = """
+    private static final String MINIMAL_TASK =
+            """
             {
                 "id": "123",
                 "contextId": "session-xyz",
@@ -59,7 +59,8 @@ public class EventQueueTest {
             }
             """;
 
-    private static final String MESSAGE_PAYLOAD = """
+    private static final String MESSAGE_PAYLOAD =
+            """
             {
                 "role": "ROLE_AGENT",
                 "parts": [{"text": "test message"}],
@@ -73,19 +74,23 @@ public class EventQueueTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
-        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(TASK_ID)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        eventQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .taskId(TASK_ID)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
     }
 
     @AfterEach
     public void cleanup() {
         if (mainEventBusProcessor != null) {
-            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
+            mainEventBusProcessor.setCallback(null); // Clear any test callbacks
             EventQueueUtil.stop(mainEventBusProcessor);
         }
     }
@@ -97,7 +102,8 @@ public class EventQueueTest {
         return createQueueWithEventBus(taskId, null);
     }
 
-    private EventQueue createQueueWithEventBus(String taskId, @Nullable TaskStreamLifecycleHook hook) {
+    private EventQueue createQueueWithEventBus(
+            String taskId, @Nullable TaskStreamLifecycleHook hook) {
         return EventQueueUtil.getEventQueueBuilder(mainEventBus)
                 .taskId(taskId)
                 .streamLifecycleHook(hook)
@@ -114,21 +120,23 @@ public class EventQueueTest {
      */
     private void waitForEventProcessing(Runnable action) throws InterruptedException {
         CountDownLatch processingLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        processingLatch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for basic event processing wait
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {
+                        // Not needed for basic event processing wait
+                    }
+                });
 
         try {
             action.run();
-            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+            assertTrue(
+                    processingLatch.await(5, TimeUnit.SECONDS),
                     "MainEventBusProcessor should have processed the event within timeout");
         } finally {
             mainEventBusProcessor.setCallback(null);
@@ -144,17 +152,22 @@ public class EventQueueTest {
     @Test
     public void testConstructorCustomQueueSize() {
         int customSize = 500;
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(customSize).build();
+        EventQueue queue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(customSize).build();
         assertEquals(customSize, queue.getQueueSize());
     }
 
     @Test
     public void testConstructorInvalidQueueSize() {
         // Test zero queue size
-        assertThrows(IllegalArgumentException.class, () -> EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(0).build());
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(0).build());
 
         // Test negative queue size
-        assertThrows(IllegalArgumentException.class, () -> EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(-10).build());
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(-10).build());
     }
 
     @Test
@@ -241,7 +254,6 @@ public class EventQueueTest {
         assertSame(event, child3Event);
     }
 
-
     @Test
     public void testCloseImmediatePropagationToChildren() throws Exception {
         EventQueue parentQueue = createQueueWithEventBus(TASK_ID);
@@ -274,16 +286,16 @@ public class EventQueueTest {
 
     @Test
     public void testEnqueueEventWhenClosed() throws Exception {
-        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(TASK_ID)
-                .build();
+        EventQueue mainQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus).taskId(TASK_ID).build();
         EventQueue childQueue = mainQueue.tap();
         Event event = fromJson(MINIMAL_TASK, Task.class);
 
         childQueue.close(); // Close the child queue first (removes from children list)
         assertTrue(childQueue.isClosed());
 
-        // Create a new child queue BEFORE enqueuing (ensures it's in children list for distribution)
+        // Create a new child queue BEFORE enqueuing (ensures it's in children list for
+        // distribution)
         EventQueue newChildQueue = mainQueue.tap();
 
         // MainQueue accepts events even when closed (for replication support)
@@ -291,7 +303,8 @@ public class EventQueueTest {
         // Note: MainEventBusProcessor runs asynchronously, so we use dequeueEventItem with timeout
         mainQueue.enqueueEvent(event);
 
-        // New child queue should receive the event (old closed child was removed from children list)
+        // New child queue should receive the event (old closed child was removed from children
+        // list)
         EventQueueItem item = newChildQueue.dequeueEventItem(5000);
         assertNotNull(item);
         Event dequeuedEvent = item.getEvent();
@@ -314,9 +327,8 @@ public class EventQueueTest {
 
     @Test
     public void testDequeueEventWhenClosedButHasEvents() throws Exception {
-        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(TASK_ID)
-                .build();
+        EventQueue mainQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus).taskId(TASK_ID).build();
         EventQueue childQueue = mainQueue.tap();
         Event event = fromJson(MINIMAL_TASK, Task.class);
 
@@ -363,11 +375,12 @@ public class EventQueueTest {
 
     @Test
     public void testDequeueEventWait() throws Exception {
-        Event event = TaskStatusUpdateEvent.builder()
-                .taskId(TASK_ID)
-                .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        Event event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(TASK_ID)
+                        .contextId("session-xyz")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
         eventQueue.enqueueEvent(event);
         Event dequeuedEvent = eventQueue.dequeueEventItem(1000).getEvent();
@@ -376,14 +389,16 @@ public class EventQueueTest {
 
     @Test
     public void testTaskDone() throws Exception {
-        Event event = TaskArtifactUpdateEvent.builder()
-                .taskId(TASK_ID)
-                .contextId("session-xyz")
-                .artifact(Artifact.builder()
-                        .artifactId("11")
-                        .parts(new TextPart("text"))
-                        .build())
-                .build();
+        Event event =
+                TaskArtifactUpdateEvent.builder()
+                        .taskId(TASK_ID)
+                        .contextId("session-xyz")
+                        .artifact(
+                                Artifact.builder()
+                                        .artifactId("11")
+                                        .parts(new TextPart("text"))
+                                        .build())
+                        .build();
         eventQueue.enqueueEvent(event);
         Event dequeuedEvent = eventQueue.dequeueEventItem(1000).getEvent();
         assertSame(event, dequeuedEvent);
@@ -392,9 +407,7 @@ public class EventQueueTest {
 
     @Test
     public void testEnqueueDifferentEventTypes() throws Exception {
-        List<Event> events = List.of(
-                new TaskNotFoundError(),
-                new A2AError(111, "rpc error", null));
+        List<Event> events = List.of(new TaskNotFoundError(), new A2AError(111, "rpc error", null));
 
         for (Event event : events) {
             eventQueue.enqueueEvent(event);
@@ -474,14 +487,14 @@ public class EventQueueTest {
         // Graceful close - parent closes but children remain open
         mainQueue.close();
         assertTrue(mainQueue.isClosed());
-        assertFalse(childQueue.isClosed());  // Child NOT closed on graceful parent close
+        assertFalse(childQueue.isClosed()); // Child NOT closed on graceful parent close
 
         // Immediate close - parent force-closes all children
         EventQueue mainQueue2 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         EventQueue childQueue2 = mainQueue2.tap();
-        mainQueue2.close(true);  // immediate=true
+        mainQueue2.close(true); // immediate=true
         assertTrue(mainQueue2.isClosed());
-        assertTrue(childQueue2.isClosed());  // Child IS closed on immediate parent close
+        assertTrue(childQueue2.isClosed()); // Child IS closed on immediate parent close
     }
 
     /**
@@ -540,7 +553,8 @@ public class EventQueueTest {
 
     @Test
     public void testCloseChildrenAllowsNewSubscriptions() throws InterruptedException {
-        EventQueue mainQueue = createNonFinalizedQueueWithEventBus("close-children-resubscribe-test");
+        EventQueue mainQueue =
+                createNonFinalizedQueueWithEventBus("close-children-resubscribe-test");
 
         EventQueue child1 = mainQueue.tap();
         ((EventQueue.MainQueue) mainQueue).closeChildren();
@@ -570,26 +584,31 @@ public class EventQueueTest {
     }
 
     @Test
-    public void testStreamLifecycleHookOnEventCalledAfterDistribution() throws InterruptedException {
+    public void testStreamLifecycleHookOnEventCalledAfterDistribution()
+            throws InterruptedException {
         List<Event> receivedEvents = new ArrayList<>();
         CountDownLatch hookLatch = new CountDownLatch(1);
-        TaskStreamLifecycleHook hook = TestStreamLifecycleHook.onEvent((taskId, event, handle) -> {
-            receivedEvents.add(event);
-            hookLatch.countDown();
-        });
+        TaskStreamLifecycleHook hook =
+                TestStreamLifecycleHook.onEvent(
+                        (taskId, event, handle) -> {
+                            receivedEvents.add(event);
+                            hookLatch.countDown();
+                        });
 
         EventQueue mainQueue = createQueueWithEventBus("hook-event-test", hook);
         EventQueue child = mainQueue.tap();
 
-        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
-                .taskId("hook-event-test")
-                .contextId("ctx-1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, null))
-                .build();
+        TaskStatusUpdateEvent statusEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("hook-event-test")
+                        .contextId("ctx-1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, null))
+                        .build();
 
         mainQueue.enqueueEvent(statusEvent);
 
-        assertTrue(hookLatch.await(5, TimeUnit.SECONDS),
+        assertTrue(
+                hookLatch.await(5, TimeUnit.SECONDS),
                 "TaskStreamLifecycleHook.onEvent should have been called");
 
         assertEquals(1, receivedEvents.size());
@@ -597,49 +616,53 @@ public class EventQueueTest {
     }
 
     @Test
-    public void testCloseStreamsFromWithinOnEventDoesNotCauseConcurrentModification() throws InterruptedException {
+    public void testCloseStreamsFromWithinOnEventDoesNotCauseConcurrentModification()
+            throws InterruptedException {
         CountDownLatch hookLatch = new CountDownLatch(1);
         AtomicReference<Throwable> caughtException = new AtomicReference<>();
-        TaskStreamLifecycleHook hook = TestStreamLifecycleHook.onEvent((taskId, event, handle) -> {
-            try {
-                handle.closeStreams();
-            } catch (Throwable t) {
-                caughtException.set(t);
-            } finally {
-                hookLatch.countDown();
-            }
-        });
+        TaskStreamLifecycleHook hook =
+                TestStreamLifecycleHook.onEvent(
+                        (taskId, event, handle) -> {
+                            try {
+                                handle.closeStreams();
+                            } catch (Throwable t) {
+                                caughtException.set(t);
+                            } finally {
+                                hookLatch.countDown();
+                            }
+                        });
 
         EventQueue mainQueue = createQueueWithEventBus("close-in-hook-test", hook);
         mainQueue.tap();
         mainQueue.tap();
 
-        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
-                .taskId("close-in-hook-test")
-                .contextId("ctx-1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, null))
-                .build();
+        TaskStatusUpdateEvent statusEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("close-in-hook-test")
+                        .contextId("ctx-1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, null))
+                        .build();
 
         mainQueue.enqueueEvent(statusEvent);
 
-        assertTrue(hookLatch.await(5, TimeUnit.SECONDS),
-                "onEvent should have been called");
-        assertNull(caughtException.get(),
-                "closeStreams() from within onEvent should not throw");
+        assertTrue(hookLatch.await(5, TimeUnit.SECONDS), "onEvent should have been called");
+        assertNull(caughtException.get(), "closeStreams() from within onEvent should not throw");
     }
 
     @Test
     public void testCloseStreamsFromOnUnsubscribeIsNoOp() {
         AtomicInteger unsubscribeCount = new AtomicInteger(0);
         AtomicReference<Throwable> caughtException = new AtomicReference<>();
-        TaskStreamLifecycleHook hook = TestStreamLifecycleHook.onUnsubscribe((taskId, handle) -> {
-            unsubscribeCount.incrementAndGet();
-            try {
-                handle.closeStreams();
-            } catch (Throwable t) {
-                caughtException.set(t);
-            }
-        });
+        TaskStreamLifecycleHook hook =
+                TestStreamLifecycleHook.onUnsubscribe(
+                        (taskId, handle) -> {
+                            unsubscribeCount.incrementAndGet();
+                            try {
+                                handle.closeStreams();
+                            } catch (Throwable t) {
+                                caughtException.set(t);
+                            }
+                        });
 
         EventQueue mainQueue = createQueueWithEventBus("reentrant-close-test", hook);
         mainQueue.tap();
@@ -648,24 +671,33 @@ public class EventQueueTest {
 
         ((EventQueue.MainQueue) mainQueue).closeChildren();
 
-        assertNull(caughtException.get(),
+        assertNull(
+                caughtException.get(),
                 "Reentrant closeStreams() from onUnsubscribe should not throw");
-        assertEquals(3, unsubscribeCount.get(),
+        assertEquals(
+                3,
+                unsubscribeCount.get(),
                 "All three children should have triggered onUnsubscribe exactly once");
-        assertEquals(0, ((EventQueue.MainQueue) mainQueue).getActiveChildCount(),
+        assertEquals(
+                0,
+                ((EventQueue.MainQueue) mainQueue).getActiveChildCount(),
                 "All children should be closed");
     }
 
     @Test
     public void testTapReturnsClosedQueueWhenHookCallsCloseStreams() {
-        TaskStreamLifecycleHook hook = TestStreamLifecycleHook.onSubscribe((taskId, handle) -> handle.closeStreams());
+        TaskStreamLifecycleHook hook =
+                TestStreamLifecycleHook.onSubscribe((taskId, handle) -> handle.closeStreams());
 
         EventQueue mainQueue = createQueueWithEventBus("tap-close-test", hook);
         EventQueue child = mainQueue.tap();
 
-        assertTrue(child.isClosed(),
-                "ChildQueue returned by tap() should be closed when hook calls closeStreams() during onSubscribe");
-        assertThrows(EventQueueClosedException.class,
+        assertTrue(
+                child.isClosed(),
+                "ChildQueue returned by tap() should be closed when hook calls closeStreams()"
+                        + " during onSubscribe");
+        assertThrows(
+                EventQueueClosedException.class,
                 () -> child.dequeueEventItem(0),
                 "Dequeuing from a closed ChildQueue should throw EventQueueClosedException");
     }
@@ -673,46 +705,48 @@ public class EventQueueTest {
     @Test
     public void testOnEventNotCalledWithZeroSubscribers() throws InterruptedException {
         AtomicBoolean onEventCalled = new AtomicBoolean(false);
-        TaskStreamLifecycleHook hook = TestStreamLifecycleHook.onEvent((taskId, event, handle) -> onEventCalled.set(true));
+        TaskStreamLifecycleHook hook =
+                TestStreamLifecycleHook.onEvent((taskId, event, handle) -> onEventCalled.set(true));
 
         EventQueue mainQueue = createQueueWithEventBus("no-subscribers-test", hook);
 
-        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
-                .taskId("no-subscribers-test")
-                .contextId("ctx-1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, null))
-                .build();
+        TaskStatusUpdateEvent statusEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("no-subscribers-test")
+                        .contextId("ctx-1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, null))
+                        .build();
 
         CountDownLatch processingLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        processingLatch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {}
+                });
 
         try {
             mainQueue.enqueueEvent(statusEvent);
-            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
-                    "Event should have been processed");
+            assertTrue(
+                    processingLatch.await(5, TimeUnit.SECONDS), "Event should have been processed");
         } finally {
             mainEventBusProcessor.setCallback(null);
         }
 
-        assertFalse(onEventCalled.get(),
+        assertFalse(
+                onEventCalled.get(),
                 "onEvent should not be called when there are zero subscribers");
     }
 
     @Test
     public void testChildQueueIsBoundedByParentQueueSize() throws Exception {
         int customSize = 5;
-        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .queueSize(customSize)
-                .build();
+        EventQueue mainQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(customSize).build();
         EventQueue childQueue = mainQueue.tap();
 
         Field queueField = EventQueue.ChildQueue.class.getDeclaredField("queue");
@@ -728,15 +762,18 @@ public class EventQueueTest {
     public void testSemaphorePermitReleasedWhenSubmitFails() {
         MainEventBus failingBus = mock(MainEventBus.class);
         doThrow(new RuntimeException("submit failed"))
-                .when(failingBus).submit(anyString(), any(), any());
+                .when(failingBus)
+                .submit(anyString(), any(), any());
 
-        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(failingBus)
-                .taskId(TASK_ID)
-                .queueSize(2)
-                .build();
+        EventQueue mainQueue =
+                EventQueueUtil.getEventQueueBuilder(failingBus)
+                        .taskId(TASK_ID)
+                        .queueSize(2)
+                        .build();
         assertEquals(0, mainQueue.size(), "No permits should be in use before enqueue");
 
-        assertThrows(RuntimeException.class,
+        assertThrows(
+                RuntimeException.class,
                 () -> mainQueue.enqueueEvent(fromJson(MINIMAL_TASK, Task.class)));
 
         // If the permit leaked, size() would be 1 (one permit held forever). It must be

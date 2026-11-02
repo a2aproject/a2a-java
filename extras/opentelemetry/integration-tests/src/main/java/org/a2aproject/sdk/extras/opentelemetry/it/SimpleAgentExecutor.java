@@ -1,12 +1,12 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.TextPart;
-import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * Simple AgentExecutor for integration testing.
@@ -23,11 +23,12 @@ public class SimpleAgentExecutor implements AgentExecutor {
         }
 
         // Get the user's message
-        String userText = context.getMessage().parts().stream()
-                .filter(part -> part instanceof TextPart)
-                .map(part -> ((TextPart) part).text())
-                .findFirst()
-                .orElse("");
+        String userText =
+                context.getMessage().parts().stream()
+                        .filter(part -> part instanceof TextPart)
+                        .map(part -> ((TextPart) part).text())
+                        .findFirst()
+                        .orElse("");
 
         // Echo it back
         String response = "Echo: " + userText;

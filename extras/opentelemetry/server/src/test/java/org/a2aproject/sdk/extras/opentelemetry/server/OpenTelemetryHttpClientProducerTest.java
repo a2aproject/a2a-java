@@ -36,7 +36,9 @@ class OpenTelemetryHttpClientProducerTest {
         A2AHttpClient client = producer.createPropagatingClient(emptyInstance);
 
         assertNotNull(client);
-        assertInstanceOf(OpenTelemetryA2AHttpClient.class, client,
+        assertInstanceOf(
+                OpenTelemetryA2AHttpClient.class,
+                client,
                 "Producer must wrap a factory-created delegate in OpenTelemetryA2AHttpClient");
     }
 
@@ -58,7 +60,9 @@ class OpenTelemetryHttpClientProducerTest {
         A2AHttpClient client = producer.createPropagatingClient(userInstance);
 
         assertNotNull(client);
-        assertInstanceOf(OpenTelemetryA2AHttpClient.class, client,
+        assertInstanceOf(
+                OpenTelemetryA2AHttpClient.class,
+                client,
                 "Producer must wrap the user's client in OpenTelemetryA2AHttpClient");
         verify(userInstance).get();
     }
@@ -88,10 +92,11 @@ class OpenTelemetryHttpClientProducerTest {
         OpenTelemetryHttpClientProducer producer = new OpenTelemetryHttpClientProducer(mockOTel);
 
         AtomicInteger executionCount = new AtomicInteger();
-        Executor userExecutor = command -> {
-            executionCount.incrementAndGet();
-            command.run();
-        };
+        Executor userExecutor =
+                command -> {
+                    executionCount.incrementAndGet();
+                    command.run();
+                };
         Instance<Executor> userInstance = mock(Instance.class);
         when(userInstance.isResolvable()).thenReturn(true);
         when(userInstance.get()).thenReturn(userExecutor);
@@ -102,7 +107,9 @@ class OpenTelemetryHttpClientProducerTest {
         verify(userInstance).get();
 
         wrappedExecutor.execute(() -> {});
-        assertEquals(1, executionCount.get(),
+        assertEquals(
+                1,
+                executionCount.get(),
                 "Wrapped executor must delegate to the user-provided executor");
     }
 }

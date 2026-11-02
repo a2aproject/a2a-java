@@ -52,15 +52,16 @@ public interface MainEventBusProcessorCallback {
      * No-op implementation that does nothing.
      * Used as the default callback to avoid null checks.
      */
-    MainEventBusProcessorCallback NOOP = new MainEventBusProcessorCallback() {
-        @Override
-        public void onEventProcessed(String taskId, Event event) {
-            // No-op
-        }
+    MainEventBusProcessorCallback NOOP =
+            new MainEventBusProcessorCallback() {
+                @Override
+                public void onEventProcessed(String taskId, Event event) {
+                    // No-op
+                }
 
-        @Override
-        public void onTaskFinalized(String taskId) {
-            // No-op
-        }
-    };
+                @Override
+                public void onTaskFinalized(String taskId) {
+                    // No-op
+                }
+            };
 }

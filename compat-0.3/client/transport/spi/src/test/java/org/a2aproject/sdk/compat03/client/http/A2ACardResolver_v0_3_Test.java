@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
@@ -33,7 +32,6 @@ public class A2ACardResolver_v0_3_Test {
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
-
         resolver = new A2ACardResolver_v0_3(client, "http://example.com");
         card = resolver.getAgentCard();
 
@@ -52,13 +50,17 @@ public class A2ACardResolver_v0_3_Test {
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
         // baseUrl with trailing slash, agentCardPath without leading slash
-        resolver = new A2ACardResolver_v0_3(client, "http://example.com/", AGENT_CARD_PATH.substring(1));
+        resolver =
+                new A2ACardResolver_v0_3(
+                        client, "http://example.com/", AGENT_CARD_PATH.substring(1));
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
         // baseUrl without trailing slash, agentCardPath without leading slash
-        resolver = new A2ACardResolver_v0_3(client, "http://example.com", AGENT_CARD_PATH.substring(1));
+        resolver =
+                new A2ACardResolver_v0_3(
+                        client, "http://example.com", AGENT_CARD_PATH.substring(1));
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
@@ -77,7 +79,6 @@ public class A2ACardResolver_v0_3_Test {
         assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
     }
 
-
     @Test
     public void testBaseUrl_alreadyContainsWellKnownPath() throws Exception {
         TestHttpClient client = new TestHttpClient();
@@ -95,8 +96,11 @@ public class A2ACardResolver_v0_3_Test {
         TestHttpClient client = new TestHttpClient();
         client.body = JsonMessages_v0_3.AGENT_CARD;
 
-        A2ACardResolver_v0_3 resolver = new A2ACardResolver_v0_3(
-                client, "https://example.com/spec03" + AGENT_CARD_PATH, "/custom/card.json");
+        A2ACardResolver_v0_3 resolver =
+                new A2ACardResolver_v0_3(
+                        client,
+                        "https://example.com/spec03" + AGENT_CARD_PATH,
+                        "/custom/card.json");
         resolver.getAgentCard();
 
         assertEquals("https://example.com/spec03/custom/card.json", client.url);
@@ -110,7 +114,8 @@ public class A2ACardResolver_v0_3_Test {
         A2ACardResolver_v0_3 resolver = new A2ACardResolver_v0_3(client, "http://example.com/");
         AgentCard_v0_3 card = resolver.getAgentCard();
 
-        AgentCard_v0_3 expectedCard = JsonUtil_v0_3.fromJson(JsonMessages_v0_3.AGENT_CARD, AgentCard_v0_3.class);
+        AgentCard_v0_3 expectedCard =
+                JsonUtil_v0_3.fromJson(JsonMessages_v0_3.AGENT_CARD, AgentCard_v0_3.class);
         String expected = JsonUtil_v0_3.toJson(expectedCard);
 
         String requestCardString = JsonUtil_v0_3.toJson(card);
@@ -132,7 +137,6 @@ public class A2ACardResolver_v0_3_Test {
         }
         assertFalse(success);
     }
-
 
     @Test
     public void testParseV1AgentCardWithUrlAndPreferredTransport() throws Exception {
@@ -225,7 +229,11 @@ public class A2ACardResolver_v0_3_Test {
             }
 
             @Override
-            public CompletableFuture<Void> getAsyncSSE(Consumer<ServerSentEvent> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
+            public CompletableFuture<Void> getAsyncSSE(
+                    Consumer<ServerSentEvent> messageConsumer,
+                    Consumer<Throwable> errorConsumer,
+                    Runnable completeRunnable)
+                    throws IOException, InterruptedException {
                 return null;
             }
 
@@ -246,5 +254,4 @@ public class A2ACardResolver_v0_3_Test {
             }
         }
     }
-
 }

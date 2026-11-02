@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.compat03.client.config;
 
-import java.util.List;
-import java.util.Map;
-
-import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -24,7 +23,8 @@ public class ClientConfig_v0_3 {
     private ClientConfig_v0_3(Builder builder) {
         this.streaming = builder.streaming == null ? true : builder.streaming;
         this.polling = builder.polling == null ? false : builder.polling;
-        this.useClientPreference = builder.useClientPreference == null ? false : builder.useClientPreference;
+        this.useClientPreference =
+                builder.useClientPreference == null ? false : builder.useClientPreference;
         this.acceptedOutputModes = builder.acceptedOutputModes;
         this.pushNotificationConfig = builder.pushNotificationConfig;
         this.historyLength = builder.historyLength;
@@ -92,7 +92,8 @@ public class ClientConfig_v0_3 {
             return this;
         }
 
-        public Builder setPushNotificationConfig(PushNotificationConfig_v0_3 pushNotificationConfig) {
+        public Builder setPushNotificationConfig(
+                PushNotificationConfig_v0_3 pushNotificationConfig) {
             this.pushNotificationConfig = pushNotificationConfig;
             return this;
         }

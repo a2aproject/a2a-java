@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.compat03.spec;
 
-
 import org.a2aproject.sdk.util.Assert;
 
 /**

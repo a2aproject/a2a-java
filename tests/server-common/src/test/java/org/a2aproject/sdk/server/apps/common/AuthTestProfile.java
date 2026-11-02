@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.server.apps.common;
 
-import java.util.Map;
-
 import io.quarkus.test.junit.QuarkusTestProfile;
+import java.util.Map;
 
 /**
  * Quarkus test profile that enables security for authentication tests.
@@ -41,8 +40,7 @@ public class AuthTestProfile implements QuarkusTestProfile {
                 Map.entry("quarkus.http.auth.basic", "true"),
 
                 // Enable proactive authentication - authenticate at HTTP layer before route handler
-                Map.entry("quarkus.http.auth.proactive", "true")
-        );
+                Map.entry("quarkus.http.auth.proactive", "true"));
     }
 
     @Override

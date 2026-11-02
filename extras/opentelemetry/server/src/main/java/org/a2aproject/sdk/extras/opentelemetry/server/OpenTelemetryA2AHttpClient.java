@@ -1,13 +1,12 @@
 package org.a2aproject.sdk.extras.opentelemetry.server;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Context;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.context.Context;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
@@ -64,7 +63,8 @@ class OpenTelemetryA2AHttpClient implements A2AHttpClient {
      * @param <S> the concrete propagating builder type (for method chaining)
      * @param <D> the delegate builder type
      */
-    private abstract static class AbstractPropagatingBuilder<S extends Builder<S>, D extends Builder<D>> {
+    private abstract static class AbstractPropagatingBuilder<
+            S extends Builder<S>, D extends Builder<D>> {
 
         final D delegate;
         private final OpenTelemetry openTelemetry;
@@ -96,19 +96,23 @@ class OpenTelemetryA2AHttpClient implements A2AHttpClient {
 
         protected void injectContextIntoDelegate() {
             Map<String, String> propagationHeaders = new HashMap<>();
-            openTelemetry.getPropagators().getTextMapPropagator()
-                    .inject(Context.current(), propagationHeaders, (carrier, key, value) -> {
-                        if (carrier != null) {
-                            carrier.put(key, value);
-                        }
-                    });
+            openTelemetry
+                    .getPropagators()
+                    .getTextMapPropagator()
+                    .inject(
+                            Context.current(),
+                            propagationHeaders,
+                            (carrier, key, value) -> {
+                                if (carrier != null) {
+                                    carrier.put(key, value);
+                                }
+                            });
             delegate.addHeaders(propagationHeaders);
         }
     }
 
     private static class PropagatingGetBuilder
-            extends AbstractPropagatingBuilder<GetBuilder, GetBuilder>
-            implements GetBuilder {
+            extends AbstractPropagatingBuilder<GetBuilder, GetBuilder> implements GetBuilder {
 
         PropagatingGetBuilder(GetBuilder delegate, OpenTelemetry openTelemetry) {
             super(delegate, openTelemetry);
@@ -130,15 +134,15 @@ class OpenTelemetryA2AHttpClient implements A2AHttpClient {
         public CompletableFuture<Void> getAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException {
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
             injectContextIntoDelegate();
             return delegate.getAsyncSSE(messageConsumer, errorConsumer, completeRunnable);
         }
     }
 
     private static class PropagatingPostBuilder
-            extends AbstractPropagatingBuilder<PostBuilder, PostBuilder>
-            implements PostBuilder {
+            extends AbstractPropagatingBuilder<PostBuilder, PostBuilder> implements PostBuilder {
 
         PropagatingPostBuilder(PostBuilder delegate, OpenTelemetry openTelemetry) {
             super(delegate, openTelemetry);
@@ -166,7 +170,8 @@ class OpenTelemetryA2AHttpClient implements A2AHttpClient {
         public CompletableFuture<Void> postAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException {
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
             injectContextIntoDelegate();
             return delegate.postAsyncSSE(messageConsumer, errorConsumer, completeRunnable);
         }

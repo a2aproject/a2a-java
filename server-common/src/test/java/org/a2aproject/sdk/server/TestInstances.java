@@ -7,8 +7,7 @@ import jakarta.enterprise.inject.Instance;
  */
 public final class TestInstances {
 
-    private TestInstances() {
-    }
+    private TestInstances() {}
 
     /**
      * Returns an {@link Instance} that throws {@link AssertionError} on {@link Instance#get()},

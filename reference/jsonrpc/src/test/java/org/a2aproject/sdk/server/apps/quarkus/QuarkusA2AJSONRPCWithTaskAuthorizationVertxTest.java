@@ -15,10 +15,10 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 
 @QuarkusTest
 @TestProfile(TaskAuthorizationTestProfile.class)
-public class QuarkusA2AJSONRPCWithTaskAuthorizationVertxTest extends AbstractA2AServerWithTaskAuthorizationTest {
+public class QuarkusA2AJSONRPCWithTaskAuthorizationVertxTest
+        extends AbstractA2AServerWithTaskAuthorizationTest {
 
-    @Inject
-    Vertx vertx;
+    @Inject Vertx vertx;
 
     @Override
     protected String getTransportProtocol() {
@@ -31,11 +31,16 @@ public class QuarkusA2AJSONRPCWithTaskAuthorizationVertxTest extends AbstractA2A
     }
 
     @Override
-    protected void configureTransportWithCredentials(ClientBuilder builder, String username, String password) {
-        AuthInterceptor authInterceptor = new AuthInterceptor(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName)
-                        ? getEncodedCredentials(username, password) : null);
-        builder.withTransport(JSONRPCTransport.class,
+    protected void configureTransportWithCredentials(
+            ClientBuilder builder, String username, String password) {
+        AuthInterceptor authInterceptor =
+                new AuthInterceptor(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials(username, password)
+                                        : null);
+        builder.withTransport(
+                JSONRPCTransport.class,
                 new JSONRPCTransportConfigBuilder()
                         .httpClient(new VertxA2AHttpClient(vertx))
                         .addInterceptor(authInterceptor));

@@ -8,8 +8,7 @@ public final class VersionRouter {
     public static final String VERSION_1_0 = "1.0";
     public static final String VERSION_0_3 = "0.3";
 
-    private VersionRouter() {
-    }
+    private VersionRouter() {}
 
     /**
      * Resolves the protocol version from the request.

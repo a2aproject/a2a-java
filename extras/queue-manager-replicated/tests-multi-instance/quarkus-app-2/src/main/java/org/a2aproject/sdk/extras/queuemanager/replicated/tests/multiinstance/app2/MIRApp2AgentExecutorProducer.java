@@ -2,7 +2,6 @@ package org.a2aproject.sdk.extras.queuemanager.replicated.tests.multiinstance.ap
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
 import org.a2aproject.sdk.extras.queuemanager.replicated.tests.multiinstance.common.MultiInstanceReplicationAgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 

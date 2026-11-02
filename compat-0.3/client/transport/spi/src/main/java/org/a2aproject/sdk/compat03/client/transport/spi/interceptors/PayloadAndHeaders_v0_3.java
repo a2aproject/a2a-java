@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 public class PayloadAndHeaders_v0_3 {
 
-    private final  @Nullable Object payload;
+    private final @Nullable Object payload;
     private final Map<String, String> headers;
 
     public PayloadAndHeaders_v0_3(@Nullable Object payload, @Nullable Map<String, String> headers) {

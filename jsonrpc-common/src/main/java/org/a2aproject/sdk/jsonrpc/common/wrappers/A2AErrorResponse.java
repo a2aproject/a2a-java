@@ -23,9 +23,7 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class A2AErrorResponse extends A2AResponse<Void> {
 
-    private A2AErrorResponse() {
-    }
-
+    private A2AErrorResponse() {}
 
     /**
      * Constructs a JSON-RPC error response with all fields.

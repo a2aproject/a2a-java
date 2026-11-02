@@ -6,7 +6,8 @@ package org.a2aproject.sdk.client.transport.jsonrpc;
  */
 public class JsonMessages {
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD =
+            """
             {
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -78,10 +79,66 @@ public class JsonMessages {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-               }""";
+               }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_REQUEST = """
-           {
+    static final String SEND_MESSAGE_TEST_REQUEST =
+            """
+            {
+               "jsonrpc":"2.0",
+               "method":"SendMessage",
+               "params":{
+                 "message":{
+                   "messageId":"message-1234",
+                   "contextId":"context-1234",
+                   "role":"ROLE_USER",
+                   "parts":[
+                     {
+                       "text":"tell me a joke"
+                     }
+                   ],
+                   "metadata":{
+
+                   }
+                 }
+               }
+             }\
+            """;
+
+    static final String SEND_MESSAGE_TEST_RESPONSE =
+            """
+            {
+               "jsonrpc":"2.0",
+               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+               "result":{
+                 "task":{
+                   "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                   "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                   "status":{
+                     "state":"TASK_STATE_COMPLETED"
+                   },
+                   "artifacts":[
+                     {
+                       "artifactId":"artifact-1",
+                       "name":"joke",
+                       "parts":[
+                         {
+                           "text":"Why did the chicken cross the road? To get to the other side!"
+                         }
+                       ]
+                     }
+                   ],
+                   "metadata":{
+
+                   }
+                 }
+               }
+             }\
+            """;
+
+    static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE =
+            """
+            {
               "jsonrpc":"2.0",
               "method":"SendMessage",
               "params":{
@@ -95,71 +152,23 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
                   }
-                }
-              }
-            }""";
-
-    static final String SEND_MESSAGE_TEST_RESPONSE = """
-           {
-              "jsonrpc":"2.0",
-              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-              "result":{
-                "task":{
-                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
-                  "status":{
-                    "state":"TASK_STATE_COMPLETED"
-                  },
-                  "artifacts":[
-                    {
-                      "artifactId":"artifact-1",
-                      "name":"joke",
-                      "parts":[
-                        {
-                          "text":"Why did the chicken cross the road? To get to the other side!"
-                        }
-                      ]
-                    }
+                },
+                "configuration":{
+                  "acceptedOutputModes":[
+                    "text"
                   ],
-                  "metadata":{
-                    
-                  }
+                  "returnImmediately":false
+                },
+                "metadata":{
+
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE = """
-        {
-          "jsonrpc":"2.0",
-          "method":"SendMessage",
-          "params":{
-            "message":{
-              "messageId":"message-1234",
-              "contextId":"context-1234",
-              "role":"ROLE_USER",
-              "parts":[
-                {
-                  "text":"tell me a joke"
-                }
-              ],
-              "metadata":{
-              }
-            },
-            "configuration":{
-              "acceptedOutputModes":[
-                "text"
-              ],
-              "returnImmediately":false
-            },
-            "metadata":{
-
-            }
-          }
-        }""";
-
-    static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE =
+            """
             {
               "jsonrpc":"2.0",
               "id":1,
@@ -177,9 +186,11 @@ public class JsonMessages {
                   }
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"SendMessage",
@@ -194,7 +205,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -204,12 +215,14 @@ public class JsonMessages {
                   "returnImmediately":false
                 },
                 "metadata":{
-                  
+
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_ERROR_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_ERROR_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -218,9 +231,11 @@ public class JsonMessages {
                 "message": "Invalid parameters",
                 "data": {"info": "Hello world"}
              }
-            }""";
+            }\
+            """;
 
-    static final String GET_TASK_TEST_REQUEST = """
+    static final String GET_TASK_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"GetTask",
@@ -231,7 +246,8 @@ public class JsonMessages {
             }
             """;
 
-    static final String GET_TASK_TEST_RESPONSE = """
+    static final String GET_TASK_TEST_RESPONSE =
+            """
             {
               "jsonrpc":"2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -272,13 +288,14 @@ public class JsonMessages {
                   }
                 ],
                 "metadata":{
-                  
+
                 }
               }
             }
             """;
 
-    static final String CANCEL_TASK_TEST_REQUEST = """
+    static final String CANCEL_TASK_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"CancelTask",
@@ -288,7 +305,8 @@ public class JsonMessages {
             }
             """;
 
-    static final String CANCEL_TASK_TEST_RESPONSE = """
+    static final String CANCEL_TASK_TEST_RESPONSE =
+            """
             {
               "jsonrpc":"2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -299,13 +317,14 @@ public class JsonMessages {
                     "state":"TASK_STATE_CANCELED"
                   },
                   "metadata":{
-                    
+
                   }
               }
             }
             """;
 
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
+    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"GetTaskPushNotificationConfig",
@@ -313,9 +332,11 @@ public class JsonMessages {
                 "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "id":"c295ea44-7543-4f78-b524-7a38915ad6e4"
               }
-            }""";
+            }\
+            """;
 
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -330,21 +351,24 @@ public class JsonMessages {
             }
             """;
 
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
-           {
-              "jsonrpc":"2.0",
-              "method":"CreateTaskPushNotificationConfig",
-              "params":{
-                "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
-                "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-                "url":"https://example.com/callback",
-                "authentication":{
-                  "scheme":"jwt"
-                }
-              }
-            }""";
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST =
+            """
+            {
+               "jsonrpc":"2.0",
+               "method":"CreateTaskPushNotificationConfig",
+               "params":{
+                 "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                 "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                 "url":"https://example.com/callback",
+                 "authentication":{
+                   "scheme":"jwt"
+                 }
+               }
+             }\
+            """;
 
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -359,41 +383,44 @@ public class JsonMessages {
             }
             """;
 
-    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST = """
-             {
-               "jsonrpc":"2.0",
-               "method":"SendMessage",
-               "params":{
-                 "message":{
-                   "messageId":"message-1234-with-file",
-                   "contextId":"context-1234",
-                   "role":"ROLE_USER",
-                   "parts":[
-                     {
-                       "text":"analyze this image"
-                     },
-                     {
-                       "url":"file:///path/to/image.jpg",
-                       "mediaType":"image/jpeg"
-                     }
-                   ],
-                   "metadata":{
-                     
-                   }
-                 },
-                 "configuration":{
-                   "acceptedOutputModes":[
-                     "text"
-                   ],
-                   "returnImmediately":false
-                 },
-                 "metadata":{
-                   
-                 }
-               }
-             }""";
+    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST =
+            """
+            {
+              "jsonrpc":"2.0",
+              "method":"SendMessage",
+              "params":{
+                "message":{
+                  "messageId":"message-1234-with-file",
+                  "contextId":"context-1234",
+                  "role":"ROLE_USER",
+                  "parts":[
+                    {
+                      "text":"analyze this image"
+                    },
+                    {
+                      "url":"file:///path/to/image.jpg",
+                      "mediaType":"image/jpeg"
+                    }
+                  ],
+                  "metadata":{
 
-    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE = """
+                  }
+                },
+                "configuration":{
+                  "acceptedOutputModes":[
+                    "text"
+                  ],
+                  "returnImmediately":false
+                },
+                "metadata":{
+
+                }
+              }
+            }\
+            """;
+
+    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE =
+            """
             {
               "jsonrpc":"2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -420,9 +447,11 @@ public class JsonMessages {
                   }
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"SendMessage",
@@ -445,7 +474,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -455,12 +484,14 @@ public class JsonMessages {
                   "returnImmediately":false
                 },
                 "metadata":{
-                  
+
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE =
+            """
             {
               "jsonrpc":"2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
@@ -483,13 +514,15 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"SendMessage",
@@ -516,7 +549,7 @@ public class JsonMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -526,48 +559,53 @@ public class JsonMessages {
                   "returnImmediately":false
                 },
                 "metadata":{
-                  
+
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE = """
-           {
-              "jsonrpc":"2.0",
-              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-              "result":{
-                "task":{
-                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
-                  "status":{
-                    "state":"TASK_STATE_COMPLETED"
-                  },
-                  "artifacts":[
-                    {
-                      "artifactId":"artifact-1",
-                      "name":"mixed-analysis",
-                      "parts":[
-                        {
-                          "text":"Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40]."
-                        }
-                      ]
-                    }
-                  ],
-                  "metadata":{
-                    
-                  }
-                }
-              }
-            }""";
+    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE =
+            """
+            {
+               "jsonrpc":"2.0",
+               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+               "result":{
+                 "task":{
+                   "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                   "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                   "status":{
+                     "state":"TASK_STATE_COMPLETED"
+                   },
+                   "artifacts":[
+                     {
+                       "artifactId":"artifact-1",
+                       "name":"mixed-analysis",
+                       "parts":[
+                         {
+                           "text":"Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40]."
+                         }
+                       ]
+                     }
+                   ],
+                   "metadata":{
 
-    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST = """
+                   }
+                 }
+               }
+             }\
+            """;
+
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST =
+            """
             {
                 "jsonrpc": "2.0",
                 "method": "GetExtendedAgentCard"
             }
             """;
 
-    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = """
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE =
+            """
             {
                 "jsonrpc": "2.0",
                 "id": "1",
@@ -647,9 +685,11 @@ public class JsonMessages {
                        }
                      ]
                 }
-            }""";
+            }\
+            """;
 
-    static final String AGENT_CARD_SUPPORTS_EXTENDED = """
+    static final String AGENT_CARD_SUPPORTS_EXTENDED =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -713,5 +753,6 @@ public class JsonMessages {
                     ]
                   }
                 ]
-              }""";
+              }\
+            """;
 }

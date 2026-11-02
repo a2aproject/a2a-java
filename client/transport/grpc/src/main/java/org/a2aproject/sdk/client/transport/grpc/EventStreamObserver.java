@@ -1,14 +1,12 @@
 package org.a2aproject.sdk.client.transport.grpc;
 
-
 import static org.a2aproject.sdk.grpc.utils.ProtoUtils.FromProto;
 
+import io.grpc.stub.StreamObserver;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.spec.StreamingEventKind;
-import io.grpc.stub.StreamObserver;
 import org.jspecify.annotations.Nullable;
 
 public class EventStreamObserver implements StreamObserver<StreamResponse> {
@@ -17,7 +15,8 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
     private final Consumer<StreamingEventKind> eventHandler;
     @Nullable private final Consumer<Throwable> errorHandler;
 
-    public EventStreamObserver(Consumer<StreamingEventKind> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
+    public EventStreamObserver(
+            Consumer<StreamingEventKind> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
     }
@@ -41,7 +40,10 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
             default:
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 if (errorHandler != null) {
-                    errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                    errorHandler.accept(
+                            new IllegalStateException(
+                                    "Invalid stream response from server: "
+                                            + response.getPayloadCase()));
                 }
                 return;
         }
@@ -53,7 +55,8 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
         if (errorHandler != null) {
             // Map gRPC errors to proper A2A exceptions
             if (t instanceof io.grpc.StatusRuntimeException) {
-                errorHandler.accept(GrpcErrorMapper.mapGrpcError((io.grpc.StatusRuntimeException) t));
+                errorHandler.accept(
+                        GrpcErrorMapper.mapGrpcError((io.grpc.StatusRuntimeException) t));
             } else {
                 errorHandler.accept(t);
             }

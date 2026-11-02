@@ -7,15 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
-
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.junit.jupiter.api.Test;
@@ -45,7 +43,8 @@ public class A2ACommonFieldMapperTest {
 
     @Test
     void testStructToMap_WithNestedNulls_RoundTrips() throws InvalidProtocolBufferException {
-        String json = """
+        String json =
+                """
                 {
                   "nested": {"optional": null},
                   "items": [null, {"optional": null}, [], {}],
@@ -90,7 +89,8 @@ public class A2ACommonFieldMapperTest {
         JsonFormat.parser().merge("[null,\"value\",{},[]]", builder);
         Value original = builder.build();
 
-        List<?> result = assertInstanceOf(List.class, A2ACommonFieldMapper.INSTANCE.valueToObject(original));
+        List<?> result =
+                assertInstanceOf(List.class, A2ACommonFieldMapper.INSTANCE.valueToObject(original));
 
         assertEquals(Arrays.asList(null, "value", Map.of(), List.of()), result);
         assertEquals(original, A2ACommonFieldMapper.INSTANCE.objectToValue(result));
@@ -121,45 +121,47 @@ public class A2ACommonFieldMapperTest {
     @Test
     void testValueToObject_WithEmptyStruct_ReturnsEmptyMap() throws InvalidProtocolBufferException {
         // JSON containing an empty struct in "response" field
-        String json = "{\n" +
-                "  \"message\": {\n" +
-                "    \"messageId\": \"b3b1ab58-c3d0-4e6d-9e47-9d8a12fe0809\",\n" +
-                "    \"role\": \"ROLE_USER\",\n" +
-                "    \"parts\": [{\n" +
-                "      \"text\": \"Hello\"\n" +
-                "    }, {\n" +
-                "      \"data\": {\n" +
-                "        \"data\": {\n" +
-                "          \"id\": \"call_94yo5ymj3qi5glbpkw5eicfd\",\n" +
-                "          \"args\": {\n" +
-                "            \"agent_name\": \"Default Agent\"\n" +
-                "          },\n" +
-                "          \"name\": \"transfer_to_agent\"\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }, {\n" +
-                "      \"data\": {\n" +
-                "        \"data\": {\n" +
-                "          \"response\": {\n" +
-                "          },\n" +
-                "          \"id\": \"call_94yo5ymj3qi5glbpkw5eicfd\",\n" +
-                "          \"name\": \"transfer_to_agent\"\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }, {\n" +
-                "      \"text\": \"World\"\n" +
-                "    }],\n" +
-                "    \"metadata\": {\n" +
-                "    }\n" +
-                "  },\n" +
-                "  \"configuration\": {\n" +
-                "    \"returnImmediately\": false\n" +
-                "  },\n" +
-                "  \"metadata\": {\n" +
-                "  }\n" +
-                "}";
+        String json =
+                "{\n"
+                        + "  \"message\": {\n"
+                        + "    \"messageId\": \"b3b1ab58-c3d0-4e6d-9e47-9d8a12fe0809\",\n"
+                        + "    \"role\": \"ROLE_USER\",\n"
+                        + "    \"parts\": [{\n"
+                        + "      \"text\": \"Hello\"\n"
+                        + "    }, {\n"
+                        + "      \"data\": {\n"
+                        + "        \"data\": {\n"
+                        + "          \"id\": \"call_94yo5ymj3qi5glbpkw5eicfd\",\n"
+                        + "          \"args\": {\n"
+                        + "            \"agent_name\": \"Default Agent\"\n"
+                        + "          },\n"
+                        + "          \"name\": \"transfer_to_agent\"\n"
+                        + "        }\n"
+                        + "      }\n"
+                        + "    }, {\n"
+                        + "      \"data\": {\n"
+                        + "        \"data\": {\n"
+                        + "          \"response\": {\n"
+                        + "          },\n"
+                        + "          \"id\": \"call_94yo5ymj3qi5glbpkw5eicfd\",\n"
+                        + "          \"name\": \"transfer_to_agent\"\n"
+                        + "        }\n"
+                        + "      }\n"
+                        + "    }, {\n"
+                        + "      \"text\": \"World\"\n"
+                        + "    }],\n"
+                        + "    \"metadata\": {\n"
+                        + "    }\n"
+                        + "  },\n"
+                        + "  \"configuration\": {\n"
+                        + "    \"returnImmediately\": false\n"
+                        + "  },\n"
+                        + "  \"metadata\": {\n"
+                        + "  }\n"
+                        + "}";
 
-        org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+        org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder =
+                org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
         JsonFormat.parser().merge(json, builder);
 
         // This should not throw NullPointerException
@@ -174,25 +176,28 @@ public class A2ACommonFieldMapperTest {
      * Test that valueToObject handles nested empty struct correctly.
      */
     @Test
-    void testValueToObject_WithNestedEmptyStruct_ReturnsEmptyMap() throws InvalidProtocolBufferException {
-        String json = "{\n" +
-                "  \"message\": {\n" +
-                "    \"messageId\": \"test-id\",\n" +
-                "    \"role\": \"ROLE_USER\",\n" +
-                "    \"parts\": [{\n" +
-                "      \"data\": {\n" +
-                "        \"data\": {\n" +
-                "          \"nested\": {\n" +
-                "            \"empty\": {\n" +
-                "            }\n" +
-                "          }\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }]\n" +
-                "  }\n" +
-                "}";
+    void testValueToObject_WithNestedEmptyStruct_ReturnsEmptyMap()
+            throws InvalidProtocolBufferException {
+        String json =
+                "{\n"
+                        + "  \"message\": {\n"
+                        + "    \"messageId\": \"test-id\",\n"
+                        + "    \"role\": \"ROLE_USER\",\n"
+                        + "    \"parts\": [{\n"
+                        + "      \"data\": {\n"
+                        + "        \"data\": {\n"
+                        + "          \"nested\": {\n"
+                        + "            \"empty\": {\n"
+                        + "            }\n"
+                        + "          }\n"
+                        + "        }\n"
+                        + "      }\n"
+                        + "    }]\n"
+                        + "  }\n"
+                        + "}";
 
-        org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+        org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder =
+                org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
         JsonFormat.parser().merge(json, builder);
 
         // This should not throw NullPointerException

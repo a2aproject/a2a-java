@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -15,10 +14,10 @@ import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -37,7 +36,9 @@ public abstract class AbstractClient_v0_3 {
         this(consumers, null);
     }
 
-    public AbstractClient_v0_3(@NonNull List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
+    public AbstractClient_v0_3(
+            @NonNull List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler) {
         checkNotNullParam("consumers", consumers);
         this.consumers = consumers;
         this.streamingErrorHandler = streamingErrorHandler;
@@ -72,7 +73,8 @@ public abstract class AbstractClient_v0_3 {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract void sendMessage(Message_v0_3 request, @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -88,9 +90,11 @@ public abstract class AbstractClient_v0_3 {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException_v0_3 if sending the message fails for any reason
      */
-    public void sendMessage(Message_v0_3 request,
-                            List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
-                            Consumer<Throwable> streamingErrorHandler) throws A2AClientException_v0_3 {
+    public void sendMessage(
+            Message_v0_3 request,
+            List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
+            Consumer<Throwable> streamingErrorHandler)
+            throws A2AClientException_v0_3 {
         sendMessage(request, consumers, streamingErrorHandler, null);
     }
 
@@ -109,10 +113,12 @@ public abstract class AbstractClient_v0_3 {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message_v0_3 request,
-                                     List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
-                                     Consumer<Throwable> streamingErrorHandler,
-                                     @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract void sendMessage(
+            Message_v0_3 request,
+            List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
+            Consumer<Throwable> streamingErrorHandler,
+            @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -128,8 +134,11 @@ public abstract class AbstractClient_v0_3 {
      * @param metadata the optional metadata to include when sending the message
      * @throws A2AClientException_v0_3 if sending the message fails for any reason
      */
-    public void sendMessage(Message_v0_3 request, PushNotificationConfig_v0_3 pushNotificationConfiguration,
-                            Map<String, Object> metadata) throws A2AClientException_v0_3 {
+    public void sendMessage(
+            Message_v0_3 request,
+            PushNotificationConfig_v0_3 pushNotificationConfiguration,
+            Map<String, Object> metadata)
+            throws A2AClientException_v0_3 {
         sendMessage(request, pushNotificationConfiguration, metadata, null);
     }
 
@@ -148,8 +157,12 @@ public abstract class AbstractClient_v0_3 {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message_v0_3 request, PushNotificationConfig_v0_3 pushNotificationConfiguration,
-                                     Map<String, Object> metadata, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract void sendMessage(
+            Message_v0_3 request,
+            PushNotificationConfig_v0_3 pushNotificationConfiguration,
+            Map<String, Object> metadata,
+            @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Retrieve the current state and history of a specific task.
@@ -170,7 +183,9 @@ public abstract class AbstractClient_v0_3 {
      * @return the task
      * @throws A2AClientException_v0_3 if retrieving the task fails for any reason
      */
-    public abstract Task_v0_3 getTask(TaskQueryParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract Task_v0_3 getTask(
+            TaskQueryParams_v0_3 request, @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Request the agent to cancel a specific task.
@@ -191,7 +206,9 @@ public abstract class AbstractClient_v0_3 {
      * @return the cancelled task
      * @throws A2AClientException_v0_3 if cancelling the task fails for any reason
      */
-    public abstract Task_v0_3 cancelTask(TaskIdParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract Task_v0_3 cancelTask(
+            TaskIdParams_v0_3 request, @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Set or update the push notification configuration for a specific task.
@@ -214,8 +231,8 @@ public abstract class AbstractClient_v0_3 {
      * @throws A2AClientException_v0_3 if setting the task push notification configuration fails for any reason
      */
     public abstract TaskPushNotificationConfig_v0_3 setTaskPushNotificationConfiguration(
-            TaskPushNotificationConfig_v0_3 request,
-            @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+            TaskPushNotificationConfig_v0_3 request, @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Retrieve the push notification configuration for a specific task.
@@ -239,7 +256,8 @@ public abstract class AbstractClient_v0_3 {
      */
     public abstract TaskPushNotificationConfig_v0_3 getTaskPushNotificationConfiguration(
             GetTaskPushNotificationConfigParams_v0_3 request,
-            @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+            @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Retrieve the list of push notification configurations for a specific task.
@@ -263,7 +281,8 @@ public abstract class AbstractClient_v0_3 {
      */
     public abstract List<TaskPushNotificationConfig_v0_3> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams_v0_3 request,
-            @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+            @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Delete the list of push notification configurations for a specific task.
@@ -285,7 +304,8 @@ public abstract class AbstractClient_v0_3 {
      */
     public abstract void deleteTaskPushNotificationConfigurations(
             DeleteTaskPushNotificationConfigParams_v0_3 request,
-            @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+            @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Resubscribe to a task's event stream.
@@ -312,7 +332,9 @@ public abstract class AbstractClient_v0_3 {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if resubscribing fails for any reason
      */
-    public abstract void resubscribe(TaskIdParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract void resubscribe(
+            TaskIdParams_v0_3 request, @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Resubscribe to a task's event stream.
@@ -326,8 +348,11 @@ public abstract class AbstractClient_v0_3 {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException_v0_3 if resubscribing fails for any reason
      */
-    public void resubscribe(TaskIdParams_v0_3 request, List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
-                            Consumer<Throwable> streamingErrorHandler) throws A2AClientException_v0_3 {
+    public void resubscribe(
+            TaskIdParams_v0_3 request,
+            List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
+            Consumer<Throwable> streamingErrorHandler)
+            throws A2AClientException_v0_3 {
         resubscribe(request, consumers, streamingErrorHandler, null);
     }
 
@@ -344,8 +369,12 @@ public abstract class AbstractClient_v0_3 {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if resubscribing fails for any reason
      */
-    public abstract void resubscribe(TaskIdParams_v0_3 request, List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
-                                     Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract void resubscribe(
+            TaskIdParams_v0_3 request,
+            List<BiConsumer<ClientEvent_v0_3, AgentCard_v0_3>> consumers,
+            Consumer<Throwable> streamingErrorHandler,
+            @Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Retrieve the AgentCard.
@@ -364,7 +393,8 @@ public abstract class AbstractClient_v0_3 {
      * @return the AgentCard
      * @throws A2AClientException_v0_3 if retrieving the agent card fails for any reason
      */
-    public abstract AgentCard_v0_3 getAgentCard(@Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3;
+    public abstract AgentCard_v0_3 getAgentCard(@Nullable ClientCallContext_v0_3 context)
+            throws A2AClientException_v0_3;
 
     /**
      * Close the transport and release any associated resources.
@@ -388,5 +418,4 @@ public abstract class AbstractClient_v0_3 {
     public @Nullable Consumer<Throwable> getStreamingErrorHandler() {
         return streamingErrorHandler;
     }
-
 }

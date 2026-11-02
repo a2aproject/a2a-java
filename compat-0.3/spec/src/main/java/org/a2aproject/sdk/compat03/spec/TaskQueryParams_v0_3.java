@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import java.util.Map;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -11,7 +11,8 @@ import org.jspecify.annotations.Nullable;
  * @param historyLength the maximum number of items of history for the task to include in the response
  * @param metadata additional properties
  */
-public record TaskQueryParams_v0_3(String id, int historyLength, @Nullable Map<String, Object> metadata) {
+public record TaskQueryParams_v0_3(
+        String id, int historyLength, @Nullable Map<String, Object> metadata) {
 
     public TaskQueryParams_v0_3 {
         Assert.checkNotNullParam("id", id);

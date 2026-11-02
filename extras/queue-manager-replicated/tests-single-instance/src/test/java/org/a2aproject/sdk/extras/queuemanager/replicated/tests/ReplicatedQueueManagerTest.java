@@ -2,12 +2,11 @@ package org.a2aproject.sdk.extras.queuemanager.replicated.tests;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-import jakarta.inject.Inject;
-
-import org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedQueueManager;
-import org.a2aproject.sdk.testutils.docker.RequiresDocker;
-import org.a2aproject.sdk.server.events.QueueManager;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedQueueManager;
+import org.a2aproject.sdk.server.events.QueueManager;
+import org.a2aproject.sdk.testutils.docker.RequiresDocker;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -18,8 +17,7 @@ import org.junit.jupiter.api.Test;
 @RequiresDocker
 public class ReplicatedQueueManagerTest {
 
-    @Inject
-    QueueManager queueManager;
+    @Inject QueueManager queueManager;
 
     @Test
     public void testReplicationSystemIsConfigured() {

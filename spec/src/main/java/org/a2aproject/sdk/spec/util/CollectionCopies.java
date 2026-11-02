@@ -1,12 +1,11 @@
 package org.a2aproject.sdk.spec.util;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utility methods for creating defensive copies of collection fields.
@@ -22,8 +21,7 @@ import java.util.Map;
  */
 public final class CollectionCopies {
 
-    private CollectionCopies() {
-    }
+    private CollectionCopies() {}
 
     /**
      * Creates an immutable defensive copy of a non-null list.
@@ -131,7 +129,8 @@ public final class CollectionCopies {
      * @return {@code null} if the source is {@code null}, otherwise an unmodifiable shallow copy
      * preserving null values
      */
-    public static <K, V> @Nullable Map<K, V> unmodifiableNullableShallowMap(@Nullable Map<K, V> map) {
+    public static <K, V> @Nullable Map<K, V> unmodifiableNullableShallowMap(
+            @Nullable Map<K, V> map) {
         return map == null ? null : unmodifiableShallowMap(map);
     }
 

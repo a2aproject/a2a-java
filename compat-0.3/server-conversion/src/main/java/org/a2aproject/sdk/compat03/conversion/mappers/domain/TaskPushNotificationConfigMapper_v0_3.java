@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
@@ -22,13 +22,16 @@ import org.mapstruct.Mapper;
  *   <li>v1.0 → v0.3: Nest url/token/authentication/id into {@code PushNotificationConfig}, drop tenant field</li>
  * </ul>
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {AuthenticationInfoMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {AuthenticationInfoMapper_v0_3.class})
 public interface TaskPushNotificationConfigMapper_v0_3 {
 
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    TaskPushNotificationConfigMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(TaskPushNotificationConfigMapper_v0_3.class);
+    TaskPushNotificationConfigMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(TaskPushNotificationConfigMapper_v0_3.class);
 
     /**
      * Converts v0.3 TaskPushNotificationConfig to v1.0 TaskPushNotificationConfig.
@@ -38,8 +41,7 @@ public interface TaskPushNotificationConfigMapper_v0_3 {
      * @param v03 the v0.3 task push notification config
      * @return the equivalent v1.0 task push notification config
      */
-    default TaskPushNotificationConfig toV10(
-            TaskPushNotificationConfig_v0_3 v03) {
+    default TaskPushNotificationConfig toV10(TaskPushNotificationConfig_v0_3 v03) {
         if (v03 == null) {
             return null;
         }
@@ -50,13 +52,14 @@ public interface TaskPushNotificationConfigMapper_v0_3 {
         String id = pushConfig.id() != null ? pushConfig.id() : "";
 
         return new TaskPushNotificationConfig(
-            id,
-            v03.taskId(),
-            pushConfig.url(),
-            pushConfig.token(),
-            AuthenticationInfoMapper_v0_3.INSTANCE.toV10FromPushNotification(pushConfig.authentication()),
-            ""  // Default tenant
-        );
+                id,
+                v03.taskId(),
+                pushConfig.url(),
+                pushConfig.token(),
+                AuthenticationInfoMapper_v0_3.INSTANCE.toV10FromPushNotification(
+                        pushConfig.authentication()),
+                "" // Default tenant
+                );
     }
 
     /**
@@ -67,23 +70,19 @@ public interface TaskPushNotificationConfigMapper_v0_3 {
      * @param v10 the v1.0 task push notification config
      * @return the equivalent v0.3 task push notification config
      */
-    default TaskPushNotificationConfig_v0_3 fromV10(
-            TaskPushNotificationConfig v10) {
+    default TaskPushNotificationConfig_v0_3 fromV10(TaskPushNotificationConfig v10) {
         if (v10 == null) {
             return null;
         }
 
         PushNotificationConfig_v0_3 pushConfig =
-            new PushNotificationConfig_v0_3(
-                v10.url(),
-                v10.token(),
-                AuthenticationInfoMapper_v0_3.INSTANCE.fromV10ToPushNotification(v10.authentication()),
-                v10.id()
-            );
+                new PushNotificationConfig_v0_3(
+                        v10.url(),
+                        v10.token(),
+                        AuthenticationInfoMapper_v0_3.INSTANCE.fromV10ToPushNotification(
+                                v10.authentication()),
+                        v10.id());
 
-        return new TaskPushNotificationConfig_v0_3(
-            v10.taskId(),
-            pushConfig
-        );
+        return new TaskPushNotificationConfig_v0_3(v10.taskId(), pushConfig);
     }
 }

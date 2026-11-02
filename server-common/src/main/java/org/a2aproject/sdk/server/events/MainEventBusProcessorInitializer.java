@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
  */
 @ApplicationScoped
 public class MainEventBusProcessorInitializer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MainEventBusProcessorInitializer.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(MainEventBusProcessorInitializer.class);
 
-    @Inject
-    MainEventBusProcessor processor;
+    @Inject MainEventBusProcessor processor;
 
     /**
      * Observes ApplicationScoped initialization to force eager creation of MainEventBusProcessor.

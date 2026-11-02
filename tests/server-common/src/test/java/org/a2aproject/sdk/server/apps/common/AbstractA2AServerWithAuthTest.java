@@ -1,36 +1,25 @@
 package org.a2aproject.sdk.server.apps.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.specification.RequestSpecification;
+import jakarta.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-
-
-import io.restassured.RestAssured;
-import io.restassured.config.ObjectMapperConfig;
-import io.restassured.specification.RequestSpecification;
-import jakarta.ws.rs.core.MediaType;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
-import org.a2aproject.sdk.server.apps.common.A2AGsonObjectMapper;
 import org.a2aproject.sdk.spec.A2AClientException;
-import org.a2aproject.sdk.spec.A2AClientHTTPError;
-import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
-import org.a2aproject.sdk.spec.AgentInterface;
-import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
-import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
@@ -71,11 +60,12 @@ public abstract class AbstractA2AServerWithAuthTest {
     }
 
     // Minimal test task
-    protected static final Task MINIMAL_TASK = Task.builder()
-            .id("task-123")
-            .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-            .build();
+    protected static final Task MINIMAL_TASK =
+            Task.builder()
+                    .id("task-123")
+                    .contextId("session-xyz")
+                    .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                    .build();
 
     protected final int serverPort;
     private Client authenticatedClient;
@@ -135,12 +125,12 @@ public abstract class AbstractA2AServerWithAuthTest {
      */
     private Client createAuthenticatedClient() throws A2AClientException {
         AgentCard agentCard = fetchAgentCardFromServer();
-        ClientConfig clientConfig = new ClientConfig.Builder()
-                .setStreaming(false)  // Non-streaming for simple tests
-                .build();
+        ClientConfig clientConfig =
+                new ClientConfig.Builder()
+                        .setStreaming(false) // Non-streaming for simple tests
+                        .build();
 
-        ClientBuilder clientBuilder = Client.builder(agentCard)
-                .clientConfig(clientConfig);
+        ClientBuilder clientBuilder = Client.builder(agentCard).clientConfig(clientConfig);
 
         configureTransportWithAuth(clientBuilder);
 
@@ -152,14 +142,11 @@ public abstract class AbstractA2AServerWithAuthTest {
      */
     private Client createUnauthenticatedClient() throws A2AClientException {
         AgentCard agentCard = fetchAgentCardFromServer();
-        ClientConfig clientConfig = new ClientConfig.Builder()
-                .setStreaming(false)
-                .build();
+        ClientConfig clientConfig = new ClientConfig.Builder().setStreaming(false).build();
 
-        ClientBuilder clientBuilder = Client.builder(agentCard)
-                .clientConfig(clientConfig);
+        ClientBuilder clientBuilder = Client.builder(agentCard).clientConfig(clientConfig);
 
-        configureTransport(clientBuilder);  // No auth
+        configureTransport(clientBuilder); // No auth
 
         return clientBuilder.build();
     }
@@ -171,12 +158,18 @@ public abstract class AbstractA2AServerWithAuthTest {
     protected AgentCard fetchAgentCardFromServer() {
         try {
             HttpClient httpClient = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:" + serverPort + "/.well-known/agent-card.json"))
-                    .GET()
-                    .build();
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(
+                                    URI.create(
+                                            "http://localhost:"
+                                                    + serverPort
+                                                    + "/.well-known/agent-card.json"))
+                            .GET()
+                            .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Failed to fetch agent card: " + response.statusCode());
             }
@@ -192,16 +185,17 @@ public abstract class AbstractA2AServerWithAuthTest {
      */
     protected static RequestSpecification given() {
         return RestAssured.given()
-                .config(RestAssured.config()
-                        .objectMapperConfig(new ObjectMapperConfig(A2AGsonObjectMapper.INSTANCE)));
+                .config(
+                        RestAssured.config()
+                                .objectMapperConfig(
+                                        new ObjectMapperConfig(A2AGsonObjectMapper.INSTANCE)));
     }
 
     /**
      * RestAssured helper with authentication.
      */
     protected RequestSpecification givenAuthenticated() {
-        return given()
-                .auth().basic(TEST_USERNAME, TEST_PASSWORD);
+        return given().auth().basic(TEST_USERNAME, TEST_PASSWORD);
     }
 
     /**
@@ -215,19 +209,21 @@ public abstract class AbstractA2AServerWithAuthTest {
      * Save a task in the test task store via HTTP.
      */
     protected void saveTaskInTaskStore(Task task) throws Exception {
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
+        HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/task"))
-                .header("Content-Type", MediaType.APPLICATION_JSON)
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(task)))
-                .build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/test/task"))
+                        .header("Content-Type", MediaType.APPLICATION_JSON)
+                        .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(task)))
+                        .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response =
+                httpClient.send(
+                        request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200 && response.statusCode() != 204) {
-            throw new RuntimeException("Failed to save task: " + response.statusCode() + " " + response.body());
+            throw new RuntimeException(
+                    "Failed to save task: " + response.statusCode() + " " + response.body());
         }
     }
 
@@ -237,14 +233,17 @@ public abstract class AbstractA2AServerWithAuthTest {
     protected void deleteTaskInTaskStore(String taskId) throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
-                .DELETE()
-                .build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
+                        .DELETE()
+                        .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response =
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200 && response.statusCode() != 204) {
-            throw new RuntimeException("Failed to delete task: " + response.statusCode() + " " + response.body());
+            throw new RuntimeException(
+                    "Failed to delete task: " + response.statusCode() + " " + response.body());
         }
     }
 
@@ -261,13 +260,17 @@ public abstract class AbstractA2AServerWithAuthTest {
 
         // Test unauthenticated request fails
         Client unauthClient = getUnauthenticatedClient();
-        A2AClientException error = assertThrows(A2AClientException.class, () -> {
-            unauthClient.getTask(new TaskQueryParams(MINIMAL_TASK.id()));
-        });
+        A2AClientException error =
+                assertThrows(
+                        A2AClientException.class,
+                        () -> {
+                            unauthClient.getTask(new TaskQueryParams(MINIMAL_TASK.id()));
+                        });
         // Verify it's an authentication failure
-        assertTrue(error.getMessage().contains("Authentication failed") ||
-                   error.getMessage().contains("401") ||
-                   error.getMessage().contains("Unauthorized"),
+        assertTrue(
+                error.getMessage().contains("Authentication failed")
+                        || error.getMessage().contains("401")
+                        || error.getMessage().contains("Unauthorized"),
                 "Expected authentication error, got: " + error.getMessage());
 
         // Cleanup
@@ -301,10 +304,7 @@ public abstract class AbstractA2AServerWithAuthTest {
      */
     @Test
     public void testGetAgentCardIsPublic() {
-        givenUnauthenticated()
-                .get("/.well-known/agent-card.json")
-                .then()
-                .statusCode(200);
+        givenUnauthenticated().get("/.well-known/agent-card.json").then().statusCode(200);
     }
 
     /**
@@ -321,7 +321,10 @@ public abstract class AbstractA2AServerWithAuthTest {
         // Test with valid credentials via RestAssured
         givenAuthenticated()
                 .contentType("application/json")
-                .body("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getTask\",\"params\":{\"id\":\"" + MINIMAL_TASK.id() + "\"}}")
+                .body(
+                        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getTask\",\"params\":{\"id\":\""
+                                + MINIMAL_TASK.id()
+                                + "\"}}")
                 .post("/")
                 .then()
                 .statusCode(200);

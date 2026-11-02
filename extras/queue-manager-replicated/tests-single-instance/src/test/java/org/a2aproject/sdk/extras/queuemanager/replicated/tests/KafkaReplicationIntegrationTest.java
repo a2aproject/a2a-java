@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -17,9 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
 import org.a2aproject.sdk.client.TaskEvent;
@@ -41,7 +40,6 @@ import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.testutils.docker.RequiresDocker;
-import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.junit.jupiter.api.AfterEach;
@@ -58,14 +56,12 @@ import org.slf4j.LoggerFactory;
 @RequiresDocker
 public class KafkaReplicationIntegrationTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaReplicationIntegrationTest.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(KafkaReplicationIntegrationTest.class);
 
-    @Inject
-    @PublicAgentCard
-    AgentCard agentCard;
+    @Inject @PublicAgentCard AgentCard agentCard;
 
-    @Inject
-    TestKafkaEventConsumer testConsumer;
+    @Inject TestKafkaEventConsumer testConsumer;
 
     @Inject
     @Channel("replicated-events-out")
@@ -78,35 +74,32 @@ public class KafkaReplicationIntegrationTest {
     @BeforeEach
     public void setup() throws A2AClientException {
         // Create non-streaming client for initial task creation
-        ClientConfig nonStreamingConfig = new ClientConfig.Builder()
-                .setStreaming(false)
-                .build();
+        ClientConfig nonStreamingConfig = new ClientConfig.Builder().setStreaming(false).build();
 
-        nonStreamingClient = Client.builder(agentCard)
-                .clientConfig(nonStreamingConfig)
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        nonStreamingClient =
+                Client.builder(agentCard)
+                        .clientConfig(nonStreamingConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
 
         // Create streaming client for resubscription
-        ClientConfig streamingConfig = new ClientConfig.Builder()
-                .setStreaming(true)
-                .build();
+        ClientConfig streamingConfig = new ClientConfig.Builder().setStreaming(true).build();
 
-        streamingClient = Client.builder(agentCard)
-                .clientConfig(streamingConfig)
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        streamingClient =
+                Client.builder(agentCard)
+                        .clientConfig(streamingConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
 
         // Create polling client for non-blocking operations
-        ClientConfig pollingConfig = new ClientConfig.Builder()
-                .setStreaming(false)
-                .setPolling(true)
-                .build();
+        ClientConfig pollingConfig =
+                new ClientConfig.Builder().setStreaming(false).setPolling(true).build();
 
-        pollingClient = Client.builder(agentCard)
-                .clientConfig(pollingConfig)
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        pollingClient =
+                Client.builder(agentCard)
+                        .clientConfig(pollingConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
     }
 
     @AfterEach
@@ -129,26 +122,31 @@ public class KafkaReplicationIntegrationTest {
         testConsumer.clear();
 
         // Send A2A message that should trigger events and replication (no client-provided taskId)
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("create")))
-                .messageId("test-msg-" + System.currentTimeMillis())
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("create")))
+                        .messageId("test-msg-" + System.currentTimeMillis())
+                        .build();
 
         CountDownLatch a2aLatch = new CountDownLatch(1);
         AtomicReference<Task> createdTask = new AtomicReference<>();
         AtomicBoolean a2aError = new AtomicBoolean(false);
 
         // Send message and verify A2A processing works
-        nonStreamingClient.sendMessage(message, List.of((ClientEvent event, AgentCard card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                createdTask.set(taskEvent.getTask());
-                a2aLatch.countDown();
-            }
-        }), (Throwable error) -> {
-            a2aError.set(true);
-            a2aLatch.countDown();
-        });
+        nonStreamingClient.sendMessage(
+                message,
+                List.of(
+                        (ClientEvent event, AgentCard card) -> {
+                            if (event instanceof TaskEvent taskEvent) {
+                                createdTask.set(taskEvent.getTask());
+                                a2aLatch.countDown();
+                            }
+                        }),
+                (Throwable error) -> {
+                    a2aError.set(true);
+                    a2aLatch.countDown();
+                });
 
         // Wait for A2A processing to complete
         assertTrue(a2aLatch.await(15, TimeUnit.SECONDS), "A2A message processing timed out");
@@ -172,15 +170,28 @@ public class KafkaReplicationIntegrationTest {
 
         // The event should now maintain its proper type through Kafka serialization
         // This verifies that our polymorphic serialization is working correctly
-        assertInstanceOf(TaskStatusUpdateEvent.class, receivedEvent, "Event should maintain TaskStatusUpdateEvent type after Kafka round-trip");
+        assertInstanceOf(
+                TaskStatusUpdateEvent.class,
+                receivedEvent,
+                "Event should maintain TaskStatusUpdateEvent type after Kafka round-trip");
         TaskStatusUpdateEvent statusUpdateEvent = (TaskStatusUpdateEvent) receivedEvent;
 
         // Verify the event data is consistent with the task returned from the client
-        assertEquals(taskId, statusUpdateEvent.taskId(), "Event task ID should match original task ID");
-        assertEquals(contextId, statusUpdateEvent.contextId(), "Event context ID should match original context ID");
-        assertEquals(TaskState.TASK_STATE_SUBMITTED, statusUpdateEvent.status().state(), "Event should show SUBMITTED state");
+        assertEquals(
+                taskId, statusUpdateEvent.taskId(), "Event task ID should match original task ID");
+        assertEquals(
+                contextId,
+                statusUpdateEvent.contextId(),
+                "Event context ID should match original context ID");
+        assertEquals(
+                TaskState.TASK_STATE_SUBMITTED,
+                statusUpdateEvent.status().state(),
+                "Event should show SUBMITTED state");
         assertFalse(statusUpdateEvent.isFinal(), "Event should show final:false");
-        assertEquals(TaskStatusUpdateEvent.STREAMING_EVENT_ID, statusUpdateEvent.kind(), "Event should indicate status-update type");
+        assertEquals(
+                TaskStatusUpdateEvent.STREAMING_EVENT_ID,
+                statusUpdateEvent.kind(),
+                "Event should indicate status-update type");
     }
 
     @Test
@@ -188,24 +199,30 @@ public class KafkaReplicationIntegrationTest {
         // Clear any previous events
         testConsumer.clear();
 
-        // First create a task in the A2A system using non-streaming client (no client-provided taskId)
-        Message createMessage = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("create")))
-                .messageId("create-msg-" + System.currentTimeMillis())
-                .build();
+        // First create a task in the A2A system using non-streaming client (no client-provided
+        // taskId)
+        Message createMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("create")))
+                        .messageId("create-msg-" + System.currentTimeMillis())
+                        .build();
 
         CountDownLatch createLatch = new CountDownLatch(1);
         AtomicReference<Task> createdTask = new AtomicReference<>();
 
-        nonStreamingClient.sendMessage(createMessage, List.of((ClientEvent event, AgentCard card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                createdTask.set(taskEvent.getTask());
-                createLatch.countDown();
-            }
-        }), (Throwable error) -> {
-            createLatch.countDown();
-        });
+        nonStreamingClient.sendMessage(
+                createMessage,
+                List.of(
+                        (ClientEvent event, AgentCard card) -> {
+                            if (event instanceof TaskEvent taskEvent) {
+                                createdTask.set(taskEvent.getTask());
+                                createLatch.countDown();
+                            }
+                        }),
+                (Throwable error) -> {
+                    createLatch.countDown();
+                });
 
         assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task initialTask = createdTask.get();
@@ -213,7 +230,10 @@ public class KafkaReplicationIntegrationTest {
         String taskId = initialTask.id();
         String contextId = initialTask.contextId();
         assertNotNull(taskId, "Server-generated task ID should not be null");
-        assertEquals(TaskState.TASK_STATE_SUBMITTED, initialTask.status().state(), "Initial task should be in SUBMITTED state");
+        assertEquals(
+                TaskState.TASK_STATE_SUBMITTED,
+                initialTask.status().state(),
+                "Initial task should be in SUBMITTED state");
 
         // Add a small delay to ensure the task is fully processed before resubscription
         Thread.sleep(1000);
@@ -226,53 +246,60 @@ public class KafkaReplicationIntegrationTest {
         AtomicBoolean receivedInitialTask = new AtomicBoolean(false);
 
         // Create consumer to handle subscribed events
-        BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
-            // Per A2A spec 3.1.6: ENFORCE that first event is TaskEvent
-            if (!receivedInitialTask.get()) {
-                if (event instanceof TaskEvent) {
-                    receivedInitialTask.set(true);
-                    return;
-                } else {
-                    throw new AssertionError("First event on subscribe MUST be TaskEvent, but was: " + event.getClass().getSimpleName());
-                }
-            }
-
-            // Process subsequent events
-            if (event instanceof TaskUpdateEvent taskUpdateEvent) {
-                if (taskUpdateEvent.getUpdateEvent() instanceof TaskStatusUpdateEvent statusEvent) {
-                    if (statusEvent.status().state() == TaskState.TASK_STATE_COMPLETED) {
-                        receivedCompletedEvent.set(statusEvent);
-                        subscribeLatch.countDown();
+        BiConsumer<ClientEvent, AgentCard> consumer =
+                (event, agentCard) -> {
+                    // Per A2A spec 3.1.6: ENFORCE that first event is TaskEvent
+                    if (!receivedInitialTask.get()) {
+                        if (event instanceof TaskEvent) {
+                            receivedInitialTask.set(true);
+                            return;
+                        } else {
+                            throw new AssertionError(
+                                    "First event on subscribe MUST be TaskEvent, but was: "
+                                            + event.getClass().getSimpleName());
+                        }
                     }
-                } else {
-                    wasUnexpectedEvent.set(true);
-                }
-            } else {
-                wasUnexpectedEvent.set(true);
-            }
-        };
+
+                    // Process subsequent events
+                    if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                        if (taskUpdateEvent.getUpdateEvent()
+                                instanceof TaskStatusUpdateEvent statusEvent) {
+                            if (statusEvent.status().state() == TaskState.TASK_STATE_COMPLETED) {
+                                receivedCompletedEvent.set(statusEvent);
+                                subscribeLatch.countDown();
+                            }
+                        } else {
+                            wasUnexpectedEvent.set(true);
+                        }
+                    } else {
+                        wasUnexpectedEvent.set(true);
+                    }
+                };
 
         // Create error handler - filter out benign stream closed errors.
         // HTTP/2 streams are cancelled during normal cleanup when subscriptions end,
         // which is expected behavior and not an actual error condition.
-        Consumer<Throwable> errorHandler = error -> {
-            if (!isStreamClosedError(error)) {
-                errorRef.set(error);
-            }
-            subscribeLatch.countDown();
-        };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    if (!isStreamClosedError(error)) {
+                        errorRef.set(error);
+                    }
+                    subscribeLatch.countDown();
+                };
 
         // Subscribe to the task to listen for updates
         streamingClient.subscribeToTask(new TaskIdParams(taskId), List.of(consumer), errorHandler);
 
         // Now manually send a TaskStatusUpdateEvent to Kafka using reactive messaging
-        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
-                .taskId(taskId)
-                .contextId(contextId)
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        TaskStatusUpdateEvent statusEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId(contextId)
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
 
-        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, statusEvent);
+        ReplicatedEventQueueItem replicatedEvent =
+                new ReplicatedEventQueueItem(taskId, statusEvent);
         String eventJson = JsonUtil.toJson(replicatedEvent);
 
         // Send to Kafka using reactive messaging
@@ -280,7 +307,9 @@ public class KafkaReplicationIntegrationTest {
 
         // Wait for the replicated event to be received via streaming resubscription
         // This tests the full round-trip: Manual Kafka Event -> A2A System -> Streaming Client
-        assertTrue(subscribeLatch.await(15, TimeUnit.SECONDS), "Should receive COMPLETED event via resubscription");
+        assertTrue(
+                subscribeLatch.await(15, TimeUnit.SECONDS),
+                "Should receive COMPLETED event via resubscription");
 
         // Verify no unexpected events or errors
         assertFalse(wasUnexpectedEvent.get(), "Should not receive unexpected events");
@@ -289,7 +318,10 @@ public class KafkaReplicationIntegrationTest {
         // Verify the received event
         TaskStatusUpdateEvent completedEvent = receivedCompletedEvent.get();
         assertNotNull(completedEvent, "Should have received a TaskStatusUpdateEvent");
-        assertEquals(TaskState.TASK_STATE_COMPLETED, completedEvent.status().state(), "Event should show COMPLETED state");
+        assertEquals(
+                TaskState.TASK_STATE_COMPLETED,
+                completedEvent.status().state(),
+                "Event should show COMPLETED state");
         assertTrue(completedEvent.isFinal(), "Event should be marked as final");
         assertEquals(taskId, completedEvent.taskId(), "Event should have correct task ID");
         assertEquals(contextId, completedEvent.contextId(), "Event should have correct context ID");
@@ -307,28 +339,35 @@ public class KafkaReplicationIntegrationTest {
 
         // Use polling (non-blocking) client with "working" command (no client-provided taskId)
         // This creates task in WORKING state (non-final) and keeps queue alive
-        Message workingMessage = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("working")))
-                .messageId("working-msg-" + System.currentTimeMillis())
-                .build();
+        Message workingMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("working")))
+                        .messageId("working-msg-" + System.currentTimeMillis())
+                        .build();
 
         CountDownLatch workingLatch = new CountDownLatch(1);
         AtomicReference<String> taskIdRef = new AtomicReference<>();
 
-        pollingClient.sendMessage(workingMessage, List.of((ClientEvent event, AgentCard card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                taskIdRef.set(taskEvent.getTask().id());
-                workingLatch.countDown();
-            } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
-                if (status.status().state() == TaskState.TASK_STATE_WORKING) {
-                    taskIdRef.set(status.taskId());
+        pollingClient.sendMessage(
+                workingMessage,
+                List.of(
+                        (ClientEvent event, AgentCard card) -> {
+                            if (event instanceof TaskEvent taskEvent) {
+                                taskIdRef.set(taskEvent.getTask().id());
+                                workingLatch.countDown();
+                            } else if (event instanceof TaskUpdateEvent tue
+                                    && tue.getUpdateEvent()
+                                            instanceof TaskStatusUpdateEvent status) {
+                                if (status.status().state() == TaskState.TASK_STATE_WORKING) {
+                                    taskIdRef.set(status.taskId());
+                                    workingLatch.countDown();
+                                }
+                            }
+                        }),
+                (Throwable error) -> {
                     workingLatch.countDown();
-                }
-            }
-        }), (Throwable error) -> {
-            workingLatch.countDown();
-        });
+                });
 
         assertTrue(workingLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         String createdTaskId = taskIdRef.get();
@@ -344,24 +383,29 @@ public class KafkaReplicationIntegrationTest {
 
         // Create consumer - signal when the first event arrives (proves HTTP connection is live),
         // then ignore subsequent events while waiting for the stream to complete
-        BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
-            if (firstEventLatch.getCount() > 0) {
-                assertInstanceOf(TaskEvent.class, event, "First event on subscribe MUST be TaskEvent (A2A spec 3.1.6)");
-            }
-            firstEventLatch.countDown();
-        };
+        BiConsumer<ClientEvent, AgentCard> consumer =
+                (event, agentCard) -> {
+                    if (firstEventLatch.getCount() > 0) {
+                        assertInstanceOf(
+                                TaskEvent.class,
+                                event,
+                                "First event on subscribe MUST be TaskEvent (A2A spec 3.1.6)");
+                    }
+                    firstEventLatch.countDown();
+                };
 
         // Create error handler that captures completion
-        Consumer<Throwable> errorHandler = error -> {
-            if (error == null || isStreamClosedError(error)) {
-                // null error means stream completed normally
-                streamCompleted.set(true);
-            } else {
-                streamErrored.set(true);
-                errorRef.set(error);
-            }
-            streamCompletedLatch.countDown();
-        };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    if (error == null || isStreamClosedError(error)) {
+                        // null error means stream completed normally
+                        streamCompleted.set(true);
+                    } else {
+                        streamErrored.set(true);
+                        errorRef.set(error);
+                    }
+                    streamCompletedLatch.countDown();
+                };
 
         // Subscribe to the task - this creates a streaming subscription
         streamingClient.subscribeToTask(new TaskIdParams(taskId), List.of(consumer), errorHandler);
@@ -371,12 +415,14 @@ public class KafkaReplicationIntegrationTest {
         // before we send the QueueClosedEvent. Using awaitQueuePollerStart(mainQueue) is not
         // reliable here because the MainQueue's one-time latch was already fired by the first
         // subscription (from pollingClient.sendMessage), so it returns immediately.
-        assertTrue(firstEventLatch.await(15, TimeUnit.SECONDS),
+        assertTrue(
+                firstEventLatch.await(15, TimeUnit.SECONDS),
                 "Should receive initial task snapshot from subscription");
 
         // Now manually send a QueueClosedEvent to Kafka to simulate queue closure on another node
         QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
-        ReplicatedEventQueueItem replicatedClosedEvent = new ReplicatedEventQueueItem(taskId, closedEvent);
+        ReplicatedEventQueueItem replicatedClosedEvent =
+                new ReplicatedEventQueueItem(taskId, closedEvent);
         String eventJson = JsonUtil.toJson(replicatedClosedEvent);
 
         // Send to Kafka using reactive messaging
@@ -384,15 +430,21 @@ public class KafkaReplicationIntegrationTest {
 
         // Wait for the stream to complete - should happen when QueueClosedEvent is received
         // Allow extra time for Kafka message processing and CDI event propagation
-        assertTrue(streamCompletedLatch.await(30, TimeUnit.SECONDS),
+        assertTrue(
+                streamCompletedLatch.await(30, TimeUnit.SECONDS),
                 "Streaming subscription should complete when QueueClosedEvent is received");
 
         // Verify the stream completed normally (not with an error)
         if (!streamCompleted.get()) {
-            LOGGER.error("Stream did not complete normally! streamErrored={}, errorRef={}",
-                    streamErrored.get(), errorRef.get(), errorRef.get());
+            LOGGER.error(
+                    "Stream did not complete normally! streamErrored={}, errorRef={}",
+                    streamErrored.get(),
+                    errorRef.get(),
+                    errorRef.get());
         }
-        assertTrue(streamCompleted.get(), "Stream should complete normally when QueueClosedEvent is received");
+        assertTrue(
+                streamCompleted.get(),
+                "Stream should complete normally when QueueClosedEvent is received");
         assertFalse(streamErrored.get(), "Stream should not error on QueueClosedEvent");
         assertNull(errorRef.get(), "Should not receive error when stream completes gracefully");
     }
@@ -403,24 +455,30 @@ public class KafkaReplicationIntegrationTest {
         testConsumer.clear();
 
         // Create a task that will be completed (finalized) - no client-provided taskId
-        Message completeMessage = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("complete")))
-                .messageId("complete-msg-" + System.currentTimeMillis())
-                .build();
+        Message completeMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("complete")))
+                        .messageId("complete-msg-" + System.currentTimeMillis())
+                        .build();
 
         CountDownLatch completeLatch = new CountDownLatch(1);
         AtomicReference<Task> finalTask = new AtomicReference<>();
 
-        nonStreamingClient.sendMessage(completeMessage, List.of((ClientEvent event, AgentCard card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                finalTask.set(taskEvent.getTask());
-                // Count down for any task event - we just need the task to be created
-                completeLatch.countDown();
-            }
-        }), (Throwable error) -> {
-            completeLatch.countDown();
-        });
+        nonStreamingClient.sendMessage(
+                completeMessage,
+                List.of(
+                        (ClientEvent event, AgentCard card) -> {
+                            if (event instanceof TaskEvent taskEvent) {
+                                finalTask.set(taskEvent.getTask());
+                                // Count down for any task event - we just need the task to be
+                                // created
+                                completeLatch.countDown();
+                            }
+                        }),
+                (Throwable error) -> {
+                    completeLatch.countDown();
+                });
 
         assertTrue(completeLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task createdTask = finalTask.get();
@@ -435,15 +493,18 @@ public class KafkaReplicationIntegrationTest {
         // Wait for the QueueClosedEvent to be published to Kafka
         // The event should be published automatically because isTaskFinalized() returns true
         ReplicatedEventQueueItem poisonPill = testConsumer.waitForClosedEvent(taskId, 30);
-        assertNotNull(poisonPill, "QueueClosedEvent should be published to Kafka when task is finalized");
+        assertNotNull(
+                poisonPill, "QueueClosedEvent should be published to Kafka when task is finalized");
         assertTrue(poisonPill.isClosedEvent(), "Event should be marked as closedEvent");
-        assertEquals(taskId, poisonPill.getTaskId(), "QueueClosedEvent should have correct task ID");
+        assertEquals(
+                taskId, poisonPill.getTaskId(), "QueueClosedEvent should have correct task ID");
 
         // Verify the event is actually a QueueClosedEvent
-        assertInstanceOf(QueueClosedEvent.class, poisonPill.getEvent(),
+        assertInstanceOf(
+                QueueClosedEvent.class,
+                poisonPill.getEvent(),
                 "Event should be a QueueClosedEvent");
-        QueueClosedEvent closedEvent =
-                (QueueClosedEvent) poisonPill.getEvent();
+        QueueClosedEvent closedEvent = (QueueClosedEvent) poisonPill.getEvent();
         assertEquals(taskId, closedEvent.getTaskId(), "QueueClosedEvent task ID should match");
     }
 
@@ -476,10 +537,10 @@ public class KafkaReplicationIntegrationTest {
             String message = error.getMessage();
             if (message != null) {
                 // Filter out normal stream closure/cancellation errors
-                if (message.contains("Stream closed") ||
-                    message.contains("Stream") && message.contains("cancelled") ||
-                    message.contains("EOF reached") ||
-                    message.contains("CANCEL")) {
+                if (message.contains("Stream closed")
+                        || message.contains("Stream") && message.contains("cancelled")
+                        || message.contains("EOF reached")
+                        || message.contains("CANCEL")) {
                     return true;
                 }
             }
@@ -493,5 +554,4 @@ public class KafkaReplicationIntegrationTest {
 
         return false;
     }
-
 }

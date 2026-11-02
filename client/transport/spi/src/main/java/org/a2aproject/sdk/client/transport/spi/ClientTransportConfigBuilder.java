@@ -2,7 +2,6 @@ package org.a2aproject.sdk.client.transport.spi;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 
 /**
@@ -34,7 +33,8 @@ import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallIntercepto
  * @see ClientTransportConfig
  * @see org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor
  */
-public abstract class ClientTransportConfigBuilder<T extends ClientTransportConfig<? extends ClientTransport>,
+public abstract class ClientTransportConfigBuilder<
+        T extends ClientTransportConfig<? extends ClientTransport>,
         B extends ClientTransportConfigBuilder<T, B>> {
 
     protected List<ClientCallInterceptor> interceptors = new ArrayList<>();

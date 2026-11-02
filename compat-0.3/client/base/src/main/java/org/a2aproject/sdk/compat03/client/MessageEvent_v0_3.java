@@ -22,5 +22,3 @@ public final class MessageEvent_v0_3 implements ClientEvent_v0_3 {
         return message;
     }
 }
-
-

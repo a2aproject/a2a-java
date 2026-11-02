@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class ArtifactTest {
@@ -31,7 +30,8 @@ class ArtifactTest {
         assertEquals(1, artifact.parts().size());
         assertEquals(Map.of("source", "web"), artifact.metadata());
         assertEquals(List.of("ext-1"), artifact.extensions());
-        assertThrows(UnsupportedOperationException.class, () -> artifact.parts().add(new TextPart("x")));
+        assertThrows(
+                UnsupportedOperationException.class, () -> artifact.parts().add(new TextPart("x")));
     }
 
     @Test
@@ -45,6 +45,7 @@ class ArtifactTest {
         assertEquals(1, artifact.metadata().size());
         assertTrue(artifact.metadata().containsKey("foo"));
         assertNull(artifact.metadata().get("foo"));
-        assertThrows(UnsupportedOperationException.class, () -> artifact.metadata().put("bar", "baz"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> artifact.metadata().put("bar", "baz"));
     }
 }

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
-
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
@@ -23,9 +22,10 @@ public class PartSerializationTest {
 
     @Test
     void testPopulatedDataWinsOverEmptyTextPlaceholder() throws JsonProcessingException {
-        String json = """
-            {"text": "", "data": {"answer": "42"}}
-            """;
+        String json =
+                """
+                {"text": "", "data": {"answer": "42"}}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(DataPart.class, part);
         @SuppressWarnings("unchecked")
@@ -35,9 +35,10 @@ public class PartSerializationTest {
 
     @Test
     void testDataPartDecodesRegardlessOfContentKeyOrder() throws JsonProcessingException {
-        String json = """
-            {"data": {"answer": "42"}, "text": ""}
-            """;
+        String json =
+                """
+                {"data": {"answer": "42"}, "text": ""}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(DataPart.class, part);
         @SuppressWarnings("unchecked")
@@ -47,9 +48,10 @@ public class PartSerializationTest {
 
     @Test
     void testPopulatedDataWinsOverAllEmptyPlaceholders() throws JsonProcessingException {
-        String json = """
-            {"text": "", "raw": "", "url": "", "data": {"answer": "42"}}
-            """;
+        String json =
+                """
+                {"text": "", "raw": "", "url": "", "data": {"answer": "42"}}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(DataPart.class, part);
         @SuppressWarnings("unchecked")
@@ -59,9 +61,10 @@ public class PartSerializationTest {
 
     @Test
     void testPopulatedUrlWinsOverEmptyTextPlaceholder() throws JsonProcessingException {
-        String json = """
-            {"text": "", "url": "https://example.org/report.pdf", "mediaType": "application/pdf"}
-            """;
+        String json =
+                """
+                {"text": "", "url": "https://example.org/report.pdf", "mediaType": "application/pdf"}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, part);
         FileWithUri file = (FileWithUri) ((FilePart) part).file();
@@ -71,9 +74,10 @@ public class PartSerializationTest {
 
     @Test
     void testPopulatedRawWinsOverEmptyTextPlaceholder() throws JsonProcessingException {
-        String json = """
-            {"text": "", "raw": "abc12w==", "filename": "diagram.png", "mediaType": "image/png"}
-            """;
+        String json =
+                """
+                {"text": "", "raw": "abc12w==", "filename": "diagram.png", "mediaType": "image/png"}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, part);
         FileWithBytes file = (FileWithBytes) ((FilePart) part).file();
@@ -85,16 +89,18 @@ public class PartSerializationTest {
     /** Emptiness is decided on the JSON string only, so a falsy data payload still outranks a placeholder. */
     @ParameterizedTest
     @ValueSource(strings = {"0", "false", "{}", "[]"})
-    void testFalsyDataPayloadWinsOverEmptyTextPlaceholder(String payload) throws JsonProcessingException {
+    void testFalsyDataPayloadWinsOverEmptyTextPlaceholder(String payload)
+            throws JsonProcessingException {
         Part<?> part = JsonUtil.fromJson("{\"text\": \"\", \"data\": " + payload + "}", Part.class);
         assertInstanceOf(DataPart.class, part);
     }
 
     @Test
     void testJsonNullContentKeyIsSkipped() throws JsonProcessingException {
-        String json = """
-            {"text": "hello", "data": null}
-            """;
+        String json =
+                """
+                {"text": "hello", "data": null}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(TextPart.class, part);
         assertEquals("hello", ((TextPart) part).text());
@@ -102,9 +108,10 @@ public class PartSerializationTest {
 
     @Test
     void testPopulatedDataWinsOverJsonNullText() throws JsonProcessingException {
-        String json = """
-            {"text": null, "data": {"answer": "42"}}
-            """;
+        String json =
+                """
+                {"text": null, "data": {"answer": "42"}}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(DataPart.class, part);
         @SuppressWarnings("unchecked")
@@ -114,9 +121,10 @@ public class PartSerializationTest {
 
     @Test
     void testDeliberatelyEmptyTextPartDecodes() throws JsonProcessingException {
-        String json = """
-            {"text": ""}
-            """;
+        String json =
+                """
+                {"text": ""}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(TextPart.class, part);
         assertEquals("", ((TextPart) part).text());
@@ -132,9 +140,10 @@ public class PartSerializationTest {
 
     @Test
     void testDataPartWithEmptyStringPayloadDecodes() throws JsonProcessingException {
-        String json = """
-            {"data": ""}
-            """;
+        String json =
+                """
+                {"data": ""}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(DataPart.class, part);
         assertEquals("", ((DataPart) part).data());
@@ -143,9 +152,10 @@ public class PartSerializationTest {
     /** Nothing distinguishes the intended content when every key is an empty string, so order decides. */
     @Test
     void testAllEmptyContentKeysFallBackToTheFirst() throws JsonProcessingException {
-        String json = """
-            {"text": "", "data": ""}
-            """;
+        String json =
+                """
+                {"text": "", "data": ""}
+                """;
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(TextPart.class, part);
         assertEquals("", ((TextPart) part).text());
@@ -153,17 +163,19 @@ public class PartSerializationTest {
 
     @Test
     void testMultiplePopulatedContentKeysAreRejected() {
-        String json = """
-            {"text": "hello", "data": {"answer": "42"}}
-            """;
+        String json =
+                """
+                {"text": "hello", "data": {"answer": "42"}}
+                """;
         assertThrows(JsonProcessingException.class, () -> JsonUtil.fromJson(json, Part.class));
     }
 
     @Test
     void testNonStringContentKeyIsRejected() {
-        String json = """
-            {"text": "", "raw": {"nested": 1}}
-            """;
+        String json =
+                """
+                {"text": "", "raw": {"nested": 1}}
+                """;
         assertThrows(JsonProcessingException.class, () -> JsonUtil.fromJson(json, Part.class));
     }
 }

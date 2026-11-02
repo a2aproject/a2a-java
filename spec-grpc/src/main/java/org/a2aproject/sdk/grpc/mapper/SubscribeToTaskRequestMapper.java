@@ -16,10 +16,13 @@ import org.mapstruct.Mapper;
  * request parameters. The JSONRPC envelope (id, jsonrpc, method) is handled separately
  * by the transport layer.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskIdParamsMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {TaskIdParamsMapper.class})
 public interface SubscribeToTaskRequestMapper {
 
-    SubscribeToTaskRequestMapper INSTANCE = A2AMappers.getMapper(SubscribeToTaskRequestMapper.class);
+    SubscribeToTaskRequestMapper INSTANCE =
+            A2AMappers.getMapper(SubscribeToTaskRequestMapper.class);
 
     /**
      * Converts domain SubscribeToTaskRequest to proto SubscribeToTaskRequest.
@@ -45,7 +48,7 @@ public interface SubscribeToTaskRequestMapper {
      * @return the domain SubscribeToTaskRequest
      */
     default SubscribeToTaskRequest fromProto(org.a2aproject.sdk.grpc.SubscribeToTaskRequest proto) {
-        if (proto == null || proto.getId()== null) {
+        if (proto == null || proto.getId() == null) {
             return null;
         }
         return SubscribeToTaskRequest.builder()

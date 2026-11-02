@@ -1,13 +1,11 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
-import java.time.Instant;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-
+import java.time.Instant;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Task;
@@ -34,12 +32,10 @@ public class JpaTask {
     @Column(name = "finalized_at")
     private Instant finalizedAt;
 
-    @Transient
-    private Task task;
+    @Transient private Task task;
 
     // Default constructor required by JPA
-    public JpaTask() {
-    }
+    public JpaTask() {}
 
     public JpaTask(String id, String taskJson) {
         this.id = id;
@@ -145,7 +141,11 @@ public class JpaTask {
         this.state = taskState.name();
         // Extract status timestamp for efficient querying and sorting
         // Truncate to milliseconds for keyset pagination consistency (pageToken uses millis)
-        this.statusTimestamp = task.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
+        this.statusTimestamp =
+                task.status()
+                        .timestamp()
+                        .toInstant()
+                        .truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
     }
 
     /**

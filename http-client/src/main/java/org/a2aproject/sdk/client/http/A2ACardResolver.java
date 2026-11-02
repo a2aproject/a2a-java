@@ -1,12 +1,11 @@
 package org.a2aproject.sdk.client.http;
 
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
-
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
@@ -86,7 +85,13 @@ public class A2ACardResolver {
     private final @Nullable String fallbackUrl;
     private final @Nullable Map<String, String> authHeaders;
 
-    private A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String tenant, @Nullable String agentCardPath, @Nullable Map<String, String> authHeaders) throws A2AClientError {
+    private A2ACardResolver(
+            A2AHttpClient httpClient,
+            String baseUrl,
+            @Nullable String tenant,
+            @Nullable String agentCardPath,
+            @Nullable Map<String, String> authHeaders)
+            throws A2AClientError {
         checkNotNullParam("httpClient", httpClient);
         checkNotNullParam("baseUrl", baseUrl);
         this.httpClient = httpClient;
@@ -124,8 +129,7 @@ public class A2ACardResolver {
         private @Nullable String agentCardPath;
         private @Nullable Map<String, String> authHeaders;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the HTTP client to use for fetching agent cards.
@@ -209,9 +213,10 @@ public class A2ACardResolver {
          * @throws IllegalArgumentException if baseUrl is null
          */
         public A2ACardResolver build() throws A2AClientError {
-            A2AHttpClient client = httpClient != null
-                    ? httpClient
-                    : A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
+            A2AHttpClient client =
+                    httpClient != null
+                            ? httpClient
+                            : A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
             if (baseUrl == null) {
                 throw new IllegalArgumentException("baseUrl must not be null");
             }
@@ -240,7 +245,12 @@ public class A2ACardResolver {
             return fetchAgentCard(cardUrl);
         } catch (A2AClientHTTPError e) {
             if (fallbackUrl != null && e.getCode() == 404) {
-                LOGGER.debug("Failed to fetch agent card from {} (status {}); retrying with provided URL: {}", cardUrl, e.getCode(), fallbackUrl);
+                LOGGER.debug(
+                        "Failed to fetch agent card from {} (status {}); retrying with provided"
+                                + " URL: {}",
+                        cardUrl,
+                        e.getCode(),
+                        fallbackUrl);
                 try {
                     return fetchAgentCard(fallbackUrl);
                 } catch (A2AClientError fallbackEx) {
@@ -252,7 +262,12 @@ public class A2ACardResolver {
         }
     }
 
-    private static ResolvedUrls resolveUrls(String cleanBase, String originalBase, @Nullable String tenant, @Nullable String agentCardPath) throws URISyntaxException {
+    private static ResolvedUrls resolveUrls(
+            String cleanBase,
+            String originalBase,
+            @Nullable String tenant,
+            @Nullable String agentCardPath)
+            throws URISyntaxException {
         if (agentCardPath != null && !agentCardPath.isBlank()) {
             // Custom path: tenant goes as path prefix (explicit override); no fallback.
             String baseUrlWithTenant = Utils.buildBaseUrl(cleanBase, tenant);
@@ -286,10 +301,12 @@ public class A2ACardResolver {
     }
 
     private AgentCard fetchAgentCard(String url) throws A2AClientError, A2AClientJSONError {
-        A2AHttpClient.GetBuilder builder = httpClient.createGet()
-                .url(url)
-                .followRedirects(true)
-                .addHeader("Content-Type", "application/json");
+        A2AHttpClient.GetBuilder builder =
+                httpClient
+                        .createGet()
+                        .url(url)
+                        .followRedirects(true)
+                        .addHeader("Content-Type", "application/json");
 
         if (authHeaders != null) {
             builder.addHeaders(authHeaders);
@@ -300,8 +317,10 @@ public class A2ACardResolver {
             A2AHttpResponse response = builder.get();
             if (!response.success()) {
                 String msg = "Failed to obtain agent card: " + response.status();
-                LOGGER.debug("Failed to fetch agent card from {}, status: {}", url, response.status());
-                throw new A2AClientHTTPError(response.status(), msg, response.body(), response.headers().toMap());
+                LOGGER.debug(
+                        "Failed to fetch agent card from {}, status: {}", url, response.status());
+                throw new A2AClientHTTPError(
+                        response.status(), msg, response.body(), response.headers().toMap());
             }
             body = response.body();
             LOGGER.debug("Successfully fetched agent card from {}", url);
@@ -313,7 +332,8 @@ public class A2ACardResolver {
         }
 
         try {
-            org.a2aproject.sdk.grpc.AgentCard.Builder agentCardBuilder = org.a2aproject.sdk.grpc.AgentCard.newBuilder();
+            org.a2aproject.sdk.grpc.AgentCard.Builder agentCardBuilder =
+                    org.a2aproject.sdk.grpc.AgentCard.newBuilder();
             JSONRPCUtils.parseJsonString(body, agentCardBuilder, "", true);
             return ProtoUtils.FromProto.agentCard(agentCardBuilder);
         } catch (JsonProcessingException e) {

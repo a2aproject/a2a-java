@@ -30,7 +30,8 @@ package org.a2aproject.sdk.spec;
  * @see EventKind
  * @see UpdateEvent
  */
-public sealed interface StreamingEventKind extends Event permits Task, Message, TaskStatusUpdateEvent, TaskArtifactUpdateEvent {
+public sealed interface StreamingEventKind extends Event
+        permits Task, Message, TaskStatusUpdateEvent, TaskArtifactUpdateEvent {
 
     /**
      * Returns the type identifier for this streaming event.

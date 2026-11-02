@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -44,6 +43,7 @@ public class ContentTypeNotSupportedError extends A2AProtocolError {
     public ContentTypeNotSupportedError() {
         this(null, null, null);
     }
+
     /**
      * Constructs a content type not supported error.
      *
@@ -51,8 +51,12 @@ public class ContentTypeNotSupportedError extends A2AProtocolError {
      * @param message the error message
      * @param details additional error details
      */
-    public ContentTypeNotSupportedError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
-        super(defaultIfNull(code, A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED.code()),
+    public ContentTypeNotSupportedError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
+        super(
+                defaultIfNull(code, A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED.code()),
                 defaultIfNull(message, "Incompatible content types"),
                 details);
     }

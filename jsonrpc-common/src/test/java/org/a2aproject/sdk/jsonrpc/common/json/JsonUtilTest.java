@@ -3,12 +3,11 @@ package org.a2aproject.sdk.jsonrpc.common.json;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.StringWriter;
-import java.util.Map;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
+import java.io.StringWriter;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -19,7 +18,8 @@ public class JsonUtilTest {
 
     @Test
     public void testReadMetadataStringExtractsMetadataField() throws Exception {
-        String body = "{\"id\":\"task-1\",\"metadata\":{\"reason\":\"user_requested\",\"source\":\"web_ui\"}}";
+        String body =
+                "{\"id\":\"task-1\",\"metadata\":{\"reason\":\"user_requested\",\"source\":\"web_ui\"}}";
         Map<String, Object> metadata = JsonUtil.readMetadata(body);
         assertEquals(2, metadata.size());
         assertEquals("user_requested", metadata.get("reason"));
@@ -67,7 +67,8 @@ public class JsonUtilTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testWriteJsonRpcIdWritesNullIdAndRestoresSerializeNulls(boolean serializeNulls) throws Exception {
+    public void testWriteJsonRpcIdWritesNullIdAndRestoresSerializeNulls(boolean serializeNulls)
+            throws Exception {
         StringWriter result = new StringWriter();
         JsonWriter out = new JsonWriter(result);
         out.setSerializeNulls(serializeNulls);

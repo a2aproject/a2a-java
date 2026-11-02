@@ -178,8 +178,8 @@ public interface QueueManager {
      */
     default EventQueue.EventQueueBuilder getEventQueueBuilder(String taskId) {
         throw new UnsupportedOperationException(
-            "QueueManager implementations must override getEventQueueBuilder() to provide MainEventBus"
-        );
+                "QueueManager implementations must override getEventQueueBuilder() to provide"
+                        + " MainEventBus");
     }
 
     /**
@@ -200,8 +200,8 @@ public interface QueueManager {
      */
     default EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
         throw new UnsupportedOperationException(
-            "QueueManager implementations must override createBaseEventQueueBuilder() to provide MainEventBus"
-        );
+                "QueueManager implementations must override createBaseEventQueueBuilder() to"
+                        + " provide MainEventBus");
     }
 
     /**

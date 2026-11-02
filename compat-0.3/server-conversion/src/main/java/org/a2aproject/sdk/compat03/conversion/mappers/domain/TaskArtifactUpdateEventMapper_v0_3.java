@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.mapstruct.Mapper;
@@ -18,13 +18,16 @@ import org.mapstruct.Mapper;
  * Both versions have the same structure:
  * {@code TaskArtifactUpdateEvent(taskId, artifact, contextId, append, lastChunk, metadata)}.
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {ArtifactMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {ArtifactMapper_v0_3.class})
 public interface TaskArtifactUpdateEventMapper_v0_3 {
 
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    TaskArtifactUpdateEventMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(TaskArtifactUpdateEventMapper_v0_3.class);
+    TaskArtifactUpdateEventMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(TaskArtifactUpdateEventMapper_v0_3.class);
 
     /**
      * Converts v0.3 TaskArtifactUpdateEvent to v1.0 TaskArtifactUpdateEvent.
@@ -40,13 +43,12 @@ public interface TaskArtifactUpdateEventMapper_v0_3 {
         }
 
         return new TaskArtifactUpdateEvent(
-            v03.taskId(),
-            ArtifactMapper_v0_3.INSTANCE.toV10(v03.artifact()),
-            v03.contextId(),
-            v03.append(),
-            v03.lastChunk(),
-            v03.metadata()
-        );
+                v03.taskId(),
+                ArtifactMapper_v0_3.INSTANCE.toV10(v03.artifact()),
+                v03.contextId(),
+                v03.append(),
+                v03.lastChunk(),
+                v03.metadata());
     }
 
     /**
@@ -63,12 +65,11 @@ public interface TaskArtifactUpdateEventMapper_v0_3 {
         }
 
         return new TaskArtifactUpdateEvent_v0_3(
-            v10.taskId(),
-            ArtifactMapper_v0_3.INSTANCE.fromV10(v10.artifact()),
-            v10.contextId(),
-            v10.append(),
-            v10.lastChunk(),
-            v10.metadata()
-        );
+                v10.taskId(),
+                ArtifactMapper_v0_3.INSTANCE.fromV10(v10.artifact()),
+                v10.contextId(),
+                v10.append(),
+                v10.lastChunk(),
+                v10.metadata());
     }
 }

@@ -23,14 +23,19 @@ public class BoundedLineBodySubscriberTest {
 
     @SuppressWarnings("unchecked")
     private static HttpResponse.BodySubscriber<Void> createSubscriber(
-            Flow.Subscriber<String> lineSubscriber, int maxLineBytes,
-            ServerSentEventParser sseParser) throws Exception {
-        Class<?> clazz = Class.forName(
-                "org.a2aproject.sdk.client.http.JdkA2AHttpClient$BoundedLineBodySubscriber");
-        Constructor<?> ctor = clazz.getDeclaredConstructor(
-                Flow.Subscriber.class, int.class, ServerSentEventParser.class);
+            Flow.Subscriber<String> lineSubscriber,
+            int maxLineBytes,
+            ServerSentEventParser sseParser)
+            throws Exception {
+        Class<?> clazz =
+                Class.forName(
+                        "org.a2aproject.sdk.client.http.JdkA2AHttpClient$BoundedLineBodySubscriber");
+        Constructor<?> ctor =
+                clazz.getDeclaredConstructor(
+                        Flow.Subscriber.class, int.class, ServerSentEventParser.class);
         ctor.setAccessible(true);
-        return (HttpResponse.BodySubscriber<Void>) ctor.newInstance(lineSubscriber, maxLineBytes, sseParser);
+        return (HttpResponse.BodySubscriber<Void>)
+                ctor.newInstance(lineSubscriber, maxLineBytes, sseParser);
     }
 
     private static List<ByteBuffer> toBuffers(String data) {
@@ -38,13 +43,18 @@ public class BoundedLineBodySubscriberTest {
     }
 
     private static void subscribe(HttpResponse.BodySubscriber<Void> subscriber) {
-        subscriber.onSubscribe(new Flow.Subscription() {
-            @Override
-            public void request(long n) { /* no-op in tests */ }
+        subscriber.onSubscribe(
+                new Flow.Subscription() {
+                    @Override
+                    public void request(long n) {
+                        /* no-op in tests */
+                    }
 
-            @Override
-            public void cancel() { /* no-op in tests */ }
-        });
+                    @Override
+                    public void cancel() {
+                        /* no-op in tests */
+                    }
+                });
     }
 
     private static final class RecordingSubscriber implements Flow.Subscriber<String> {
@@ -75,7 +85,9 @@ public class BoundedLineBodySubscriberTest {
 
     private static ServerSentEventParser createParser(List<Throwable> errors) {
         return new ServerSentEventParser(
-                event -> { /* discard events */ },
+                event -> {
+                    /* discard events */
+                },
                 errors::add,
                 SSEParserConfig.DEFAULT);
     }
@@ -221,7 +233,9 @@ public class BoundedLineBodySubscriberTest {
         subscriber.onNext(toBuffers("short\n" + "x".repeat(20) + "\nok\n"));
         subscriber.onComplete();
 
-        assertEquals(List.of("short", "ok"), rec.lines,
+        assertEquals(
+                List.of("short", "ok"),
+                rec.lines,
                 "Too-long line should not appear in line subscriber output");
         assertEquals(1, errors.size(), "One error should be reported for too-long line");
         assertTrue(errors.get(0).getMessage().contains("maximum length"));
@@ -253,8 +267,8 @@ public class BoundedLineBodySubscriberTest {
         subscriber.onComplete();
 
         assertEquals(List.of("data: ok"), rec.lines);
-        assertEquals(1, errors.size(),
-                "Too-long line at stream end must trigger processLineTooLong");
+        assertEquals(
+                1, errors.size(), "Too-long line at stream end must trigger processLineTooLong");
     }
 
     @Test
@@ -324,9 +338,10 @@ public class BoundedLineBodySubscriberTest {
         var subscriber = createSubscriber(rec, 0, createParser(errors));
         subscribe(subscriber);
 
-        List<ByteBuffer> buffers = List.of(
-                ByteBuffer.wrap("first\n".getBytes(StandardCharsets.UTF_8)),
-                ByteBuffer.wrap("second\n".getBytes(StandardCharsets.UTF_8)));
+        List<ByteBuffer> buffers =
+                List.of(
+                        ByteBuffer.wrap("first\n".getBytes(StandardCharsets.UTF_8)),
+                        ByteBuffer.wrap("second\n".getBytes(StandardCharsets.UTF_8)));
         subscriber.onNext(buffers);
         subscriber.onComplete();
 

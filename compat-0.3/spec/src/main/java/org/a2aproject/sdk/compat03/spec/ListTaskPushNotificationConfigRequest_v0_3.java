@@ -1,28 +1,31 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.UUID;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.compat03.util.Utils_v0_3;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * A list task push notification config request.
  */
-public final class ListTaskPushNotificationConfigRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<ListTaskPushNotificationConfigParams_v0_3> {
+public final class ListTaskPushNotificationConfigRequest_v0_3
+        extends NonStreamingJSONRPCRequest_v0_3<ListTaskPushNotificationConfigParams_v0_3> {
 
-    private ListTaskPushNotificationConfigRequest_v0_3() {
-    }
-
+    private ListTaskPushNotificationConfigRequest_v0_3() {}
 
     public static final String METHOD = "tasks/pushNotificationConfig/list";
 
-    public ListTaskPushNotificationConfigRequest_v0_3(String jsonrpc, Object id, String method, ListTaskPushNotificationConfigParams_v0_3 params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+    public ListTaskPushNotificationConfigRequest_v0_3(
+            String jsonrpc,
+            Object id,
+            String method,
+            ListTaskPushNotificationConfigParams_v0_3 params) {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid ListTaskPushNotificationConfigRequest method");
+        if (!method.equals(METHOD)) {
+            throw new IllegalArgumentException(
+                    "Invalid ListTaskPushNotificationConfigRequest method");
         }
         Assert.isValidJsonRpcId(id);
         this.jsonrpc = Utils_v0_3.defaultIfNull(jsonrpc, JSONRPC_VERSION);
@@ -31,7 +34,8 @@ public final class ListTaskPushNotificationConfigRequest_v0_3 extends NonStreami
         this.params = params;
     }
 
-    public ListTaskPushNotificationConfigRequest_v0_3(String id, ListTaskPushNotificationConfigParams_v0_3 params) {
+    public ListTaskPushNotificationConfigRequest_v0_3(
+            String id, ListTaskPushNotificationConfigParams_v0_3 params) {
         this(null, id, METHOD, params);
     }
 

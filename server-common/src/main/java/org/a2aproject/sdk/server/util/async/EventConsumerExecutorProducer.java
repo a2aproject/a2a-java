@@ -1,26 +1,23 @@
 package org.a2aproject.sdk.server.util.async;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Qualifier;
-
-import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Produces a dedicated executor for EventConsumer polling threads.
@@ -42,7 +39,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @ApplicationScoped
 public class EventConsumerExecutorProducer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventConsumerExecutorProducer.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EventConsumerExecutorProducer.class);
 
     /**
      * Qualifier annotation for EventConsumer executor injection.
@@ -50,8 +48,7 @@ public class EventConsumerExecutorProducer {
     @Retention(RUNTIME)
     @Target({METHOD, FIELD, PARAMETER, TYPE})
     @Qualifier
-    public @interface EventConsumerExecutor {
-    }
+    public @interface EventConsumerExecutor {}
 
     /**
      * Thread factory for EventConsumer threads.
@@ -78,15 +75,18 @@ public class EventConsumerExecutorProducer {
         // - Reclaims idle threads after 10s to prevent accumulation during fast test execution
         // - Perfect for I/O-bound EventConsumer polling which blocks on queue.poll()
         // - 10s timeout balances thread reuse (production) vs cleanup (testing)
-        executor = new ThreadPoolExecutor(
-                0,                              // corePoolSize - no core threads
-                Integer.MAX_VALUE,              // maxPoolSize - unbounded
-                10, TimeUnit.SECONDS,           // keepAliveTime - 10s idle timeout
-                new SynchronousQueue<>(),       // queue - same as cached pool
-                new EventConsumerThreadFactory()
-        );
+        executor =
+                new ThreadPoolExecutor(
+                        0, // corePoolSize - no core threads
+                        Integer.MAX_VALUE, // maxPoolSize - unbounded
+                        10,
+                        TimeUnit.SECONDS, // keepAliveTime - 10s idle timeout
+                        new SynchronousQueue<>(), // queue - same as cached pool
+                        new EventConsumerThreadFactory());
 
-        LOGGER.info("Initialized EventConsumer executor: cached thread pool (unbounded, 10s idle timeout)");
+        LOGGER.info(
+                "Initialized EventConsumer executor: cached thread pool (unbounded, 10s idle"
+                        + " timeout)");
 
         return executor;
     }

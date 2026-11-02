@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.a2aproject.sdk</groupId>
@@ -30,70 +28,153 @@
         </developer>
     </developers>
 
+    <modules>
+        <!-- BOM test utilities - no dependencies, built first -->
+        <module>boms/test-utils</module>
+
+        <!-- Core SDK modules -->
+        <module>client/base</module>
+        <module>client/transport/grpc</module>
+        <module>client/transport/jsonrpc</module>
+        <module>client/transport/rest</module>
+        <module>client/transport/spi</module>
+        <module>common</module>
+        <module>examples/helloworld</module>
+        <module>examples/stream-lifecycle</module>
+        <module>examples/cloud-deployment/server</module>
+        <module>extras/common</module>
+        <module>extras/opentelemetry</module>
+        <module>extras/task-store-database-jpa</module>
+        <module>extras/push-notification-config-store-database-jpa</module>
+        <module>extras/queue-manager-replicated</module>
+        <module>extras/http-client-vertx</module>
+        <module>extras/http-client-android</module>
+        <module>extras/http-client-cdi</module>
+        <module>extras/multitenancy</module>
+        <module>http-client</module>
+        <module>jsonrpc-common</module>
+        <module>integrations/microprofile-config</module>
+        <module>reference/common</module>
+        <module>reference/grpc</module>
+        <module>reference/jsonrpc</module>
+        <module>reference/rest</module>
+        <module>server-common</module>
+        <module>spec</module>
+        <module>spec-grpc</module>
+        <module>test-utils-docker</module>
+        <module>tests/server-common</module>
+        <module>transport/jsonrpc</module>
+        <module>transport/grpc</module>
+        <module>transport/rest</module>
+
+        <!--
+            ITK (Integration Test Kit) agent is intentionally NOT in the
+            default reactor because it consumes instruction.proto directly
+            from a sibling clone of a2a-itk that only exists at ITK test
+            time (fetched by itk/run_itk.sh). Enable via -Pitk when running
+            the ITK workflow.
+        -->
+
+        <!-- A2A Protocol v0.3 backward compatibility layer -->
+        <module>compat-0.3</module>
+
+        <!-- Multiversion reference modules (depend on both v1.0 and v0.3) -->
+        <module>reference/multiversion-jsonrpc</module>
+        <module>reference/multiversion-rest</module>
+
+        <!-- Multitenancy reusable test support (published) -->
+        <module>extras/multitenancy/tests/test-common</module>
+
+        <!-- Multitenancy REST integration tests -->
+        <module>extras/multitenancy/tests/rest</module>
+
+        <!-- Multitenancy JSON-RPC integration tests (no REST transport on classpath) -->
+        <module>extras/multitenancy/tests/jsonrpc</module>
+
+        <!-- Multitenancy gRPC integration tests -->
+        <module>extras/multitenancy/tests/grpc</module>
+
+        <!-- Multitenancy router unit tests (Weld SE, no Quarkus) -->
+        <module>extras/multitenancy/tests/router-unit</module>
+
+        <!-- Multi-version test modules -->
+        <module>tests/multiversion/jsonrpc</module>
+        <module>tests/multiversion/rest</module>
+        <module>tests/multiversion/grpc</module>
+
+        <!-- BOMs - build order automatically determined by reactor based on dependencies -->
+        <module>boms/extras</module>
+        <module>boms/reference</module>
+        <module>boms/sdk</module>
+
+        <!-- TCK -->
+        <module>tck</module>
+
+    </modules>
+
     <scm>
         <connection>scm:git:git://github.com/a2aproject/a2a-java.git</connection>
         <developerConnection>scm:git:ssh://github.com:a2aproject/a2a-java.git</developerConnection>
         <url>https://github.com/a2aproject/a2a-java</url>
     </scm>
 
-
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.outputTimestamp>2026-06-30T10:56:39Z</project.build.outputTimestamp>
-
-        <grpc.version>1.81.0</grpc.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
-        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
-        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
-        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
-        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
-        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
-        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-        <maven-checkstyle-plugin.version>3.5.0</maven-checkstyle-plugin.version>
         <checkstyle.failOnViolation>false</checkstyle.failOnViolation>
         <checkstyle.version>9.3</checkstyle.version>
+        <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
+        <error-prone.version>2.50.0</error-prone.version>
         <gmavenplus-plugin.version>5.1.0</gmavenplus-plugin.version>
-        <sonatype-central-publishing-plugin.version>0.11.0</sonatype-central-publishing-plugin.version>
+        <google-java-format.version>1.37.0</google-java-format.version>
         <groovy.version>6.0.0</groovy.version>
+
+        <grpc.version>1.81.0</grpc.version>
         <gson.version>2.14.0</gson.version>
         <jakarta.enterprise.cdi-api.version>4.1.0</jakarta.enterprise.cdi-api.version>
         <jakarta.inject.jakarta.inject-api.version>2.0.1</jakarta.inject.jakarta.inject-api.version>
         <jakarta.json-api.version>2.1.3</jakarta.json-api.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <junit.version>6.1.3</junit.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
+        <logback.version>1.6.3</logback.version>
         <mapstruct-spi-protobuf.version>1.74.0</mapstruct-spi-protobuf.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <maven-checkstyle-plugin.version>3.5.0</maven-checkstyle-plugin.version>
+        <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
+        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+
+        <!-- Redirect test output to file -->
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <mockito-core.version>5.24.0</mockito-core.version>
-        <weld-se-core.version>6.0.4.Final</weld-se-core.version>
         <mockserver.version>8.0.0</mockserver.version>
-        <okhttp.version>4.12.0</okhttp.version>
         <mutiny-zero.version>1.3.1</mutiny-zero.version>
+        <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -Xep:RequireExplicitNullMarking:WARN -XepOpt:NullAway:ExhaustiveOverride=true -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
+        <nullaway.version>0.14.1</nullaway.version>
+        <okhttp.version>4.12.0</okhttp.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+        <project.build.outputTimestamp>2026-06-30T10:56:39Z</project.build.outputTimestamp>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf-java.version>4.36.2</protobuf-java.version>
         <protobuf-maven-plugin.version>5.1.11</protobuf-maven-plugin.version>
         <!-- Keep generation compatible with the protobuf runtime supplied by the WildFly gRPC feature pack. -->
         <protobuf-protoc.version>4.35.0</protobuf-protoc.version>
-        <quarkus.platform.version>3.40.1.1</quarkus.platform.version>
-        <rest-assured.version>6.3.0</rest-assured.version>
-        <slf4j.version>2.0.19</slf4j.version>
-        <logback.version>1.6.3</logback.version>
-        <version.testcontainers>2.0.5</version.testcontainers>
-        <error-prone.version>2.50.0</error-prone.version>
-        <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
-        <google-java-format.version>1.37.0</google-java-format.version>
-        <nullaway.version>0.14.1</nullaway.version>
-        <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
-        <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -Xep:RequireExplicitNullMarking:WARN -XepOpt:NullAway:ExhaustiveOverride=true -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
-        <skip.spotless>true</skip.spotless>
-
-        <!-- Redirect test output to file -->
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <quarkus.jvm.args>--add-opens=java.base/java.lang=ALL-UNNAMED</quarkus.jvm.args>
+        <quarkus.platform.version>3.40.1.1</quarkus.platform.version>
 
         <!-- release properties -->
         <release.auto.publish>false</release.auto.publish>
+        <rest-assured.version>6.3.0</rest-assured.version>
+        <skip.spotless>true</skip.spotless>
+        <slf4j.version>2.0.19</slf4j.version>
+        <sonatype-central-publishing-plugin.version>0.11.0</sonatype-central-publishing-plugin.version>
+        <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
+        <version.testcontainers>2.0.5</version.testcontainers>
+        <weld-se-core.version>6.0.4.Final</weld-se-core.version>
     </properties>
 
     <dependencyManagement>
@@ -408,22 +489,22 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-tests-server-common</artifactId>
+                <version>${project.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-server-common</artifactId>
+                <version>${project.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-tests-multitenancy-test-common</artifactId>
-                <scope>test</scope>
                 <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jspecify</groupId>
@@ -444,6 +525,20 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-maven-plugin</artifactId>
+                    <version>${quarkus.platform.version}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <jvmArgs>${quarkus.jvm.args}</jvmArgs>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -501,6 +596,51 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                            <phase>verify</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.5.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
                     <configuration>
@@ -529,20 +669,6 @@
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.5.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>io.quarkus</groupId>
-                    <artifactId>quarkus-maven-plugin</artifactId>
-                    <extensions>true</extensions>
-                    <version>${quarkus.platform.version}</version>
-                    <configuration>
-                        <jvmArgs>${quarkus.jvm.args}</jvmArgs>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
                     <version>${sonatype-central-publishing-plugin.version}</version>
@@ -553,66 +679,9 @@
                         <autoPublish>${release.auto.publish}</autoPublish>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven-javadoc-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${maven-gpg-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>sign-artifacts</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>com.diffplug.spotless</groupId>
-                    <artifactId>spotless-maven-plugin</artifactId>
-                    <version>${spotless-maven-plugin.version}</version>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
@@ -626,8 +695,8 @@
                                 <include>.gitignore</include>
                             </includes>
                             <!-- define the steps to apply to those files -->
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
+                            <trimTrailingWhitespace />
+                            <endWithNewline />
                             <indent>
                                 <spaces>true</spaces>
                                 <spacesPerTab>4</spacesPerTab>
@@ -652,9 +721,9 @@
                             <reflowLongStrings>true</reflowLongStrings>
                             <formatJavadoc>false</formatJavadoc>
                         </googleJavaFormat>
-                        <importOrder/>
-                        <importOrder/>
-                        <removeUnusedImports/>
+                        <importOrder />
+                        <importOrder />
+                        <removeUnusedImports />
                         <indent>
                             <spaces>true</spaces>
                             <spacesPerTab>4</spacesPerTab>
@@ -694,7 +763,7 @@
                             <include>RELEASE.md</include>
                             <include>SECURITY.md</include>
                         </includes>
-                        <endWithNewline/>
+                        <endWithNewline />
                     </markdown>
                 </configuration>
                 <executions>
@@ -706,92 +775,20 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
-
-    <modules>
-        <!-- BOM test utilities - no dependencies, built first -->
-        <module>boms/test-utils</module>
-
-        <!-- Core SDK modules -->
-        <module>client/base</module>
-        <module>client/transport/grpc</module>
-        <module>client/transport/jsonrpc</module>
-        <module>client/transport/rest</module>
-        <module>client/transport/spi</module>
-        <module>common</module>
-        <module>examples/helloworld</module>
-        <module>examples/stream-lifecycle</module>
-        <module>examples/cloud-deployment/server</module>
-        <module>extras/common</module>
-        <module>extras/opentelemetry</module>
-        <module>extras/task-store-database-jpa</module>
-        <module>extras/push-notification-config-store-database-jpa</module>
-        <module>extras/queue-manager-replicated</module>
-        <module>extras/http-client-vertx</module>
-        <module>extras/http-client-android</module>
-        <module>extras/http-client-cdi</module>
-        <module>extras/multitenancy</module>
-        <module>http-client</module>
-        <module>jsonrpc-common</module>
-        <module>integrations/microprofile-config</module>
-        <module>reference/common</module>
-        <module>reference/grpc</module>
-        <module>reference/jsonrpc</module>
-        <module>reference/rest</module>
-        <module>server-common</module>
-        <module>spec</module>
-        <module>spec-grpc</module>
-        <module>test-utils-docker</module>
-        <module>tests/server-common</module>
-        <module>transport/jsonrpc</module>
-        <module>transport/grpc</module>
-        <module>transport/rest</module>
-
-        <!--
-            ITK (Integration Test Kit) agent is intentionally NOT in the
-            default reactor because it consumes instruction.proto directly
-            from a sibling clone of a2a-itk that only exists at ITK test
-            time (fetched by itk/run_itk.sh). Enable via -Pitk when running
-            the ITK workflow.
-        -->
-
-        <!-- A2A Protocol v0.3 backward compatibility layer -->
-        <module>compat-0.3</module>
-
-        <!-- Multiversion reference modules (depend on both v1.0 and v0.3) -->
-        <module>reference/multiversion-jsonrpc</module>
-        <module>reference/multiversion-rest</module>
-
-        <!-- Multitenancy reusable test support (published) -->
-        <module>extras/multitenancy/tests/test-common</module>
-
-        <!-- Multitenancy REST integration tests -->
-        <module>extras/multitenancy/tests/rest</module>
-
-        <!-- Multitenancy JSON-RPC integration tests (no REST transport on classpath) -->
-        <module>extras/multitenancy/tests/jsonrpc</module>
-
-        <!-- Multitenancy gRPC integration tests -->
-        <module>extras/multitenancy/tests/grpc</module>
-
-        <!-- Multitenancy router unit tests (Weld SE, no Quarkus) -->
-        <module>extras/multitenancy/tests/router-unit</module>
-
-        <!-- Multi-version test modules -->
-        <module>tests/multiversion/jsonrpc</module>
-        <module>tests/multiversion/rest</module>
-        <module>tests/multiversion/grpc</module>
-
-        <!-- BOMs - build order automatically determined by reactor based on dependencies -->
-        <module>boms/extras</module>
-        <module>boms/reference</module>
-        <module>boms/sdk</module>
-
-        <!-- TCK -->
-        <module>tck</module>
-
-    </modules>
 
     <profiles>
         <profile>
@@ -804,7 +801,7 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
+                        <artifactId>maven-gpg-plugin</artifactId>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -812,7 +809,7 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
+                        <artifactId>maven-source-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
@@ -864,11 +861,11 @@
                 <jdk>(17, 21]</jdk>
             </activation>
             <properties>
+                <error-prone.flag />
                 <error-prone.version>2.42.0</error-prone.version>
-                <nullaway.version>0.12.10</nullaway.version>
-                <error-prone.flag></error-prone.flag>
                 <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
-                <quarkus.jvm.args></quarkus.jvm.args>
+                <nullaway.version>0.12.10</nullaway.version>
+                <quarkus.jvm.args />
             </properties>
         </profile>
     </profiles>

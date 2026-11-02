@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -14,6 +12,16 @@
 
     <name>Java SDK A2A ITK Agent</name>
     <description>Integration Test Kit agent for cross-SDK interoperability testing</description>
+
+    <properties>
+        <!--
+          Single-source location of the canonical .proto files. The a2a-itk
+          repository is fetched at the ref pinned by A2A_ITK_REVISION (see
+          run_itk.sh) into ${project.basedir}/a2a-itk. Override via
+          -Da2a.itk.proto.dir=... when building outside run_itk.sh.
+        -->
+        <a2a.itk.proto.dir>${project.basedir}/a2a-itk/protos</a2a.itk.proto.dir>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -98,16 +106,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <!--
-          Single-source location of the canonical .proto files. The a2a-itk
-          repository is fetched at the ref pinned by A2A_ITK_REVISION (see
-          run_itk.sh) into ${project.basedir}/a2a-itk. Override via
-          -Da2a.itk.proto.dir=... when building outside run_itk.sh.
-        -->
-        <a2a.itk.proto.dir>${project.basedir}/a2a-itk/protos</a2a.itk.proto.dir>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -131,10 +129,10 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <phase>generate-sources</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -142,6 +140,9 @@
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
                 <extensions>true</extensions>
+                <configuration>
+                    <jvmArgs>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmArgs>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -151,9 +152,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <jvmArgs>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmArgs>
-                </configuration>
             </plugin>
         </plugins>
     </build>

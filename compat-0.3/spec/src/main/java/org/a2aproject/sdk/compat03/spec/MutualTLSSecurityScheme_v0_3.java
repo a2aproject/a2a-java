@@ -5,7 +5,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Defines a security scheme using mTLS authentication.
  */
-public record MutualTLSSecurityScheme_v0_3(@Nullable String description, String type) implements SecurityScheme_v0_3 {
+public record MutualTLSSecurityScheme_v0_3(@Nullable String description, String type)
+        implements SecurityScheme_v0_3 {
 
     public static final String TYPE = "mutualTLS";
 

@@ -113,7 +113,8 @@ public interface PushNotificationConfigStore {
      * @param protocolVersion the protocol version string, or null to use {@link org.a2aproject.sdk.spec.AgentInterface#CURRENT_PROTOCOL_VERSION}
      * @return the potentially updated configuration (with ID set if it was null)
      */
-    default TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
+    default TaskPushNotificationConfig setInfo(
+            TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
         return setInfo(notificationConfig);
     }
 
@@ -121,7 +122,9 @@ public interface PushNotificationConfigStore {
      * Resolves the protocol version, defaulting null to the current protocol version.
      */
     static String resolveProtocolVersion(@Nullable String protocolVersion) {
-        return protocolVersion != null ? protocolVersion : org.a2aproject.sdk.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
+        return protocolVersion != null
+                ? protocolVersion
+                : org.a2aproject.sdk.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
     }
 
     /**
@@ -140,14 +143,15 @@ public interface PushNotificationConfigStore {
             return DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
         }
         return config.getOptionalValue("a2a.push-notification-config.max-per-task")
-                .map(value -> {
-                    try {
-                        int parsed = Integer.parseInt(value.trim());
-                        return parsed > 0 ? parsed : DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
-                    } catch (NumberFormatException e) {
-                        return DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
-                    }
-                })
+                .map(
+                        value -> {
+                            try {
+                                int parsed = Integer.parseInt(value.trim());
+                                return parsed > 0 ? parsed : DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
+                            } catch (NumberFormatException e) {
+                                return DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
+                            }
+                        })
                 .orElse(DEFAULT_MAX_PUSH_CONFIGS_PER_TASK);
     }
 
@@ -209,5 +213,4 @@ public interface PushNotificationConfigStore {
     default java.util.Map<String, String> getProtocolVersions(String taskId) {
         return java.util.Map.of();
     }
-
 }

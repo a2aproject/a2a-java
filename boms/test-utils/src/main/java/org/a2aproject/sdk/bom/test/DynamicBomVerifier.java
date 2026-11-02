@@ -39,7 +39,8 @@ public abstract class DynamicBomVerifier {
         Path current = Paths.get("").toAbsolutePath();
         while (current != null) {
             if (Files.isDirectory(current)) {
-                if (Files.exists(current.resolve("pom.xml")) && Files.exists(current.resolve("boms"))) {
+                if (Files.exists(current.resolve("pom.xml"))
+                        && Files.exists(current.resolve("boms"))) {
                     projectRoot = current;
                     break;
                 }
@@ -49,14 +50,16 @@ public abstract class DynamicBomVerifier {
         if (projectRoot == null) {
             throw new IllegalStateException("Could not find project root directory.");
         }
-        //Path projectRoot = Paths.get("").toAbsolutePath().getParent().getParent().getParent().getParent().getParent();
+        // Path projectRoot =
+        // Paths.get("").toAbsolutePath().getParent().getParent().getParent().getParent().getParent();
         System.out.println("Scanning project root: " + projectRoot);
 
         Set<String> requiredClasses = discoverRequiredClasses(projectRoot);
         Set<String> forbiddenClasses = discoverForbiddenClasses(projectRoot);
 
         System.out.println("Discovered " + requiredClasses.size() + " required classes to verify");
-        System.out.println("Discovered " + forbiddenClasses.size() + " forbidden classes to verify");
+        System.out.println(
+                "Discovered " + forbiddenClasses.size() + " forbidden classes to verify");
 
         sanityCheckDiscovery(requiredClasses, forbiddenClasses);
 
@@ -71,7 +74,8 @@ public abstract class DynamicBomVerifier {
             } catch (ClassNotFoundException e) {
                 failures.add("[REQUIRED] " + className + " - NOT FOUND");
             } catch (NoClassDefFoundError e) {
-                failures.add("[REQUIRED] " + className + " - MISSING DEPENDENCY: " + e.getMessage());
+                failures.add(
+                        "[REQUIRED] " + className + " - MISSING DEPENDENCY: " + e.getMessage());
             } catch (Exception e) {
                 failures.add("[REQUIRED] " + className + " - ERROR: " + e.getMessage());
             }
@@ -82,7 +86,11 @@ public abstract class DynamicBomVerifier {
         for (String className : forbiddenClasses) {
             try {
                 Class.forName(className);
-                failures.add("[FORBIDDEN] " + className + " - INCORRECTLY LOADABLE (BOM includes dependency it shouldn't!)");
+                failures.add(
+                        "[FORBIDDEN] "
+                                + className
+                                + " - INCORRECTLY LOADABLE (BOM includes dependency it"
+                                + " shouldn't!)");
             } catch (ClassNotFoundException | NoClassDefFoundError e) {
                 // Expected - class should not be loadable
                 correctlyForbidden++;
@@ -92,8 +100,16 @@ public abstract class DynamicBomVerifier {
         }
 
         System.out.println("\n=== BOM Verification Results ===");
-        System.out.println("Required classes successfully loaded: " + successful + "/" + requiredClasses.size());
-        System.out.println("Forbidden classes correctly not loadable: " + correctlyForbidden + "/" + forbiddenClasses.size());
+        System.out.println(
+                "Required classes successfully loaded: "
+                        + successful
+                        + "/"
+                        + requiredClasses.size());
+        System.out.println(
+                "Forbidden classes correctly not loadable: "
+                        + correctlyForbidden
+                        + "/"
+                        + forbiddenClasses.size());
         System.out.println("Total failures: " + failures.size());
 
         if (!failures.isEmpty()) {
@@ -103,32 +119,56 @@ public abstract class DynamicBomVerifier {
             System.exit(1);
         }
 
-        System.out.println("\n✅ BOM is COMPLETE - all required classes loaded, all forbidden classes not loadable!");
+        System.out.println(
+                "\n"
+                    + "✅ BOM is COMPLETE - all required classes loaded, all forbidden classes not"
+                    + " loadable!");
     }
 
     private void sanityCheckDiscovery(Set<String> requiredClasses, Set<String> forbiddenClasses) {
-        // Do some sanity checks for some classes from both top-level and nested modules to make sure the
+        // Do some sanity checks for some classes from both top-level and nested modules to make
+        // sure the
         // discovery mechanism worked properly
-        sanityCheckDiscovery("org.a2aproject.sdk.spec.AgentCard", requiredClasses, forbiddenClasses);
-        sanityCheckDiscovery("org.a2aproject.sdk.server.events.EventConsumer", requiredClasses, forbiddenClasses);
-        sanityCheckDiscovery("org.a2aproject.sdk.client.transport.spi.ClientTransport", requiredClasses, forbiddenClasses);
+        sanityCheckDiscovery(
+                "org.a2aproject.sdk.spec.AgentCard", requiredClasses, forbiddenClasses);
+        sanityCheckDiscovery(
+                "org.a2aproject.sdk.server.events.EventConsumer",
+                requiredClasses,
+                forbiddenClasses);
+        sanityCheckDiscovery(
+                "org.a2aproject.sdk.client.transport.spi.ClientTransport",
+                requiredClasses,
+                forbiddenClasses);
 
-        sanityCheckDiscovery("org.a2aproject.sdk.server.common.quarkus.DefaultProducers", requiredClasses, forbiddenClasses);
-        sanityCheckDiscovery("org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent", requiredClasses, forbiddenClasses);
-        sanityCheckDiscovery("org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedEventQueueItem", requiredClasses, forbiddenClasses);
+        sanityCheckDiscovery(
+                "org.a2aproject.sdk.server.common.quarkus.DefaultProducers",
+                requiredClasses,
+                forbiddenClasses);
+        sanityCheckDiscovery(
+                "org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent",
+                requiredClasses,
+                forbiddenClasses);
+        sanityCheckDiscovery(
+                "org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedEventQueueItem",
+                requiredClasses,
+                forbiddenClasses);
 
         // Make sure that the required and forbidden sets don't contain the same classes
         Set<String> intersection = new HashSet<>(requiredClasses);
         intersection.retainAll(forbiddenClasses);
         if (!intersection.isEmpty()) {
-            System.err.println("The following classes appear in both the required and forbidden sets: " + intersection);
+            System.err.println(
+                    "The following classes appear in both the required and forbidden sets: "
+                            + intersection);
             System.exit(1);
         }
     }
 
-    private void sanityCheckDiscovery(String className, Set<String> requiredClasses, Set<String> forbiddenClasses) {
+    private void sanityCheckDiscovery(
+            String className, Set<String> requiredClasses, Set<String> forbiddenClasses) {
         if (!requiredClasses.contains(className) && !forbiddenClasses.contains(className)) {
-            System.err.println("Class expected to be on the classpath was not discovered: " + className);
+            System.err.println(
+                    "Class expected to be on the classpath was not discovered: " + className);
             System.exit(1);
         }
     }
@@ -137,39 +177,53 @@ public abstract class DynamicBomVerifier {
      * Discover classes that MUST be loadable (not excluded, not forbidden)
      */
     private Set<String> discoverRequiredClasses(Path projectRoot) throws IOException {
-        return discoverClasses(projectRoot, relativePath -> !isExcluded(relativePath) && !isForbidden(relativePath));
+        return discoverClasses(
+                projectRoot,
+                relativePath -> !isExcluded(relativePath) && !isForbidden(relativePath));
     }
 
     /**
      * Discover classes that must NOT be loadable (forbidden but not excluded)
      */
     private Set<String> discoverForbiddenClasses(Path projectRoot) throws IOException {
-        return discoverClasses(projectRoot, relativePath -> !isExcluded(relativePath) && isForbidden(relativePath));
+        return discoverClasses(
+                projectRoot,
+                relativePath -> !isExcluded(relativePath) && isForbidden(relativePath));
     }
 
     /**
      * Common discovery logic with custom filter
      */
-    private Set<String> discoverClasses(Path projectRoot, java.util.function.Predicate<String> pathFilter) throws IOException {
+    private Set<String> discoverClasses(
+            Path projectRoot, java.util.function.Predicate<String> pathFilter) throws IOException {
         Set<String> classes = new TreeSet<>();
 
         try (Stream<Path> paths = Files.walk(projectRoot)) {
             paths.filter(Files::isRegularFile)
-                 .filter(p -> p.toString().endsWith(".java"))
-                 .filter(p -> {
-                     String relativePath = toForwardSlash(projectRoot.relativize(p).toString());
-                     return !relativePath.startsWith(".") && relativePath.contains("/src/main/java/") && pathFilter.test(relativePath);
-                 })
-                 .forEach(javaFile -> {
-                     try {
-                         String className = extractClassName(javaFile);
-                         if (className != null) {
-                             classes.add(className);
-                         }
-                     } catch (IOException e) {
-                         System.err.println("Failed to parse: " + javaFile + " - " + e.getMessage());
-                     }
-                 });
+                    .filter(p -> p.toString().endsWith(".java"))
+                    .filter(
+                            p -> {
+                                String relativePath =
+                                        toForwardSlash(projectRoot.relativize(p).toString());
+                                return !relativePath.startsWith(".")
+                                        && relativePath.contains("/src/main/java/")
+                                        && pathFilter.test(relativePath);
+                            })
+                    .forEach(
+                            javaFile -> {
+                                try {
+                                    String className = extractClassName(javaFile);
+                                    if (className != null) {
+                                        classes.add(className);
+                                    }
+                                } catch (IOException e) {
+                                    System.err.println(
+                                            "Failed to parse: "
+                                                    + javaFile
+                                                    + " - "
+                                                    + e.getMessage());
+                                }
+                            });
         }
 
         return classes;
@@ -198,12 +252,13 @@ public abstract class DynamicBomVerifier {
         // Extract package name from file content
         String packageName = null;
         try (Stream<String> lines = Files.lines(javaFile)) {
-            packageName = lines.map(String::trim)
-                    .map(PACKAGE_PATTERN::matcher)
-                    .filter(Matcher::matches)
-                    .map(m -> m.group(1))
-                    .findFirst()
-                    .orElse(null);
+            packageName =
+                    lines.map(String::trim)
+                            .map(PACKAGE_PATTERN::matcher)
+                            .filter(Matcher::matches)
+                            .map(m -> m.group(1))
+                            .findFirst()
+                            .orElse(null);
         }
         if (packageName != null) {
             return packageName + "." + simpleClassName;

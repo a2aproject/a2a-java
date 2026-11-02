@@ -30,10 +30,12 @@ class PushNotificationPayloadFormatter_v0_3_Test {
 
     @Test
     void formatsTaskEventAsV03Task() {
-        Task task = Task.builder()
-                .id("t1").contextId("c1")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("t1")
+                        .contextId("c1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
 
         String payload = formatter.formatPayload(task, task);
 
@@ -45,15 +47,19 @@ class PushNotificationPayloadFormatter_v0_3_Test {
 
     @Test
     void formatsStatusUpdateUsingTaskSnapshot() {
-        Task snapshot = Task.builder()
-                .id("t1").contextId("c1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        Task snapshot =
+                Task.builder()
+                        .id("t1")
+                        .contextId("c1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("t1").contextId("c1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("t1")
+                        .contextId("c1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
         String payload = formatter.formatPayload(event, snapshot);
 
@@ -64,16 +70,19 @@ class PushNotificationPayloadFormatter_v0_3_Test {
 
     @Test
     void skipsMessageEvents() {
-        Task snapshot = Task.builder()
-                .id("t1").contextId("c1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        Task snapshot =
+                Task.builder()
+                        .id("t1")
+                        .contextId("c1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
-        Message message = Message.builder()
-                .messageId("m1")
-                .role(Message.Role.ROLE_AGENT)
-                .parts(new TextPart("hello"))
-                .build();
+        Message message =
+                Message.builder()
+                        .messageId("m1")
+                        .role(Message.Role.ROLE_AGENT)
+                        .parts(new TextPart("hello"))
+                        .build();
 
         String payload = formatter.formatPayload(message, snapshot);
 
@@ -82,10 +91,12 @@ class PushNotificationPayloadFormatter_v0_3_Test {
 
     @Test
     void returnsNullWhenSnapshotIsNull() {
-        Task task = Task.builder()
-                .id("t1").contextId("c1")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("t1")
+                        .contextId("c1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
 
         String payload = formatter.formatPayload(task, null);
 

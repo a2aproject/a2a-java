@@ -17,27 +17,37 @@ public class AdditionalRoutes {
         router.route().order(Integer.MIN_VALUE + 1).handler(ActsAuth::guard);
 
         router.get("/jsonrpc/.well-known/agent-card.json")
-                .handler(ctx -> {
-                    LOGGER.info("Rerouting GET /jsonrpc/.well-known/agent-card.json -> /.well-known/agent-card.json");
-                    ctx.reroute("/.well-known/agent-card.json");
-                });
+                .handler(
+                        ctx -> {
+                            LOGGER.info(
+                                    "Rerouting GET /jsonrpc/.well-known/agent-card.json ->"
+                                            + " /.well-known/agent-card.json");
+                            ctx.reroute("/.well-known/agent-card.json");
+                        });
 
-        router.route("/jsonrpc/*").handler(ctx -> {
-            LOGGER.info("Rerouting /jsonrpc -> /");
-            ctx.reroute("/");
-        });
-        router.route("/rest/*").handler(ctx -> {
-            LOGGER.info("Rerouting /rest -> /");
-            ctx.reroute("/");
-        });
+        router.route("/jsonrpc/*")
+                .handler(
+                        ctx -> {
+                            LOGGER.info("Rerouting /jsonrpc -> /");
+                            ctx.reroute("/");
+                        });
+        router.route("/rest/*")
+                .handler(
+                        ctx -> {
+                            LOGGER.info("Rerouting /rest -> /");
+                            ctx.reroute("/");
+                        });
 
-        router.route().order(Integer.MIN_VALUE)
-                .handler(ctx -> {
-                    String method = ctx.request().method().name();
-                    String path = ctx.request().path();
-                    String contentType = ctx.request().getHeader("Content-Type");
-                    LOGGER.info("Incoming {} {} Content-Type={}", method, path, contentType);
-                    ctx.next();
-                });
+        router.route()
+                .order(Integer.MIN_VALUE)
+                .handler(
+                        ctx -> {
+                            String method = ctx.request().method().name();
+                            String path = ctx.request().path();
+                            String contentType = ctx.request().getHeader("Content-Type");
+                            LOGGER.info(
+                                    "Incoming {} {} Content-Type={}", method, path, contentType);
+                            ctx.next();
+                        });
     }
 }

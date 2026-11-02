@@ -28,6 +28,9 @@ public interface TaskQueryParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "historyLength", source = "historyLength")
-    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
+    @Mapping(
+            target = "tenant",
+            source = "tenant",
+            conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.GetTaskRequest toProto(TaskQueryParams domain);
 }

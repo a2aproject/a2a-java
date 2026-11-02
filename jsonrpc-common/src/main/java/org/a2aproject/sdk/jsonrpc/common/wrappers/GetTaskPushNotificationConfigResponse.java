@@ -16,11 +16,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class GetTaskPushNotificationConfigResponse extends A2AResponse<TaskPushNotificationConfig> {
+public final class GetTaskPushNotificationConfigResponse
+        extends A2AResponse<TaskPushNotificationConfig> {
 
-    private GetTaskPushNotificationConfigResponse() {
-    }
-
+    private GetTaskPushNotificationConfigResponse() {}
 
     /**
      * Constructs response with full parameters.
@@ -30,7 +29,8 @@ public final class GetTaskPushNotificationConfigResponse extends A2AResponse<Tas
      * @param result the push notification config result
      * @param error the error if any
      */
-    public GetTaskPushNotificationConfigResponse(String jsonrpc, Object id, TaskPushNotificationConfig result, A2AError error) {
+    public GetTaskPushNotificationConfigResponse(
+            String jsonrpc, Object id, TaskPushNotificationConfig result, A2AError error) {
         super(jsonrpc, id, result, error, TaskPushNotificationConfig.class);
     }
 
@@ -53,5 +53,4 @@ public final class GetTaskPushNotificationConfigResponse extends A2AResponse<Tas
     public GetTaskPushNotificationConfigResponse(Object id, TaskPushNotificationConfig result) {
         this(null, id, result, null);
     }
-
 }

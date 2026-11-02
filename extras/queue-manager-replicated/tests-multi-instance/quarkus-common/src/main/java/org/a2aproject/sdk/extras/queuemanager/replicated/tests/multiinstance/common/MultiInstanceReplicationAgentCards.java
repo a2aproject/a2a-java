@@ -1,9 +1,7 @@
 package org.a2aproject.sdk.extras.queuemanager.replicated.tests.multiinstance.common;
 
-
 import java.util.Collections;
 import java.util.List;
-
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -15,8 +13,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
  */
 public final class MultiInstanceReplicationAgentCards {
 
-    private MultiInstanceReplicationAgentCards() {
-    }
+    private MultiInstanceReplicationAgentCards() {}
 
     /**
      * Creates an AgentCard for a test instance.
@@ -30,22 +27,28 @@ public final class MultiInstanceReplicationAgentCards {
 
         return AgentCard.builder()
                 .name("Multi-Instance Test Agent " + instanceNumber)
-                .description("Test agent for multi-instance replication testing - Instance " + instanceNumber)
-                .supportedInterfaces(List.of(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), url)))
+                .description(
+                        "Test agent for multi-instance replication testing - Instance "
+                                + instanceNumber)
+                .supportedInterfaces(
+                        List.of(new AgentInterface(TransportProtocol.JSONRPC.asString(), url)))
                 .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(false)
-                        .build())
+                .capabilities(
+                        AgentCapabilities.builder()
+                                .streaming(true)
+                                .pushNotifications(false)
+                                .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(AgentSkill.builder()
-                                .id("replication_test")
-                                .name("Replication Test")
-                                .description("Fire-and-forget agent for testing replication")
-                                .tags(Collections.singletonList("test"))
-                                .build()))
+                .skills(
+                        Collections.singletonList(
+                                AgentSkill.builder()
+                                        .id("replication_test")
+                                        .name("Replication Test")
+                                        .description(
+                                                "Fire-and-forget agent for testing replication")
+                                        .tags(Collections.singletonList("test"))
+                                        .build()))
                 .build();
     }
 }

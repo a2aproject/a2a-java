@@ -38,7 +38,7 @@ public enum TaskState_v0_3 {
         return state;
     }
 
-    public boolean isFinal(){
+    public boolean isFinal() {
         return isFinal;
     }
 

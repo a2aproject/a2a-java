@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.TaskIdParams;
 
@@ -29,9 +28,7 @@ import org.a2aproject.sdk.spec.TaskIdParams;
  */
 public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
-    private SubscribeToTaskRequest() {
-    }
-
+    private SubscribeToTaskRequest() {}
 
     /**
      * Constructs request with all parameters.
@@ -41,7 +38,11 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
      * @param params the request parameters
      */
     public SubscribeToTaskRequest(String jsonrpc, Object id, TaskIdParams params) {
-        super(jsonrpc, SUBSCRIBE_TO_TASK_METHOD, id == null ? UUID.randomUUID().toString() : id, params);
+        super(
+                jsonrpc,
+                SUBSCRIBE_TO_TASK_METHOD,
+                id == null ? UUID.randomUUID().toString() : id,
+                params);
     }
 
     /**
@@ -74,8 +75,7 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC version.

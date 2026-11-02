@@ -14,7 +14,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
@@ -35,14 +34,15 @@ import org.junit.jupiter.api.Test;
 
 public class EventConsumerTest {
 
-    private static final String TASK_ID = "123";  // Must match MINIMAL_TASK id
+    private static final String TASK_ID = "123"; // Must match MINIMAL_TASK id
 
     private EventQueue eventQueue;
     private EventConsumer eventConsumer;
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
 
-    private static final String MINIMAL_TASK = """
+    private static final String MINIMAL_TASK =
+            """
             {
                 "id": "123",
                 "contextId": "session-xyz",
@@ -50,7 +50,8 @@ public class EventConsumerTest {
             }
             """;
 
-    private static final String MESSAGE_PAYLOAD = """
+    private static final String MESSAGE_PAYLOAD =
+            """
             {
                 "role": "ROLE_AGENT",
                 "parts": [{"text": "test message"}],
@@ -64,20 +65,24 @@ public class EventConsumerTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
-        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(TASK_ID)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        eventQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .taskId(TASK_ID)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
         eventConsumer = new EventConsumer(eventQueue, Runnable::run);
     }
 
     @AfterEach
     public void cleanup() {
         if (mainEventBusProcessor != null) {
-            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
+            mainEventBusProcessor.setCallback(null); // Clear any test callbacks
             EventQueueUtil.stop(mainEventBusProcessor);
         }
     }
@@ -92,21 +97,23 @@ public class EventConsumerTest {
      */
     private void waitForEventProcessing(Runnable action) throws InterruptedException {
         CountDownLatch processingLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        processingLatch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for basic event processing wait
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {
+                        // Not needed for basic event processing wait
+                    }
+                });
 
         try {
             action.run();
-            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+            assertTrue(
+                    processingLatch.await(5, TimeUnit.SECONDS),
                     "MainEventBusProcessor should have processed the event within timeout");
         } finally {
             mainEventBusProcessor.setCallback(null);
@@ -144,21 +151,23 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllMultipleEvents() throws JsonProcessingException {
-        List<Event> events = List.of(
-                fromJson(MINIMAL_TASK, Task.class),
-                TaskArtifactUpdateEvent.builder()
-                        .taskId(TASK_ID)
-                        .contextId("session-xyz")
-                        .artifact(Artifact.builder()
-                                .artifactId("11")
-                                .parts(new TextPart("text"))
-                                .build())
-                        .build(),
-                TaskStatusUpdateEvent.builder()
-                        .taskId(TASK_ID)
-                        .contextId("session-xyz")
-                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                        .build());
+        List<Event> events =
+                List.of(
+                        fromJson(MINIMAL_TASK, Task.class),
+                        TaskArtifactUpdateEvent.builder()
+                                .taskId(TASK_ID)
+                                .contextId("session-xyz")
+                                .artifact(
+                                        Artifact.builder()
+                                                .artifactId("11")
+                                                .parts(new TextPart("text"))
+                                                .build())
+                                .build(),
+                        TaskStatusUpdateEvent.builder()
+                                .taskId(TASK_ID)
+                                .contextId("session-xyz")
+                                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                                .build());
 
         for (Event event : events) {
             eventQueue.enqueueEvent(event);
@@ -179,21 +188,23 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeUntilMessage() throws Exception {
-        List<Event> events = List.of(
-                fromJson(MINIMAL_TASK, Task.class),
-                TaskArtifactUpdateEvent.builder()
-                        .taskId(TASK_ID)
-                        .contextId("session-xyz")
-                        .artifact(Artifact.builder()
-                                .artifactId("11")
-                                .parts(new TextPart("text"))
-                                .build())
-                        .build(),
-                TaskStatusUpdateEvent.builder()
-                        .taskId(TASK_ID)
-                        .contextId("session-xyz")
-                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                        .build());
+        List<Event> events =
+                List.of(
+                        fromJson(MINIMAL_TASK, Task.class),
+                        TaskArtifactUpdateEvent.builder()
+                                .taskId(TASK_ID)
+                                .contextId("session-xyz")
+                                .artifact(
+                                        Artifact.builder()
+                                                .artifactId("11")
+                                                .parts(new TextPart("text"))
+                                                .build())
+                                .build(),
+                        TaskStatusUpdateEvent.builder()
+                                .taskId(TASK_ID)
+                                .contextId("session-xyz")
+                                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                                .build());
 
         for (Event event : events) {
             eventQueue.enqueueEvent(event);
@@ -287,24 +298,28 @@ public class EventConsumerTest {
         //
         // INPUT_REQUIRED is an interrupted state, NOT a terminal state.
         // The stream should remain open to deliver future state updates.
-        Task task = Task.builder()
-            .id(TASK_ID)
-            .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
-            .build();
-        TaskArtifactUpdateEvent artifactEvent = TaskArtifactUpdateEvent.builder()
-                .taskId(TASK_ID)
-                .contextId("session-xyz")
-                .artifact(Artifact.builder()
-                    .artifactId("11")
-                    .parts(new TextPart("text"))
-                    .build())
-                .build();
-        TaskStatusUpdateEvent completedEvent = TaskStatusUpdateEvent.builder()
-                .taskId(TASK_ID)
-                .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id(TASK_ID)
+                        .contextId("session-xyz")
+                        .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
+                        .build();
+        TaskArtifactUpdateEvent artifactEvent =
+                TaskArtifactUpdateEvent.builder()
+                        .taskId(TASK_ID)
+                        .contextId("session-xyz")
+                        .artifact(
+                                Artifact.builder()
+                                        .artifactId("11")
+                                        .parts(new TextPart("text"))
+                                        .build())
+                        .build();
+        TaskStatusUpdateEvent completedEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(TASK_ID)
+                        .contextId("session-xyz")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
         List<Event> events = List.of(task, artifactEvent, completedEvent);
 
         for (Event event : events) {
@@ -326,7 +341,8 @@ public class EventConsumerTest {
         assertSame(completedEvent, receivedEvents.get(2));
     }
 
-    private Flow.Subscriber<EventQueueItem> getSubscriber(List<Event> receivedEvents, AtomicReference<Throwable> error) {
+    private Flow.Subscriber<EventQueueItem> getSubscriber(
+            List<Event> receivedEvents, AtomicReference<Throwable> error) {
         return new Flow.Subscriber<>() {
             private Flow.Subscription subscription;
 
@@ -356,12 +372,13 @@ public class EventConsumerTest {
 
     @Test
     public void testCreateAgentRunnableDoneCallbackSetsError() {
-        EnhancedRunnable mockRunnable = new EnhancedRunnable() {
-            @Override
-            public void run() {
-                // Mock implementation
-            }
-        };
+        EnhancedRunnable mockRunnable =
+                new EnhancedRunnable() {
+                    @Override
+                    public void run() {
+                        // Mock implementation
+                    }
+                };
 
         Throwable testError = new RuntimeException("Test error");
         mockRunnable.setError(testError);
@@ -375,12 +392,13 @@ public class EventConsumerTest {
 
     @Test
     public void testCreateAgentRunnableDoneCallbackNoError() {
-        EnhancedRunnable mockRunnable = new EnhancedRunnable() {
-            @Override
-            public void run() {
-                // Mock implementation
-            }
-        };
+        EnhancedRunnable mockRunnable =
+                new EnhancedRunnable() {
+                    @Override
+                    public void run() {
+                        // Mock implementation
+                    }
+                };
 
         // No error set on runnable
         assertNull(mockRunnable.getError());
@@ -402,34 +420,36 @@ public class EventConsumerTest {
 
         final CountDownLatch errorLatch = new CountDownLatch(1);
 
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(1);
+                    }
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(1);
-            }
+                    @Override
+                    public void onNext(EventQueueItem item) {
+                        // Should not be called
+                        errorLatch.countDown();
+                    }
 
-            @Override
-            public void onNext(EventQueueItem item) {
-                // Should not be called
-                errorLatch.countDown();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        receivedError.set(throwable);
+                        errorLatch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                receivedError.set(throwable);
-                errorLatch.countDown();
-            }
-
-            @Override
-            public void onComplete() {
-                // Should not be called
-                errorLatch.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        // Should not be called
+                        errorLatch.countDown();
+                    }
+                });
 
         // Wait for error callback with timeout
-        assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for onError callback.");
+        assertTrue(
+                errorLatch.await(5, TimeUnit.SECONDS),
+                "Test timed out waiting for onError callback.");
 
         assertNotNull(receivedError.get());
         assertEquals("Stored error", receivedError.get().getMessage());
@@ -437,9 +457,11 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllStopsOnQueueClosed() throws Exception {
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        EventQueue queue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
         EventConsumer consumer = new EventConsumer(queue, Runnable::run);
 
         // Close the queue immediately
@@ -450,44 +472,48 @@ public class EventConsumerTest {
         final AtomicReference<Boolean> completed = new AtomicReference<>(false);
         final CountDownLatch completionLatch = new CountDownLatch(1);
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-            }
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(EventQueueItem item) {
-                receivedEvents.add(item.getEvent());
-            }
+                    @Override
+                    public void onNext(EventQueueItem item) {
+                        receivedEvents.add(item.getEvent());
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                // Should not be called
-                completionLatch.countDown();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        // Should not be called
+                        completionLatch.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                completed.set(true);
-                completionLatch.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        completed.set(true);
+                        completionLatch.countDown();
+                    }
+                });
 
         // Wait for completion with timeout
-        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for onComplete callback.");
+        assertTrue(
+                completionLatch.await(5, TimeUnit.SECONDS),
+                "Test timed out waiting for onComplete callback.");
 
         // Should complete immediately with no events
         assertTrue(completed.get());
         assertEquals(0, receivedEvents.size());
     }
 
-
     @Test
     public void testConsumeAllHandlesQueueClosedException() throws Exception {
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        EventQueue queue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
         EventConsumer consumer = new EventConsumer(queue, Runnable::run);
 
         // Add a message event (which will complete the stream)
@@ -504,32 +530,35 @@ public class EventConsumerTest {
         final AtomicReference<Boolean> completed = new AtomicReference<>(false);
         final CountDownLatch completionLatch = new CountDownLatch(1);
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-            }
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(EventQueueItem item) {
-                receivedEvents.add(item.getEvent());
-            }
+                    @Override
+                    public void onNext(EventQueueItem item) {
+                        receivedEvents.add(item.getEvent());
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                // Should not be called
-                completionLatch.countDown();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        // Should not be called
+                        completionLatch.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                completed.set(true);
-                completionLatch.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        completed.set(true);
+                        completionLatch.countDown();
+                    }
+                });
 
         // Wait for completion with timeout
-        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for onComplete callback.");
+        assertTrue(
+                completionLatch.await(5, TimeUnit.SECONDS),
+                "Test timed out waiting for onComplete callback.");
 
         // Should have received the message and completed
         assertTrue(completed.get());
@@ -539,9 +568,11 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllTerminatesOnQueueClosedEvent() throws Exception {
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        EventQueue queue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
         EventConsumer consumer = new EventConsumer(queue, Runnable::run);
 
         // Enqueue a QueueClosedEvent (poison pill)
@@ -554,39 +585,43 @@ public class EventConsumerTest {
         final AtomicReference<Throwable> error = new AtomicReference<>();
         final CountDownLatch completionLatch = new CountDownLatch(1);
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-            }
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(EventQueueItem item) {
-                receivedEvents.add(item.getEvent());
-            }
+                    @Override
+                    public void onNext(EventQueueItem item) {
+                        receivedEvents.add(item.getEvent());
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-                completionLatch.countDown();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        error.set(throwable);
+                        completionLatch.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                completed.set(true);
-                completionLatch.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        completed.set(true);
+                        completionLatch.countDown();
+                    }
+                });
 
         // Wait for completion with timeout
-        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for completion callback.");
+        assertTrue(
+                completionLatch.await(5, TimeUnit.SECONDS),
+                "Test timed out waiting for completion callback.");
 
         // Should complete gracefully without error
         assertTrue(completed.get(), "Stream should complete normally");
         assertNull(error.get(), "Stream should not error");
 
         // The poison pill should not be delivered to subscribers
-        assertEquals(0, receivedEvents.size(), "QueueClosedEvent should be intercepted, not delivered");
+        assertEquals(
+                0, receivedEvents.size(), "QueueClosedEvent should be intercepted, not delivered");
     }
 
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {

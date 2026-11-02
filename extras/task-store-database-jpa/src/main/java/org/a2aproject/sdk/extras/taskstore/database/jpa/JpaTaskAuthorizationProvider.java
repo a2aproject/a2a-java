@@ -1,12 +1,10 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
-
+import java.util.Arrays;
+import java.util.Optional;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -20,7 +18,8 @@ import org.a2aproject.sdk.server.auth.TaskOperation;
  */
 @Dependent
 @Alternative
-public final class JpaTaskAuthorizationProvider implements TaskAuthorizationProvider, JpaTaskAuthorizationCapability {
+public final class JpaTaskAuthorizationProvider
+        implements TaskAuthorizationProvider, JpaTaskAuthorizationCapability {
     private final JpaTaskOwnershipRepository repository;
 
     @Inject
@@ -28,16 +27,18 @@ public final class JpaTaskAuthorizationProvider implements TaskAuthorizationProv
         this.repository = repository;
     }
 
-
     @Override
     public <T> Optional<T> getCapability(Class<T> type) {
-        return type == JpaTaskAuthorizationCapability.class ? Optional.of(type.cast(this)) : Optional.empty();
+        return type == JpaTaskAuthorizationCapability.class
+                ? Optional.of(type.cast(this))
+                : Optional.empty();
     }
 
     @Override
     public JpaTaskReadScope readScope(ServerCallContext context, TaskOperation operation) {
         return context.getUser() != null && context.getUser().isAuthenticated()
-                ? new JpaTaskReadScope.OwnedBy(context.getUser().getUsername()) : new JpaTaskReadScope.None();
+                ? new JpaTaskReadScope.OwnedBy(context.getUser().getUsername())
+                : new JpaTaskReadScope.None();
     }
 
     @Override
@@ -50,13 +51,15 @@ public final class JpaTaskAuthorizationProvider implements TaskAuthorizationProv
             return true;
         }
         return scope instanceof JpaTaskReadScope.OwnedBy owner
-                && Arrays.equals(JpaSubjectKey.encode(owner.subjectKey()), repository.owner(taskId));
+                && Arrays.equals(
+                        JpaSubjectKey.encode(owner.subjectKey()), repository.owner(taskId));
     }
 
     @Override
     public boolean checkWrite(ServerCallContext context, String taskId, TaskOperation operation) {
         return readScope(context, operation) instanceof JpaTaskReadScope.OwnedBy owner
-                && Arrays.equals(JpaSubjectKey.encode(owner.subjectKey()), repository.owner(taskId));
+                && Arrays.equals(
+                        JpaSubjectKey.encode(owner.subjectKey()), repository.owner(taskId));
     }
 
     @Override

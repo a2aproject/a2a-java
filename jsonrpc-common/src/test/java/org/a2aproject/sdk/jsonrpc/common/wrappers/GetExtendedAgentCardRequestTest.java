@@ -31,10 +31,8 @@ class GetExtendedAgentCardRequestTest {
     @Test
     void builderWithParams() {
         GetExtendedAgentCardParams params = new GetExtendedAgentCardParams("acme");
-        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.builder()
-                .id("1")
-                .params(params)
-                .build();
+        GetExtendedAgentCardRequest request =
+                GetExtendedAgentCardRequest.builder().id("1").params(params).build();
 
         assertEquals("1", request.getId());
         assertNotNull(request.getParams());
@@ -48,5 +46,4 @@ class GetExtendedAgentCardRequestTest {
         assertNotNull(request.getId());
         assertEquals(A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD, request.getMethod());
     }
-
 }

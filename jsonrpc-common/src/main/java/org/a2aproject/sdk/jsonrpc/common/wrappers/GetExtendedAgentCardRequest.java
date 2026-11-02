@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
@@ -34,10 +33,10 @@ import org.jspecify.annotations.Nullable;
  * @see ExtendedAgentCardNotConfiguredError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCRequest<GetExtendedAgentCardParams> {
+public final class GetExtendedAgentCardRequest
+        extends NonStreamingJSONRPCRequest<GetExtendedAgentCardParams> {
 
-    private GetExtendedAgentCardRequest() {
-    }
+    private GetExtendedAgentCardRequest() {}
 
     /**
      * Constructs request with optional parameters.
@@ -46,7 +45,8 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
      * @param id the request ID
      * @param params the request parameters, may be {@code null}
      */
-    public GetExtendedAgentCardRequest(String jsonrpc, Object id, @Nullable GetExtendedAgentCardParams params) {
+    public GetExtendedAgentCardRequest(
+            String jsonrpc, Object id, @Nullable GetExtendedAgentCardParams params) {
         // params are optional for getExtendedAgentCard (tenant is optional)
         validateAndSetJsonParameters(jsonrpc, GET_EXTENDED_AGENT_CARD_METHOD, id, params, false);
     }
@@ -80,8 +80,7 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC version.
@@ -111,7 +110,8 @@ public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCReques
          * @param params the request parameters
          * @return this builder for method chaining
          */
-        public GetExtendedAgentCardRequest.Builder params(@Nullable GetExtendedAgentCardParams params) {
+        public GetExtendedAgentCardRequest.Builder params(
+                @Nullable GetExtendedAgentCardParams params) {
             this.params = params;
             return this;
         }

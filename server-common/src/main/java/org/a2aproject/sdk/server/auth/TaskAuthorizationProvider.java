@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server.auth;
 
 import java.util.Optional;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.A2AError;
 import org.jspecify.annotations.Nullable;
@@ -136,7 +135,6 @@ public interface TaskAuthorizationProvider {
         return Optional.empty();
     }
 
-
     /**
      * Check whether the current user is allowed to read the given task.
      *
@@ -153,7 +151,8 @@ public interface TaskAuthorizationProvider {
      * @return {@code true} to allow, {@code false} to deny
      * @throws A2AError if the authorization check itself fails
      */
-    boolean checkRead(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError;
+    boolean checkRead(ServerCallContext context, String taskId, TaskOperation operation)
+            throws A2AError;
 
     /**
      * Check whether the current user is allowed to write to the given task.
@@ -164,7 +163,8 @@ public interface TaskAuthorizationProvider {
      * @return {@code true} to allow, {@code false} to deny
      * @throws A2AError if the authorization check itself fails
      */
-    boolean checkWrite(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError;
+    boolean checkWrite(ServerCallContext context, String taskId, TaskOperation operation)
+            throws A2AError;
 
     /**
      * Check whether the current user is allowed to create a new task.
@@ -198,7 +198,8 @@ public interface TaskAuthorizationProvider {
      * @param operation which RequestHandler method triggered the recording
      * @throws A2AError if recording fails
      */
-    void recordOwnership(ServerCallContext context, String taskId, TaskOperation operation) throws A2AError;
+    void recordOwnership(ServerCallContext context, String taskId, TaskOperation operation)
+            throws A2AError;
 
     /**
      * Fail-closed read-access check that handles absent provider and missing call context.
@@ -213,8 +214,11 @@ public interface TaskAuthorizationProvider {
      * @param operation which RequestHandler method triggered the check
      * @return {@code true} to allow, {@code false} to deny
      */
-    static boolean checkReadAccess(@Nullable TaskAuthorizationProvider provider,
-            @Nullable ServerCallContext context, String taskId, TaskOperation operation) {
+    static boolean checkReadAccess(
+            @Nullable TaskAuthorizationProvider provider,
+            @Nullable ServerCallContext context,
+            String taskId,
+            TaskOperation operation) {
         if (provider == null) {
             return true;
         }

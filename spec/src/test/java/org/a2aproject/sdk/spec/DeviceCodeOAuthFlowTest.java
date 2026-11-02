@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -22,11 +21,13 @@ class DeviceCodeOAuthFlowTest {
     private static final String DEVICE_AUTH_URL = "https://auth.example.com/device/code";
     private static final String TOKEN_URL = "https://auth.example.com/token";
     private static final String REFRESH_URL = "https://auth.example.com/refresh";
-    private static final Map<String, String> SCOPES = Map.of("read", "Read access", "write", "Write access");
+    private static final Map<String, String> SCOPES =
+            Map.of("read", "Read access", "write", "Write access");
 
     @Test
     void testConstruction_withAllFields() {
-        DeviceCodeOAuthFlow flow = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, SCOPES);
+        DeviceCodeOAuthFlow flow =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, SCOPES);
 
         assertEquals(DEVICE_AUTH_URL, flow.deviceAuthorizationUrl());
         assertEquals(TOKEN_URL, flow.tokenUrl());
@@ -36,7 +37,8 @@ class DeviceCodeOAuthFlowTest {
 
     @Test
     void testConstruction_withNullRefreshUrl() {
-        DeviceCodeOAuthFlow flow = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, SCOPES);
+        DeviceCodeOAuthFlow flow =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, SCOPES);
 
         assertEquals(DEVICE_AUTH_URL, flow.deviceAuthorizationUrl());
         assertEquals(TOKEN_URL, flow.tokenUrl());
@@ -47,7 +49,8 @@ class DeviceCodeOAuthFlowTest {
     @Test
     void testConstruction_withEmptyScopes() {
         Map<String, String> emptyScopes = Map.of();
-        DeviceCodeOAuthFlow flow = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, emptyScopes);
+        DeviceCodeOAuthFlow flow =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, emptyScopes);
 
         assertEquals(DEVICE_AUTH_URL, flow.deviceAuthorizationUrl());
         assertEquals(TOKEN_URL, flow.tokenUrl());
@@ -57,28 +60,35 @@ class DeviceCodeOAuthFlowTest {
 
     @Test
     void testConstruction_nullDeviceAuthorizationUrl_throwsException() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> new DeviceCodeOAuthFlow(null, TOKEN_URL, REFRESH_URL, SCOPES));
     }
 
     @Test
     void testConstruction_nullTokenUrl_throwsException() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, null, REFRESH_URL, SCOPES));
     }
 
     @Test
     void testConstruction_nullScopes_throwsException() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, null));
     }
 
     @Test
     void testEqualityAndHashCode() {
-        DeviceCodeOAuthFlow flow1 = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, SCOPES);
-        DeviceCodeOAuthFlow flow2 = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, SCOPES);
-        DeviceCodeOAuthFlow flow3 = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, SCOPES);
-        DeviceCodeOAuthFlow flow4 = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, SCOPES);
+        DeviceCodeOAuthFlow flow1 =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, SCOPES);
+        DeviceCodeOAuthFlow flow2 =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, SCOPES);
+        DeviceCodeOAuthFlow flow3 =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, SCOPES);
+        DeviceCodeOAuthFlow flow4 =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, null, SCOPES);
 
         // Test for equality and hashCode consistency
         assertEquals(flow1, flow2);
@@ -88,7 +98,9 @@ class DeviceCodeOAuthFlowTest {
 
         // Test for inequality with different field values
         assertNotEquals(flow1, flow3);
-        assertNotEquals(flow1, new DeviceCodeOAuthFlow("https://other.com", TOKEN_URL, REFRESH_URL, SCOPES));
+        assertNotEquals(
+                flow1,
+                new DeviceCodeOAuthFlow("https://other.com", TOKEN_URL, REFRESH_URL, SCOPES));
         assertNotEquals(flow1, null);
         assertNotEquals(flow1, "not a flow");
     }
@@ -97,12 +109,17 @@ class DeviceCodeOAuthFlowTest {
     void testScopesImmutability() {
         Map<String, String> mutableScopes = new java.util.HashMap<>();
         mutableScopes.put("read", "Read access");
-        DeviceCodeOAuthFlow flow = new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, mutableScopes);
+        DeviceCodeOAuthFlow flow =
+                new DeviceCodeOAuthFlow(DEVICE_AUTH_URL, TOKEN_URL, REFRESH_URL, mutableScopes);
 
         // Modifying the original map should not affect the record
         mutableScopes.put("write", "Write access");
-        assertNotEquals(mutableScopes.size(), flow.scopes().size(),
+        assertNotEquals(
+                mutableScopes.size(),
+                flow.scopes().size(),
                 "Record should be immutable and perform a defensive copy of the scopes map");
-        assertThrows(UnsupportedOperationException.class, () -> flow.scopes().put("admin", "Admin access"));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> flow.scopes().put("admin", "Admin access"));
     }
 }

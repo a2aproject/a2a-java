@@ -8,19 +8,21 @@ public class A2AMappers {
 
     static <T> T getMapper(Class<T> iface) {
         try {
-            @SuppressWarnings( "unchecked" )
+            @SuppressWarnings("unchecked")
             Class<T> implementation =
-                    (Class<T>) iface.getClassLoader().loadClass( iface.getName() + IMPLEMENTATION_SUFFIX );
+                    (Class<T>)
+                            iface.getClassLoader()
+                                    .loadClass(iface.getName() + IMPLEMENTATION_SUFFIX);
             Constructor<T> constructor = implementation.getDeclaredConstructor();
-            constructor.setAccessible( true );
+            constructor.setAccessible(true);
 
             return constructor.newInstance();
 
-        } catch (ClassNotFoundException |
-                 NoSuchMethodException |
-                 InstantiationException |
-                 IllegalAccessException |
-                 InvocationTargetException e) {
+        } catch (ClassNotFoundException
+                | NoSuchMethodException
+                | InstantiationException
+                | IllegalAccessException
+                | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }

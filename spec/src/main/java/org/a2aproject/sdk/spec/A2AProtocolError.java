@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 /**

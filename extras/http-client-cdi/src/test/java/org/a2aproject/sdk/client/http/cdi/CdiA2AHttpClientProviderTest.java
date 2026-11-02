@@ -21,10 +21,11 @@ public class CdiA2AHttpClientProviderTest {
 
         @BeforeEach
         void startContainer() {
-            container = SeContainerInitializer.newInstance()
-                    .disableDiscovery()
-                    .addBeanClasses(DummyA2AHttpClient.class)
-                    .initialize();
+            container =
+                    SeContainerInitializer.newInstance()
+                            .disableDiscovery()
+                            .addBeanClasses(DummyA2AHttpClient.class)
+                            .initialize();
         }
 
         @AfterEach
@@ -47,10 +48,11 @@ public class CdiA2AHttpClientProviderTest {
 
         @BeforeEach
         void startContainer() {
-            container = SeContainerInitializer.newInstance()
-                    .disableDiscovery()
-                    .addBeanClasses(FillerBean.class)
-                    .initialize();
+            container =
+                    SeContainerInitializer.newInstance()
+                            .disableDiscovery()
+                            .addBeanClasses(FillerBean.class)
+                            .initialize();
         }
 
         @AfterEach
@@ -71,10 +73,12 @@ public class CdiA2AHttpClientProviderTest {
 
         @BeforeEach
         void startContainer() {
-            container = SeContainerInitializer.newInstance()
-                    .disableDiscovery()
-                    .addBeanClasses(DummyA2AHttpClient.class, AnotherDummyA2AHttpClient.class)
-                    .initialize();
+            container =
+                    SeContainerInitializer.newInstance()
+                            .disableDiscovery()
+                            .addBeanClasses(
+                                    DummyA2AHttpClient.class, AnotherDummyA2AHttpClient.class)
+                            .initialize();
         }
 
         @AfterEach

@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class FilePartTest {
@@ -17,12 +16,16 @@ class FilePartTest {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("source", null);
 
-        FilePart part = new FilePart(new FileWithUri("text/plain", "example.txt", "https://example.com/example.txt"),
-                metadata);
+        FilePart part =
+                new FilePart(
+                        new FileWithUri(
+                                "text/plain", "example.txt", "https://example.com/example.txt"),
+                        metadata);
 
         assertEquals("example.txt", part.file().name());
         assertTrue(part.metadata().containsKey("source"));
         assertNull(part.metadata().get("source"));
-        assertThrows(UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
     }
 }

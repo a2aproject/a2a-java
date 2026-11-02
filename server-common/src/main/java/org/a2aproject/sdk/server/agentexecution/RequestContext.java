@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.Message;
@@ -209,7 +208,9 @@ public class RequestContext {
      * @return the metadata, or null if not available
      */
     public @Nullable Map<String, Object> getMetadata() {
-        return (params != null && params.metadata() != null) ? Collections.unmodifiableMap(params.metadata()) : null;
+        return (params != null && params.metadata() != null)
+                ? Collections.unmodifiableMap(params.metadata())
+                : null;
     }
 
     /**
@@ -416,39 +417,54 @@ public class RequestContext {
             if (taskId != null && messageTaskId != null && !taskId.equals(messageTaskId)) {
                 throw new InvalidParamsError("bad task id");
             }
-            if (contextId != null && messageContextId != null && !contextId.equals(messageContextId)) {
+            if (contextId != null
+                    && messageContextId != null
+                    && !contextId.equals(messageContextId)) {
                 throw new InvalidParamsError("bad context id");
             }
 
             // 4. Determine final IDs using coalesce pattern: builder → message → generate
-            String finalTaskId = taskId != null ? taskId :
-                                  messageTaskId != null ? messageTaskId :
-                                  UUID.randomUUID().toString();
+            String finalTaskId =
+                    taskId != null
+                            ? taskId
+                            : messageTaskId != null ? messageTaskId : UUID.randomUUID().toString();
 
-            String finalContextId = contextId != null ? contextId :
-                                    messageContextId != null ? messageContextId :
-                                    UUID.randomUUID().toString();
+            String finalContextId =
+                    contextId != null
+                            ? contextId
+                            : messageContextId != null
+                                    ? messageContextId
+                                    : UUID.randomUUID().toString();
 
             // 5. Update params if message needs to be updated with final IDs
             MessageSendParams finalParams = params;
-            if (params != null && (!finalTaskId.equals(messageTaskId) || !finalContextId.equals(messageContextId))) {
-                Message updatedMessage = Message.builder(params.message())
-                        .taskId(finalTaskId)
-                        .contextId(finalContextId)
-                        .build();
+            if (params != null
+                    && (!finalTaskId.equals(messageTaskId)
+                            || !finalContextId.equals(messageContextId))) {
+                Message updatedMessage =
+                        Message.builder(params.message())
+                                .taskId(finalTaskId)
+                                .contextId(finalContextId)
+                                .build();
                 // Preserve all original fields including tenant
-                finalParams = MessageSendParams.builder()
-                        .message(updatedMessage)
-                        .configuration(params.configuration())
-                        .metadata(params.metadata())
-                        .tenant(params.tenant())
-                        .build();
+                finalParams =
+                        MessageSendParams.builder()
+                                .message(updatedMessage)
+                                .configuration(params.configuration())
+                                .metadata(params.metadata())
+                                .tenant(params.tenant())
+                                .build();
             }
 
             // 6. Call constructor with finalized values (IDs guaranteed non-null)
-            return new RequestContext(finalParams, finalTaskId, finalContextId,
-                    tenant, task, finalRelatedTasks, serverCallContext);
+            return new RequestContext(
+                    finalParams,
+                    finalTaskId,
+                    finalContextId,
+                    tenant,
+                    task,
+                    finalRelatedTasks,
+                    serverCallContext);
         }
     }
-
 }

@@ -10,12 +10,16 @@ public record OAuth2SecurityScheme_v0_3(
         OAuthFlows_v0_3 flows,
         @Nullable String description,
         @Nullable String oauth2MetadataUrl,
-        String type
-) implements SecurityScheme_v0_3 {
+        String type)
+        implements SecurityScheme_v0_3 {
 
     public static final String TYPE = "oauth2";
 
-    public OAuth2SecurityScheme_v0_3(OAuthFlows_v0_3 flows, @Nullable String description, @Nullable String oauth2MetadataUrl, @Nullable String type) {
+    public OAuth2SecurityScheme_v0_3(
+            OAuthFlows_v0_3 flows,
+            @Nullable String description,
+            @Nullable String oauth2MetadataUrl,
+            @Nullable String type) {
         Assert.checkNotNullParam("flows", flows);
         if (type != null && !type.equals(TYPE)) {
             throw new IllegalArgumentException("Invalid type for OAuth2SecurityScheme");
@@ -26,7 +30,10 @@ public record OAuth2SecurityScheme_v0_3(
         this.type = TYPE;
     }
 
-    public OAuth2SecurityScheme_v0_3(OAuthFlows_v0_3 flows, @Nullable String description, @Nullable String oauth2MetadataUrl) {
+    public OAuth2SecurityScheme_v0_3(
+            OAuthFlows_v0_3 flows,
+            @Nullable String description,
+            @Nullable String oauth2MetadataUrl) {
         this(flows, description, oauth2MetadataUrl, TYPE);
     }
 

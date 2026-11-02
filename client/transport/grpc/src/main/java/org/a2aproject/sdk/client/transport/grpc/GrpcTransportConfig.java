@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.client.transport.grpc;
 
+import io.grpc.Channel;
 import java.util.function.Function;
-
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.util.Assert;
-import io.grpc.Channel;
 
 /**
  * Configuration for the gRPC transport protocol.

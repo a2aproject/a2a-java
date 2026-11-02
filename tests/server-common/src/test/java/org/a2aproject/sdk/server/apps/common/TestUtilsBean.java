@@ -2,13 +2,12 @@ package org.a2aproject.sdk.server.apps.common;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.server.events.QueueManager;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.Event;
-import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 
 /**
  * Contains utilities to interact with the server side for the tests.
@@ -21,14 +20,11 @@ import org.a2aproject.sdk.spec.Task;
 @ApplicationScoped
 public class TestUtilsBean {
 
-    @Inject
-    TaskStore taskStore;
+    @Inject TaskStore taskStore;
 
-    @Inject
-    QueueManager queueManager;
+    @Inject QueueManager queueManager;
 
-    @Inject
-    PushNotificationConfigStore pushNotificationConfigStore;
+    @Inject PushNotificationConfigStore pushNotificationConfigStore;
 
     public void saveTask(Task task) {
         taskStore.save(task, false);
@@ -58,14 +54,13 @@ public class TestUtilsBean {
         pushNotificationConfigStore.deleteInfo(taskId, configId);
     }
 
-    public void saveTaskPushNotificationConfig(String taskId, TaskPushNotificationConfig notificationConfig) {
+    public void saveTaskPushNotificationConfig(
+            String taskId, TaskPushNotificationConfig notificationConfig) {
         saveTaskPushNotificationConfig(taskId, notificationConfig, null);
     }
 
     public void saveTaskPushNotificationConfig(
-            String taskId,
-            TaskPushNotificationConfig notificationConfig,
-            String protocolVersion) {
+            String taskId, TaskPushNotificationConfig notificationConfig, String protocolVersion) {
         pushNotificationConfigStore.setInfo(
                 TaskPushNotificationConfig.builder(notificationConfig).taskId(taskId).build(),
                 protocolVersion);
@@ -99,10 +94,12 @@ public class TestUtilsBean {
      * @return true if the count stabilized at the expected value, false if timeout occurred
      * @throws InterruptedException if interrupted while waiting
      */
-    public boolean awaitChildQueueCountStable(String taskId, int expectedCount, long timeoutMs) throws InterruptedException {
+    public boolean awaitChildQueueCountStable(String taskId, int expectedCount, long timeoutMs)
+            throws InterruptedException {
         long endTime = System.currentTimeMillis() + timeoutMs;
         int consecutiveMatches = 0;
-        final int requiredMatches = 3; // Count must match 3 times in a row (150ms) to be considered stable
+        final int requiredMatches =
+                3; // Count must match 3 times in a row (150ms) to be considered stable
 
         while (System.currentTimeMillis() < endTime) {
             int count = queueManager.getActiveChildQueueCount(taskId);

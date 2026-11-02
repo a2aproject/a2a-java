@@ -4,7 +4,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -34,8 +33,8 @@ public abstract class AbstractSSEEventListener {
      * @param eventHandler Handler for processing streaming events
      * @param errorHandler Optional handler for processing errors
      */
-    protected AbstractSSEEventListener(Consumer<StreamingEventKind> eventHandler,
-                                   @Nullable Consumer<Throwable> errorHandler) {
+    protected AbstractSSEEventListener(
+            Consumer<StreamingEventKind> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
     }
@@ -117,7 +116,9 @@ public abstract class AbstractSSEEventListener {
         // Handles both TaskStatusUpdateEvent and Task objects with final states
         // This covers late subscriptions to completed tasks and ensures no connection leaks
         if (shouldAutoClose(event) && future != null) {
-            LOGGER.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
+            LOGGER.fine(
+                    "Auto-closing SSE connection for final event: "
+                            + event.getClass().getSimpleName());
             signalTerminal(null);
             future.cancel(true); // close SSE channel
         }

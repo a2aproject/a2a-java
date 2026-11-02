@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.client.transport.spi.interceptors;
 
 import java.util.Map;
-
 import org.a2aproject.sdk.spec.AgentCard;
 import org.jspecify.annotations.Nullable;
 
@@ -22,6 +21,10 @@ public abstract class ClientCallInterceptor {
      * @param clientCallContext the {@code ClientCallContext} for this call (may be {@code null})
      * @return the potentially modified payload and headers
      */
-    public abstract PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
-                                                @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext);
+    public abstract PayloadAndHeaders intercept(
+            String methodName,
+            @Nullable Object payload,
+            Map<String, String> headers,
+            @Nullable AgentCard agentCard,
+            @Nullable ClientCallContext clientCallContext);
 }

@@ -23,8 +23,7 @@ public class A2AException extends RuntimeException {
      * Constructs a new {@code A2AException} instance. The message is left blank ({@code null}), and no
      * cause is specified.
      */
-    public A2AException() {
-    }
+    public A2AException() {}
 
     /**
      * Constructs a new {@code A2AException} instance with an initial message. No cause is specified.

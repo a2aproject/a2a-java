@@ -3,15 +3,13 @@ package org.a2aproject.sdk.extras.multitenancy;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.List;
-
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
-
-import org.a2aproject.sdk.server.multitenancy.Tenant;
+import java.util.List;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.TextPart;
@@ -23,9 +21,10 @@ class CdiAgentExecutorRouterTest {
     private SeContainer container;
 
     private void startContainer(Class<?>... beanClasses) {
-        SeContainerInitializer initializer = SeContainerInitializer.newInstance()
-                .disableDiscovery()
-                .addBeanClasses(CdiAgentExecutorRouter.class);
+        SeContainerInitializer initializer =
+                SeContainerInitializer.newInstance()
+                        .disableDiscovery()
+                        .addBeanClasses(CdiAgentExecutorRouter.class);
         for (Class<?> beanClass : beanClasses) {
             initializer.addBeanClasses(beanClass);
         }

@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server;
 
 import java.util.Objects;
-
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -17,8 +16,11 @@ public final class AgentCardRequestPolicy {
         this.resolver = Assert.checkNotNullParam("resolver", resolver);
     }
 
-    public EffectiveAgentCard preflight(@Nullable String tenant, ServerCallContext context,
-            AgentCardTransportValidator validator, AgentCardOperation operation) {
+    public EffectiveAgentCard preflight(
+            @Nullable String tenant,
+            ServerCallContext context,
+            AgentCardTransportValidator validator,
+            AgentCardOperation operation) {
         String normalizedTenant = normalizeTenant(tenant);
         AgentCard card = resolver.resolveEffectiveCardForNormalizedTenant(normalizedTenant);
         validator.validate(card);
@@ -27,8 +29,10 @@ public final class AgentCardRequestPolicy {
         return attach(card, normalizedTenant, context);
     }
 
-    public AgentCard resolveAndValidateCapability(@Nullable String tenant,
-            AgentCardTransportValidator validator, AgentCardOperation operation) {
+    public AgentCard resolveAndValidateCapability(
+            @Nullable String tenant,
+            AgentCardTransportValidator validator,
+            AgentCardOperation operation) {
         String normalizedTenant = normalizeTenant(tenant);
         AgentCard card = resolver.resolveEffectiveCardForNormalizedTenant(normalizedTenant);
         validator.validate(card);
@@ -36,8 +40,8 @@ public final class AgentCardRequestPolicy {
         return card;
     }
 
-    public EffectiveAgentCard validateContextAndAttach(AgentCard card, @Nullable String tenant,
-            ServerCallContext context) {
+    public EffectiveAgentCard validateContextAndAttach(
+            AgentCard card, @Nullable String tenant, ServerCallContext context) {
         String normalizedTenant = normalizeTenant(tenant);
         validateContext(card, context);
         return attach(card, normalizedTenant, context);
@@ -54,7 +58,8 @@ public final class AgentCardRequestPolicy {
         }
     }
 
-    private static EffectiveAgentCard attach(AgentCard card, @Nullable String tenant, ServerCallContext context) {
+    private static EffectiveAgentCard attach(
+            AgentCard card, @Nullable String tenant, ServerCallContext context) {
         context.attachEffectiveAgentCard(tenant, card);
         return Objects.requireNonNull(context.getEffectiveAgentCard());
     }

@@ -8,11 +8,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
-import org.a2aproject.sdk.spec.Task;
-import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
-import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
-import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -36,6 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 
 /**
  * Test routes for OpenTelemetry integration testing.
@@ -53,107 +53,106 @@ public class A2ATestRoutes {
      */
     private final List<Map<String, String>> webhookRequests = new CopyOnWriteArrayList<>();
 
-    @Inject
-    TestUtilsBean testUtilsBean;
-    @Inject
-    InMemorySpanExporter inMemorySpanExporter;
-    @Inject
-    InMemoryMetricExporter inMemoryMetricExporter;
-    @Inject
-    OpenTelemetry openTelemetry;
-    @Inject
-    CustomDispatchExecutorProducer customDispatchExecutorProducer;
+    @Inject TestUtilsBean testUtilsBean;
+    @Inject InMemorySpanExporter inMemorySpanExporter;
+    @Inject InMemoryMetricExporter inMemoryMetricExporter;
+    @Inject OpenTelemetry openTelemetry;
+    @Inject CustomDispatchExecutorProducer customDispatchExecutorProducer;
 
-    @Inject
-    Tracer tracer;
+    @Inject Tracer tracer;
 
     void setupRoutes(@Observes Router router) {
         router.post("/test/task")
-            .consumes(APPLICATION_JSON)
-            .handler(BodyHandler.create())
-            .blockingHandler(ctx -> saveTask(ctx.body().asString(), ctx));
+                .consumes(APPLICATION_JSON)
+                .handler(BodyHandler.create())
+                .blockingHandler(ctx -> saveTask(ctx.body().asString(), ctx));
 
         router.get("/test/task/:taskId")
-            .produces(APPLICATION_JSON)
-            .blockingHandler(ctx -> getTask(ctx.pathParam("taskId"), ctx));
+                .produces(APPLICATION_JSON)
+                .blockingHandler(ctx -> getTask(ctx.pathParam("taskId"), ctx));
 
         router.delete("/test/task/:taskId")
-            .blockingHandler(ctx -> deleteTask(ctx.pathParam("taskId"), ctx));
+                .blockingHandler(ctx -> deleteTask(ctx.pathParam("taskId"), ctx));
 
         router.post("/test/queue/ensure/:taskId")
-            .handler(ctx -> ensureTaskQueue(ctx.pathParam("taskId"), ctx));
+                .handler(ctx -> ensureTaskQueue(ctx.pathParam("taskId"), ctx));
 
         router.post("/test/queue/enqueueTaskStatusUpdateEvent/:taskId")
-            .handler(BodyHandler.create())
-            .handler(ctx -> enqueueTaskStatusUpdateEvent(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+                .handler(BodyHandler.create())
+                .handler(
+                        ctx ->
+                                enqueueTaskStatusUpdateEvent(
+                                        ctx.pathParam("taskId"), ctx.body().asString(), ctx));
 
         router.post("/test/queue/enqueueTaskArtifactUpdateEvent/:taskId")
-            .handler(BodyHandler.create())
-            .handler(ctx -> enqueueTaskArtifactUpdateEvent(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+                .handler(BodyHandler.create())
+                .handler(
+                        ctx ->
+                                enqueueTaskArtifactUpdateEvent(
+                                        ctx.pathParam("taskId"), ctx.body().asString(), ctx));
 
         router.get("/test/queue/childCount/:taskId")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> getChildQueueCount(ctx.pathParam("taskId"), ctx));
+                .produces(TEXT_PLAIN)
+                .handler(ctx -> getChildQueueCount(ctx.pathParam("taskId"), ctx));
 
         router.post("/test/pushconfig/:taskId")
-            .consumes(APPLICATION_JSON)
-            .handler(BodyHandler.create())
-            .blockingHandler(ctx -> savePushNotificationConfig(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+                .consumes(APPLICATION_JSON)
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        ctx ->
+                                savePushNotificationConfig(
+                                        ctx.pathParam("taskId"), ctx.body().asString(), ctx));
 
         router.delete("/test/pushconfig/:taskId/:configId")
-            .blockingHandler(ctx -> deletePushNotificationConfig(
-                    ctx.pathParam("taskId"), ctx.pathParam("configId"), ctx));
+                .blockingHandler(
+                        ctx ->
+                                deletePushNotificationConfig(
+                                        ctx.pathParam("taskId"), ctx.pathParam("configId"), ctx));
 
         router.post("/test/webhook")
-            .handler(BodyHandler.create())
-            .handler(ctx -> captureWebhook(ctx));
+                .handler(BodyHandler.create())
+                .handler(ctx -> captureWebhook(ctx));
 
         router.get("/test/webhook/requests")
-            .produces(APPLICATION_JSON)
-            .handler(ctx -> getWebhookRequests(ctx));
+                .produces(APPLICATION_JSON)
+                .handler(ctx -> getWebhookRequests(ctx));
 
-        router.delete("/test/webhook/requests")
-            .handler(ctx -> clearWebhookRequests(ctx));
+        router.delete("/test/webhook/requests").handler(ctx -> clearWebhookRequests(ctx));
 
         router.get("/test/dispatch-executor/count")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> ctx.response().setStatusCode(HTTP_OK)
-                    .end(String.valueOf(customDispatchExecutorProducer.getExecutionCount())));
+                .produces(TEXT_PLAIN)
+                .handler(
+                        ctx ->
+                                ctx.response()
+                                        .setStatusCode(HTTP_OK)
+                                        .end(
+                                                String.valueOf(
+                                                        customDispatchExecutorProducer
+                                                                .getExecutionCount())));
 
         router.delete("/test/dispatch-executor/count")
-            .handler(ctx -> {
-                customDispatchExecutorProducer.resetExecutionCount();
-                ctx.response().setStatusCode(HTTP_OK).end();
-            });
+                .handler(
+                        ctx -> {
+                            customDispatchExecutorProducer.resetExecutionCount();
+                            ctx.response().setStatusCode(HTTP_OK).end();
+                        });
 
-        router.get("/hello")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> hello(ctx));
+        router.get("/hello").produces(TEXT_PLAIN).handler(ctx -> hello(ctx));
 
-        router.get("/export")
-            .produces(APPLICATION_JSON)
-            .handler(ctx -> exportSpans(ctx));
+        router.get("/export").produces(APPLICATION_JSON).handler(ctx -> exportSpans(ctx));
 
-        router.get("/export-metrics")
-            .produces(APPLICATION_JSON)
-            .handler(ctx -> exportMetrics(ctx));
+        router.get("/export-metrics").produces(APPLICATION_JSON).handler(ctx -> exportMetrics(ctx));
 
-        router.get("/reset")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> reset(ctx));
+        router.get("/reset").produces(TEXT_PLAIN).handler(ctx -> reset(ctx));
 
-        router.get("/reset-metrics")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> resetMetrics(ctx));
+        router.get("/reset-metrics").produces(TEXT_PLAIN).handler(ctx -> resetMetrics(ctx));
     }
 
     public void saveTask(String body, RoutingContext rc) {
         try {
             Task task = JsonUtil.fromJson(body, Task.class);
             testUtilsBean.saveTask(task);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -163,9 +162,7 @@ public class A2ATestRoutes {
         try {
             Task task = testUtilsBean.getTask(taskId);
             if (task == null) {
-                rc.response()
-                        .setStatusCode(404)
-                        .end();
+                rc.response().setStatusCode(404).end();
                 return;
             }
             rc.response()
@@ -182,15 +179,11 @@ public class A2ATestRoutes {
         try {
             Task task = testUtilsBean.getTask(taskId);
             if (task == null) {
-                rc.response()
-                        .setStatusCode(404)
-                        .end();
+                rc.response().setStatusCode(404).end();
                 return;
             }
             testUtilsBean.deleteTask(taskId);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -199,9 +192,7 @@ public class A2ATestRoutes {
     public void ensureTaskQueue(String taskId, RoutingContext rc) {
         try {
             testUtilsBean.ensureQueue(taskId);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -211,9 +202,7 @@ public class A2ATestRoutes {
         try {
             TaskStatusUpdateEvent event = JsonUtil.fromJson(body, TaskStatusUpdateEvent.class);
             testUtilsBean.enqueueEvent(taskId, event);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -223,9 +212,7 @@ public class A2ATestRoutes {
         try {
             TaskArtifactUpdateEvent event = JsonUtil.fromJson(body, TaskArtifactUpdateEvent.class);
             testUtilsBean.enqueueEvent(taskId, event);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -233,18 +220,15 @@ public class A2ATestRoutes {
 
     public void getChildQueueCount(String taskId, RoutingContext rc) {
         int count = testUtilsBean.getChildQueueCount(taskId);
-        rc.response()
-                .setStatusCode(200)
-                .end(String.valueOf(count));
+        rc.response().setStatusCode(200).end(String.valueOf(count));
     }
 
     public void savePushNotificationConfig(String taskId, String body, RoutingContext rc) {
         try {
-            TaskPushNotificationConfig config = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
+            TaskPushNotificationConfig config =
+                    JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
             testUtilsBean.savePushNotificationConfig(taskId, config);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -253,9 +237,7 @@ public class A2ATestRoutes {
     public void deletePushNotificationConfig(String taskId, String configId, RoutingContext rc) {
         try {
             testUtilsBean.deletePushNotificationConfig(taskId, configId);
-            rc.response()
-                    .setStatusCode(200)
-                    .end();
+            rc.response().setStatusCode(200).end();
         } catch (Throwable t) {
             errorResponse(t, rc);
         }
@@ -293,15 +275,15 @@ public class A2ATestRoutes {
     }
 
     public void exportSpans(RoutingContext rc) {
-        List<SpanData> spans = inMemorySpanExporter.getFinishedSpanItems()
-                .stream()
-                .filter(sd -> !sd.getName().contains("export") && !sd.getName().contains("reset"))
-                .toList();
+        List<SpanData> spans =
+                inMemorySpanExporter.getFinishedSpanItems().stream()
+                        .filter(
+                                sd ->
+                                        !sd.getName().contains("export")
+                                                && !sd.getName().contains("reset"))
+                        .toList();
         String json = gson.toJson(serialize(spans));
-        rc.response()
-                .setStatusCode(200)
-                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .end(json);
+        rc.response().setStatusCode(200).putHeader(CONTENT_TYPE, APPLICATION_JSON).end(json);
     }
 
     private JsonElement serialize(List<SpanData> spanDatas) {
@@ -321,13 +303,18 @@ public class A2ATestRoutes {
             jsonObject.addProperty("parent_remote", spanData.getParentSpanContext().isRemote());
             jsonObject.addProperty("parent_valid", spanData.getParentSpanContext().isValid());
 
-            spanData.getAttributes().forEach((k, v) -> {
-                jsonObject.addProperty("attr_" + k.getKey(), v.toString());
-            });
+            spanData.getAttributes()
+                    .forEach(
+                            (k, v) -> {
+                                jsonObject.addProperty("attr_" + k.getKey(), v.toString());
+                            });
 
-            spanData.getResource().getAttributes().forEach((k, v) -> {
-                jsonObject.addProperty("resource_" + k.getKey(), v.toString());
-            });
+            spanData.getResource()
+                    .getAttributes()
+                    .forEach(
+                            (k, v) -> {
+                                jsonObject.addProperty("resource_" + k.getKey(), v.toString());
+                            });
 
             serializeSpanEvents(spanData, jsonObject);
             serializeSpanLinks(spanData, jsonObject);
@@ -340,19 +327,27 @@ public class A2ATestRoutes {
 
     private void serializeSpanEvents(SpanData spanData, JsonObject jsonObject) {
         jsonObject.addProperty("events_count", spanData.getEvents().size());
-        spanData.getEvents().forEach(event -> {
-            JsonObject eventObject = new JsonObject();
-            eventObject.addProperty("name", event.getName());
-            event.getAttributes().forEach((k, v) -> eventObject.addProperty("attr_" + k.getKey(), v.toString()));
-            jsonObject.add("event_" + event.getName(), eventObject);
-        });
+        spanData.getEvents()
+                .forEach(
+                        event -> {
+                            JsonObject eventObject = new JsonObject();
+                            eventObject.addProperty("name", event.getName());
+                            event.getAttributes()
+                                    .forEach(
+                                            (k, v) ->
+                                                    eventObject.addProperty(
+                                                            "attr_" + k.getKey(), v.toString()));
+                            jsonObject.add("event_" + event.getName(), eventObject);
+                        });
     }
 
     private void serializeSpanLinks(SpanData spanData, JsonObject jsonObject) {
         jsonObject.addProperty("links_count", spanData.getLinks().size());
         if (!spanData.getLinks().isEmpty()) {
-            jsonObject.addProperty("link_0_spanId", spanData.getLinks().get(0).getSpanContext().getSpanId());
-            jsonObject.addProperty("link_0_traceId", spanData.getLinks().get(0).getSpanContext().getTraceId());
+            jsonObject.addProperty(
+                    "link_0_spanId", spanData.getLinks().get(0).getSpanContext().getSpanId());
+            jsonObject.addProperty(
+                    "link_0_traceId", spanData.getLinks().get(0).getSpanContext().getTraceId());
         }
     }
 
@@ -360,9 +355,10 @@ public class A2ATestRoutes {
         if (openTelemetry instanceof OpenTelemetrySdk sdk) {
             sdk.getSdkMeterProvider().forceFlush();
         }
-        List<MetricData> metrics = inMemoryMetricExporter.getFinishedMetricItems().stream()
-                .filter(m -> m.getName().startsWith("gen_ai."))
-                .toList();
+        List<MetricData> metrics =
+                inMemoryMetricExporter.getFinishedMetricItems().stream()
+                        .filter(m -> m.getName().startsWith("gen_ai."))
+                        .toList();
         rc.response()
                 .setStatusCode(200)
                 .putHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -381,13 +377,21 @@ public class A2ATestRoutes {
                 HistogramData histogram = m.getHistogramData();
                 obj.addProperty("data_count", histogram.getPoints().size());
                 JsonArray points = new JsonArray(histogram.getPoints().size());
-                histogram.getPoints().forEach(point -> {
-                    JsonObject pointObj = new JsonObject();
-                    pointObj.addProperty("count", point.getCount());
-                    pointObj.addProperty("sum", point.getSum());
-                    point.getAttributes().forEach((k, v) -> pointObj.addProperty("attr_" + k.getKey(), v.toString()));
-                    points.add(pointObj);
-                });
+                histogram
+                        .getPoints()
+                        .forEach(
+                                point -> {
+                                    JsonObject pointObj = new JsonObject();
+                                    pointObj.addProperty("count", point.getCount());
+                                    pointObj.addProperty("sum", point.getSum());
+                                    point.getAttributes()
+                                            .forEach(
+                                                    (k, v) ->
+                                                            pointObj.addProperty(
+                                                                    "attr_" + k.getKey(),
+                                                                    v.toString()));
+                                    points.add(pointObj);
+                                });
                 obj.add("points", points);
             }
             result.add(obj);
@@ -407,10 +411,7 @@ public class A2ATestRoutes {
 
     private void errorResponse(Throwable t, RoutingContext rc) {
         t.printStackTrace();
-        rc.response()
-                .setStatusCode(500)
-                .putHeader(CONTENT_TYPE, TEXT_PLAIN)
-                .end();
+        rc.response().setStatusCode(500).putHeader(CONTENT_TYPE, TEXT_PLAIN).end();
     }
 
     @ApplicationScoped

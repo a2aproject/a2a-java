@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
+import java.util.List;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * Defines optional capabilities supported by an agent in the A2A Protocol.
@@ -32,10 +31,11 @@ import java.util.List;
  * @see AgentExtension
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentCapabilities(boolean streaming,
-                                boolean pushNotifications,
-                                boolean extendedAgentCard,
-                                @Nullable List<AgentExtension> extensions) {
+public record AgentCapabilities(
+        boolean streaming,
+        boolean pushNotifications,
+        boolean extendedAgentCard,
+        @Nullable List<AgentExtension> extensions) {
 
     public AgentCapabilities {
         extensions = CollectionCopies.immutableNullableList(extensions);
@@ -49,6 +49,7 @@ public record AgentCapabilities(boolean streaming,
     public static Builder builder() {
         return new Builder();
     }
+
     /**
      * Builder for constructing immutable {@link AgentCapabilities} instances.
      * <p>
@@ -73,8 +74,7 @@ public record AgentCapabilities(boolean streaming,
         /**
          * Creates a new Builder with all capabilities set to false by default.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets whether the agent supports streaming responses.
@@ -137,7 +137,8 @@ public record AgentCapabilities(boolean streaming,
          * @return a new AgentCapabilities instance
          */
         public AgentCapabilities build() {
-            return new AgentCapabilities(streaming, pushNotifications, extendedAgentCard, extensions);
+            return new AgentCapabilities(
+                    streaming, pushNotifications, extendedAgentCard, extensions);
         }
     }
 }

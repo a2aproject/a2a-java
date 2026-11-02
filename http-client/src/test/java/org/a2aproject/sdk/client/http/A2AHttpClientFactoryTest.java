@@ -11,7 +11,6 @@ import static org.mockserver.model.HttpResponse.response;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
@@ -41,9 +40,11 @@ public class A2AHttpClientFactoryTest {
     @SuppressWarnings("deprecation")
     public void legacyFactoryOverloadsRemainAvailable() {
         assertInstanceOf(JdkA2AHttpClient.class, A2AHttpClientFactory.create("jdk"));
-        assertInstanceOf(JdkA2AHttpClient.class,
+        assertInstanceOf(
+                JdkA2AHttpClient.class,
                 A2AHttpClientFactory.createExcluding("cdi", "android", "vertx"));
-        assertInstanceOf(JdkA2AHttpClient.class,
+        assertInstanceOf(
+                JdkA2AHttpClient.class,
                 A2AHttpClientFactory.createWithSseConfig(SSEParserConfig.DEFAULT));
         assertThrows(IllegalArgumentException.class, () -> A2AHttpClientFactory.create("unknown"));
     }
@@ -52,57 +53,71 @@ public class A2AHttpClientFactoryTest {
     public void testCreateWithConfigurationAppliesRedirectPolicy() throws Exception {
         redirector = ClientAndServer.startClientAndServer(0);
         collector = ClientAndServer.startClientAndServer(0);
-        redirector.when(request().withMethod("POST").withPath("/redirect"))
-                .respond(response().withStatusCode(302).withHeader(
-                        "Location", "http://127.0.0.1:" + collector.getLocalPort() + "/target"));
-        collector.when(request().withMethod("GET").withPath("/target"))
+        redirector
+                .when(request().withMethod("POST").withPath("/redirect"))
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://127.0.0.1:"
+                                                + collector.getLocalPort()
+                                                + "/target"));
+        collector
+                .when(request().withMethod("GET").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        RedirectHeaderPolicy redirectHeaderPolicy = new RedirectHeaderPolicy(
-                Set.of("X-Trusted"),
-                Set.of(URI.create("http://127.0.0.1:" + collector.getLocalPort())));
-        A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
-                .redirectHeaderPolicy(redirectHeaderPolicy)
-                .build();
+        RedirectHeaderPolicy redirectHeaderPolicy =
+                new RedirectHeaderPolicy(
+                        Set.of("X-Trusted"),
+                        Set.of(URI.create("http://127.0.0.1:" + collector.getLocalPort())));
+        A2AHttpClientConfiguration configuration =
+                A2AHttpClientConfiguration.builder()
+                        .redirectHeaderPolicy(redirectHeaderPolicy)
+                        .build();
 
         A2AHttpClient client = A2AHttpClientFactory.create(configuration);
-        A2AHttpResponse result = client.createPost()
-                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/redirect")
-                .addHeader("Authorization", "Bearer secret")
-                .addHeader("X-Trusted", "allowed")
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                client.createPost()
+                        .url("http://127.0.0.1:" + redirector.getLocalPort() + "/redirect")
+                        .addHeader("Authorization", "Bearer secret")
+                        .addHeader("X-Trusted", "allowed")
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertInstanceOf(JdkA2AHttpClient.class, client);
         assertEquals(200, result.status());
-        org.mockserver.model.HttpRequest[] requests = collector.retrieveRecordedRequests(
-                request().withMethod("GET").withPath("/target"));
+        org.mockserver.model.HttpRequest[] requests =
+                collector.retrieveRecordedRequests(request().withMethod("GET").withPath("/target"));
         assertEquals(1, requests.length);
         assertEquals("allowed", requests[0].getFirstHeader("X-Trusted"));
-        assertTrue(requests[0].getFirstHeader("Authorization") == null
-                || requests[0].getFirstHeader("Authorization").isEmpty());
+        assertTrue(
+                requests[0].getFirstHeader("Authorization") == null
+                        || requests[0].getFirstHeader("Authorization").isEmpty());
     }
 
     @Test
     public void testCreateWithConfigurationHonoursExcludedProviders() {
-        A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
-                .excludedProviderNames(List.of("jdk"))
-                .build();
+        A2AHttpClientConfiguration configuration =
+                A2AHttpClientConfiguration.builder().excludedProviderNames(List.of("jdk")).build();
 
         assertThrows(IllegalStateException.class, () -> A2AHttpClientFactory.create(configuration));
     }
 
     @Test
     public void testCreateWithConfigurationIgnoresUnknownExcludedProvider() {
-        A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
-                .excludedProviderNames(List.of("nonexistent-provider"))
-                .build();
+        A2AHttpClientConfiguration configuration =
+                A2AHttpClientConfiguration.builder()
+                        .excludedProviderNames(List.of("nonexistent-provider"))
+                        .build();
 
         A2AHttpClient client = A2AHttpClientFactory.create(configuration);
 
         assertNotNull(client);
-        assertInstanceOf(JdkA2AHttpClient.class, client,
+        assertInstanceOf(
+                JdkA2AHttpClient.class,
+                client,
                 "An unknown excluded provider should not prevent selecting the JDK client");
     }
 
@@ -111,15 +126,16 @@ public class A2AHttpClientFactoryTest {
         // When Vertx is not on classpath, JDK client should be used
         A2AHttpClient client = A2AHttpClientFactory.create();
         assertNotNull(client);
-        assertInstanceOf(JdkA2AHttpClient.class, client,
-            "Factory should return JdkA2AHttpClient when Vertx is not available");
+        assertInstanceOf(
+                JdkA2AHttpClient.class,
+                client,
+                "Factory should return JdkA2AHttpClient when Vertx is not available");
     }
 
     @Test
     public void testCreateWithNullSseConfigUsesDefaultConfiguration() {
-        A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
-                .sseParserConfig(null)
-                .build();
+        A2AHttpClientConfiguration configuration =
+                A2AHttpClientConfiguration.builder().sseParserConfig(null).build();
 
         A2AHttpClient client = A2AHttpClientFactory.create(configuration);
         assertNotNull(client);
@@ -129,14 +145,15 @@ public class A2AHttpClientFactoryTest {
     @Test
     public void testCreateWithConfigurationContainingSseConfigReturnsJdkClient() {
         SSEParserConfig config = SSEParserConfig.builder().maxBufferChars(4 * 1024 * 1024).build();
-        A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
-                .sseParserConfig(config)
-                .build();
+        A2AHttpClientConfiguration configuration =
+                A2AHttpClientConfiguration.builder().sseParserConfig(config).build();
 
         A2AHttpClient client = A2AHttpClientFactory.create(configuration);
         assertNotNull(client);
-        assertInstanceOf(JdkA2AHttpClient.class, client,
-            "Factory should return JdkA2AHttpClient with custom SSEParserConfig");
+        assertInstanceOf(
+                JdkA2AHttpClient.class,
+                client,
+                "Factory should return JdkA2AHttpClient with custom SSEParserConfig");
     }
 
     @Test
@@ -144,9 +161,8 @@ public class A2AHttpClientFactoryTest {
         // Verify the config is actually applied by creating a client with a restrictive
         // maxLineLength and checking that it rejects oversized SSE lines.
         SSEParserConfig restrictive = SSEParserConfig.builder().maxLineLength(50).build();
-        A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
-                .sseParserConfig(restrictive)
-                .build();
+        A2AHttpClientConfiguration configuration =
+                A2AHttpClientConfiguration.builder().sseParserConfig(restrictive).build();
 
         A2AHttpClient client = A2AHttpClientFactory.create(configuration);
         assertNotNull(client);

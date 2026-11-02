@@ -18,15 +18,15 @@ import org.a2aproject.sdk.spec.Message;
  * client.addConsumer((event, agentCard) -> {
  *     if (event instanceof MessageEvent me) {
  *         Message msg = me.getMessage();
- *         
+ *
  *         // Extract text content
  *         String text = msg.parts().stream()
  *             .filter(p -> p instanceof TextPart)
  *             .map(p -> ((TextPart) p).text())
  *             .collect(Collectors.joining());
- *         
+ *
  *         System.out.println("Agent response: " + text);
- *         
+ *
  *         // Check for images
  *         msg.parts().stream()
  *             .filter(p -> p instanceof ImagePart)
@@ -77,16 +77,27 @@ public final class MessageEvent implements ClientEvent {
 
     @Override
     public String toString() {
-        String messageAsString = "{"
-                + "role=" + message.role()
-                + ", parts=" + message.parts()
-                + ", messageId=" + message.messageId()
-                + ", contextId=" + message.contextId()
-                + ", taskId=" + message.taskId()
-                + ", metadata=" + message.metadata()
-                + ", kind=" + message.kind()
-                + ", referenceTaskIds=" + message.referenceTaskIds()
-                + ", extensions=" + message.extensions() + '}';
+        String messageAsString =
+                "{"
+                        + "role="
+                        + message.role()
+                        + ", parts="
+                        + message.parts()
+                        + ", messageId="
+                        + message.messageId()
+                        + ", contextId="
+                        + message.contextId()
+                        + ", taskId="
+                        + message.taskId()
+                        + ", metadata="
+                        + message.metadata()
+                        + ", kind="
+                        + message.kind()
+                        + ", referenceTaskIds="
+                        + message.referenceTaskIds()
+                        + ", extensions="
+                        + message.extensions()
+                        + '}';
         return "MessageEvent{" + "message=" + messageAsString + '}';
     }
 }

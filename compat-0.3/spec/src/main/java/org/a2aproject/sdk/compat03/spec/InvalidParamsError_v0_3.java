@@ -31,7 +31,7 @@ import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
  */
 public class InvalidParamsError_v0_3 extends JSONRPCError_v0_3 {
 
-    public final static Integer DEFAULT_CODE = A2AErrorCodes_v0_3.INVALID_PARAMS_ERROR_CODE;
+    public static final Integer DEFAULT_CODE = A2AErrorCodes_v0_3.INVALID_PARAMS_ERROR_CODE;
 
     public InvalidParamsError_v0_3(Integer code, String message, Object data) {
         super(

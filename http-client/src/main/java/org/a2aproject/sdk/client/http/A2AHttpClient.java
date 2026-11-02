@@ -46,10 +46,13 @@ public interface A2AHttpClient {
 
     /** HTTP Content-Type header name. */
     String CONTENT_TYPE = "Content-Type";
+
     /** JSON content type value. */
     String APPLICATION_JSON = "application/json";
+
     /** HTTP Accept header name. */
     String ACCEPT = "Accept";
+
     /** SSE event stream content type. */
     String EVENT_STREAM = "text/event-stream";
 
@@ -155,7 +158,8 @@ public interface A2AHttpClient {
         CompletableFuture<Void> getAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException;
+                Runnable completeRunnable)
+                throws IOException, InterruptedException;
     }
 
     /**
@@ -220,7 +224,8 @@ public interface A2AHttpClient {
         CompletableFuture<Void> postAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException;
+                Runnable completeRunnable)
+                throws IOException, InterruptedException;
     }
 
     /**

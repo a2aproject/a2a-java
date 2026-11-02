@@ -1,29 +1,28 @@
+/// usr/bin/env jbang "$0" "$@" ; exit $?
 
-///usr/bin/env jbang "$0" "$@" ; exit $?
-
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client:1.4.1.Final-SNAPSHOT
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-jsonrpc:1.4.1.Final-SNAPSHOT
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-grpc:1.4.1.Final-SNAPSHOT
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-rest:1.4.1.Final-SNAPSHOT
-//DEPS org.a2aproject.sdk:a2a-java-sdk-opentelemetry-client:1.4.1.Final-SNAPSHOT
-//DEPS org.a2aproject.sdk:a2a-java-sdk-opentelemetry-client-propagation:1.4.1.Final-SNAPSHOT
-//DEPS io.opentelemetry:opentelemetry-sdk:1.60.1
-//DEPS io.opentelemetry:opentelemetry-exporter-otlp:1.60.1
-//DEPS io.opentelemetry:opentelemetry-exporter-logging:1.60.1
-//DEPS io.grpc:grpc-netty:1.81.0
-//SOURCES HelloWorldClient.java
+// DEPS org.a2aproject.sdk:a2a-java-sdk-client:1.4.1.Final-SNAPSHOT
+// DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-jsonrpc:1.4.1.Final-SNAPSHOT
+// DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-grpc:1.4.1.Final-SNAPSHOT
+// DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-rest:1.4.1.Final-SNAPSHOT
+// DEPS org.a2aproject.sdk:a2a-java-sdk-opentelemetry-client:1.4.1.Final-SNAPSHOT
+// DEPS org.a2aproject.sdk:a2a-java-sdk-opentelemetry-client-propagation:1.4.1.Final-SNAPSHOT
+// DEPS io.opentelemetry:opentelemetry-sdk:1.60.1
+// DEPS io.opentelemetry:opentelemetry-exporter-otlp:1.60.1
+// DEPS io.opentelemetry:opentelemetry-exporter-logging:1.60.1
+// DEPS io.grpc:grpc-netty:1.81.0
+// SOURCES HelloWorldClient.java
 
 /**
  * JBang script to run the A2A HelloWorldClient example.
  * This script automatically handles the dependencies and runs the client.
- * 
+ *
  * Prerequisites:
  * - JBang installed (see https://www.jbang.dev/documentation/guide/latest/installation.html)
  * - A running A2A server (see README.md for instructions on setting up the Python server)
- * 
- * Usage: 
+ *
+ * Usage:
  * $ jbang HelloWorldRunner.java
- * 
+ *
  * The script will communicate with the A2A server at http://localhost:9999
  */
 public class HelloWorldRunner {

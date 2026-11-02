@@ -1,11 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.Map;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * Represents a file content part within a {@link Message} or {@link Artifact}.
@@ -40,7 +38,8 @@ import org.jspecify.annotations.Nullable;
  * @see FileWithBytes
  * @see FileWithUri
  */
-public record FilePart(FileContent file, @Nullable Map<String, Object> metadata) implements Part<FileContent> {
+public record FilePart(FileContent file, @Nullable Map<String, Object> metadata)
+        implements Part<FileContent> {
 
     /**
      * The JSON member name discriminator for file parts: "file".
@@ -56,7 +55,7 @@ public record FilePart(FileContent file, @Nullable Map<String, Object> metadata)
      * @param file the file content (required, either FileWithBytes or FileWithUri)
      * @throws IllegalArgumentException if file is null
      */
-    public FilePart (FileContent file, @Nullable Map<String, Object> metadata) {
+    public FilePart(FileContent file, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("file", file);
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.file = file;
@@ -68,7 +67,7 @@ public record FilePart(FileContent file, @Nullable Map<String, Object> metadata)
      * @param file the file content (required, either FileWithBytes or FileWithUri)
      * @throws IllegalArgumentException if file is null
      */
-    public FilePart (FileContent file) {
+    public FilePart(FileContent file) {
         this(file, null);
     }
 }

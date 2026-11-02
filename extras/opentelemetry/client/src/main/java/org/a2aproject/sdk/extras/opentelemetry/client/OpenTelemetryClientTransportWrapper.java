@@ -1,10 +1,10 @@
 package org.a2aproject.sdk.extras.opentelemetry.client;
 
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Tracer;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportWrapper;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.Tracer;
 
 /**
  * OpenTelemetry client transport wrapper that adds distributed tracing to A2A client calls.

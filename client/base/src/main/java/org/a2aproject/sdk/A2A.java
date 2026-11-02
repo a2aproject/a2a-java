@@ -3,7 +3,6 @@ package org.a2aproject.sdk;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.client.http.A2ACardResolver;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
@@ -14,7 +13,6 @@ import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
-
 
 /**
  * Utility class providing convenience methods for working with the A2A Protocol.
@@ -222,7 +220,8 @@ public class A2A {
      * @see org.a2aproject.sdk.spec.Part
      * @see org.a2aproject.sdk.spec.TextPart
      */
-    public static Message createAgentPartsMessage(List<Part<?>> parts, String contextId, String taskId) {
+    public static Message createAgentPartsMessage(
+            List<Part<?>> parts, String contextId, String taskId) {
         if (parts == null || parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be null or empty");
         }
@@ -233,24 +232,28 @@ public class A2A {
         return toMessage(text, role, messageId, null, null);
     }
 
-    private static Message toMessage(String text, Message.Role role, String messageId, String contextId, String taskId) {
-        Message.Builder messageBuilder = Message.builder()
-                .role(role)
-                .parts(Collections.singletonList(new TextPart(text)))
-                .contextId(contextId)
-                .taskId(taskId);
+    private static Message toMessage(
+            String text, Message.Role role, String messageId, String contextId, String taskId) {
+        Message.Builder messageBuilder =
+                Message.builder()
+                        .role(role)
+                        .parts(Collections.singletonList(new TextPart(text)))
+                        .contextId(contextId)
+                        .taskId(taskId);
         if (messageId != null) {
             messageBuilder.messageId(messageId);
         }
         return messageBuilder.build();
     }
 
-    private static Message toMessage(List<Part<?>> parts, Message.Role role, String messageId, String contextId, String taskId) {
-        Message.Builder messageBuilder = Message.builder()
-                .role(role)
-                .parts(parts)
-                .contextId(contextId)
-                .taskId(taskId);
+    private static Message toMessage(
+            List<Part<?>> parts,
+            Message.Role role,
+            String messageId,
+            String contextId,
+            String taskId) {
+        Message.Builder messageBuilder =
+                Message.builder().role(role).parts(parts).contextId(contextId).taskId(taskId);
         if (messageId != null) {
             messageBuilder.messageId(messageId);
         }
@@ -286,8 +289,10 @@ public class A2A {
      * @see #getAgentCard(String, String, java.util.Map)
      * @see AgentCard
      */
-    public static AgentCard getAgentCard(String agentUrl) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT), agentUrl);
+    public static AgentCard getAgentCard(String agentUrl)
+            throws A2AClientError, A2AClientJSONError {
+        return getAgentCard(
+                A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT), agentUrl);
     }
 
     /**
@@ -312,7 +317,8 @@ public class A2A {
      * @throws org.a2aproject.sdk.spec.A2AClientJSONError if the response body cannot be decoded as JSON or validated against the AgentCard schema
      * @see org.a2aproject.sdk.client.http.A2AHttpClient
      */
-    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl) throws A2AClientError, A2AClientJSONError  {
+    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl)
+            throws A2AClientError, A2AClientJSONError {
         return getAgentCard(httpClient, agentUrl, null, null);
     }
 
@@ -357,8 +363,14 @@ public class A2A {
      * @throws org.a2aproject.sdk.spec.A2AClientError if an HTTP error occurs fetching the card
      * @throws org.a2aproject.sdk.spec.A2AClientJSONError if the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
-    public static AgentCard getAgentCard(String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT), agentUrl, relativeCardPath, authHeaders);
+    public static AgentCard getAgentCard(
+            String agentUrl, String relativeCardPath, Map<String, String> authHeaders)
+            throws A2AClientError, A2AClientJSONError {
+        return getAgentCard(
+                A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT),
+                agentUrl,
+                relativeCardPath,
+                authHeaders);
     }
 
     /**
@@ -393,13 +405,19 @@ public class A2A {
      * @throws org.a2aproject.sdk.spec.A2AClientError if an HTTP error occurs fetching the card
      * @throws org.a2aproject.sdk.spec.A2AClientJSONError if the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
-    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError  {
-        A2ACardResolver resolver = A2ACardResolver.builder()
-                .httpClient(httpClient)
-                .baseUrl(agentUrl)
-                .agentCardPath(relativeCardPath)
-                .authHeaders(authHeaders)
-                .build();
+    public static AgentCard getAgentCard(
+            A2AHttpClient httpClient,
+            String agentUrl,
+            String relativeCardPath,
+            Map<String, String> authHeaders)
+            throws A2AClientError, A2AClientJSONError {
+        A2ACardResolver resolver =
+                A2ACardResolver.builder()
+                        .httpClient(httpClient)
+                        .baseUrl(agentUrl)
+                        .agentCardPath(relativeCardPath)
+                        .authHeaders(authHeaders)
+                        .build();
         return resolver.getAgentCard();
     }
 }

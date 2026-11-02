@@ -2,9 +2,8 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 
-import org.a2aproject.sdk.spec.CancelTaskParams;
 import java.util.UUID;
-
+import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TaskState;
@@ -28,9 +27,7 @@ import org.a2aproject.sdk.spec.TaskState;
  */
 public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<CancelTaskParams> {
 
-    private CancelTaskRequest() {
-    }
-
+    private CancelTaskRequest() {}
 
     /**
      * Creates a new CancelTaskRequest with the specified JSON-RPC parameters.
@@ -78,8 +75,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<CancelTa
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC protocol version.
@@ -87,7 +83,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<CancelTa
          * @param jsonrpc the JSON-RPC version (optional, defaults to "2.0")
          * @return this builder for method chaining
          */
-
         public CancelTaskRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
@@ -110,7 +105,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<CancelTa
          * @param params the request parameters (required)
          * @return this builder for method chaining
          */
-
         public CancelTaskRequest.Builder params(CancelTaskParams params) {
             this.params = params;
             return this;

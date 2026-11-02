@@ -9,7 +9,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
@@ -48,11 +47,21 @@ import org.a2aproject.sdk.spec.TransportProtocol;
  */
 public class A2ACloudExampleClient {
 
-    private static final String AGENT_URL = System.getProperty("agent.url", "http://localhost:8080");
-    private static final int PROCESS_MESSAGE_COUNT = Integer.parseInt(System.getProperty("process.message.count", "8"));  // Number of "process" messages to send
-    private static final int MESSAGE_INTERVAL_MS = Integer.parseInt(System.getProperty("message.interval.ms", "1500"));
-    private static final boolean CI_MODE = Boolean.parseBoolean(System.getProperty("ci.mode", "false"));  // Early exit when 2 pods observed
-    private static final int MAX_MESSAGES_UNTIL_TWO_PODS = Integer.parseInt(System.getProperty("max.messages.until.two.pods", "20"));  // Max messages before giving up
+    private static final String AGENT_URL =
+            System.getProperty("agent.url", "http://localhost:8080");
+    private static final int PROCESS_MESSAGE_COUNT =
+            Integer.parseInt(
+                    System.getProperty(
+                            "process.message.count", "8")); // Number of "process" messages to send
+    private static final int MESSAGE_INTERVAL_MS =
+            Integer.parseInt(System.getProperty("message.interval.ms", "1500"));
+    private static final boolean CI_MODE =
+            Boolean.parseBoolean(
+                    System.getProperty("ci.mode", "false")); // Early exit when 2 pods observed
+    private static final int MAX_MESSAGES_UNTIL_TWO_PODS =
+            Integer.parseInt(
+                    System.getProperty(
+                            "max.messages.until.two.pods", "20")); // Max messages before giving up
     private static final int MIN_PODS_TO_OBSERVE = 2;
 
     // Test state
@@ -109,12 +118,14 @@ public class A2ACloudExampleClient {
         System.out.println("✓ Description: " + fetchedCard.description());
 
         // Override agent card URL to use the port-forwarded URL instead of internal K8s service URL
-        AgentCard agentCard = AgentCard.builder(fetchedCard)
-                .supportedInterfaces(
-                        Collections.singletonList(
-                                // Use localhost URL for port-forwarded connection
-                                new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL)))
-                .build();
+        AgentCard agentCard =
+                AgentCard.builder(fetchedCard)
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        // Use localhost URL for port-forwarded connection
+                                        new AgentInterface(
+                                                TransportProtocol.JSONRPC.asString(), AGENT_URL)))
+                        .build();
         System.out.println();
         return agentCard;
     }
@@ -128,24 +139,22 @@ public class A2ACloudExampleClient {
 
     private void createClients(AgentCard agentCard) {
         System.out.println("Creating streaming client for subscription...");
-        ClientConfig streamingConfig = new ClientConfig.Builder()
-                .setStreaming(true)
-                .build();
+        ClientConfig streamingConfig = new ClientConfig.Builder().setStreaming(true).build();
 
-        streamingClient = Client.builder(agentCard)
-                .clientConfig(streamingConfig)
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        streamingClient =
+                Client.builder(agentCard)
+                        .clientConfig(streamingConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
 
         System.out.println("Creating non-streaming client for sending messages...");
-        nonStreamingConfig = new ClientConfig.Builder()
-                .setStreaming(false)
-                .build();
+        nonStreamingConfig = new ClientConfig.Builder().setStreaming(false).build();
 
-        nonStreamingClient = Client.builder(agentCard)
-                .clientConfig(nonStreamingConfig)
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        nonStreamingClient =
+                Client.builder(agentCard)
+                        .clientConfig(nonStreamingConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
 
         System.out.println("✓ Clients created");
         System.out.println();
@@ -156,18 +165,22 @@ public class A2ACloudExampleClient {
         Message startMessage = A2A.toUserMessage("start", clientTaskId);
 
         try {
-            nonStreamingClient.sendMessage(startMessage, List.of((ClientEvent event, AgentCard card) -> {
-                if (event instanceof TaskEvent te) {
-                    serverTaskId = te.getTask().id();
-                    System.out.println("✓ Task created: " + serverTaskId);
-                    System.out.println("  State: " + te.getTask().status().state());
-                    taskCreationLatch.countDown();
-                }
-            }), error -> {
-                System.err.println("✗ Failed to create task: " + error.getMessage());
-                testFailed.set(true);
-                taskCreationLatch.countDown();
-            });
+            nonStreamingClient.sendMessage(
+                    startMessage,
+                    List.of(
+                            (ClientEvent event, AgentCard card) -> {
+                                if (event instanceof TaskEvent te) {
+                                    serverTaskId = te.getTask().id();
+                                    System.out.println("✓ Task created: " + serverTaskId);
+                                    System.out.println("  State: " + te.getTask().status().state());
+                                    taskCreationLatch.countDown();
+                                }
+                            }),
+                    error -> {
+                        System.err.println("✗ Failed to create task: " + error.getMessage());
+                        testFailed.set(true);
+                        taskCreationLatch.countDown();
+                    });
 
             // Wait for task creation to complete (max 5 seconds)
             if (!taskCreationLatch.await(5, TimeUnit.SECONDS)) {
@@ -196,23 +209,32 @@ public class A2ACloudExampleClient {
             try {
                 if (attempt > 1) {
                     System.out.println("Retry attempt " + attempt + "/" + maxRetries + "...");
-                    Thread.sleep(1000);  // Wait for Kafka events to propagate
+                    Thread.sleep(1000); // Wait for Kafka events to propagate
                 }
 
                 streamingClient.subscribeToTask(
                         new TaskIdParams(serverTaskId),
                         List.of(this::handleSubscriptionEvent),
-                        this::handleSubscriptionError
-                );
+                        this::handleSubscriptionError);
 
                 System.out.println("✓ Subscribed to task updates");
                 subscribed.set(true);
                 break;
             } catch (Exception e) {
                 if (attempt < maxRetries) {
-                    System.out.println("⚠ Failed to subscribe (attempt " + attempt + "/" + maxRetries + "): " + e.getMessage());
+                    System.out.println(
+                            "⚠ Failed to subscribe (attempt "
+                                    + attempt
+                                    + "/"
+                                    + maxRetries
+                                    + "): "
+                                    + e.getMessage());
                 } else {
-                    System.err.println("✗ Failed to subscribe after " + maxRetries + " attempts: " + e.getMessage());
+                    System.err.println(
+                            "✗ Failed to subscribe after "
+                                    + maxRetries
+                                    + " attempts: "
+                                    + e.getMessage());
                     System.exit(1);
                 }
             }
@@ -236,7 +258,12 @@ public class A2ACloudExampleClient {
                 if (podName != null && !podName.equals("unknown-pod")) {
                     int invokeCount = observedPods.getOrDefault(podName, 0);
                     observedPods.put(podName, ++invokeCount);
-                    System.out.println("    → Pod: " + podName + " (Total unique pods: " + observedPods.size() + ")");
+                    System.out.println(
+                            "    → Pod: "
+                                    + podName
+                                    + " (Total unique pods: "
+                                    + observedPods.size()
+                                    + ")");
                 }
             }
         } else if (event instanceof TaskEvent te) {
@@ -261,51 +288,78 @@ public class A2ACloudExampleClient {
     private void sendProcessMessages() throws InterruptedException {
         System.out.println();
         if (CI_MODE) {
-            System.out.println("Step 3: Sending 'process' messages until 2 pods observed (CI mode, max: " + MAX_MESSAGES_UNTIL_TWO_PODS + ", interval: " + MESSAGE_INTERVAL_MS + "ms)...");
+            System.out.println(
+                    "Step 3: Sending 'process' messages until 2 pods observed (CI mode, max: "
+                            + MAX_MESSAGES_UNTIL_TWO_PODS
+                            + ", interval: "
+                            + MESSAGE_INTERVAL_MS
+                            + "ms)...");
         } else {
-            System.out.println("Step 3: Sending " + PROCESS_MESSAGE_COUNT + " 'process' messages (interval: " + MESSAGE_INTERVAL_MS + "ms)...");
+            System.out.println(
+                    "Step 3: Sending "
+                            + PROCESS_MESSAGE_COUNT
+                            + " 'process' messages (interval: "
+                            + MESSAGE_INTERVAL_MS
+                            + "ms)...");
         }
         System.out.println("--------------------------------------------");
 
         int messageCount = 0;
         int maxMessages = CI_MODE ? MAX_MESSAGES_UNTIL_TWO_PODS : PROCESS_MESSAGE_COUNT;
-        
+
         while (messageCount < maxMessages) {
             messageCount++;
             final int messageNum = messageCount;
 
             // Create a new client for each request to force new HTTP connection
-            Client freshClient = Client.builder(agentCard)
-                    .clientConfig(nonStreamingConfig)
-                    .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                    .build();
+            Client freshClient =
+                    Client.builder(agentCard)
+                            .clientConfig(nonStreamingConfig)
+                            .withTransport(
+                                    JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                            .build();
 
-            Message message = Message.builder()
-                    .role(Message.Role.ROLE_USER)
-                    .parts(new TextPart("process"))
-                    .taskId(serverTaskId)
-                    .build();
+            Message message =
+                    Message.builder()
+                            .role(Message.Role.ROLE_USER)
+                            .parts(new TextPart("process"))
+                            .taskId(serverTaskId)
+                            .build();
 
             try {
-                freshClient.sendMessage(message, List.of((ClientEvent event, AgentCard card) -> {
-                    if (event instanceof MessageEvent || event instanceof TaskEvent) {
-                        System.out.println("✓ Process message " + messageNum + " sent");
-                    }
-                }), error -> {
-                    System.err.println("✗ Process message " + messageNum + " failed: " + error.getMessage());
-                    testFailed.set(true);
-                });
+                freshClient.sendMessage(
+                        message,
+                        List.of(
+                                (ClientEvent event, AgentCard card) -> {
+                                    if (event instanceof MessageEvent
+                                            || event instanceof TaskEvent) {
+                                        System.out.println(
+                                                "✓ Process message " + messageNum + " sent");
+                                    }
+                                }),
+                        error -> {
+                            System.err.println(
+                                    "✗ Process message "
+                                            + messageNum
+                                            + " failed: "
+                                            + error.getMessage());
+                            testFailed.set(true);
+                        });
 
                 Thread.sleep(MESSAGE_INTERVAL_MS);
-                
+
                 // In CI mode, check if we've observed 2 pods and can exit early
                 if (CI_MODE && observedPods.size() >= 2) {
                     System.out.println();
-                    System.out.println("✓ CI mode: Successfully observed 2 pods after " + messageNum + " messages. Stopping early.");
+                    System.out.println(
+                            "✓ CI mode: Successfully observed 2 pods after "
+                                    + messageNum
+                                    + " messages. Stopping early.");
                     break;
                 }
             } catch (Exception e) {
-                System.err.println("✗ Failed to send process message " + messageNum + ": " + e.getMessage());
+                System.err.println(
+                        "✗ Failed to send process message " + messageNum + ": " + e.getMessage());
                 testFailed.set(true);
             }
         }
@@ -320,26 +374,35 @@ public class A2ACloudExampleClient {
         System.out.println();
         System.out.println("Step 4: Sending 'complete' to finalize task...");
 
-        Client completeClient = Client.builder(agentCard)
-                .clientConfig(nonStreamingConfig)
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        Client completeClient =
+                Client.builder(agentCard)
+                        .clientConfig(nonStreamingConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
 
-        Message completeMessage = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(new TextPart("complete"))
-                .taskId(serverTaskId)
-                .build();
+        Message completeMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("complete"))
+                        .taskId(serverTaskId)
+                        .build();
 
         try {
-            completeClient.sendMessage(completeMessage, List.of((ClientEvent event, AgentCard card) -> {
-                if (event instanceof TaskEvent te) {
-                    System.out.println("✓ Complete message sent, task state: " + te.getTask().status().state());
-                }
-            }), error -> {
-                System.err.println("✗ Failed to send complete message: " + error.getMessage());
-                testFailed.set(true);
-            });
+            completeClient.sendMessage(
+                    completeMessage,
+                    List.of(
+                            (ClientEvent event, AgentCard card) -> {
+                                if (event instanceof TaskEvent te) {
+                                    System.out.println(
+                                            "✓ Complete message sent, task state: "
+                                                    + te.getTask().status().state());
+                                }
+                            }),
+                    error -> {
+                        System.err.println(
+                                "✗ Failed to send complete message: " + error.getMessage());
+                        testFailed.set(true);
+                    });
         } catch (Exception e) {
             System.err.println("✗ Failed to send complete message: " + e.getMessage());
             testFailed.set(true);
@@ -368,16 +431,21 @@ public class A2ACloudExampleClient {
             System.out.println("✗ TEST FAILED - Errors occurred during execution");
             System.exit(1);
         } else if (observedPods.size() < MIN_PODS_TO_OBSERVE) {
-            System.out.printf("✗ TEST FAILED - Expected at least %d different pods, but only saw: %d\n", MIN_PODS_TO_OBSERVE, observedPods.size());
+            System.out.printf(
+                    "✗ TEST FAILED - Expected at least %d different pods, but only saw: %d\n",
+                    MIN_PODS_TO_OBSERVE, observedPods.size());
             System.out.println("  This suggests load balancing is not working correctly.");
             System.exit(1);
         } else {
             System.out.println("✓ TEST PASSED - Successfully demonstrated multi-pod processing!");
-            System.out.println("  Messages were handled by " + observedPods.size() + " different pods.");
+            System.out.println(
+                    "  Messages were handled by " + observedPods.size() + " different pods.");
             System.out.println("  This proves that:");
             System.out.println("    - Load balancing is working (round-robin across pods)");
-            System.out.println("    - Event replication is working (subscriber sees events from all pods)");
-            System.out.println("    - Database persistence is working (task state shared across pods)");
+            System.out.println(
+                    "    - Event replication is working (subscriber sees events from all pods)");
+            System.out.println(
+                    "    - Database persistence is working (task state shared across pods)");
             System.exit(0);
         }
     }
@@ -395,7 +463,8 @@ public class A2ACloudExampleClient {
     }
 
     private static String extractPodName(String artifactText) {
-        // Artifact text format: "Started by <pod-name>" or "Processed by <pod-name>" or "Completed by <pod-name>"
+        // Artifact text format: "Started by <pod-name>" or "Processed by <pod-name>" or "Completed
+        // by <pod-name>"
         if (artifactText != null) {
             if (artifactText.startsWith("Started by ")) {
                 return artifactText.substring("Started by ".length()).trim();
@@ -423,10 +492,10 @@ public class A2ACloudExampleClient {
             String message = error.getMessage();
             if (message != null) {
                 // Filter out normal stream closure/cancellation errors
-                if (message.contains("Stream closed") ||
-                    message.contains("Stream") && message.contains("cancelled") ||
-                    message.contains("EOF reached") ||
-                    message.contains("CANCEL")) {
+                if (message.contains("Stream closed")
+                        || message.contains("Stream") && message.contains("cancelled")
+                        || message.contains("EOF reached")
+                        || message.contains("CANCEL")) {
                     return true;
                 }
             }

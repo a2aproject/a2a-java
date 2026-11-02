@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class AgentCardSignatureTest {
@@ -34,6 +33,7 @@ class AgentCardSignatureTest {
         assertEquals(1, signature.header().size());
         assertTrue(signature.header().containsKey("foo"));
         assertNull(signature.header().get("foo"));
-        assertThrows(UnsupportedOperationException.class, () -> signature.header().put("bar", "baz"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> signature.header().put("bar", "baz"));
     }
 }

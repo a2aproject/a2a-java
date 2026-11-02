@@ -18,7 +18,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.a2aproject.sdk.server.events.EnhancedRunnable;
 import org.a2aproject.sdk.server.events.EventConsumer;
 import org.a2aproject.sdk.server.events.EventQueue;
@@ -35,7 +34,6 @@ import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -51,8 +49,7 @@ import org.mockito.MockitoAnnotations;
  */
 public class ResultAggregatorTest {
 
-    @Mock
-    private TaskManager mockTaskManager;
+    @Mock private TaskManager mockTaskManager;
 
     private ResultAggregator aggregator;
     // Use a real thread pool executor instead of direct executor
@@ -62,8 +59,13 @@ public class ResultAggregatorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor,
-                TimeUnit.SECONDS.toNanos(1));
+        aggregator =
+                new ResultAggregator(
+                        mockTaskManager,
+                        null,
+                        testExecutor,
+                        testExecutor,
+                        TimeUnit.SECONDS.toNanos(1));
     }
 
     // Helper methods for creating sample data
@@ -92,36 +94,44 @@ public class ResultAggregatorTest {
      * @throws InterruptedException if waiting is interrupted
      * @throws AssertionError if processing doesn't complete within timeout
      */
-    private void waitForEventProcessing(MainEventBusProcessor processor, Runnable action) throws InterruptedException {
+    private void waitForEventProcessing(MainEventBusProcessor processor, Runnable action)
+            throws InterruptedException {
         CountDownLatch processingLatch = new CountDownLatch(1);
-        processor.setCallback(new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
+        processor.setCallback(
+                new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        processingLatch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for basic event processing wait
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {
+                        // Not needed for basic event processing wait
+                    }
+                });
 
         try {
             action.run();
-            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+            assertTrue(
+                    processingLatch.await(5, TimeUnit.SECONDS),
                     "MainEventBusProcessor should have processed the event within timeout");
         } finally {
             processor.setCallback(null);
         }
     }
 
-
     // Basic functionality tests
 
     @Test
     void testConstructorWithMessage() {
         Message initialMessage = createSampleMessage("initial", "msg1", Message.Role.ROLE_USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
+        ResultAggregator aggregatorWithMessage =
+                new ResultAggregator(
+                        mockTaskManager,
+                        initialMessage,
+                        testExecutor,
+                        testExecutor,
+                        TimeUnit.SECONDS.toNanos(1));
 
         // Test that the message is properly stored by checking getCurrentResult
         assertEquals(initialMessage, aggregatorWithMessage.getCurrentResult());
@@ -132,7 +142,13 @@ public class ResultAggregatorTest {
     @Test
     void testGetCurrentResultWithMessageSet() {
         Message sampleMessage = createSampleMessage("hola", "msg1", Message.Role.ROLE_USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
+        ResultAggregator aggregatorWithMessage =
+                new ResultAggregator(
+                        mockTaskManager,
+                        sampleMessage,
+                        testExecutor,
+                        testExecutor,
+                        TimeUnit.SECONDS.toNanos(1));
 
         EventKind result = aggregatorWithMessage.getCurrentResult();
 
@@ -143,7 +159,8 @@ public class ResultAggregatorTest {
 
     @Test
     void testGetCurrentResultWithMessageNull() {
-        Task expectedTask = createSampleTask("task_from_tm", TaskState.TASK_STATE_SUBMITTED, "ctx1");
+        Task expectedTask =
+                createSampleTask("task_from_tm", TaskState.TASK_STATE_SUBMITTED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result = aggregator.getCurrentResult();
@@ -167,7 +184,13 @@ public class ResultAggregatorTest {
 
     @Test
     void testConstructorWithNullMessage() {
-        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
+        ResultAggregator aggregatorWithNullMessage =
+                new ResultAggregator(
+                        mockTaskManager,
+                        null,
+                        testExecutor,
+                        testExecutor,
+                        TimeUnit.SECONDS.toNanos(1));
         Task expectedTask = createSampleTask("null_msg_task", TaskState.TASK_STATE_WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
@@ -179,7 +202,8 @@ public class ResultAggregatorTest {
 
     @Test
     void testGetCurrentResultReturnsTaskWhenNoMessage() {
-        Task expectedTask = createSampleTask("no_message_task", TaskState.TASK_STATE_COMPLETED, "ctx1");
+        Task expectedTask =
+                createSampleTask("no_message_task", TaskState.TASK_STATE_COMPLETED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result = aggregator.getCurrentResult();
@@ -193,7 +217,8 @@ public class ResultAggregatorTest {
     void testGetCurrentResultWithDifferentTaskStates() {
         // Test with WORKING and COMPLETED states using chained returns
         Task workingTask = createSampleTask("working_task", TaskState.TASK_STATE_WORKING, "ctx1");
-        Task completedTask = createSampleTask("completed_task", TaskState.TASK_STATE_COMPLETED, "ctx1");
+        Task completedTask =
+                createSampleTask("completed_task", TaskState.TASK_STATE_COMPLETED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(workingTask, completedTask);
 
         // First call returns WORKING task
@@ -208,7 +233,8 @@ public class ResultAggregatorTest {
     @Test
     void testMultipleGetCurrentResultCalls() {
         // Test that multiple calls to getCurrentResult behave consistently
-        Task expectedTask = createSampleTask("multi_call_task", TaskState.TASK_STATE_SUBMITTED, "ctx1");
+        Task expectedTask =
+                createSampleTask("multi_call_task", TaskState.TASK_STATE_SUBMITTED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result1 = aggregator.getCurrentResult();
@@ -227,10 +253,17 @@ public class ResultAggregatorTest {
     void testGetCurrentResultWithMessageTakesPrecedence() {
         // Test that when both message and task are available, message takes precedence
         Message message = createSampleMessage("priority message", "pri1", Message.Role.ROLE_USER);
-        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
+        ResultAggregator messageAggregator =
+                new ResultAggregator(
+                        mockTaskManager,
+                        message,
+                        testExecutor,
+                        testExecutor,
+                        TimeUnit.SECONDS.toNanos(1));
 
         // Even if we set up the task manager to return something, message should take precedence
-        Task task = createSampleTask("should_not_be_returned", TaskState.TASK_STATE_WORKING, "ctx1");
+        Task task =
+                createSampleTask("should_not_be_returned", TaskState.TASK_STATE_WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(task);
 
         EventKind result = messageAggregator.getCurrentResult();
@@ -253,8 +286,10 @@ public class ResultAggregatorTest {
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+                new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -263,14 +298,13 @@ public class ResultAggregatorTest {
         waitForEventProcessing(processor, () -> queue.enqueueEvent(firstEvent));
 
         // Create real EventConsumer with the queue
-        EventConsumer eventConsumer =
-            new EventConsumer(queue, Runnable::run);
+        EventConsumer eventConsumer = new EventConsumer(queue, Runnable::run);
 
         // Close queue after first event to simulate stream ending after processing
         queue.close();
 
         ResultAggregator.EventTypeAndInterrupt result =
-            aggregator.consumeAndBreakOnInterrupt(eventConsumer, false);
+                aggregator.consumeAndBreakOnInterrupt(eventConsumer, false);
 
         assertEquals(firstEvent, result.eventType());
         assertTrue(result.interrupted());
@@ -293,12 +327,15 @@ public class ResultAggregatorTest {
         Task completedTask = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED, "ctx1");
         AtomicBoolean taskVisible = new AtomicBoolean(false);
         TaskStore taskStore = mock(TaskStore.class);
-        when(taskStore.get(taskId)).thenAnswer(invocation ->
-                taskVisible.compareAndSet(false, true) ? null : completedTask);
+        when(taskStore.get(taskId))
+                .thenAnswer(
+                        invocation ->
+                                taskVisible.compareAndSet(false, true) ? null : completedTask);
 
         TaskManager taskManager = new TaskManager(taskId, "ctx1", taskStore, null);
         ResultAggregator blockingAggregator =
-                new ResultAggregator(taskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
+                new ResultAggregator(
+                        taskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager =
@@ -306,11 +343,11 @@ public class ResultAggregatorTest {
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
         EventConsumer eventConsumer = new EventConsumer(queue, testExecutor);
 
-        EnhancedRunnable completedAgent = new EnhancedRunnable() {
-            @Override
-            public void run() {
-            }
-        };
+        EnhancedRunnable completedAgent =
+                new EnhancedRunnable() {
+                    @Override
+                    public void run() {}
+                };
         eventConsumer.createAgentRunnableDoneCallback().done(completedAgent);
 
         ResultAggregator.EventTypeAndInterrupt result =
@@ -326,10 +363,19 @@ public class ResultAggregatorTest {
         TaskStore taskStore = mock(TaskStore.class);
         TaskManager taskManager = new TaskManager(taskId, "ctx1", taskStore, null);
         ResultAggregator blockingAggregator =
-                new ResultAggregator(taskManager, null, testExecutor, testExecutor, TimeUnit.MILLISECONDS.toNanos(100));
+                new ResultAggregator(
+                        taskManager,
+                        null,
+                        testExecutor,
+                        testExecutor,
+                        TimeUnit.MILLISECONDS.toNanos(100));
 
-        InternalError error = assertThrows(InternalError.class, () ->
-                blockingAggregator.consumeAndBreakOnInterrupt(createClosedEventConsumer(taskId), true));
+        InternalError error =
+                assertThrows(
+                        InternalError.class,
+                        () ->
+                                blockingAggregator.consumeAndBreakOnInterrupt(
+                                        createClosedEventConsumer(taskId), true));
 
         assertEquals("Could not find a Task/Message for " + taskId, error.getMessage());
     }
@@ -340,10 +386,14 @@ public class ResultAggregatorTest {
         TaskStore taskStore = mock(TaskStore.class);
         TaskManager taskManager = new TaskManager(taskId, "ctx1", taskStore, null);
         ResultAggregator nonBlockingAggregator =
-                new ResultAggregator(taskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
+                new ResultAggregator(
+                        taskManager, null, testExecutor, testExecutor, TimeUnit.SECONDS.toNanos(1));
 
-        assertThrows(InternalError.class, () ->
-                nonBlockingAggregator.consumeAndBreakOnInterrupt(createClosedEventConsumer(taskId), false));
+        assertThrows(
+                InternalError.class,
+                () ->
+                        nonBlockingAggregator.consumeAndBreakOnInterrupt(
+                                createClosedEventConsumer(taskId), false));
 
         verify(taskStore, times(1)).get(taskId);
     }
@@ -361,9 +411,11 @@ public class ResultAggregatorTest {
 
     @Test
     void testConsumeAndBreakOnAuthRequired_Blocking() throws Exception {
-        // Test that AUTH_REQUIRED with blocking=true sets interrupted=true and continues consumption in background
+        // Test that AUTH_REQUIRED with blocking=true sets interrupted=true and continues
+        // consumption in background
         String taskId = "auth-required-blocking-task";
-        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+        Task authRequiredTask =
+                createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
 
         when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
 
@@ -371,8 +423,10 @@ public class ResultAggregatorTest {
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+                new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -386,11 +440,16 @@ public class ResultAggregatorTest {
 
             // Call consumeAndBreakOnInterrupt with blocking=true
             ResultAggregator.EventTypeAndInterrupt result =
-                aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
+                    aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
 
             // Assert: interrupted=true for AUTH_REQUIRED
-            assertTrue(result.interrupted(), "AUTH_REQUIRED should trigger interrupt in blocking mode");
-            assertEquals(authRequiredTask, result.eventType(), "Event type should be the AUTH_REQUIRED task");
+            assertTrue(
+                    result.interrupted(),
+                    "AUTH_REQUIRED should trigger interrupt in blocking mode");
+            assertEquals(
+                    authRequiredTask,
+                    result.eventType(),
+                    "Event type should be the AUTH_REQUIRED task");
 
             // Verify consumption continues in background (consumptionFuture should be running)
             // For blocking mode, the consumption future should complete after processing
@@ -403,9 +462,11 @@ public class ResultAggregatorTest {
 
     @Test
     void testConsumeAndBreakOnAuthRequired_NonBlocking() throws Exception {
-        // Test that AUTH_REQUIRED with blocking=false sets interrupted=true and completes immediately
+        // Test that AUTH_REQUIRED with blocking=false sets interrupted=true and completes
+        // immediately
         String taskId = "auth-required-nonblocking-task";
-        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+        Task authRequiredTask =
+                createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
 
         when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
 
@@ -413,8 +474,10 @@ public class ResultAggregatorTest {
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+                new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -428,11 +491,16 @@ public class ResultAggregatorTest {
 
             // Call consumeAndBreakOnInterrupt with blocking=false
             ResultAggregator.EventTypeAndInterrupt result =
-                aggregator.consumeAndBreakOnInterrupt(eventConsumer, false);
+                    aggregator.consumeAndBreakOnInterrupt(eventConsumer, false);
 
             // Assert: interrupted=true for AUTH_REQUIRED
-            assertTrue(result.interrupted(), "AUTH_REQUIRED should trigger interrupt in non-blocking mode");
-            assertEquals(authRequiredTask, result.eventType(), "Event type should be the AUTH_REQUIRED task");
+            assertTrue(
+                    result.interrupted(),
+                    "AUTH_REQUIRED should trigger interrupt in non-blocking mode");
+            assertEquals(
+                    authRequiredTask,
+                    result.eventType(),
+                    "Event type should be the AUTH_REQUIRED task");
 
             // For non-blocking mode, consumption should complete immediately
             assertNotNull(result, "Result should not be null");
@@ -446,22 +514,22 @@ public class ResultAggregatorTest {
     void testAuthRequiredWithTaskStatusUpdateEvent() throws Exception {
         // Test that TaskStatusUpdateEvent with AUTH_REQUIRED state triggers same interrupt behavior
         String taskId = "auth-required-status-update-task";
-        TaskStatusUpdateEvent authRequiredEvent = new TaskStatusUpdateEvent(
-            taskId,
-            new TaskStatus(TaskState.TASK_STATE_AUTH_REQUIRED),
-            "ctx1",
-            null
-        );
+        TaskStatusUpdateEvent authRequiredEvent =
+                new TaskStatusUpdateEvent(
+                        taskId, new TaskStatus(TaskState.TASK_STATE_AUTH_REQUIRED), "ctx1", null);
 
-        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+        Task authRequiredTask =
+                createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
 
         // Create event queue infrastructure
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+                new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -475,10 +543,12 @@ public class ResultAggregatorTest {
 
             // Call consumeAndBreakOnInterrupt
             ResultAggregator.EventTypeAndInterrupt result =
-                aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
+                    aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
 
             // Assert: interrupted=true for AUTH_REQUIRED (TaskStatusUpdateEvent)
-            assertTrue(result.interrupted(), "AUTH_REQUIRED via TaskStatusUpdateEvent should trigger interrupt");
+            assertTrue(
+                    result.interrupted(),
+                    "AUTH_REQUIRED via TaskStatusUpdateEvent should trigger interrupt");
 
             // Note: ResultAggregator returns a Task (from getCurrentResult or capturedTask),
             // not the TaskStatusUpdateEvent itself. The event triggers interrupt behavior,
@@ -486,8 +556,10 @@ public class ResultAggregatorTest {
             assertNotNull(result.eventType(), "Result should have an event type");
             assertTrue(result.eventType() instanceof Task, "Event type should be a Task");
             Task resultTask = (Task) result.eventType();
-            assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, resultTask.status().state(),
-                "Task should have AUTH_REQUIRED state");
+            assertEquals(
+                    TaskState.TASK_STATE_AUTH_REQUIRED,
+                    resultTask.status().state(),
+                    "Task should have AUTH_REQUIRED state");
         } finally {
             queue.close();
             EventQueueUtil.stop(processor);
@@ -498,7 +570,8 @@ public class ResultAggregatorTest {
     void testAuthRequiredWithTaskEvent() throws Exception {
         // Test that Task event with AUTH_REQUIRED state triggers interrupt correctly
         String taskId = "auth-required-task-event";
-        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+        Task authRequiredTask =
+                createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
 
         when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
 
@@ -506,8 +579,10 @@ public class ResultAggregatorTest {
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+                new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -521,16 +596,23 @@ public class ResultAggregatorTest {
 
             // Call consumeAndBreakOnInterrupt
             ResultAggregator.EventTypeAndInterrupt result =
-                aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
+                    aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
 
             // Assert: interrupted=true for AUTH_REQUIRED
             assertTrue(result.interrupted(), "AUTH_REQUIRED Task event should trigger interrupt");
-            assertEquals(authRequiredTask, result.eventType(), "Event type should be the AUTH_REQUIRED task");
+            assertEquals(
+                    authRequiredTask,
+                    result.eventType(),
+                    "Event type should be the AUTH_REQUIRED task");
 
             // Verify both Task and TaskStatusUpdateEvent can trigger AUTH_REQUIRED interrupt
-            // (this test validates Task event, testAuthRequiredWithTaskStatusUpdateEvent validates TaskStatusUpdateEvent)
+            // (this test validates Task event, testAuthRequiredWithTaskStatusUpdateEvent validates
+            // TaskStatusUpdateEvent)
             TaskState state = ((Task) result.eventType()).status().state();
-            assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, state, "Task state should be AUTH_REQUIRED");
+            assertEquals(
+                    TaskState.TASK_STATE_AUTH_REQUIRED,
+                    state,
+                    "Task state should be AUTH_REQUIRED");
         } finally {
             queue.close();
             EventQueueUtil.stop(processor);

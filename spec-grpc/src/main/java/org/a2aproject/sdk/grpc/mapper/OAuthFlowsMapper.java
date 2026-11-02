@@ -7,12 +7,10 @@ import org.mapstruct.Mapping;
 /**
  * Mapper between {@link org.a2aproject.sdk.spec.OAuthFlows} and {@link org.a2aproject.sdk.grpc.OAuthFlows}.
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {
-            AuthorizationCodeOAuthFlowMapper.class,
-            ClientCredentialsOAuthFlowMapper.class
-        })
+        uses = {AuthorizationCodeOAuthFlowMapper.class, ClientCredentialsOAuthFlowMapper.class})
 public interface OAuthFlowsMapper {
 
     OAuthFlowsMapper INSTANCE = A2AMappers.getMapper(OAuthFlowsMapper.class);

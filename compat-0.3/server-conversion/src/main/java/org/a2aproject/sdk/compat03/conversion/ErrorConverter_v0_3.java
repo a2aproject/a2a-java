@@ -59,33 +59,44 @@ public final class ErrorConverter_v0_3 {
 
         // Preserve specific error types by mapping v1.0 errors to v0.3 equivalents
         if (v10Error instanceof TaskNotFoundError) {
-            return new TaskNotFoundError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new TaskNotFoundError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof UnsupportedOperationError) {
-            return new UnsupportedOperationError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new UnsupportedOperationError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof TaskNotCancelableError) {
-            return new TaskNotCancelableError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new TaskNotCancelableError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof InvalidParamsError) {
-            return new InvalidParamsError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new InvalidParamsError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof InvalidRequestError) {
-            return new InvalidRequestError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new InvalidRequestError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof InternalError) {
             return new InternalError_v0_3(v10Error.getMessage());
         } else if (v10Error instanceof InvalidAgentResponseError) {
-            return new InvalidAgentResponseError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new InvalidAgentResponseError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof ContentTypeNotSupportedError) {
-            return new ContentTypeNotSupportedError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new ContentTypeNotSupportedError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof PushNotificationNotSupportedError) {
-            return new PushNotificationNotSupportedError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new PushNotificationNotSupportedError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof MethodNotFoundError) {
-            return new MethodNotFoundError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new MethodNotFoundError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof JSONParseError) {
-            return new JSONParseError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+            return new JSONParseError_v0_3(
+                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         } else if (v10Error instanceof ExtendedAgentCardNotConfiguredError) {
             return new AuthenticatedExtendedCardNotConfiguredError_v0_3(
                     v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
         }
 
         // Fallback to generic JSONRPCError for unmapped types
-        return new JSONRPCError_v0_3(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        return new JSONRPCError_v0_3(
+                v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 }

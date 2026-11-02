@@ -6,7 +6,8 @@ import org.mapstruct.Mapper;
 /**
  * Mapper between {@link org.a2aproject.sdk.spec.AgentProvider} and {@link org.a2aproject.sdk.grpc.AgentProvider}.
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface AgentProviderMapper {
 

@@ -1,14 +1,13 @@
 package org.a2aproject.sdk.server.grpc.quarkus;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
@@ -22,11 +21,10 @@ import org.junit.jupiter.api.AfterAll;
 
 @QuarkusTest
 @TestProfile(TaskAuthorizationTestProfile.class)
-public class QuarkusA2AGrpcWithTaskAuthorizationTest extends AbstractA2AServerWithTaskAuthorizationTest {
+public class QuarkusA2AGrpcWithTaskAuthorizationTest
+        extends AbstractA2AServerWithTaskAuthorizationTest {
 
-    @Inject
-    @PublicAgentCard
-    AgentCard agentCard;
+    @Inject @PublicAgentCard AgentCard agentCard;
 
     private static final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
 
@@ -46,28 +44,40 @@ public class QuarkusA2AGrpcWithTaskAuthorizationTest extends AbstractA2AServerWi
     }
 
     @Override
-    protected void configureTransportWithCredentials(ClientBuilder builder, String username, String password) {
-        AuthInterceptor authInterceptor = new AuthInterceptor(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName)
-                        ? getEncodedCredentials(username, password) : null);
-        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
-                .channelFactory(target -> {
-                    ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-                    channels.put(username, channel);
-                    return channel;
-                })
-                .addInterceptor(authInterceptor));
+    protected void configureTransportWithCredentials(
+            ClientBuilder builder, String username, String password) {
+        AuthInterceptor authInterceptor =
+                new AuthInterceptor(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials(username, password)
+                                        : null);
+        builder.withTransport(
+                GrpcTransport.class,
+                new GrpcTransportConfigBuilder()
+                        .channelFactory(
+                                target -> {
+                                    ManagedChannel channel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    channels.put(username, channel);
+                                    return channel;
+                                })
+                        .addInterceptor(authInterceptor));
     }
 
     @AfterAll
     static void closeChannels() {
-        channels.values().forEach(ch -> {
-            ch.shutdownNow();
-            try {
-                ch.awaitTermination(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        channels.values()
+                .forEach(
+                        ch -> {
+                            ch.shutdownNow();
+                            try {
+                                ch.awaitTermination(10, TimeUnit.SECONDS);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                        });
     }
 }

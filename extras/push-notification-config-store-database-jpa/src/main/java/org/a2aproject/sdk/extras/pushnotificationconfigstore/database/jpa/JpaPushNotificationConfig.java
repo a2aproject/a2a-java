@@ -6,20 +6,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-
+import java.time.Instant;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.jspecify.annotations.Nullable;
 
-import java.time.Instant;
-
 @Entity
 @Table(name = "a2a_push_notification_configs")
 public class JpaPushNotificationConfig {
-    @EmbeddedId
-    private TaskConfigId id;
+    @EmbeddedId private TaskConfigId id;
 
     @Column(name = "task_data", columnDefinition = "TEXT", nullable = false)
     private String configJson;
@@ -30,12 +27,10 @@ public class JpaPushNotificationConfig {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @Transient
-    private TaskPushNotificationConfig config;
+    @Transient private TaskPushNotificationConfig config;
 
     // Default constructor required by JPA
-    public JpaPushNotificationConfig() {
-    }
+    public JpaPushNotificationConfig() {}
 
     public JpaPushNotificationConfig(TaskConfigId id, String configJson) {
         this.id = id;
@@ -44,9 +39,9 @@ public class JpaPushNotificationConfig {
 
     @PrePersist
     protected void onCreate() {
-      if (createdAt == null) {
-        createdAt = Instant.now();
-      }
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
     }
 
     public TaskConfigId getId() {
@@ -70,19 +65,24 @@ public class JpaPushNotificationConfig {
 
     public void setConfig(TaskPushNotificationConfig config) throws JsonProcessingException {
         if (config.id() == null || !config.id().equals(id.getConfigId())) {
-            throw new IllegalArgumentException("Mismatched config id. " +
-                    "Expected '" + id.getConfigId() + "'. Got: '" + config.id() + "'");
+            throw new IllegalArgumentException(
+                    "Mismatched config id. "
+                            + "Expected '"
+                            + id.getConfigId()
+                            + "'. Got: '"
+                            + config.id()
+                            + "'");
         }
         configJson = JsonUtil.toJson(config);
         this.config = config;
     }
 
     public Instant getCreatedAt() {
-      return createdAt;
+        return createdAt;
     }
 
     public void setCreatedAt(Instant createdAt) {
-      this.createdAt = createdAt;
+        this.createdAt = createdAt;
     }
 
     public String getProtocolVersion() {
@@ -93,7 +93,9 @@ public class JpaPushNotificationConfig {
         this.protocolVersion = protocolVersion;
     }
 
-    static JpaPushNotificationConfig createFromConfig(String taskId, TaskPushNotificationConfig config, @Nullable String protocolVersion) throws JsonProcessingException {
+    static JpaPushNotificationConfig createFromConfig(
+            String taskId, TaskPushNotificationConfig config, @Nullable String protocolVersion)
+            throws JsonProcessingException {
         String json = JsonUtil.toJson(config);
         JpaPushNotificationConfig jpaPushNotificationConfig =
                 new JpaPushNotificationConfig(new TaskConfigId(taskId, config.id()), json);

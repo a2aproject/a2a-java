@@ -11,8 +11,7 @@ import java.util.TreeMap;
  */
 public final class HttpHeaderUtils {
 
-    private HttpHeaderUtils() {
-    }
+    private HttpHeaderUtils() {}
 
     /**
      * Creates an unmodifiable, case-insensitive copy of the given header map.
@@ -25,13 +24,13 @@ public final class HttpHeaderUtils {
      * @param headers the source header map
      * @return an unmodifiable, case-insensitive map
      */
-    public static Map<String, List<String>> copyOfCaseInsensitive(Map<String, List<String>> headers) {
+    public static Map<String, List<String>> copyOfCaseInsensitive(
+            Map<String, List<String>> headers) {
         TreeMap<String, List<String>> copy = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null) {
-                List<String> cleanValues = entry.getValue().stream()
-                        .filter(Objects::nonNull)
-                        .toList();
+                List<String> cleanValues =
+                        entry.getValue().stream().filter(Objects::nonNull).toList();
                 copy.put(entry.getKey(), cleanValues);
             }
         }

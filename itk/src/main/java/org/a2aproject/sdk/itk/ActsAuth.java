@@ -1,18 +1,16 @@
 package org.a2aproject.sdk.itk;
 
-import java.util.List;
-import java.util.Map;
-
-import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
-import org.a2aproject.sdk.spec.SecurityRequirement;
-import org.a2aproject.sdk.spec.SecurityScheme;
-import org.jspecify.annotations.Nullable;
-
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import java.util.List;
+import java.util.Map;
+import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
+import org.a2aproject.sdk.spec.SecurityRequirement;
+import org.a2aproject.sdk.spec.SecurityScheme;
+import org.jspecify.annotations.Nullable;
 
 /**
  * ACTS authentication support.
@@ -54,8 +52,7 @@ final class ActsAuth {
 
     private static final String EXTENDED_CARD_SUFFIX = "/extendedAgentCard";
 
-    private ActsAuth() {
-    }
+    private ActsAuth() {}
 
     static boolean enforced() {
         String value = System.getenv("ITK_ACTS_AUTH");
@@ -74,7 +71,8 @@ final class ActsAuth {
         }
         return Map.of(
                 SCHEME_ID,
-                new HTTPAuthSecurityScheme("opaque", "Bearer", "Bearer token presented by the ACTS runner."));
+                new HTTPAuthSecurityScheme(
+                        "opaque", "Bearer", "Bearer token presented by the ACTS runner."));
     }
 
     /**
@@ -134,7 +132,8 @@ final class ActsAuth {
 
         switch (presented(ctx.request().getHeader("Authorization"))) {
             case VALID -> ctx.next();
-            case INSUFFICIENT -> reject(ctx, 403, "PERMISSION_DENIED", "Token lacks the required scope.");
+            case INSUFFICIENT ->
+                    reject(ctx, 403, "PERMISSION_DENIED", "Token lacks the required scope.");
             case UNUSABLE -> reject(ctx, 401, "UNAUTHENTICATED", "A bearer token is required.");
         }
     }
@@ -149,31 +148,38 @@ final class ActsAuth {
         if (!enforced()) {
             return null;
         }
-        String header = metadata.get(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
+        String header =
+                metadata.get(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
         return switch (presented(header)) {
             case VALID -> null;
-            case INSUFFICIENT -> Status.PERMISSION_DENIED.withDescription("Token lacks the required scope.");
+            case INSUFFICIENT ->
+                    Status.PERMISSION_DENIED.withDescription("Token lacks the required scope.");
             case UNUSABLE -> Status.UNAUTHENTICATED.withDescription("A bearer token is required.");
         };
     }
 
     /** Answers with the {@code google.rpc.Status} shape A2A §11.6 requires of an error. */
     private static void reject(RoutingContext ctx, int status, String reason, String message) {
-        JsonObject errorInfo = new JsonObject()
-                .put("@type", "type.googleapis.com/google.rpc.ErrorInfo")
-                .put("reason", reason)
-                .put("domain", "a2a-protocol.org");
-        JsonObject body = new JsonObject()
-                .put(
-                        "error",
-                        new JsonObject()
-                                .put("code", status)
-                                .put("status", reason)
-                                .put("message", message)
-                                .put("details", new JsonArray().add(errorInfo)));
+        JsonObject errorInfo =
+                new JsonObject()
+                        .put("@type", "type.googleapis.com/google.rpc.ErrorInfo")
+                        .put("reason", reason)
+                        .put("domain", "a2a-protocol.org");
+        JsonObject body =
+                new JsonObject()
+                        .put(
+                                "error",
+                                new JsonObject()
+                                        .put("code", status)
+                                        .put("status", reason)
+                                        .put("message", message)
+                                        .put("details", new JsonArray().add(errorInfo)));
 
         if (status == 401) {
-            ctx.response().putHeader("WWW-Authenticate", "Bearer realm=\"a2a\", scheme=\"" + SCHEME_ID + "\"");
+            ctx.response()
+                    .putHeader(
+                            "WWW-Authenticate",
+                            "Bearer realm=\"a2a\", scheme=\"" + SCHEME_ID + "\"");
         }
         ctx.response()
                 .setStatusCode(status)

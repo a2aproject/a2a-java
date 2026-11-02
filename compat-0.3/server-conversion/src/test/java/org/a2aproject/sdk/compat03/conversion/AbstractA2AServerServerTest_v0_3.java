@@ -9,6 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.specification.RequestSpecification;
+import jakarta.ws.rs.core.MediaType;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.URI;
@@ -27,15 +31,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import jakarta.ws.rs.core.MediaType;
-
-import io.restassured.RestAssured;
-import io.restassured.config.ObjectMapperConfig;
-import io.restassured.specification.RequestSpecification;
-import org.a2aproject.sdk.compat03.client.Client_v0_3;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
 import org.a2aproject.sdk.compat03.client.ClientEvent_v0_3;
+import org.a2aproject.sdk.compat03.client.Client_v0_3;
 import org.a2aproject.sdk.compat03.client.MessageEvent_v0_3;
 import org.a2aproject.sdk.compat03.client.TaskEvent_v0_3;
 import org.a2aproject.sdk.compat03.client.TaskUpdateEvent_v0_3;
@@ -60,23 +58,23 @@ import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCErrorResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingJSONRPCRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
@@ -101,35 +99,40 @@ import org.junit.jupiter.api.Timeout;
  */
 public abstract class AbstractA2AServerServerTest_v0_3 {
 
-    protected static final Task_v0_3 MINIMAL_TASK = new Task_v0_3.Builder()
-            .id("task-123")
-            .contextId("session-xyz")
-            .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-            .build();
+    protected static final Task_v0_3 MINIMAL_TASK =
+            new Task_v0_3.Builder()
+                    .id("task-123")
+                    .contextId("session-xyz")
+                    .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                    .build();
 
-    private static final Task_v0_3 CANCEL_TASK = new Task_v0_3.Builder()
-            .id("cancel-task-123")
-            .contextId("session-xyz")
-            .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-            .build();
+    private static final Task_v0_3 CANCEL_TASK =
+            new Task_v0_3.Builder()
+                    .id("cancel-task-123")
+                    .contextId("session-xyz")
+                    .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                    .build();
 
-    private static final Task_v0_3 CANCEL_TASK_NOT_SUPPORTED = new Task_v0_3.Builder()
-            .id("cancel-task-not-supported-123")
-            .contextId("session-xyz")
-            .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-            .build();
+    private static final Task_v0_3 CANCEL_TASK_NOT_SUPPORTED =
+            new Task_v0_3.Builder()
+                    .id("cancel-task-not-supported-123")
+                    .contextId("session-xyz")
+                    .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                    .build();
 
-    private static final Task_v0_3 SEND_MESSAGE_NOT_SUPPORTED = new Task_v0_3.Builder()
-            .id("task-not-supported-123")
-            .contextId("session-xyz")
-            .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-            .build();
+    private static final Task_v0_3 SEND_MESSAGE_NOT_SUPPORTED =
+            new Task_v0_3.Builder()
+                    .id("task-not-supported-123")
+                    .contextId("session-xyz")
+                    .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                    .build();
 
-    protected static final Message_v0_3 MESSAGE = new Message_v0_3.Builder()
-            .messageId("111")
-            .role(Message_v0_3.Role.AGENT)
-            .parts(new TextPart_v0_3("test message"))
-            .build();
+    protected static final Message_v0_3 MESSAGE =
+            new Message_v0_3.Builder()
+                    .messageId("111")
+                    .role(Message_v0_3.Role.AGENT)
+                    .parts(new TextPart_v0_3("test message"))
+                    .build();
 
     public static final String APPLICATION_JSON = "application/json";
 
@@ -139,8 +142,10 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
      */
     public static RequestSpecification given() {
         return RestAssured.given()
-                .config(RestAssured.config()
-                        .objectMapperConfig(new ObjectMapperConfig(V10GsonObjectMapper_v0_3.INSTANCE)));
+                .config(
+                        RestAssured.config()
+                                .objectMapperConfig(
+                                        new ObjectMapperConfig(V10GsonObjectMapper_v0_3.INSTANCE)));
     }
 
     /**
@@ -149,8 +154,10 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
      */
     public static RequestSpecification givenV03() {
         return RestAssured.given()
-                .config(RestAssured.config()
-                        .objectMapperConfig(new ObjectMapperConfig(GsonObjectMapper_v0_3.INSTANCE)));
+                .config(
+                        RestAssured.config()
+                                .objectMapperConfig(
+                                        new ObjectMapperConfig(GsonObjectMapper_v0_3.INSTANCE)));
     }
 
     protected final int serverPort;
@@ -268,24 +275,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
 
     @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
-        Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .build();
+        Message_v0_3 message = new Message_v0_3.Builder(MESSAGE).build();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Message_v0_3> receivedMessage = new AtomicReference<>();
         AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
-        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer = (event, agentCard) -> {
-            if (event instanceof MessageEvent_v0_3 messageEvent) {
-                if (latch.getCount() > 0) {
-                    receivedMessage.set(messageEvent.getMessage());
-                    latch.countDown();
-                } else {
-                    wasUnexpectedEvent.set(true);
-                }
-            } else {
-                wasUnexpectedEvent.set(true);
-            }
-        };
+        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer =
+                (event, agentCard) -> {
+                    if (event instanceof MessageEvent_v0_3 messageEvent) {
+                        if (latch.getCount() > 0) {
+                            receivedMessage.set(messageEvent.getMessage());
+                            latch.countDown();
+                        } else {
+                            wasUnexpectedEvent.set(true);
+                        }
+                    } else {
+                        wasUnexpectedEvent.set(true);
+                    }
+                };
 
         // testing the non-streaming send message
         getNonStreamingClient().sendMessage(message, List.of(consumer), null);
@@ -303,27 +310,34 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
 
     @Test
     public void testRequestScopedBeanAvailableOnAgentExecutorThread() throws Exception {
-        Message_v0_3 message = new Message_v0_3.Builder()
-                .messageId("request-scoped-test")
-                .role(Message_v0_3.Role.USER)
-                .parts(new TextPart_v0_3("request-scoped:test"))
-                .build();
+        Message_v0_3 message =
+                new Message_v0_3.Builder()
+                        .messageId("request-scoped-test")
+                        .role(Message_v0_3.Role.USER)
+                        .parts(new TextPart_v0_3("request-scoped:test"))
+                        .build();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Task_v0_3> receivedTask = new AtomicReference<>();
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
-        getNonStreamingClient().sendMessage(message, List.of((event, agentCard) -> {
-            if (event instanceof TaskEvent_v0_3 te) {
-                receivedTask.set(te.getTask());
-                if (te.getTask().status().state() == TaskState_v0_3.COMPLETED) {
-                    latch.countDown();
-                }
-            }
-        }), error -> {
-            errorRef.set(error);
-            latch.countDown();
-        });
+        getNonStreamingClient()
+                .sendMessage(
+                        message,
+                        List.of(
+                                (event, agentCard) -> {
+                                    if (event instanceof TaskEvent_v0_3 te) {
+                                        receivedTask.set(te.getTask());
+                                        if (te.getTask().status().state()
+                                                == TaskState_v0_3.COMPLETED) {
+                                            latch.countDown();
+                                        }
+                                    }
+                                }),
+                        error -> {
+                            errorRef.set(error);
+                            latch.countDown();
+                        });
 
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Request should complete within timeout");
         assertNull(errorRef.get(), "Should not have received an error");
@@ -343,26 +357,28 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testSendMessageExistingTaskSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-            Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                    .taskId(MINIMAL_TASK.id())
-                    .contextId(MINIMAL_TASK.contextId())
-                    .build();
+            Message_v0_3 message =
+                    new Message_v0_3.Builder(MESSAGE)
+                            .taskId(MINIMAL_TASK.id())
+                            .contextId(MINIMAL_TASK.contextId())
+                            .build();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<Message_v0_3> receivedMessage = new AtomicReference<>();
             AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer = (event, agentCard) -> {
-                if (event instanceof MessageEvent_v0_3 messageEvent) {
-                    if (latch.getCount() > 0) {
-                        receivedMessage.set(messageEvent.getMessage());
-                        latch.countDown();
-                    } else {
-                        wasUnexpectedEvent.set(true);
-                    }
-                } else {
-                    wasUnexpectedEvent.set(true);
-                }
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer =
+                    (event, agentCard) -> {
+                        if (event instanceof MessageEvent_v0_3 messageEvent) {
+                            if (latch.getCount() > 0) {
+                                receivedMessage.set(messageEvent.getMessage());
+                                latch.countDown();
+                            } else {
+                                wasUnexpectedEvent.set(true);
+                            }
+                        } else {
+                            wasUnexpectedEvent.set(true);
+                        }
+                    };
 
             // testing the non-streaming send message
             getNonStreamingClient().sendMessage(message, List.of(consumer), null);
@@ -388,8 +404,12 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         try {
             TaskPushNotificationConfig_v0_3 taskPushConfig =
                     new TaskPushNotificationConfig_v0_3(
-                            MINIMAL_TASK.id(), new PushNotificationConfig_v0_3.Builder().url("http://example.com").build());
-            TaskPushNotificationConfig_v0_3 config = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
+                            MINIMAL_TASK.id(),
+                            new PushNotificationConfig_v0_3.Builder()
+                                    .url("http://example.com")
+                                    .build());
+            TaskPushNotificationConfig_v0_3 config =
+                    getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.id(), config.taskId());
             assertEquals("http://example.com", config.pushNotificationConfig().url());
         } catch (A2AClientException_v0_3 e) {
@@ -406,13 +426,20 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         try {
             TaskPushNotificationConfig_v0_3 taskPushConfig =
                     new TaskPushNotificationConfig_v0_3(
-                            MINIMAL_TASK.id(), new PushNotificationConfig_v0_3.Builder().url("http://example.com").build());
+                            MINIMAL_TASK.id(),
+                            new PushNotificationConfig_v0_3.Builder()
+                                    .url("http://example.com")
+                                    .build());
 
-            TaskPushNotificationConfig_v0_3 setResult = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
+            TaskPushNotificationConfig_v0_3 setResult =
+                    getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertNotNull(setResult);
 
-            TaskPushNotificationConfig_v0_3 config = getClient().getTaskPushNotificationConfiguration(
-                    new GetTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
+            TaskPushNotificationConfig_v0_3 config =
+                    getClient()
+                            .getTaskPushNotificationConfiguration(
+                                    new GetTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()));
             assertEquals(MINIMAL_TASK.id(), config.taskId());
             assertEquals("http://example.com", config.pushNotificationConfig().url());
         } catch (A2AClientException_v0_3 e) {
@@ -427,10 +454,11 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testError() throws Exception {
         saveTaskInTaskStore(SEND_MESSAGE_NOT_SUPPORTED);
         try {
-            Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                    .taskId(SEND_MESSAGE_NOT_SUPPORTED.id())
-                    .contextId(SEND_MESSAGE_NOT_SUPPORTED.contextId())
-                    .build();
+            Message_v0_3 message =
+                    new Message_v0_3.Builder(MESSAGE)
+                            .taskId(SEND_MESSAGE_NOT_SUPPORTED.id())
+                            .contextId(SEND_MESSAGE_NOT_SUPPORTED.contextId())
+                            .build();
 
             try {
                 getNonStreamingClient().sendMessage(message);
@@ -477,48 +505,58 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testResubscribeExistingTaskSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-            // attempting to send a streaming message instead of explicitly calling queueManager#createOrTap
-            // does not work because after the message is sent, the queue becomes null but task resubscription
+            // attempting to send a streaming message instead of explicitly calling
+            // queueManager#createOrTap
+            // does not work because after the message is sent, the queue becomes null but task
+            // resubscription
             // requires the queue to still be active
             ensureQueueForTask(MINIMAL_TASK.id());
 
             CountDownLatch eventLatch = new CountDownLatch(2);
-            AtomicReference<TaskArtifactUpdateEvent_v0_3> artifactUpdateEvent = new AtomicReference<>();
+            AtomicReference<TaskArtifactUpdateEvent_v0_3> artifactUpdateEvent =
+                    new AtomicReference<>();
             AtomicReference<TaskStatusUpdateEvent_v0_3> statusUpdateEvent = new AtomicReference<>();
             AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> errorRef = new AtomicReference<>();
             AtomicBoolean receivedInitialSnapshot = new AtomicBoolean(false);
 
             // Create consumer to handle resubscribed events
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer = (event, agentCard) -> {
-                if (event instanceof TaskUpdateEvent_v0_3 taskUpdateEvent) {
-                    if (taskUpdateEvent.getUpdateEvent() instanceof TaskArtifactUpdateEvent_v0_3 artifactEvent) {
-                        artifactUpdateEvent.set(artifactEvent);
-                        eventLatch.countDown();
-                    } else if (taskUpdateEvent.getUpdateEvent() instanceof TaskStatusUpdateEvent_v0_3 statusEvent) {
-                        statusUpdateEvent.set(statusEvent);
-                        eventLatch.countDown();
-                    } else {
-                        wasUnexpectedEvent.set(true);
-                    }
-                } else if (event instanceof TaskEvent_v0_3) {
-                    // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
-                    // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
-                    if (!receivedInitialSnapshot.compareAndSet(false, true)) {
-                        wasUnexpectedEvent.set(true);  // TaskEvent received after first event
-                    }
-                } else {
-                    wasUnexpectedEvent.set(true);
-                }
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer =
+                    (event, agentCard) -> {
+                        if (event instanceof TaskUpdateEvent_v0_3 taskUpdateEvent) {
+                            if (taskUpdateEvent.getUpdateEvent()
+                                    instanceof TaskArtifactUpdateEvent_v0_3 artifactEvent) {
+                                artifactUpdateEvent.set(artifactEvent);
+                                eventLatch.countDown();
+                            } else if (taskUpdateEvent.getUpdateEvent()
+                                    instanceof TaskStatusUpdateEvent_v0_3 statusEvent) {
+                                statusUpdateEvent.set(statusEvent);
+                                eventLatch.countDown();
+                            } else {
+                                wasUnexpectedEvent.set(true);
+                            }
+                        } else if (event instanceof TaskEvent_v0_3) {
+                            // v0.3 spec confirms task snapshot as first event on resubscribe is
+                            // valid behavior
+                            // See:
+                            // https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
+                            if (!receivedInitialSnapshot.compareAndSet(false, true)) {
+                                wasUnexpectedEvent.set(
+                                        true); // TaskEvent received after first event
+                            }
+                        } else {
+                            wasUnexpectedEvent.set(true);
+                        }
+                    };
 
             // Create error handler
-            Consumer<Throwable> errorHandler = error -> {
-                if (!isStreamClosedError(error)) {
-                    errorRef.set(error);
-                }
-                eventLatch.countDown();
-            };
+            Consumer<Throwable> errorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            errorRef.set(error);
+                        }
+                        eventLatch.countDown();
+                    };
 
             // Count down when the streaming subscription is established
             CountDownLatch subscriptionLatch = new CountDownLatch(1);
@@ -526,27 +564,33 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
                     .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
 
             // Resubscribe to the task with specific consumer and error handler
-            getClient().resubscribe(new TaskIdParams_v0_3(MINIMAL_TASK.id()), List.of(consumer), errorHandler);
+            getClient()
+                    .resubscribe(
+                            new TaskIdParams_v0_3(MINIMAL_TASK.id()),
+                            List.of(consumer),
+                            errorHandler);
 
             // Wait for subscription to be established
             assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
 
             // Enqueue events on the server
-            List<Event_v0_3> events = List.of(
-                    new TaskArtifactUpdateEvent_v0_3.Builder()
-                            .taskId(MINIMAL_TASK.id())
-                            .contextId(MINIMAL_TASK.contextId())
-                            .artifact(new Artifact_v0_3.Builder()
-                                    .artifactId("11")
-                                    .parts(new TextPart_v0_3("text"))
-                                    .build())
-                            .build(),
-                    new TaskStatusUpdateEvent_v0_3.Builder()
-                            .taskId(MINIMAL_TASK.id())
-                            .contextId(MINIMAL_TASK.contextId())
-                            .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                            .isFinal(true)
-                            .build());
+            List<Event_v0_3> events =
+                    List.of(
+                            new TaskArtifactUpdateEvent_v0_3.Builder()
+                                    .taskId(MINIMAL_TASK.id())
+                                    .contextId(MINIMAL_TASK.contextId())
+                                    .artifact(
+                                            new Artifact_v0_3.Builder()
+                                                    .artifactId("11")
+                                                    .parts(new TextPart_v0_3("text"))
+                                                    .build())
+                                    .build(),
+                            new TaskStatusUpdateEvent_v0_3.Builder()
+                                    .taskId(MINIMAL_TASK.id())
+                                    .contextId(MINIMAL_TASK.contextId())
+                                    .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                                    .isFinal(true)
+                                    .build());
 
             for (Event_v0_3 event : events) {
                 enqueueEventOnServer(event);
@@ -584,19 +628,22 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
         // Create error handler to capture the TaskNotFoundError
-        Consumer<Throwable> errorHandler = error -> {
-            if (error == null) {
-                // Stream completed successfully - ignore, we're waiting for an error
-                return;
-            }
-            if (!isStreamClosedError(error)) {
-                errorRef.set(error);
-            }
-            errorLatch.countDown();
-        };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    if (error == null) {
+                        // Stream completed successfully - ignore, we're waiting for an error
+                        return;
+                    }
+                    if (!isStreamClosedError(error)) {
+                        errorRef.set(error);
+                    }
+                    errorLatch.countDown();
+                };
 
         try {
-            getClient().resubscribe(new TaskIdParams_v0_3("non-existent-task"), List.of(), errorHandler);
+            getClient()
+                    .resubscribe(
+                            new TaskIdParams_v0_3("non-existent-task"), List.of(), errorHandler);
 
             // Wait for error to be captured (may come via error handler for streaming)
             boolean errorReceived = errorLatch.await(10, TimeUnit.SECONDS);
@@ -606,7 +653,9 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
                 Throwable error = errorRef.get();
                 assertNotNull(error);
                 if (error instanceof A2AClientException_v0_3) {
-                    assertInstanceOf(TaskNotFoundError_v0_3.class, ((A2AClientException_v0_3) error).getCause());
+                    assertInstanceOf(
+                            TaskNotFoundError_v0_3.class,
+                            ((A2AClientException_v0_3) error).getCause());
                 } else {
                     // Check if it's directly a TaskNotFoundError or walk the cause chain
                     Throwable cause = error;
@@ -649,57 +698,73 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
 
             // 2. First consumer subscribes and receives initial event
             CountDownLatch firstConsumerLatch = new CountDownLatch(1);
-            AtomicReference<TaskArtifactUpdateEvent_v0_3> firstConsumerEvent = new AtomicReference<>();
+            AtomicReference<TaskArtifactUpdateEvent_v0_3> firstConsumerEvent =
+                    new AtomicReference<>();
             AtomicBoolean firstUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> firstErrorRef = new AtomicReference<>();
             AtomicBoolean firstReceivedInitialSnapshot = new AtomicBoolean(false);
 
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> firstConsumer = (event, agentCard) -> {
-                if (event instanceof TaskUpdateEvent_v0_3 tue && tue.getUpdateEvent() instanceof TaskArtifactUpdateEvent_v0_3 artifact) {
-                    firstConsumerEvent.set(artifact);
-                    firstConsumerLatch.countDown();
-                } else if (event instanceof TaskEvent_v0_3) {
-                    // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
-                    // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
-                    if (!firstReceivedInitialSnapshot.compareAndSet(false, true)) {
-                        firstUnexpectedEvent.set(true);  // TaskEvent received after first event
-                    }
-                } else if (!(event instanceof TaskUpdateEvent_v0_3)) {
-                    firstUnexpectedEvent.set(true);
-                }
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> firstConsumer =
+                    (event, agentCard) -> {
+                        if (event instanceof TaskUpdateEvent_v0_3 tue
+                                && tue.getUpdateEvent()
+                                        instanceof TaskArtifactUpdateEvent_v0_3 artifact) {
+                            firstConsumerEvent.set(artifact);
+                            firstConsumerLatch.countDown();
+                        } else if (event instanceof TaskEvent_v0_3) {
+                            // v0.3 spec confirms task snapshot as first event on resubscribe is
+                            // valid behavior
+                            // See:
+                            // https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
+                            if (!firstReceivedInitialSnapshot.compareAndSet(false, true)) {
+                                firstUnexpectedEvent.set(
+                                        true); // TaskEvent received after first event
+                            }
+                        } else if (!(event instanceof TaskUpdateEvent_v0_3)) {
+                            firstUnexpectedEvent.set(true);
+                        }
+                    };
 
-            Consumer<Throwable> firstErrorHandler = error -> {
-                if (!isStreamClosedError(error)) {
-                    firstErrorRef.set(error);
-                }
-                firstConsumerLatch.countDown();
-            };
+            Consumer<Throwable> firstErrorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            firstErrorRef.set(error);
+                        }
+                        firstConsumerLatch.countDown();
+                    };
 
             // Wait for first subscription to be established
             CountDownLatch firstSubscriptionLatch = new CountDownLatch(1);
             awaitStreamingSubscription()
                     .whenComplete((unused, throwable) -> firstSubscriptionLatch.countDown());
 
-            getClient().resubscribe(new TaskIdParams_v0_3(MINIMAL_TASK.id()),
-                    List.of(firstConsumer),
-                    firstErrorHandler);
+            getClient()
+                    .resubscribe(
+                            new TaskIdParams_v0_3(MINIMAL_TASK.id()),
+                            List.of(firstConsumer),
+                            firstErrorHandler);
 
-            assertTrue(firstSubscriptionLatch.await(15, TimeUnit.SECONDS), "First subscription should be established");
+            assertTrue(
+                    firstSubscriptionLatch.await(15, TimeUnit.SECONDS),
+                    "First subscription should be established");
 
             // Enqueue first event
-            TaskArtifactUpdateEvent_v0_3 event1 = new TaskArtifactUpdateEvent_v0_3.Builder()
-                    .taskId(MINIMAL_TASK.id())
-                    .contextId(MINIMAL_TASK.contextId())
-                    .artifact(new Artifact_v0_3.Builder()
-                            .artifactId("artifact-1")
-                            .parts(new TextPart_v0_3("First artifact"))
-                            .build())
-                    .build();
+            TaskArtifactUpdateEvent_v0_3 event1 =
+                    new TaskArtifactUpdateEvent_v0_3.Builder()
+                            .taskId(MINIMAL_TASK.id())
+                            .contextId(MINIMAL_TASK.contextId())
+                            .artifact(
+                                    new Artifact_v0_3.Builder()
+                                            .artifactId("artifact-1")
+                                            .parts(new TextPart_v0_3("First artifact"))
+                                            .build())
+                            .build();
             enqueueEventOnServer(event1);
 
             // Wait for first consumer to receive event
-            assertTrue(firstConsumerLatch.await(15, TimeUnit.SECONDS), "First consumer should receive event");
+            assertTrue(
+                    firstConsumerLatch.await(15, TimeUnit.SECONDS),
+                    "First consumer should receive event");
             assertFalse(firstUnexpectedEvent.get());
             assertNull(firstErrorRef.get());
             assertNotNull(firstConsumerEvent.get());
@@ -713,32 +778,40 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             // while other consumers are still active. Without reference counting, the MainQueue
             // might close when the ensureQueue ChildQueue closes, preventing this resubscription.
             CountDownLatch secondConsumerLatch = new CountDownLatch(1);
-            AtomicReference<TaskArtifactUpdateEvent_v0_3> secondConsumerEvent = new AtomicReference<>();
+            AtomicReference<TaskArtifactUpdateEvent_v0_3> secondConsumerEvent =
+                    new AtomicReference<>();
             AtomicBoolean secondUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> secondErrorRef = new AtomicReference<>();
             AtomicBoolean secondReceivedInitialSnapshot = new AtomicBoolean(false);
 
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> secondConsumer = (event, agentCard) -> {
-                if (event instanceof TaskUpdateEvent_v0_3 tue && tue.getUpdateEvent() instanceof TaskArtifactUpdateEvent_v0_3 artifact) {
-                    secondConsumerEvent.set(artifact);
-                    secondConsumerLatch.countDown();
-                } else if (event instanceof TaskEvent_v0_3) {
-                    // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
-                    // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
-                    if (!secondReceivedInitialSnapshot.compareAndSet(false, true)) {
-                        secondUnexpectedEvent.set(true);  // TaskEvent received after first event
-                    }
-                } else if (!(event instanceof TaskUpdateEvent_v0_3)) {
-                    secondUnexpectedEvent.set(true);
-                }
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> secondConsumer =
+                    (event, agentCard) -> {
+                        if (event instanceof TaskUpdateEvent_v0_3 tue
+                                && tue.getUpdateEvent()
+                                        instanceof TaskArtifactUpdateEvent_v0_3 artifact) {
+                            secondConsumerEvent.set(artifact);
+                            secondConsumerLatch.countDown();
+                        } else if (event instanceof TaskEvent_v0_3) {
+                            // v0.3 spec confirms task snapshot as first event on resubscribe is
+                            // valid behavior
+                            // See:
+                            // https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
+                            if (!secondReceivedInitialSnapshot.compareAndSet(false, true)) {
+                                secondUnexpectedEvent.set(
+                                        true); // TaskEvent received after first event
+                            }
+                        } else if (!(event instanceof TaskUpdateEvent_v0_3)) {
+                            secondUnexpectedEvent.set(true);
+                        }
+                    };
 
-            Consumer<Throwable> secondErrorHandler = error -> {
-                if (!isStreamClosedError(error)) {
-                    secondErrorRef.set(error);
-                }
-                secondConsumerLatch.countDown();
-            };
+            Consumer<Throwable> secondErrorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            secondErrorRef.set(error);
+                        }
+                        secondConsumerLatch.countDown();
+                    };
 
             // Wait for second subscription to be established
             CountDownLatch secondSubscriptionLatch = new CountDownLatch(1);
@@ -747,38 +820,51 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
 
             // This should succeed with reference counting because MainQueue stays alive
             // while first consumer's ChildQueue exists
-            getClient().resubscribe(new TaskIdParams_v0_3(MINIMAL_TASK.id()),
-                    List.of(secondConsumer),
-                    secondErrorHandler);
+            getClient()
+                    .resubscribe(
+                            new TaskIdParams_v0_3(MINIMAL_TASK.id()),
+                            List.of(secondConsumer),
+                            secondErrorHandler);
 
-            assertTrue(secondSubscriptionLatch.await(15, TimeUnit.SECONDS), "Second subscription should be established");
+            assertTrue(
+                    secondSubscriptionLatch.await(15, TimeUnit.SECONDS),
+                    "Second subscription should be established");
 
             // Verify child queue count increased (now ensureQueue + first + second)
             int childCountAfterSecond = getChildQueueCount(MINIMAL_TASK.id());
-            assertTrue(childCountAfterSecond > childCountBeforeSecond,
+            assertTrue(
+                    childCountAfterSecond > childCountBeforeSecond,
                     "Child queue count should increase after second resubscription");
 
             // 4. Enqueue second event - both consumers should receive it
-            TaskArtifactUpdateEvent_v0_3 event2 = new TaskArtifactUpdateEvent_v0_3.Builder()
-                    .taskId(MINIMAL_TASK.id())
-                    .contextId(MINIMAL_TASK.contextId())
-                    .artifact(new Artifact_v0_3.Builder()
-                            .artifactId("artifact-2")
-                            .parts(new TextPart_v0_3("Second artifact"))
-                            .build())
-                    .build();
+            TaskArtifactUpdateEvent_v0_3 event2 =
+                    new TaskArtifactUpdateEvent_v0_3.Builder()
+                            .taskId(MINIMAL_TASK.id())
+                            .contextId(MINIMAL_TASK.contextId())
+                            .artifact(
+                                    new Artifact_v0_3.Builder()
+                                            .artifactId("artifact-2")
+                                            .parts(new TextPart_v0_3("Second artifact"))
+                                            .build())
+                            .build();
             enqueueEventOnServer(event2);
 
             // Both consumers should receive the event
-            assertTrue(secondConsumerLatch.await(15, TimeUnit.SECONDS), "Second consumer should receive event");
+            assertTrue(
+                    secondConsumerLatch.await(15, TimeUnit.SECONDS),
+                    "Second consumer should receive event");
             assertFalse(secondUnexpectedEvent.get());
-            assertNull(secondErrorRef.get(),
-                    "Resubscription should succeed with reference counting (MainQueue stays alive)");
+            assertNull(
+                    secondErrorRef.get(),
+                    "Resubscription should succeed with reference counting (MainQueue stays"
+                            + " alive)");
 
             TaskArtifactUpdateEvent_v0_3 receivedEvent = secondConsumerEvent.get();
             assertNotNull(receivedEvent);
             assertEquals("artifact-2", receivedEvent.artifact().artifactId());
-            assertEquals("Second artifact", ((TextPart_v0_3) receivedEvent.artifact().parts().get(0)).text());
+            assertEquals(
+                    "Second artifact",
+                    ((TextPart_v0_3) receivedEvent.artifact().parts().get(0)).text());
 
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.id());
@@ -827,11 +913,18 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig2);
 
         try {
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()));
             assertEquals(2, result.size());
-            assertEquals(new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.id(), notificationConfig1), result.get(0));
-            assertEquals(new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.id(), notificationConfig2), result.get(1));
+            assertEquals(
+                    new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.id(), notificationConfig1),
+                    result.get(0));
+            assertEquals(
+                    new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.id(), notificationConfig2),
+                    result.get(1));
         } catch (Exception e) {
             fail();
         } finally {
@@ -845,27 +938,29 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testListPushNotificationConfigWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig_v0_3 notificationConfig1 =
-                new PushNotificationConfig_v0_3.Builder()
-                        .url("http://1.example.com")
-                        .build();
+                new PushNotificationConfig_v0_3.Builder().url("http://1.example.com").build();
         PushNotificationConfig_v0_3 notificationConfig2 =
-                new PushNotificationConfig_v0_3.Builder()
-                        .url("http://2.example.com")
-                        .build();
+                new PushNotificationConfig_v0_3.Builder().url("http://2.example.com").build();
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig1);
 
         // will overwrite the previous one
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig2);
         try {
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()));
             assertEquals(1, result.size());
 
-            PushNotificationConfig_v0_3 expectedNotificationConfig = new PushNotificationConfig_v0_3.Builder()
-                    .url("http://2.example.com")
-                    .id(MINIMAL_TASK.id())
-                    .build();
-            assertEquals(new TaskPushNotificationConfig_v0_3(MINIMAL_TASK.id(), expectedNotificationConfig),
+            PushNotificationConfig_v0_3 expectedNotificationConfig =
+                    new PushNotificationConfig_v0_3.Builder()
+                            .url("http://2.example.com")
+                            .id(MINIMAL_TASK.id())
+                            .build();
+            assertEquals(
+                    new TaskPushNotificationConfig_v0_3(
+                            MINIMAL_TASK.id(), expectedNotificationConfig),
                     result.get(0));
         } catch (Exception e) {
             fail();
@@ -878,8 +973,11 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testListPushNotificationConfigTaskNotFound() {
         try {
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3("non-existent-task"));
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            "non-existent-task"));
             fail();
         } catch (A2AClientException_v0_3 e) {
             assertInstanceOf(TaskNotFoundError_v0_3.class, e.getCause());
@@ -890,8 +988,11 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testListPushNotificationConfigEmptyList() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()));
             assertEquals(0, result.size());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -903,11 +1004,12 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testDeletePushNotificationConfigWithValidConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
-        saveTaskInTaskStore(new Task_v0_3.Builder()
-                .id("task-456")
-                .contextId("session-xyz")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-                .build());
+        saveTaskInTaskStore(
+                new Task_v0_3.Builder()
+                        .id("task-456")
+                        .contextId("session-xyz")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                        .build());
 
         PushNotificationConfig_v0_3 notificationConfig1 =
                 new PushNotificationConfig_v0_3.Builder()
@@ -925,17 +1027,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
 
         try {
             // specify the config ID to delete
-            getClient().deleteTaskPushNotificationConfigurations(
-                    new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id(), "config1"));
+            getClient()
+                    .deleteTaskPushNotificationConfigurations(
+                            new DeleteTaskPushNotificationConfigParams_v0_3(
+                                    MINIMAL_TASK.id(), "config1"));
 
             // should now be 1 left
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()));
             assertEquals(1, result.size());
 
             // should remain unchanged, this is a different task
-            result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3("task-456"));
+            result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3("task-456"));
             assertEquals(1, result.size());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -965,12 +1074,17 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig2);
 
         try {
-            getClient().deleteTaskPushNotificationConfigurations(
-                    new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id(), "non-existent-config-id"));
+            getClient()
+                    .deleteTaskPushNotificationConfigurations(
+                            new DeleteTaskPushNotificationConfigParams_v0_3(
+                                    MINIMAL_TASK.id(), "non-existent-config-id"));
 
             // should remain unchanged
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()));
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()));
             assertEquals(2, result.size());
         } catch (Exception e) {
             fail();
@@ -984,9 +1098,10 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testDeletePushNotificationConfigTaskNotFound() {
         try {
-            getClient().deleteTaskPushNotificationConfigurations(
-                    new DeleteTaskPushNotificationConfigParams_v0_3("non-existent-task",
-                            "non-existent-config-id"));
+            getClient()
+                    .deleteTaskPushNotificationConfigurations(
+                            new DeleteTaskPushNotificationConfigParams_v0_3(
+                                    "non-existent-task", "non-existent-config-id"));
             fail();
         } catch (A2AClientException_v0_3 e) {
             assertInstanceOf(TaskNotFoundError_v0_3.class, e.getCause());
@@ -997,25 +1112,27 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testDeletePushNotificationConfigSetWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig_v0_3 notificationConfig1 =
-                new PushNotificationConfig_v0_3.Builder()
-                        .url("http://1.example.com")
-                        .build();
+                new PushNotificationConfig_v0_3.Builder().url("http://1.example.com").build();
         PushNotificationConfig_v0_3 notificationConfig2 =
-                new PushNotificationConfig_v0_3.Builder()
-                        .url("http://2.example.com")
-                        .build();
+                new PushNotificationConfig_v0_3.Builder().url("http://2.example.com").build();
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig1);
 
         // this one will overwrite the previous one
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig2);
 
         try {
-            getClient().deleteTaskPushNotificationConfigurations(
-                    new DeleteTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
+            getClient()
+                    .deleteTaskPushNotificationConfigurations(
+                            new DeleteTaskPushNotificationConfigParams_v0_3(
+                                    MINIMAL_TASK.id(), MINIMAL_TASK.id()));
 
             // should now be 0
-            List<TaskPushNotificationConfig_v0_3> result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams_v0_3(MINIMAL_TASK.id()), null);
+            List<TaskPushNotificationConfig_v0_3> result =
+                    getClient()
+                            .listTaskPushNotificationConfigurations(
+                                    new ListTaskPushNotificationConfigParams_v0_3(
+                                            MINIMAL_TASK.id()),
+                                    null);
             assertEquals(0, result.size());
         } catch (Exception e) {
             fail();
@@ -1030,162 +1147,194 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     public void testNonBlockingWithMultipleMessages() throws Exception {
         AtomicReference<String> generatedTaskIdRef = new AtomicReference<>();
         try {
-        // 1. Send first non-blocking message without taskId - server generates one
-        // Routing is by message content prefix "multi-event:first"
-        Message_v0_3 message1 = new Message_v0_3.Builder(MESSAGE)
-                .parts(new TextPart_v0_3("multi-event:first"))
-                .build();
+            // 1. Send first non-blocking message without taskId - server generates one
+            // Routing is by message content prefix "multi-event:first"
+            Message_v0_3 message1 =
+                    new Message_v0_3.Builder(MESSAGE)
+                            .parts(new TextPart_v0_3("multi-event:first"))
+                            .build();
 
-        AtomicReference<String> taskIdRef = new AtomicReference<>();
-        CountDownLatch firstTaskLatch = new CountDownLatch(1);
+            AtomicReference<String> taskIdRef = new AtomicReference<>();
+            CountDownLatch firstTaskLatch = new CountDownLatch(1);
 
-        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> firstMessageConsumer = (event, agentCard) -> {
-            if (event instanceof TaskEvent_v0_3 te) {
-                taskIdRef.set(te.getTask().id());
-                firstTaskLatch.countDown();
-            } else if (event instanceof TaskUpdateEvent_v0_3 tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent_v0_3 status) {
-                taskIdRef.set(status.taskId());
-                firstTaskLatch.countDown();
-            }
-        };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> firstMessageConsumer =
+                    (event, agentCard) -> {
+                        if (event instanceof TaskEvent_v0_3 te) {
+                            taskIdRef.set(te.getTask().id());
+                            firstTaskLatch.countDown();
+                        } else if (event instanceof TaskUpdateEvent_v0_3 tue
+                                && tue.getUpdateEvent()
+                                        instanceof TaskStatusUpdateEvent_v0_3 status) {
+                            taskIdRef.set(status.taskId());
+                            firstTaskLatch.countDown();
+                        }
+                    };
 
-        // Non-blocking message creates task in WORKING state and returns immediately
-        // Queue stays open because task is not in final state
-        getPollingClient().sendMessage(message1, List.of(firstMessageConsumer), null);
+            // Non-blocking message creates task in WORKING state and returns immediately
+            // Queue stays open because task is not in final state
+            getPollingClient().sendMessage(message1, List.of(firstMessageConsumer), null);
 
-        assertTrue(firstTaskLatch.await(10, TimeUnit.SECONDS));
-        String taskId = taskIdRef.get();
-        assertNotNull(taskId);
-        generatedTaskIdRef.set(taskId);
+            assertTrue(firstTaskLatch.await(10, TimeUnit.SECONDS));
+            String taskId = taskIdRef.get();
+            assertNotNull(taskId);
+            generatedTaskIdRef.set(taskId);
 
-        // 2. Resubscribe to task (queue should still be open)
-        CountDownLatch resubEventLatch = new CountDownLatch(2);  // artifact-2 + completion
-        List<UpdateEvent_v0_3> resubReceivedEvents = new CopyOnWriteArrayList<>();
-        AtomicBoolean resubUnexpectedEvent = new AtomicBoolean(false);
-        AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
-        AtomicBoolean resubReceivedInitialSnapshot = new AtomicBoolean(false);
+            // 2. Resubscribe to task (queue should still be open)
+            CountDownLatch resubEventLatch = new CountDownLatch(2); // artifact-2 + completion
+            List<UpdateEvent_v0_3> resubReceivedEvents = new CopyOnWriteArrayList<>();
+            AtomicBoolean resubUnexpectedEvent = new AtomicBoolean(false);
+            AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
+            AtomicBoolean resubReceivedInitialSnapshot = new AtomicBoolean(false);
 
-        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> resubConsumer = (event, agentCard) -> {
-            if (event instanceof TaskUpdateEvent_v0_3 tue) {
-                resubReceivedEvents.add(tue.getUpdateEvent());
-                resubEventLatch.countDown();
-            } else if (event instanceof TaskEvent_v0_3) {
-                // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
-                // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
-                if (!resubReceivedInitialSnapshot.compareAndSet(false, true)) {
-                    System.err.println("testNonBlockingWithMultipleMessages: TaskEvent received after first event");
-                    resubUnexpectedEvent.set(true);  // TaskEvent received after first event
-                }
-            } else {
-                System.err.println("testNonBlockingWithMultipleMessages: Unexpected event type in resubConsumer: " + event.getClass().getName());
-                resubUnexpectedEvent.set(true);
-            }
-        };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> resubConsumer =
+                    (event, agentCard) -> {
+                        if (event instanceof TaskUpdateEvent_v0_3 tue) {
+                            resubReceivedEvents.add(tue.getUpdateEvent());
+                            resubEventLatch.countDown();
+                        } else if (event instanceof TaskEvent_v0_3) {
+                            // v0.3 spec confirms task snapshot as first event on resubscribe is
+                            // valid behavior
+                            // See:
+                            // https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
+                            if (!resubReceivedInitialSnapshot.compareAndSet(false, true)) {
+                                System.err.println(
+                                        "testNonBlockingWithMultipleMessages: TaskEvent received"
+                                                + " after first event");
+                                resubUnexpectedEvent.set(
+                                        true); // TaskEvent received after first event
+                            }
+                        } else {
+                            System.err.println(
+                                    "testNonBlockingWithMultipleMessages: Unexpected event type in"
+                                            + " resubConsumer: "
+                                            + event.getClass().getName());
+                            resubUnexpectedEvent.set(true);
+                        }
+                    };
 
-        Consumer<Throwable> resubErrorHandler = error -> {
-            if (!isStreamClosedError(error)) {
-                resubErrorRef.set(error);
-            }
-        };
+            Consumer<Throwable> resubErrorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            resubErrorRef.set(error);
+                        }
+                    };
 
-        // Wait for subscription to be active
-        CountDownLatch subscriptionLatch = new CountDownLatch(1);
-        awaitStreamingSubscription()
-                .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+            // Wait for subscription to be active
+            CountDownLatch subscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                    .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
 
-        getClient().resubscribe(new TaskIdParams_v0_3(taskId),
-                List.of(resubConsumer),
-                resubErrorHandler);
+            getClient()
+                    .resubscribe(
+                            new TaskIdParams_v0_3(taskId),
+                            List.of(resubConsumer),
+                            resubErrorHandler);
 
-        assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
+            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
 
-        // 3. Send second streaming message to same taskId
-        Message_v0_3 message2 = new Message_v0_3.Builder(MESSAGE)
-                .taskId(taskId)
-                .parts(new TextPart_v0_3("multi-event:second"))
-                .build();
+            // 3. Send second streaming message to same taskId
+            Message_v0_3 message2 =
+                    new Message_v0_3.Builder(MESSAGE)
+                            .taskId(taskId)
+                            .parts(new TextPart_v0_3("multi-event:second"))
+                            .build();
 
-        CountDownLatch streamEventLatch = new CountDownLatch(2);  // artifact-2 + completion
-        List<UpdateEvent_v0_3> streamReceivedEvents = new CopyOnWriteArrayList<>();
-        AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
+            CountDownLatch streamEventLatch = new CountDownLatch(2); // artifact-2 + completion
+            List<UpdateEvent_v0_3> streamReceivedEvents = new CopyOnWriteArrayList<>();
+            AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
 
-        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> streamConsumer = (event, agentCard) -> {
-            if (event instanceof TaskUpdateEvent_v0_3 tue) {
-                streamReceivedEvents.add(tue.getUpdateEvent());
-                streamEventLatch.countDown();
-            } else {
-                streamUnexpectedEvent.set(true);
-            }
-        };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> streamConsumer =
+                    (event, agentCard) -> {
+                        if (event instanceof TaskUpdateEvent_v0_3 tue) {
+                            streamReceivedEvents.add(tue.getUpdateEvent());
+                            streamEventLatch.countDown();
+                        } else {
+                            streamUnexpectedEvent.set(true);
+                        }
+                    };
 
-        // Wait for the server to register the new SSE subscription before the agent emits events.
-        // Without this guard there is a race: the server can finish processing message2 and emit
-        // events to the task queue before the streaming subscriber from sendMessage is registered,
-        // causing those events to be silently dropped (sendMessage streaming starts from the
-        // current queue position, unlike resubscribe which replays from an earlier point).
-        CountDownLatch streamSubscriptionLatch = new CountDownLatch(1);
-        awaitStreamingSubscription()
-                .whenComplete((unused, throwable) -> streamSubscriptionLatch.countDown());
+            // Wait for the server to register the new SSE subscription before the agent emits
+            // events.
+            // Without this guard there is a race: the server can finish processing message2 and
+            // emit
+            // events to the task queue before the streaming subscriber from sendMessage is
+            // registered,
+            // causing those events to be silently dropped (sendMessage streaming starts from the
+            // current queue position, unlike resubscribe which replays from an earlier point).
+            CountDownLatch streamSubscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                    .whenComplete((unused, throwable) -> streamSubscriptionLatch.countDown());
 
-        // Streaming message adds artifact-2 and completes task
-        getClient().sendMessage(message2, List.of(streamConsumer), null);
+            // Streaming message adds artifact-2 and completes task
+            getClient().sendMessage(message2, List.of(streamConsumer), null);
 
-        assertTrue(streamSubscriptionLatch.await(15, TimeUnit.SECONDS),
-                "Stream subscription should be established before agent emits events");
+            assertTrue(
+                    streamSubscriptionLatch.await(15, TimeUnit.SECONDS),
+                    "Stream subscription should be established before agent emits events");
 
-        // 4. Verify both consumers received artifact-2 and completion
-        assertTrue(resubEventLatch.await(10, TimeUnit.SECONDS));
-        assertTrue(streamEventLatch.await(10, TimeUnit.SECONDS));
+            // 4. Verify both consumers received artifact-2 and completion
+            assertTrue(resubEventLatch.await(10, TimeUnit.SECONDS));
+            assertTrue(streamEventLatch.await(10, TimeUnit.SECONDS));
 
-        assertFalse(resubUnexpectedEvent.get());
-        assertFalse(streamUnexpectedEvent.get());
-        assertNull(resubErrorRef.get());
+            assertFalse(resubUnexpectedEvent.get());
+            assertFalse(streamUnexpectedEvent.get());
+            assertNull(resubErrorRef.get());
 
-        // Both should have received 2 events: artifact-2 and completion
-        assertEquals(2, resubReceivedEvents.size());
-        assertEquals(2, streamReceivedEvents.size());
+            // Both should have received 2 events: artifact-2 and completion
+            assertEquals(2, resubReceivedEvents.size());
+            assertEquals(2, streamReceivedEvents.size());
 
-        // Verify resubscription events
-        long resubArtifactCount = resubReceivedEvents.stream()
-                .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
-                .count();
-        assertEquals(1, resubArtifactCount);
+            // Verify resubscription events
+            long resubArtifactCount =
+                    resubReceivedEvents.stream()
+                            .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
+                            .count();
+            assertEquals(1, resubArtifactCount);
 
-        long resubCompletionCount = resubReceivedEvents.stream()
-                .filter(e -> e instanceof TaskStatusUpdateEvent_v0_3)
-                .filter(e -> ((TaskStatusUpdateEvent_v0_3) e).isFinal())
-                .count();
-        assertEquals(1, resubCompletionCount);
+            long resubCompletionCount =
+                    resubReceivedEvents.stream()
+                            .filter(e -> e instanceof TaskStatusUpdateEvent_v0_3)
+                            .filter(e -> ((TaskStatusUpdateEvent_v0_3) e).isFinal())
+                            .count();
+            assertEquals(1, resubCompletionCount);
 
-        // Verify streaming events
-        long streamArtifactCount = streamReceivedEvents.stream()
-                .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
-                .count();
-        assertEquals(1, streamArtifactCount);
+            // Verify streaming events
+            long streamArtifactCount =
+                    streamReceivedEvents.stream()
+                            .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
+                            .count();
+            assertEquals(1, streamArtifactCount);
 
-        long streamCompletionCount = streamReceivedEvents.stream()
-                .filter(e -> e instanceof TaskStatusUpdateEvent_v0_3)
-                .filter(e -> ((TaskStatusUpdateEvent_v0_3) e).isFinal())
-                .count();
-        assertEquals(1, streamCompletionCount);
+            long streamCompletionCount =
+                    streamReceivedEvents.stream()
+                            .filter(e -> e instanceof TaskStatusUpdateEvent_v0_3)
+                            .filter(e -> ((TaskStatusUpdateEvent_v0_3) e).isFinal())
+                            .count();
+            assertEquals(1, streamCompletionCount);
 
-        // Verify artifact-2 details from resubscription
-        TaskArtifactUpdateEvent_v0_3 resubArtifact = (TaskArtifactUpdateEvent_v0_3) resubReceivedEvents.stream()
-                .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
-                .findFirst()
-                .orElseThrow();
-        assertEquals("artifact-2", resubArtifact.artifact().artifactId());
-        assertEquals("Second message artifact",
-                ((TextPart_v0_3) resubArtifact.artifact().parts().get(0)).text());
+            // Verify artifact-2 details from resubscription
+            TaskArtifactUpdateEvent_v0_3 resubArtifact =
+                    (TaskArtifactUpdateEvent_v0_3)
+                            resubReceivedEvents.stream()
+                                    .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
+                                    .findFirst()
+                                    .orElseThrow();
+            assertEquals("artifact-2", resubArtifact.artifact().artifactId());
+            assertEquals(
+                    "Second message artifact",
+                    ((TextPart_v0_3) resubArtifact.artifact().parts().get(0)).text());
 
-        // Verify artifact-2 details from streaming
-        TaskArtifactUpdateEvent_v0_3 streamArtifact = (TaskArtifactUpdateEvent_v0_3) streamReceivedEvents.stream()
-                .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
-                .findFirst()
-                .orElseThrow();
-        assertEquals("artifact-2", streamArtifact.artifact().artifactId());
-        assertEquals("Second message artifact",
-                ((TextPart_v0_3) streamArtifact.artifact().parts().get(0)).text());
+            // Verify artifact-2 details from streaming
+            TaskArtifactUpdateEvent_v0_3 streamArtifact =
+                    (TaskArtifactUpdateEvent_v0_3)
+                            streamReceivedEvents.stream()
+                                    .filter(e -> e instanceof TaskArtifactUpdateEvent_v0_3)
+                                    .findFirst()
+                                    .orElseThrow();
+            assertEquals("artifact-2", streamArtifact.artifact().artifactId());
+            assertEquals(
+                    "Second message artifact",
+                    ((TextPart_v0_3) streamArtifact.artifact().parts().get(0)).text());
         } finally {
             String taskId = generatedTaskIdRef.get();
             if (taskId != null) {
@@ -1197,20 +1346,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testMalformedJSONRPCRequest() {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
         // missing closing bracket
-        String malformedRequest = "{\"jsonrpc\": \"2.0\", \"method\": \"message/send\", \"params\": {\"foo\": \"bar\"}";
-        JSONRPCErrorResponse_v0_3 response = givenV03()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(malformedRequest)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(JSONRPCErrorResponse_v0_3.class);
+        String malformedRequest =
+                "{\"jsonrpc\": \"2.0\", \"method\": \"message/send\", \"params\": {\"foo\":"
+                        + " \"bar\"}";
+        JSONRPCErrorResponse_v0_3 response =
+                givenV03()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(malformedRequest)
+                        .when()
+                        .post("/")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(JSONRPCErrorResponse_v0_3.class);
         assertNotNull(response.getError());
         assertEquals(new JSONParseError_v0_3().getCode(), response.getError().getCode());
     }
@@ -1218,30 +1371,34 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testInvalidParamsJSONRPCRequest() {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
-        String invalidParamsRequest = """
+        String invalidParamsRequest =
+                """
                 {"jsonrpc": "2.0", "method": "message/send", "params": "not_a_dict", "id": "1"}
                 """;
         testInvalidParams(invalidParamsRequest);
 
-        invalidParamsRequest = """
+        invalidParamsRequest =
+                """
                 {"jsonrpc": "2.0", "method": "message/send", "params": {"message": {"parts": "invalid"}}, "id": "1"}
                 """;
         testInvalidParams(invalidParamsRequest);
     }
 
     private void testInvalidParams(String invalidParamsRequest) {
-        JSONRPCErrorResponse_v0_3 response = givenV03()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(invalidParamsRequest)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(JSONRPCErrorResponse_v0_3.class);
+        JSONRPCErrorResponse_v0_3 response =
+                givenV03()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(invalidParamsRequest)
+                        .when()
+                        .post("/")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(JSONRPCErrorResponse_v0_3.class);
         assertNotNull(response.getError());
         assertEquals(new InvalidParamsError_v0_3().getCode(), response.getError().getCode());
         assertEquals("1", response.getId());
@@ -1250,24 +1407,27 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testInvalidJSONRPCRequestMissingJsonrpc() {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
-        String invalidRequest = """
+        String invalidRequest =
+                """
                 {
                  "method": "message/send",
                  "params": {}
                 }
                 """;
-        JSONRPCErrorResponse_v0_3 response = givenV03()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(invalidRequest)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(JSONRPCErrorResponse_v0_3.class);
+        JSONRPCErrorResponse_v0_3 response =
+                givenV03()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(invalidRequest)
+                        .when()
+                        .post("/")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(JSONRPCErrorResponse_v0_3.class);
         assertNotNull(response.getError());
         assertEquals(new InvalidRequestError_v0_3().getCode(), response.getError().getCode());
     }
@@ -1275,21 +1435,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testInvalidJSONRPCRequestMissingMethod() {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
-        String invalidRequest = """
+        String invalidRequest =
+                """
                 {"jsonrpc": "2.0", "params": {}}
                 """;
-        JSONRPCErrorResponse_v0_3 response = givenV03()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(invalidRequest)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(JSONRPCErrorResponse_v0_3.class);
+        JSONRPCErrorResponse_v0_3 response =
+                givenV03()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(invalidRequest)
+                        .when()
+                        .post("/")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(JSONRPCErrorResponse_v0_3.class);
         assertNotNull(response.getError());
         assertEquals(new InvalidRequestError_v0_3().getCode(), response.getError().getCode());
     }
@@ -1297,21 +1460,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testInvalidJSONRPCRequestInvalidId() {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
-        String invalidRequest = """
+        String invalidRequest =
+                """
                 {"jsonrpc": "2.0", "method": "message/send", "params": {}, "id": {"bad": "type"}}
                 """;
-        JSONRPCErrorResponse_v0_3 response = givenV03()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(invalidRequest)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(JSONRPCErrorResponse_v0_3.class);
+        JSONRPCErrorResponse_v0_3 response =
+                givenV03()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(invalidRequest)
+                        .when()
+                        .post("/")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(JSONRPCErrorResponse_v0_3.class);
         assertNotNull(response.getError());
         assertEquals(new InvalidRequestError_v0_3().getCode(), response.getError().getCode());
     }
@@ -1319,21 +1485,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testInvalidJSONRPCRequestNonExistentMethod() {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
-        String invalidRequest = """
+        String invalidRequest =
+                """
                 {"jsonrpc": "2.0", "method" : "nonexistent/method", "params": {}}
                 """;
-        JSONRPCErrorResponse_v0_3 response = givenV03()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(invalidRequest)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(JSONRPCErrorResponse_v0_3.class);
+        JSONRPCErrorResponse_v0_3 response =
+                givenV03()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(invalidRequest)
+                        .when()
+                        .post("/")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(JSONRPCErrorResponse_v0_3.class);
         assertNotNull(response.getError());
         assertEquals(new MethodNotFoundError_v0_3().getCode(), response.getError().getCode());
     }
@@ -1341,7 +1510,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testNonStreamingMethodWithAcceptHeader() throws Exception {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
         testGetTask(MediaType.APPLICATION_JSON);
     }
@@ -1349,7 +1519,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testStreamingMethodWithAcceptHeader() throws Exception {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
         testSendStreamingMessageWithHttpClient(MediaType.SERVER_SENT_EVENTS);
@@ -1358,7 +1529,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Test
     public void testStreamingMethodWithoutAcceptHeader() throws Exception {
         // skip this test for non-JSONRPC transports
-        assumeTrue(TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
+        assumeTrue(
+                TransportProtocol_v0_3.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
 
         testSendStreamingMessageWithHttpClient(null);
@@ -1367,50 +1539,74 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     private void testSendStreamingMessageWithHttpClient(String mediaType) throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-        Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.id())
-                .contextId(MINIMAL_TASK.contextId())
-                .build();
-        SendStreamingMessageRequest_v0_3 request = new SendStreamingMessageRequest_v0_3(
-                "1", new MessageSendParams_v0_3(message, null, null));
+            Message_v0_3 message =
+                    new Message_v0_3.Builder(MESSAGE)
+                            .taskId(MINIMAL_TASK.id())
+                            .contextId(MINIMAL_TASK.contextId())
+                            .build();
+            SendStreamingMessageRequest_v0_3 request =
+                    new SendStreamingMessageRequest_v0_3(
+                            "1", new MessageSendParams_v0_3(message, null, null));
 
-        CompletableFuture<HttpResponse<Stream<String>>> responseFuture = initialiseStreamingRequest(request, mediaType);
+            CompletableFuture<HttpResponse<Stream<String>>> responseFuture =
+                    initialiseStreamingRequest(request, mediaType);
 
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Throwable> errorRef = new AtomicReference<>();
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
-        responseFuture.thenAccept(response -> {
-            if (response.statusCode() != 200) {
-                throw new IllegalStateException("Status code was " + response.statusCode());
-            }
-            response.body().forEach(line -> {
-                try {
-                    SendStreamingMessageResponse_v0_3 jsonResponse = extractJsonResponseFromSseLine(line);
-                    if (jsonResponse != null) {
-                        assertNull(jsonResponse.getError());
-                        Message_v0_3 messageResponse = (Message_v0_3) jsonResponse.getResult();
-                        assertEquals(MESSAGE.messageId(), messageResponse.messageId());
-                        assertEquals(MESSAGE.role(), messageResponse.role());
-                        Part_v0_3<?> part = messageResponse.parts().get(0);
-                        assertInstanceOf(TextPart_v0_3.class, part);
-                        assertEquals("test message", ((TextPart_v0_3) part).text());
-                        latch.countDown();
-                    }
-                } catch (JsonProcessingException_v0_3 e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }).exceptionally(t -> {
-            if (!isStreamClosedError(t)) {
-                errorRef.set(t);
-            }
-            latch.countDown();
-            return null;
-        });
+            responseFuture
+                    .thenAccept(
+                            response -> {
+                                if (response.statusCode() != 200) {
+                                    throw new IllegalStateException(
+                                            "Status code was " + response.statusCode());
+                                }
+                                response.body()
+                                        .forEach(
+                                                line -> {
+                                                    try {
+                                                        SendStreamingMessageResponse_v0_3
+                                                                jsonResponse =
+                                                                        extractJsonResponseFromSseLine(
+                                                                                line);
+                                                        if (jsonResponse != null) {
+                                                            assertNull(jsonResponse.getError());
+                                                            Message_v0_3 messageResponse =
+                                                                    (Message_v0_3)
+                                                                            jsonResponse
+                                                                                    .getResult();
+                                                            assertEquals(
+                                                                    MESSAGE.messageId(),
+                                                                    messageResponse.messageId());
+                                                            assertEquals(
+                                                                    MESSAGE.role(),
+                                                                    messageResponse.role());
+                                                            Part_v0_3<?> part =
+                                                                    messageResponse.parts().get(0);
+                                                            assertInstanceOf(
+                                                                    TextPart_v0_3.class, part);
+                                                            assertEquals(
+                                                                    "test message",
+                                                                    ((TextPart_v0_3) part).text());
+                                                            latch.countDown();
+                                                        }
+                                                    } catch (JsonProcessingException_v0_3 e) {
+                                                        throw new RuntimeException(e);
+                                                    }
+                                                });
+                            })
+                    .exceptionally(
+                            t -> {
+                                if (!isStreamClosedError(t)) {
+                                    errorRef.set(t);
+                                }
+                                latch.countDown();
+                                return null;
+                            });
 
-        boolean dataRead = latch.await(20, TimeUnit.SECONDS);
-        Assertions.assertTrue(dataRead);
-        Assertions.assertNull(errorRef.get());
+            boolean dataRead = latch.await(20, TimeUnit.SECONDS);
+            Assertions.assertTrue(dataRead);
+            Assertions.assertNull(errorRef.get());
 
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.id());
@@ -1433,23 +1629,25 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer = (event, agentCard) -> {
-                if (event instanceof MessageEvent_v0_3 messageEvent) {
-                    if (latch.getCount() > 0) {
-                        receivedMessage.set(messageEvent.getMessage());
-                        latch.countDown();
-                    } else {
-                        wasUnexpectedEvent.set(true);
-                    }
-                } else {
-                    wasUnexpectedEvent.set(true);
-                }
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer =
+                    (event, agentCard) -> {
+                        if (event instanceof MessageEvent_v0_3 messageEvent) {
+                            if (latch.getCount() > 0) {
+                                receivedMessage.set(messageEvent.getMessage());
+                                latch.countDown();
+                            } else {
+                                wasUnexpectedEvent.set(true);
+                            }
+                        } else {
+                            wasUnexpectedEvent.set(true);
+                        }
+                    };
 
-            Consumer<Throwable> errorHandler = error -> {
-                errorRef.set(error);
-                latch.countDown();
-            };
+            Consumer<Throwable> errorHandler =
+                    error -> {
+                        errorRef.set(error);
+                        latch.countDown();
+                    };
 
             // testing the streaming send message
             getClient().sendMessage(message, List.of(consumer), errorHandler);
@@ -1478,15 +1676,14 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             StreamingJSONRPCRequest_v0_3<?> request, String mediaType) throws Exception {
 
         // Create the client
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
 
         // Create the request
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/"))
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil_v0_3.toJson(request)))
-                .header("Content-Type", APPLICATION_JSON);
+        HttpRequest.Builder builder =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/"))
+                        .POST(HttpRequest.BodyPublishers.ofString(JsonUtil_v0_3.toJson(request)))
+                        .header("Content-Type", APPLICATION_JSON);
         if (mediaType != null) {
             builder.header("Accept", mediaType);
         }
@@ -1496,7 +1693,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         return client.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines());
     }
 
-    private SendStreamingMessageResponse_v0_3 extractJsonResponseFromSseLine(String line) throws JsonProcessingException_v0_3 {
+    private SendStreamingMessageResponse_v0_3 extractJsonResponseFromSseLine(String line)
+            throws JsonProcessingException_v0_3 {
         line = extractSseData(line);
         if (line != null) {
             return JsonUtil_v0_3.fromJson(line, SendStreamingMessageResponse_v0_3.class);
@@ -1520,7 +1718,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             if (cause instanceof EOFException) {
                 return true;
             }
-            if (cause instanceof IOException && cause.getMessage() != null
+            if (cause instanceof IOException
+                    && cause.getMessage() != null
                     && cause.getMessage().contains("cancelled")) {
                 // stream is closed upon cancellation
                 return true;
@@ -1538,18 +1737,24 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         // Convert v0.3 → v1.0
         org.a2aproject.sdk.spec.Task v10Task = TaskMapper_v0_3.INSTANCE.toV10(task);
 
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/task"))
-                .POST(HttpRequest.BodyPublishers.ofString(org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(v10Task)))
-                .header("Content-Type", APPLICATION_JSON)
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/test/task"))
+                        .POST(
+                                HttpRequest.BodyPublishers.ofString(
+                                        org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(
+                                                v10Task)))
+                        .header("Content-Type", APPLICATION_JSON)
+                        .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
-            throw new RuntimeException(String.format("Saving task failed! Status: %d, Body: %s", response.statusCode(), response.body()));
+            throw new RuntimeException(
+                    String.format(
+                            "Saving task failed! Status: %d, Body: %s",
+                            response.statusCode(), response.body()));
         }
     }
 
@@ -1558,53 +1763,71 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
      * Converts v1.0 → v0.3 using TaskMapper.
      */
     protected Task_v0_3 getTaskFromTaskStore(String taskId) throws Exception {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
-                .GET()
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
+                        .GET()
+                        .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() == 404) {
             return null;
         }
         if (response.statusCode() != 200) {
-            throw new RuntimeException(String.format("Getting task failed! Status: %d, Body: %s", response.statusCode(), response.body()));
+            throw new RuntimeException(
+                    String.format(
+                            "Getting task failed! Status: %d, Body: %s",
+                            response.statusCode(), response.body()));
         }
 
         // Convert v1.0 → v0.3
-        org.a2aproject.sdk.spec.Task v10Task = org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.fromJson(
-                response.body(), org.a2aproject.sdk.spec.Task.class);
+        org.a2aproject.sdk.spec.Task v10Task =
+                org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.fromJson(
+                        response.body(), org.a2aproject.sdk.spec.Task.class);
         return TaskMapper_v0_3.INSTANCE.fromV10(v10Task);
     }
 
     protected void deleteTaskInTaskStore(String taskId) throws Exception {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(("http://localhost:" + serverPort + "/test/task/" + taskId)))
-                .DELETE()
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        ("http://localhost:"
+                                                + serverPort
+                                                + "/test/task/"
+                                                + taskId)))
+                        .DELETE()
+                        .build();
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
-            throw new RuntimeException(response.statusCode() + ": Deleting task failed!" + response.body());
+            throw new RuntimeException(
+                    response.statusCode() + ": Deleting task failed!" + response.body());
         }
     }
 
     protected void ensureQueueForTask(String taskId) throws Exception {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/queue/ensure/" + taskId))
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        "http://localhost:"
+                                                + serverPort
+                                                + "/test/queue/ensure/"
+                                                + taskId))
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .build();
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
-            throw new RuntimeException(String.format("Ensuring queue failed! Status: %d, Body: %s", response.statusCode(), response.body()));
+            throw new RuntimeException(
+                    String.format(
+                            "Ensuring queue failed! Status: %d, Body: %s",
+                            response.statusCode(), response.body()));
         }
     }
 
@@ -1623,22 +1846,29 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             path = "test/queue/enqueueTaskStatusUpdateEvent/" + e.taskId();
             v10Event = TaskStatusUpdateEventMapper_v0_3.INSTANCE.toV10(e);
         } else {
-            throw new RuntimeException("Unknown event type " + event.getClass() + ". If you need the ability to" +
-                    " handle more types, please add the REST endpoints.");
+            throw new RuntimeException(
+                    "Unknown event type "
+                            + event.getClass()
+                            + ". If you need the ability to"
+                            + " handle more types, please add the REST endpoints.");
         }
 
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/" + path))
-                .header("Content-Type", APPLICATION_JSON)
-                .POST(HttpRequest.BodyPublishers.ofString(org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(v10Event)))
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/" + path))
+                        .header("Content-Type", APPLICATION_JSON)
+                        .POST(
+                                HttpRequest.BodyPublishers.ofString(
+                                        org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(
+                                                v10Event)))
+                        .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
-            throw new RuntimeException(response.statusCode() + ": Queueing event failed!" + response.body());
+            throw new RuntimeException(
+                    response.statusCode() + ": Queueing event failed!" + response.body());
         }
     }
 
@@ -1646,38 +1876,44 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         int cnt = getStreamingSubscribedCount();
         AtomicInteger initialCount = new AtomicInteger(cnt);
 
-        return CompletableFuture.runAsync(() -> {
-            try {
-                boolean done = false;
-                long end = System.currentTimeMillis() + 15000;
-                while (System.currentTimeMillis() < end) {
-                    int count = getStreamingSubscribedCount();
-                    if (count > initialCount.get()) {
-                        done = true;
-                        break;
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        boolean done = false;
+                        long end = System.currentTimeMillis() + 15000;
+                        while (System.currentTimeMillis() < end) {
+                            int count = getStreamingSubscribedCount();
+                            if (count > initialCount.get()) {
+                                done = true;
+                                break;
+                            }
+                            Thread.sleep(500);
+                        }
+                        if (!done) {
+                            throw new RuntimeException("Timed out waiting for subscription");
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Interrupted");
                     }
-                    Thread.sleep(500);
-                }
-                if (!done) {
-                    throw new RuntimeException("Timed out waiting for subscription");
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted");
-            }
-        });
+                });
     }
 
     private int getStreamingSubscribedCount() {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/streamingSubscribedCount"))
-                .GET()
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        "http://localhost:"
+                                                + serverPort
+                                                + "/test/streamingSubscribedCount"))
+                        .GET()
+                        .build();
         try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            HttpResponse<String> response =
+                    client.send(
+                            request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             String body = response.body().trim();
             return Integer.parseInt(body);
         } catch (IOException | InterruptedException e) {
@@ -1686,15 +1922,21 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     }
 
     protected int getChildQueueCount(String taskId) {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/queue/childCount/" + taskId))
-                .GET()
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        "http://localhost:"
+                                                + serverPort
+                                                + "/test/queue/childCount/"
+                                                + taskId))
+                        .GET()
+                        .build();
         try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            HttpResponse<String> response =
+                    client.send(
+                            request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             String body = response.body().trim();
             return Integer.parseInt(body);
         } catch (IOException | InterruptedException e) {
@@ -1705,17 +1947,26 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     /**
      * Delete a push notification config from the v1.0 store.
      */
-    protected void deletePushNotificationConfigInStore(String taskId, String configId) throws Exception {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(("http://localhost:" + serverPort + "/test/task/" + taskId + "/config/" + configId)))
-                .DELETE()
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    protected void deletePushNotificationConfigInStore(String taskId, String configId)
+            throws Exception {
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        ("http://localhost:"
+                                                + serverPort
+                                                + "/test/task/"
+                                                + taskId
+                                                + "/config/"
+                                                + configId)))
+                        .DELETE()
+                        .build();
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
-            throw new RuntimeException(response.statusCode() + ": Deleting task failed!" + response.body());
+            throw new RuntimeException(
+                    response.statusCode() + ": Deleting task failed!" + response.body());
         }
     }
 
@@ -1723,7 +1974,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
      * Save a v0.3 push notification config to the v1.0 store.
      * Converts v0.3 → v1.0 using mappers.
      */
-    protected void savePushNotificationConfigInStore(String taskId, PushNotificationConfig_v0_3 notificationConfig) throws Exception {
+    protected void savePushNotificationConfigInStore(
+            String taskId, PushNotificationConfig_v0_3 notificationConfig) throws Exception {
         // Create v0.3 TaskPushNotificationConfig wrapper
         TaskPushNotificationConfig_v0_3 v03Config =
                 new TaskPushNotificationConfig_v0_3(taskId, notificationConfig);
@@ -1733,19 +1985,25 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
                 TaskPushNotificationConfigMapper_v0_3.INSTANCE.toV10(v03Config);
 
         // Send to v1.0 server using v1.0 JSON serialization
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
-                .POST(HttpRequest.BodyPublishers.ofString(org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(v10Config)))
-                .header("Content-Type", APPLICATION_JSON)
-                .header("A2A-Version", A2AProtocol_v0_3.PROTOCOL_VERSION)
-                .build();
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
+                        .POST(
+                                HttpRequest.BodyPublishers.ofString(
+                                        org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(
+                                                v10Config)))
+                        .header("Content-Type", APPLICATION_JSON)
+                        .header("A2A-Version", A2AProtocol_v0_3.PROTOCOL_VERSION)
+                        .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
-            throw new RuntimeException(response.statusCode() + ": Creating task push notification config failed! " + response.body());
+            throw new RuntimeException(
+                    response.statusCode()
+                            + ": Creating task push notification config failed! "
+                            + response.body());
         }
     }
 
@@ -1786,9 +2044,8 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         AgentCard_v0_3 agentCard = createTestAgentCard();
         ClientConfig_v0_3 clientConfig = createClientConfig(streaming);
 
-        ClientBuilder_v0_3 clientBuilder = Client_v0_3
-                .builder(agentCard)
-                .clientConfig(clientConfig);
+        ClientBuilder_v0_3 clientBuilder =
+                Client_v0_3.builder(agentCard).clientConfig(clientConfig);
 
         configureTransport(clientBuilder);
 
@@ -1806,15 +2063,17 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
                 .preferredTransport(getTransportProtocol())
-                .capabilities(new AgentCapabilities_v0_3.Builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .stateTransitionHistory(true)
-                        .build())
+                .capabilities(
+                        new AgentCapabilities_v0_3.Builder()
+                                .streaming(true)
+                                .pushNotifications(true)
+                                .stateTransitionHistory(true)
+                                .build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .additionalInterfaces(List.of(new AgentInterface_v0_3(getTransportProtocol(), getTransportUrl())))
+                .additionalInterfaces(
+                        List.of(new AgentInterface_v0_3(getTransportProtocol(), getTransportUrl())))
                 .protocolVersion("0.2.5")
                 .build();
     }
@@ -1823,9 +2082,7 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
      * Create client configuration with transport-specific settings.
      */
     private ClientConfig_v0_3 createClientConfig(boolean streaming) {
-        return new ClientConfig_v0_3.Builder()
-                .setStreaming(streaming)
-                .build();
+        return new ClientConfig_v0_3.Builder().setStreaming(streaming).build();
     }
 
     /**
@@ -1833,14 +2090,14 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
      */
     private Client_v0_3 createPollingClient() throws A2AClientException_v0_3 {
         AgentCard_v0_3 agentCard = createTestAgentCard();
-        ClientConfig_v0_3 clientConfig = new ClientConfig_v0_3.Builder()
-                .setStreaming(false)  // Non-streaming
-                .setPolling(true)     // Polling mode (translates to blocking=false on server)
-                .build();
+        ClientConfig_v0_3 clientConfig =
+                new ClientConfig_v0_3.Builder()
+                        .setStreaming(false) // Non-streaming
+                        .setPolling(true) // Polling mode (translates to blocking=false on server)
+                        .build();
 
-        ClientBuilder_v0_3 clientBuilder = Client_v0_3
-                .builder(agentCard)
-                .clientConfig(clientConfig);
+        ClientBuilder_v0_3 clientBuilder =
+                Client_v0_3.builder(agentCard).clientConfig(clientConfig);
 
         configureTransport(clientBuilder);
 
@@ -1864,11 +2121,12 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         String contextId = "fire-ctx";
 
         // Create task in WORKING state (non-final)
-        Task_v0_3 workingTask = new Task_v0_3.Builder()
-                .id(taskId)
-                .contextId(contextId)
-                .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING))
-                .build();
+        Task_v0_3 workingTask =
+                new Task_v0_3.Builder()
+                        .id(taskId)
+                        .contextId(contextId)
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING))
+                        .build();
         saveTaskInTaskStore(workingTask);
 
         try {
@@ -1876,28 +2134,31 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             ensureQueueForTask(taskId);
 
             // Send a message that will leave task in WORKING state (fire-and-forget pattern)
-            Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                    .taskId(taskId)
-                    .contextId(contextId)
-                    .parts(new TextPart_v0_3("fire and forget"))
-                    .build();
+            Message_v0_3 message =
+                    new Message_v0_3.Builder(MESSAGE)
+                            .taskId(taskId)
+                            .contextId(contextId)
+                            .parts(new TextPart_v0_3("fire and forget"))
+                            .build();
 
             CountDownLatch firstEventLatch = new CountDownLatch(1);
             AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer = (event, agentCard) -> {
-                // Receive any event (Message) to know agent processed the request
-                if (event instanceof MessageEvent_v0_3) {
-                    firstEventLatch.countDown();
-                }
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer =
+                    (event, agentCard) -> {
+                        // Receive any event (Message) to know agent processed the request
+                        if (event instanceof MessageEvent_v0_3) {
+                            firstEventLatch.countDown();
+                        }
+                    };
 
-            Consumer<Throwable> errorHandler = error -> {
-                if (!isStreamClosedError(error)) {
-                    errorRef.set(error);
-                }
-                firstEventLatch.countDown();
-            };
+            Consumer<Throwable> errorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            errorRef.set(error);
+                        }
+                        firstEventLatch.countDown();
+                    };
 
             // Start streaming subscription
             CountDownLatch subscriptionLatch = new CountDownLatch(1);
@@ -1907,12 +2168,13 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             getClient().sendMessage(message, List.of(consumer), errorHandler);
 
             // Wait for subscription to be established
-            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS),
+            assertTrue(
+                    subscriptionLatch.await(15, TimeUnit.SECONDS),
                     "Subscription should be established");
 
             // Wait for agent to respond (test agent sends Message, not WORKING status)
-            assertTrue(firstEventLatch.await(15, TimeUnit.SECONDS),
-                    "Should receive agent response");
+            assertTrue(
+                    firstEventLatch.await(15, TimeUnit.SECONDS), "Should receive agent response");
             assertNull(errorRef.get());
 
             // Give agent time to finish (task remains in WORKING state - non-final)
@@ -1925,33 +2187,39 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             CountDownLatch resubLatch = new CountDownLatch(1);
             AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
 
-            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> resubConsumer = (event, agentCard) -> {
-                // We might not receive events immediately, but subscription should succeed
-                resubLatch.countDown();
-            };
+            BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> resubConsumer =
+                    (event, agentCard) -> {
+                        // We might not receive events immediately, but subscription should succeed
+                        resubLatch.countDown();
+                    };
 
-            Consumer<Throwable> resubErrorHandler = error -> {
-                if (!isStreamClosedError(error)) {
-                    resubErrorRef.set(error);
-                }
-                resubLatch.countDown();
-            };
+            Consumer<Throwable> resubErrorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            resubErrorRef.set(error);
+                        }
+                        resubLatch.countDown();
+                    };
 
             // This should succeed - MainQueue is still open for non-final task
             CountDownLatch resubSubscriptionLatch = new CountDownLatch(1);
             awaitStreamingSubscription()
                     .whenComplete((unused, throwable) -> resubSubscriptionLatch.countDown());
 
-            getClient().resubscribe(new TaskIdParams_v0_3(taskId),
-                    List.of(resubConsumer),
-                    resubErrorHandler);
+            getClient()
+                    .resubscribe(
+                            new TaskIdParams_v0_3(taskId),
+                            List.of(resubConsumer),
+                            resubErrorHandler);
 
             // Wait for resubscription to be established
-            assertTrue(resubSubscriptionLatch.await(15, TimeUnit.SECONDS),
+            assertTrue(
+                    resubSubscriptionLatch.await(15, TimeUnit.SECONDS),
                     "Resubscription should succeed - MainQueue stayed open for non-final task");
 
             // Verify no errors during resubscription
-            assertNull(resubErrorRef.get(),
+            assertNull(
+                    resubErrorRef.get(),
                     "Resubscription should not error - validates THE BIG IDEA works end-to-end");
 
         } finally {
@@ -1974,47 +2242,47 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     public void testMainQueueClosesForFinalizedTasks() throws Exception {
         // Send a message without taskId - server generates one
-        Message_v0_3 message = new Message_v0_3.Builder(MESSAGE)
-                .parts(new TextPart_v0_3("complete task"))
-                .build();
+        Message_v0_3 message =
+                new Message_v0_3.Builder(MESSAGE).parts(new TextPart_v0_3("complete task")).build();
 
         CountDownLatch completionLatch = new CountDownLatch(1);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
         AtomicReference<String> generatedTaskId = new AtomicReference<>();
 
-        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer = (event, agentCard) -> {
-            if (event instanceof TaskEvent_v0_3 te) {
-                generatedTaskId.compareAndSet(null, te.getTask().id());
-                // Might get Task with final state
-                if (te.getTask().status().state().isFinal()) {
-                    completionLatch.countDown();
-                }
-            } else if (event instanceof MessageEvent_v0_3 me) {
-                // Message is considered a final event - capture taskId from the message
-                generatedTaskId.compareAndSet(null, me.getMessage().taskId());
-                completionLatch.countDown();
-            } else if (event instanceof TaskUpdateEvent_v0_3 tue &&
-                    tue.getUpdateEvent() instanceof TaskStatusUpdateEvent_v0_3 status) {
-                generatedTaskId.compareAndSet(null, status.taskId());
-                if (status.isFinal()) {
-                    completionLatch.countDown();
-                }
-            }
-        };
+        BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> consumer =
+                (event, agentCard) -> {
+                    if (event instanceof TaskEvent_v0_3 te) {
+                        generatedTaskId.compareAndSet(null, te.getTask().id());
+                        // Might get Task with final state
+                        if (te.getTask().status().state().isFinal()) {
+                            completionLatch.countDown();
+                        }
+                    } else if (event instanceof MessageEvent_v0_3 me) {
+                        // Message is considered a final event - capture taskId from the message
+                        generatedTaskId.compareAndSet(null, me.getMessage().taskId());
+                        completionLatch.countDown();
+                    } else if (event instanceof TaskUpdateEvent_v0_3 tue
+                            && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent_v0_3 status) {
+                        generatedTaskId.compareAndSet(null, status.taskId());
+                        if (status.isFinal()) {
+                            completionLatch.countDown();
+                        }
+                    }
+                };
 
-        Consumer<Throwable> errorHandler = error -> {
-            if (!isStreamClosedError(error)) {
-                errorRef.set(error);
-            }
-            completionLatch.countDown();
-        };
+        Consumer<Throwable> errorHandler =
+                error -> {
+                    if (!isStreamClosedError(error)) {
+                        errorRef.set(error);
+                    }
+                    completionLatch.countDown();
+                };
 
         try {
             // Send message and wait for completion
             getClient().sendMessage(message, List.of(consumer), errorHandler);
 
-            assertTrue(completionLatch.await(15, TimeUnit.SECONDS),
-                    "Should receive final event");
+            assertTrue(completionLatch.await(15, TimeUnit.SECONDS), "Should receive final event");
             assertNull(errorRef.get(), "Should not have errors during message send");
 
             String taskId = generatedTaskId.get();
@@ -2027,25 +2295,26 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             CountDownLatch errorLatch = new CountDownLatch(1);
             AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
 
-            Consumer<Throwable> resubErrorHandler = error -> {
-                if (error == null) {
-                    // Stream completed successfully - ignore, we're waiting for an error
-                    return;
-                }
-                if (!isStreamClosedError(error)) {
-                    resubErrorRef.set(error);
-                }
-                errorLatch.countDown();
-            };
+            Consumer<Throwable> resubErrorHandler =
+                    error -> {
+                        if (error == null) {
+                            // Stream completed successfully - ignore, we're waiting for an error
+                            return;
+                        }
+                        if (!isStreamClosedError(error)) {
+                            resubErrorRef.set(error);
+                        }
+                        errorLatch.countDown();
+                    };
 
             // Attempt resubscription
             try {
-                getClient().resubscribe(new TaskIdParams_v0_3(taskId),
-                        List.of(),
-                        resubErrorHandler);
+                getClient()
+                        .resubscribe(new TaskIdParams_v0_3(taskId), List.of(), resubErrorHandler);
 
                 // Wait for error
-                assertTrue(errorLatch.await(15, TimeUnit.SECONDS),
+                assertTrue(
+                        errorLatch.await(15, TimeUnit.SECONDS),
                         "Should receive error for finalized task");
 
                 Throwable error = resubErrorRef.get();
@@ -2055,20 +2324,25 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
                 Throwable cause = error;
                 boolean foundTaskNotFound = false;
                 while (cause != null && !foundTaskNotFound) {
-                    if (cause instanceof TaskNotFoundError_v0_3 ||
-                            (cause instanceof A2AClientException_v0_3 &&
-                                    ((A2AClientException_v0_3) cause).getCause() instanceof TaskNotFoundError_v0_3)) {
+                    if (cause instanceof TaskNotFoundError_v0_3
+                            || (cause instanceof A2AClientException_v0_3
+                                    && ((A2AClientException_v0_3) cause).getCause()
+                                            instanceof TaskNotFoundError_v0_3)) {
                         foundTaskNotFound = true;
                     }
                     cause = cause.getCause();
                 }
-                assertTrue(foundTaskNotFound,
+                assertTrue(
+                        foundTaskNotFound,
                         "Should receive TaskNotFoundError - MainQueue closed for finalized task");
 
             } catch (A2AClientException_v0_3 e) {
                 // Exception might be thrown immediately instead of via error handler
-                assertInstanceOf(TaskNotFoundError_v0_3.class, e.getCause(),
-                        "Should fail with TaskNotFoundError - MainQueue cleaned up for finalized task");
+                assertInstanceOf(
+                        TaskNotFoundError_v0_3.class,
+                        e.getCause(),
+                        "Should fail with TaskNotFoundError - MainQueue cleaned up for finalized"
+                                + " task");
             }
 
         } finally {

@@ -1,5 +1,9 @@
 package org.a2aproject.sdk.server;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -9,20 +13,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
-import java.util.function.Consumer;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
-import org.jspecify.annotations.Nullable;
-
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
-import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides HTTP caching metadata for Agent Card responses.
@@ -47,22 +43,22 @@ public class AgentCardCacheMetadata {
 
     private static final String CONFIG_KEY_MAX_AGE = "a2a.agent-card.cache.max-age";
     private static final String DEFAULT_MAX_AGE = "3600"; // 1 hour
-    private static final DateTimeFormatter RFC_1123_FORMATTER = DateTimeFormatter.RFC_1123_DATE_TIME;
+    private static final DateTimeFormatter RFC_1123_FORMATTER =
+            DateTimeFormatter.RFC_1123_DATE_TIME;
 
-    @Inject
-    @PublicAgentCard
-    Instance<AgentCard> agentCardInstance;
+    @Inject @PublicAgentCard Instance<AgentCard> agentCardInstance;
 
-    @Inject
-    Instance<A2AConfigProvider> configInstance;
+    @Inject Instance<A2AConfigProvider> configInstance;
 
     private @Nullable AgentCard agentCard;
     private @Nullable A2AConfigProvider config;
 
     @SuppressWarnings("NullAway") // Initialized in @PostConstruct when agentCard is available
     private String etag;
+
     @SuppressWarnings("NullAway") // Initialized in @PostConstruct when agentCard is available
     private String lastModified;
+
     @SuppressWarnings("NullAway") // Initialized in @PostConstruct when agentCard is available
     private String cacheControl;
 
@@ -165,7 +161,8 @@ public class AgentCardCacheMetadata {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("MD5 algorithm not available", e);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialize Agent Card for ETag calculation", e);
+            throw new IllegalStateException(
+                    "Failed to serialize Agent Card for ETag calculation", e);
         }
     }
 

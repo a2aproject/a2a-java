@@ -5,14 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
 import org.a2aproject.sdk.client.TaskEvent;
@@ -29,7 +28,6 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,25 +38,21 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 public class JpaDatabaseTaskStoreIntegrationTest {
 
-    @Inject
-    TaskStore taskStore;
+    @Inject TaskStore taskStore;
 
-    @Inject
-    @PublicAgentCard
-    AgentCard agentCard;
+    @Inject @PublicAgentCard AgentCard agentCard;
 
     private Client client;
 
     @BeforeEach
     public void setup() throws A2AClientException {
-        ClientConfig clientConfig = new ClientConfig.Builder()
-            .setStreaming(false)
-            .build();
-            
-        client = Client.builder(agentCard)
-            .clientConfig(clientConfig)
-            .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-            .build();
+        ClientConfig clientConfig = new ClientConfig.Builder().setStreaming(false).build();
+
+        client =
+                Client.builder(agentCard)
+                        .clientConfig(clientConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
     }
 
     @Test
@@ -69,25 +63,30 @@ public class JpaDatabaseTaskStoreIntegrationTest {
     @Test
     public void testJpaDatabaseTaskStore() throws Exception {
         // Send a message creating the Task (no client-provided taskId — server generates it)
-        Message userMessage = Message.builder()
-            .role(Message.Role.ROLE_USER)
-            .parts(Collections.singletonList(new TextPart("create")))
-            .messageId("test-msg-1")
-            .build();
+        Message userMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("create")))
+                        .messageId("test-msg-1")
+                        .build();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Task> taskRef = new AtomicReference<>();
 
-        java.util.function.BiConsumer<ClientEvent, AgentCard> consumer = (event, card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                taskRef.set(taskEvent.getTask());
-                latch.countDown();
-            }
-        };
+        java.util.function.BiConsumer<ClientEvent, AgentCard> consumer =
+                (event, card) -> {
+                    if (event instanceof TaskEvent taskEvent) {
+                        taskRef.set(taskEvent.getTask());
+                        latch.countDown();
+                    }
+                };
 
-        client.sendMessage(userMessage, List.of(consumer), (Throwable e) -> {
-            latch.countDown();
-        });
+        client.sendMessage(
+                userMessage,
+                List.of(consumer),
+                (Throwable e) -> {
+                    latch.countDown();
+                });
 
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
         Task createdTask = taskRef.get();
@@ -99,27 +98,32 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         final String contextId = createdTask.contextId();
 
         // Send a message updating the Task
-        userMessage = Message.builder()
-            .role(Message.Role.ROLE_USER)
-            .parts(Collections.singletonList(new TextPart("add-artifact")))
-            .taskId(taskId)
-            .messageId("test-msg-2")
-            .contextId(contextId)
-            .build();
+        userMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("add-artifact")))
+                        .taskId(taskId)
+                        .messageId("test-msg-2")
+                        .contextId(contextId)
+                        .build();
 
         CountDownLatch latch2 = new CountDownLatch(1);
         AtomicReference<Task> taskRef2 = new AtomicReference<>();
 
-        consumer = (event, card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                taskRef2.set(taskEvent.getTask());
-                latch2.countDown();
-            }
-        };
+        consumer =
+                (event, card) -> {
+                    if (event instanceof TaskEvent taskEvent) {
+                        taskRef2.set(taskEvent.getTask());
+                        latch2.countDown();
+                    }
+                };
 
-        client.sendMessage(userMessage, List.of(consumer), (Throwable e) -> {
-            latch2.countDown();
-        });
+        client.sendMessage(
+                userMessage,
+                List.of(consumer),
+                (Throwable e) -> {
+                    latch2.countDown();
+                });
 
         assertTrue(latch2.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
         Task updatedTask = taskRef2.get();

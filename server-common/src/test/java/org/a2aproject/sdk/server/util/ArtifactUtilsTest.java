@@ -10,33 +10,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
 import org.junit.jupiter.api.Test;
+
 class ArtifactUtilsTest {
 
     @Test
     void testNewArtifactAssignsPartsNameDescription() {
-            // Given
-            List<Part<?>> parts = List.of(new TextPart("Sample text"));
-            String name = "My Artifact";
-            String description = "This is a test artifact.";
-    
-            // When
-            Artifact artifact = ArtifactUtils.newArtifact(name, parts, description);
-    
-            // Then
-            assertEquals(parts, artifact.parts());
-            assertEquals(name, artifact.name());
-            assertEquals(description, artifact.description());
-    
-            // Then
-            assertNotNull(artifact.artifactId());
-            assertFalse(artifact.artifactId().isBlank());
-            assertDoesNotThrow(() -> UUID.fromString(artifact.artifactId()));
+        // Given
+        List<Part<?>> parts = List.of(new TextPart("Sample text"));
+        String name = "My Artifact";
+        String description = "This is a test artifact.";
+
+        // When
+        Artifact artifact = ArtifactUtils.newArtifact(name, parts, description);
+
+        // Then
+        assertEquals(parts, artifact.parts());
+        assertEquals(name, artifact.name());
+        assertEquals(description, artifact.description());
+
+        // Then
+        assertNotNull(artifact.artifactId());
+        assertFalse(artifact.artifactId().isBlank());
+        assertDoesNotThrow(() -> UUID.fromString(artifact.artifactId()));
     }
 
     @Test
@@ -44,22 +44,23 @@ class ArtifactUtilsTest {
         // Given
         List<Part<?>> parts = List.of(new TextPart("Another sample"));
         String name = "Artifact_No_Desc";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newArtifact(name, parts);
-        
+
         // Then
-        assertEquals(null, artifact.description());    }
+        assertEquals(null, artifact.description());
+    }
 
     @Test
     void testNewTextArtifactCreatesSingleTextPart() {
         // Given
         String text = "This is a text artifact.";
         String name = "Text_Artifact";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newTextArtifact(name, text);
-        
+
         // Then
         assertEquals(1, artifact.parts().size());
         assertInstanceOf(TextPart.class, artifact.parts().get(0));
@@ -70,10 +71,10 @@ class ArtifactUtilsTest {
         // Given
         String text = "Hello, world!";
         String name = "Greeting_Artifact";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newTextArtifact(name, text);
-        
+
         // Then
         TextPart textPart = (TextPart) artifact.parts().get(0);
         assertEquals(text, textPart.text());
@@ -85,10 +86,10 @@ class ArtifactUtilsTest {
         String text = "Some content.";
         String name = "Named_Text_Artifact";
         String description = "Description for text artifact.";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newTextArtifact(name, text, description);
-        
+
         // Then
         assertEquals(name, artifact.name());
         assertEquals(description, artifact.description());
@@ -99,10 +100,10 @@ class ArtifactUtilsTest {
         // Given
         Map<String, Object> sampleData = Map.of("key", "value", "number", 123);
         String name = "Data_Artifact";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newDataArtifact(name, sampleData);
-        
+
         // Then
         assertEquals(1, artifact.parts().size());
         assertInstanceOf(DataPart.class, artifact.parts().get(0));
@@ -113,10 +114,10 @@ class ArtifactUtilsTest {
         // Given
         Map<String, Object> sampleData = Map.of("content", "test_data", "is_valid", true);
         String name = "Structured_Data_Artifact";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newDataArtifact(name, sampleData);
-        
+
         // Then
         DataPart dataPart = (DataPart) artifact.parts().get(0);
         assertEquals(sampleData, dataPart.data());
@@ -128,10 +129,10 @@ class ArtifactUtilsTest {
         Map<String, Object> sampleData = Map.of("info", "some details");
         String name = "Named_Data_Artifact";
         String description = "Description for data artifact.";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newDataArtifact(name, sampleData, description);
-        
+
         // Then
         assertEquals(name, artifact.name());
         assertEquals(description, artifact.description());
@@ -142,10 +143,10 @@ class ArtifactUtilsTest {
         // Given
         List<Part<?>> parts = List.of(new TextPart("Test"));
         String name = "Test_Artifact";
-        
+
         // When
         Artifact artifact = ArtifactUtils.newArtifact(name, parts);
-        
+
         // Then
         assertNotNull(artifact.artifactId());
         assertTrue(artifact.artifactId().length() > 0);

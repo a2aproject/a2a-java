@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class TaskArtifactUpdateEventTest {
@@ -18,13 +17,20 @@ class TaskArtifactUpdateEventTest {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("source", "web");
 
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent(
-                "task-1",
-                new Artifact("artifact-1", null, null, List.of(new TextPart("hello")), null, null),
-                "context-1",
-                true,
-                false,
-                metadata);
+        TaskArtifactUpdateEvent event =
+                new TaskArtifactUpdateEvent(
+                        "task-1",
+                        new Artifact(
+                                "artifact-1",
+                                null,
+                                null,
+                                List.of(new TextPart("hello")),
+                                null,
+                                null),
+                        "context-1",
+                        true,
+                        false,
+                        metadata);
 
         metadata.put("write", "should-not-leak");
 
@@ -37,13 +43,20 @@ class TaskArtifactUpdateEventTest {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("foo", null);
 
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent(
-                "task-1",
-                new Artifact("artifact-1", null, null, List.of(new TextPart("hello")), null, null),
-                "context-1",
-                true,
-                false,
-                metadata);
+        TaskArtifactUpdateEvent event =
+                new TaskArtifactUpdateEvent(
+                        "task-1",
+                        new Artifact(
+                                "artifact-1",
+                                null,
+                                null,
+                                List.of(new TextPart("hello")),
+                                null,
+                                null),
+                        "context-1",
+                        true,
+                        false,
+                        metadata);
 
         assertEquals(1, event.metadata().size());
         assertTrue(event.metadata().containsKey("foo"));

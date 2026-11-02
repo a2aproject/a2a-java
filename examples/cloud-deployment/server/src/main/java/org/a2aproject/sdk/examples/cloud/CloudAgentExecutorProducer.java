@@ -1,10 +1,8 @@
 package org.a2aproject.sdk.examples.cloud;
 
-import java.util.List;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
+import java.util.List;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
@@ -49,7 +47,8 @@ public class CloudAgentExecutorProducer {
 
             try {
                 // Extract user message and normalize
-                String messageText = extractTextFromMessage(context.getMessage()).trim().toLowerCase();
+                String messageText =
+                        extractTextFromMessage(context.getMessage()).trim().toLowerCase();
                 LOGGER.info("Received message: '{}'", messageText);
 
                 // Get pod name from environment (set by Kubernetes Downward API)

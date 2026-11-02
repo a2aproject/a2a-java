@@ -2,9 +2,8 @@ package org.a2aproject.sdk.spec;
 
 import java.util.List;
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -44,8 +43,14 @@ import org.jspecify.annotations.Nullable;
  * @see Message
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record Task(String id, String contextId, TaskStatus status, @Nullable List<Artifact> artifacts,
-        @Nullable List<Message> history, @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind {
+public record Task(
+        String id,
+        String contextId,
+        TaskStatus status,
+        @Nullable List<Artifact> artifacts,
+        @Nullable List<Message> history,
+        @Nullable Map<String, Object> metadata)
+        implements EventKind, StreamingEventKind {
 
     /**
      * The identifier when used in streaming responses
@@ -130,8 +135,7 @@ public record Task(String id, String contextId, TaskStatus status, @Nullable Lis
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Creates a new Builder initialized with values from an existing Task.
@@ -145,7 +149,6 @@ public record Task(String id, String contextId, TaskStatus status, @Nullable Lis
             artifacts = task.artifacts();
             history = task.history();
             metadata = task.metadata();
-
         }
 
         /**

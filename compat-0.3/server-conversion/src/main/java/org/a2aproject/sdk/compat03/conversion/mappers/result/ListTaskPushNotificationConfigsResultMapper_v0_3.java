@@ -2,9 +2,8 @@ package org.a2aproject.sdk.compat03.conversion.mappers.result;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskPushNotificationConfigMapper_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
@@ -27,13 +26,16 @@ import org.mapstruct.Mapper;
  *   <li>v1.0 → v0.3: Extract the configs list (discard nextPageToken as 0.3 doesn't support pagination)</li>
  * </ul>
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {TaskPushNotificationConfigMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {TaskPushNotificationConfigMapper_v0_3.class})
 public interface ListTaskPushNotificationConfigsResultMapper_v0_3 {
 
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    ListTaskPushNotificationConfigsResultMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(ListTaskPushNotificationConfigsResultMapper_v0_3.class);
+    ListTaskPushNotificationConfigsResultMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(ListTaskPushNotificationConfigsResultMapper_v0_3.class);
 
     /**
      * Converts v0.3 {@code List<TaskPushNotificationConfig>} to v1.0 {@link ListTaskPushNotificationConfigsResult}.
@@ -50,9 +52,10 @@ public interface ListTaskPushNotificationConfigsResultMapper_v0_3 {
             return null;
         }
 
-        List<TaskPushNotificationConfig> v10Configs = v03List.stream()
-            .map(TaskPushNotificationConfigMapper_v0_3.INSTANCE::toV10)
-            .collect(Collectors.toList());
+        List<TaskPushNotificationConfig> v10Configs =
+                v03List.stream()
+                        .map(TaskPushNotificationConfigMapper_v0_3.INSTANCE::toV10)
+                        .collect(Collectors.toList());
 
         return new ListTaskPushNotificationConfigsResult(v10Configs, null);
     }
@@ -73,7 +76,7 @@ public interface ListTaskPushNotificationConfigsResultMapper_v0_3 {
         }
 
         return v10Result.configs().stream()
-            .map(TaskPushNotificationConfigMapper_v0_3.INSTANCE::fromV10)
-            .collect(Collectors.toList());
+                .map(TaskPushNotificationConfigMapper_v0_3.INSTANCE::fromV10)
+                .collect(Collectors.toList());
     }
 }

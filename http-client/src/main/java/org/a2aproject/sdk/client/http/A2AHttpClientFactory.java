@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
@@ -54,9 +53,15 @@ public final class A2AHttpClientFactory {
     private static final List<A2AHttpClientProvider> PROVIDERS;
 
     static {
-        PROVIDERS = StreamSupport.stream(ServiceLoader.load(A2AHttpClientProvider.class, A2AHttpClientProvider.class.getClassLoader()).spliterator(), false)
-                .sorted(Comparator.comparingInt(A2AHttpClientProvider::priority).reversed())
-                .toList();
+        PROVIDERS =
+                StreamSupport.stream(
+                                ServiceLoader.load(
+                                                A2AHttpClientProvider.class,
+                                                A2AHttpClientProvider.class.getClassLoader())
+                                        .spliterator(),
+                                false)
+                        .sorted(Comparator.comparingInt(A2AHttpClientProvider::priority).reversed())
+                        .toList();
     }
 
     private A2AHttpClientFactory() {
@@ -95,9 +100,10 @@ public final class A2AHttpClientFactory {
      */
     @Deprecated(forRemoval = false)
     public static A2AHttpClient createExcluding(String... excludedProviderNames) {
-        return create(A2AHttpClientConfiguration.builder()
-                .excludedProviderNames(List.of(excludedProviderNames))
-                .build());
+        return create(
+                A2AHttpClientConfiguration.builder()
+                        .excludedProviderNames(List.of(excludedProviderNames))
+                        .build());
     }
 
     /**
@@ -114,9 +120,8 @@ public final class A2AHttpClientFactory {
      */
     @Deprecated(forRemoval = false)
     public static A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
-        return create(A2AHttpClientConfiguration.builder()
-                .sseParserConfig(sseParserConfig)
-                .build());
+        return create(
+                A2AHttpClientConfiguration.builder().sseParserConfig(sseParserConfig).build());
     }
 
     /**
@@ -139,8 +144,11 @@ public final class A2AHttpClientFactory {
                 .filter(provider -> providerName.equals(provider.name()))
                 .findFirst()
                 .map(provider -> provider.create(A2AHttpClientConfiguration.DEFAULT))
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No A2AHttpClientProvider found with name: " + providerName));
+                .orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "No A2AHttpClientProvider found with name: "
+                                                + providerName));
     }
 
     /**
@@ -156,29 +164,39 @@ public final class A2AHttpClientFactory {
     public static A2AHttpClient create(A2AHttpClientConfiguration configuration) {
         Assert.checkNotNullParam("configuration", configuration);
         return createInternal(
-                p -> !configuration.excludedProviderNames().contains(p.name()) && supports(p, configuration),
+                p ->
+                        !configuration.excludedProviderNames().contains(p.name())
+                                && supports(p, configuration),
                 configuration);
     }
 
-    private static boolean supports(A2AHttpClientProvider provider, A2AHttpClientConfiguration configuration) {
+    private static boolean supports(
+            A2AHttpClientProvider provider, A2AHttpClientConfiguration configuration) {
         return (configuration.sseParserConfig() == null || provider.supportsSseConfig())
-                && (configuration.redirectHeaderPolicy() == null || provider.supportsRedirectHeaderPolicy());
+                && (configuration.redirectHeaderPolicy() == null
+                        || provider.supportsRedirectHeaderPolicy());
     }
 
     private static A2AHttpClient createInternal(
             Predicate<A2AHttpClientProvider> filter, A2AHttpClientConfiguration configuration) {
         return PROVIDERS.stream()
                 .filter(filter)
-                .flatMap(p -> {
-                    try {
-                        return Stream.of(p.create(configuration));
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, e, () -> "Provider " + p.name() + " skipped");
-                        return Stream.empty();
-                    }
-                })
+                .flatMap(
+                        p -> {
+                            try {
+                                return Stream.of(p.create(configuration));
+                            } catch (Exception e) {
+                                LOGGER.log(
+                                        Level.WARNING,
+                                        e,
+                                        () -> "Provider " + p.name() + " skipped");
+                                return Stream.empty();
+                            }
+                        })
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No A2AHttpClientProvider could be instantiated"));
+                .orElseThrow(
+                        () ->
+                                new IllegalStateException(
+                                        "No A2AHttpClientProvider could be instantiated"));
     }
-
 }

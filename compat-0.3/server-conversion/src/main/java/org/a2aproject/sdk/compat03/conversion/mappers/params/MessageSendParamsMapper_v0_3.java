@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.params;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.MessageMapper_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
 import org.a2aproject.sdk.spec.MessageSendParams;
@@ -24,13 +24,16 @@ import org.mapstruct.Mapper;
  * <p>
  * Uses {@link MessageMapper_v0_3} and {@link MessageSendConfigurationMapper_v0_3} for nested conversions.
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {MessageMapper_v0_3.class, MessageSendConfigurationMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {MessageMapper_v0_3.class, MessageSendConfigurationMapper_v0_3.class})
 public interface MessageSendParamsMapper_v0_3 {
 
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    MessageSendParamsMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(MessageSendParamsMapper_v0_3.class);
+    MessageSendParamsMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(MessageSendParamsMapper_v0_3.class);
 
     /**
      * Converts v0.3 MessageSendParams to v1.0 MessageSendParams.
@@ -46,11 +49,11 @@ public interface MessageSendParamsMapper_v0_3 {
         }
 
         return new MessageSendParams(
-            MessageMapper_v0_3.INSTANCE.toV10(v03.message()),
-            MessageSendConfigurationMapper_v0_3.INSTANCE.toV10(v03.configuration()),
-            v03.metadata(),
-            ""  // Default tenant
-        );
+                MessageMapper_v0_3.INSTANCE.toV10(v03.message()),
+                MessageSendConfigurationMapper_v0_3.INSTANCE.toV10(v03.configuration()),
+                v03.metadata(),
+                "" // Default tenant
+                );
     }
 
     /**
@@ -67,9 +70,8 @@ public interface MessageSendParamsMapper_v0_3 {
         }
 
         return new MessageSendParams_v0_3(
-            MessageMapper_v0_3.INSTANCE.fromV10(v10.message()),
-            MessageSendConfigurationMapper_v0_3.INSTANCE.fromV10(v10.configuration()),
-            v10.metadata()
-        );
+                MessageMapper_v0_3.INSTANCE.fromV10(v10.message()),
+                MessageSendConfigurationMapper_v0_3.INSTANCE.fromV10(v10.configuration()),
+                v10.metadata());
     }
 }

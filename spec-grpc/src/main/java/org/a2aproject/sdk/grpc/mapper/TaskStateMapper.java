@@ -32,8 +32,10 @@ public interface TaskStateMapper {
         return switch (domain) {
             case TASK_STATE_SUBMITTED -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_SUBMITTED;
             case TASK_STATE_WORKING -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_WORKING;
-            case TASK_STATE_INPUT_REQUIRED -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
-            case TASK_STATE_AUTH_REQUIRED -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
+            case TASK_STATE_INPUT_REQUIRED ->
+                    org.a2aproject.sdk.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
+            case TASK_STATE_AUTH_REQUIRED ->
+                    org.a2aproject.sdk.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
             case TASK_STATE_COMPLETED -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_COMPLETED;
             case TASK_STATE_CANCELED -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_CANCELED;
             case TASK_STATE_FAILED -> org.a2aproject.sdk.grpc.TaskState.TASK_STATE_FAILED;
@@ -56,13 +58,16 @@ public interface TaskStateMapper {
         return switch (proto) {
             case TASK_STATE_SUBMITTED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_SUBMITTED;
             case TASK_STATE_WORKING -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_WORKING;
-            case TASK_STATE_INPUT_REQUIRED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_INPUT_REQUIRED;
-            case TASK_STATE_AUTH_REQUIRED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_AUTH_REQUIRED;
+            case TASK_STATE_INPUT_REQUIRED ->
+                    org.a2aproject.sdk.spec.TaskState.TASK_STATE_INPUT_REQUIRED;
+            case TASK_STATE_AUTH_REQUIRED ->
+                    org.a2aproject.sdk.spec.TaskState.TASK_STATE_AUTH_REQUIRED;
             case TASK_STATE_COMPLETED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_COMPLETED;
             case TASK_STATE_CANCELED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_CANCELED;
             case TASK_STATE_FAILED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_FAILED;
             case TASK_STATE_REJECTED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_REJECTED;
-            case TASK_STATE_UNSPECIFIED, UNRECOGNIZED -> org.a2aproject.sdk.spec.TaskState.TASK_STATE_UNSPECIFIED;
+            case TASK_STATE_UNSPECIFIED, UNRECOGNIZED ->
+                    org.a2aproject.sdk.spec.TaskState.TASK_STATE_UNSPECIFIED;
         };
     }
 }

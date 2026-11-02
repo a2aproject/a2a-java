@@ -22,9 +22,7 @@ import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
  */
 public final class GetExtendedAgentCardResponse extends A2AResponse<AgentCard> {
 
-    private GetExtendedAgentCardResponse() {
-    }
-
+    private GetExtendedAgentCardResponse() {}
 
     /**
      * Constructs response with full parameters.
@@ -34,7 +32,8 @@ public final class GetExtendedAgentCardResponse extends A2AResponse<AgentCard> {
      * @param result the agent card result
      * @param error the error if any
      */
-    public GetExtendedAgentCardResponse(String jsonrpc, Object id, AgentCard result, A2AError error) {
+    public GetExtendedAgentCardResponse(
+            String jsonrpc, Object id, AgentCard result, A2AError error) {
         super(jsonrpc, id, result, error, AgentCard.class);
     }
 
@@ -57,5 +56,4 @@ public final class GetExtendedAgentCardResponse extends A2AResponse<AgentCard> {
     public GetExtendedAgentCardResponse(Object id, AgentCard result) {
         this(null, id, result, null);
     }
-
 }

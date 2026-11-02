@@ -1,17 +1,15 @@
 package org.a2aproject.sdk.server.events;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.atomic.AtomicReference;
-
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicReference;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.server.tasks.TaskManager;
 import org.a2aproject.sdk.server.tasks.TaskPersistenceException;
@@ -87,7 +85,8 @@ public class MainEventBusProcessor implements Runnable {
      * this thread. A completed chain removes its own entry (compare-and-remove against the future
      * it added) so the map does not grow forever.
      */
-    private final ConcurrentHashMap<String, CompletableFuture<Void>> pushNotificationChains = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CompletableFuture<Void>> pushNotificationChains =
+            new ConcurrentHashMap<>();
 
     private MainEventBus eventBus;
 
@@ -106,11 +105,14 @@ public class MainEventBusProcessor implements Runnable {
      * Fields are initialized via the @Inject constructor.
      */
     @SuppressWarnings("NullAway")
-    protected MainEventBusProcessor() {
-    }
+    protected MainEventBusProcessor() {}
 
     @Inject
-    public MainEventBusProcessor(MainEventBus eventBus, TaskStore taskStore, PushNotificationSender pushSender, QueueManager queueManager) {
+    public MainEventBusProcessor(
+            MainEventBus eventBus,
+            TaskStore taskStore,
+            PushNotificationSender pushSender,
+            QueueManager queueManager) {
         this.eventBus = eventBus;
         this.taskStore = taskStore;
         this.pushSender = pushSender;
@@ -199,8 +201,9 @@ public class MainEventBusProcessor implements Runnable {
             try {
                 LOGGER.debug("MainEventBusProcessor: Waiting for event from MainEventBus...");
                 MainEventBusContext context = eventBus.take();
-                LOGGER.debug("MainEventBusProcessor: Retrieved event for task {} from MainEventBus",
-                            context.taskId());
+                LOGGER.debug(
+                        "MainEventBusProcessor: Retrieved event for task {} from MainEventBus",
+                        context.taskId());
                 processEvent(context);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -220,8 +223,10 @@ public class MainEventBusProcessor implements Runnable {
         // MainEventBus.submit() guarantees this is always a MainQueue
         EventQueue.MainQueue mainQueue = (EventQueue.MainQueue) context.eventQueue();
 
-        LOGGER.debug("MainEventBusProcessor: Processing event for task {}: {}",
-                    taskId, event.getClass().getSimpleName());
+        LOGGER.debug(
+                "MainEventBusProcessor: Processing event for task {}: {}",
+                taskId,
+                event.getClass().getSimpleName());
 
         Event eventToDistribute = null;
         UpdateResult updateResult = null;
@@ -237,48 +242,77 @@ public class MainEventBusProcessor implements Runnable {
                 eventToDistribute = event; // Success - distribute original event
 
                 // Trigger replication AFTER successful persistence
-                // SKIP replication if task is final - ReplicatedQueueManager handles this via TaskFinalizedEvent
+                // SKIP replication if task is final - ReplicatedQueueManager handles this via
+                // TaskFinalizedEvent
                 // to ensure final Task is sent before poison pill (QueueClosedEvent)
                 if (!isFinal) {
                     EventEnqueueHook hook = mainQueue.getEnqueueHook();
                     if (hook != null) {
-                        LOGGER.debug("Triggering replication hook for task {} after successful persistence", taskId);
+                        LOGGER.debug(
+                                "Triggering replication hook for task {} after successful"
+                                        + " persistence",
+                                taskId);
                         hook.onEnqueue(context.eventQueueItem());
                     }
                 } else {
-                    LOGGER.debug("Task {} is final - skipping replication hook (handled by ReplicatedQueueManager)", taskId);
+                    LOGGER.debug(
+                            "Task {} is final - skipping replication hook (handled by"
+                                    + " ReplicatedQueueManager)",
+                            taskId);
                 }
             } catch (InternalError e) {
                 // Persistence failed - create error event to distribute instead
-                LOGGER.error("Failed to persist event for task {}, distributing error to clients", taskId, e);
+                LOGGER.error(
+                        "Failed to persist event for task {}, distributing error to clients",
+                        taskId,
+                        e);
                 String errorMessage = "Failed to persist event: " + e.getMessage();
                 eventToDistribute = e;
             } catch (Exception e) {
-                LOGGER.error("Failed to persist event for task {}, distributing error to clients", taskId, e);
+                LOGGER.error(
+                        "Failed to persist event for task {}, distributing error to clients",
+                        taskId,
+                        e);
                 String errorMessage = "Failed to persist event: " + e.getMessage();
                 eventToDistribute = new InternalError(errorMessage);
             }
 
             // Step 2: Send push notification AFTER successful persistence (only from active node)
-            // Skip push notifications for replicated events to avoid duplicate notifications in multi-instance deployments
-            // Push notifications are sent for all StreamingEventKind events (Task, Message, TaskStatusUpdateEvent, TaskArtifactUpdateEvent)
+            // Skip push notifications for replicated events to avoid duplicate notifications in
+            // multi-instance deployments
+            // Push notifications are sent for all StreamingEventKind events (Task, Message,
+            // TaskStatusUpdateEvent, TaskArtifactUpdateEvent)
             // per A2A spec section 4.3.3
-            if (!isReplicated && eventToDistribute == event && event instanceof StreamingEventKind streamingEvent) {
-                // Send the streaming event directly - it will be wrapped in StreamResponse format by PushNotificationSender
-                sendPushNotification(taskId, streamingEvent, updateResult != null ? updateResult.taskSnapshot() : null);
+            if (!isReplicated
+                    && eventToDistribute == event
+                    && event instanceof StreamingEventKind streamingEvent) {
+                // Send the streaming event directly - it will be wrapped in StreamResponse format
+                // by PushNotificationSender
+                sendPushNotification(
+                        taskId,
+                        streamingEvent,
+                        updateResult != null ? updateResult.taskSnapshot() : null);
             }
 
-            // Step 3: Then distribute to ChildQueues (clients see either event or error AFTER persistence attempt)
+            // Step 3: Then distribute to ChildQueues (clients see either event or error AFTER
+            // persistence attempt)
             int childCount = mainQueue.getChildCount();
-            LOGGER.debug("MainEventBusProcessor: Distributing {} to {} children for task {}",
-                        eventToDistribute.getClass().getSimpleName(), childCount, taskId);
+            LOGGER.debug(
+                    "MainEventBusProcessor: Distributing {} to {} children for task {}",
+                    eventToDistribute.getClass().getSimpleName(),
+                    childCount,
+                    taskId);
             // Create new EventQueueItem with the event to distribute (original or error)
             EventQueueItem itemToDistribute = new LocalEventQueueItem(eventToDistribute);
             mainQueue.distributeToChildren(itemToDistribute);
-            LOGGER.debug("MainEventBusProcessor: Distributed {} to {} children for task {}",
-                        eventToDistribute.getClass().getSimpleName(), childCount, taskId);
+            LOGGER.debug(
+                    "MainEventBusProcessor: Distributed {} to {} children for task {}",
+                    eventToDistribute.getClass().getSimpleName(),
+                    childCount,
+                    taskId);
 
-            // Step 3b: Notify stream lifecycle hook after distribution (only if there were active subscribers)
+            // Step 3b: Notify stream lifecycle hook after distribution (only if there were active
+            // subscribers)
             TaskStreamLifecycleHook streamHook = mainQueue.getTaskStreamLifecycleHook();
             if (streamHook != null && childCount > 0) {
                 try {
@@ -304,7 +338,7 @@ public class MainEventBusProcessor implements Runnable {
                     }
                 }
             } finally {
-                 // ALWAYS release semaphore, even if processing fails
+                // ALWAYS release semaphore, even if processing fails
                 // Balances the acquire() in MainQueue.enqueueEvent()
                 mainQueue.releaseSemaphore();
             }
@@ -329,7 +363,8 @@ public class MainEventBusProcessor implements Runnable {
      * @return true if the task reached a final state, false otherwise
      * @throws InternalError if persistence fails
      */
-    private UpdateResult updateTaskStore(String taskId, Event event, boolean isReplicated) throws InternalError {
+    private UpdateResult updateTaskStore(String taskId, Event event, boolean isReplicated)
+            throws InternalError {
         try {
             // Extract contextId from event (all relevant events have it)
             String contextId = extractContextId(event);
@@ -340,14 +375,22 @@ public class MainEventBusProcessor implements Runnable {
             // Use TaskManager.process() - handles all event types with existing logic
             AtomicReference<Task> taskSnapshot = new AtomicReference<>();
             boolean isFinal = taskManager.process(event, isReplicated, taskSnapshot);
-            LOGGER.debug("TaskStore updated via TaskManager.process() for task {}: {} (final: {}, replicated: {})",
-                        taskId, event.getClass().getSimpleName(), isFinal, isReplicated);
+            LOGGER.debug(
+                    "TaskStore updated via TaskManager.process() for task {}: {} (final: {},"
+                            + " replicated: {})",
+                    taskId,
+                    event.getClass().getSimpleName(),
+                    isFinal,
+                    isReplicated);
             return new UpdateResult(isFinal, taskSnapshot.get());
 
         } catch (TaskSerializationException e) {
             // Data corruption or schema mismatch - ALWAYS permanent
-            LOGGER.error("Task {} event serialization failed - data corruption detected: {}",
-                        taskId, e.getMessage(), e);
+            LOGGER.error(
+                    "Task {} event serialization failed - data corruption detected: {}",
+                    taskId,
+                    e.getMessage(),
+                    e);
             throw new InternalError("Failed to serialize task " + taskId + ": " + e.getMessage());
 
         } catch (TaskPersistenceException e) {
@@ -405,34 +448,50 @@ public class MainEventBusProcessor implements Runnable {
      * @param taskId the task ID
      * @param event the streaming event to send (Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent)
      */
-    private void sendPushNotification(String taskId, StreamingEventKind event, @Nullable Task taskSnapshot) {
-        Runnable pushTask = () -> {
-            try {
-                if (event != null) {
-                    LOGGER.debug("Sending push notification for task {}", taskId);
-                    boolean sent = pushSender.sendNotification(event, taskSnapshot);
-                    if (!sent) {
-                        LOGGER.warn("One or more push notification deliveries failed for task {}", taskId);
+    private void sendPushNotification(
+            String taskId, StreamingEventKind event, @Nullable Task taskSnapshot) {
+        Runnable pushTask =
+                () -> {
+                    try {
+                        if (event != null) {
+                            LOGGER.debug("Sending push notification for task {}", taskId);
+                            boolean sent = pushSender.sendNotification(event, taskSnapshot);
+                            if (!sent) {
+                                LOGGER.warn(
+                                        "One or more push notification deliveries failed for task"
+                                                + " {}",
+                                        taskId);
+                            }
+                        } else {
+                            LOGGER.debug(
+                                    "Skipping push notification - event is null for task {}",
+                                    taskId);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Error sending push notification for task {}", taskId, e);
+                        // Don't rethrow - push notifications are best-effort
                     }
-                } else {
-                    LOGGER.debug("Skipping push notification - event is null for task {}", taskId);
-                }
-            } catch (Exception e) {
-                LOGGER.error("Error sending push notification for task {}", taskId, e);
-                // Don't rethrow - push notifications are best-effort
-            }
-        };
+                };
 
-        Executor executor = pushNotificationExecutor != null ? pushNotificationExecutor : ForkJoinPool.commonPool();
+        Executor executor =
+                pushNotificationExecutor != null
+                        ? pushNotificationExecutor
+                        : ForkJoinPool.commonPool();
 
         // Registered after compute() returns: with a synchronous executor, next
         // completes before compute()'s lambda returns, so attaching whenComplete
         // in there fires the removal before next is even stored -- a no-op that
         // leaks one entry per task.
-        CompletableFuture<Void> next = pushNotificationChains.compute(taskId, (id, previous) -> {
-            CompletableFuture<Void> previousOrDone = previous != null ? previous : CompletableFuture.completedFuture(null);
-            return previousOrDone.thenRunAsync(pushTask, executor);
-        });
+        CompletableFuture<Void> next =
+                pushNotificationChains.compute(
+                        taskId,
+                        (id, previous) -> {
+                            CompletableFuture<Void> previousOrDone =
+                                    previous != null
+                                            ? previous
+                                            : CompletableFuture.completedFuture(null);
+                            return previousOrDone.thenRunAsync(pushTask, executor);
+                        });
         next.whenComplete((v, t) -> pushNotificationChains.remove(taskId, next));
     }
 
@@ -461,7 +520,8 @@ public class MainEventBusProcessor implements Runnable {
      */
     private boolean isFinalEvent(Event event) {
         if (event instanceof Task task) {
-            return task.status() != null && task.status().state() != null
+            return task.status() != null
+                    && task.status().state() != null
                     && task.status().state().isFinal();
         } else if (event instanceof TaskStatusUpdateEvent statusUpdate) {
             return statusUpdate.isFinal();

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.spec.A2AClientError;
 import org.a2aproject.sdk.spec.A2AClientInvalidArgsError;
 import org.a2aproject.sdk.spec.A2AClientInvalidStateError;
@@ -44,13 +43,15 @@ class ClientTaskManager {
 
     synchronized Task saveTaskEvent(Task task) throws A2AClientInvalidArgsError {
         if (currentTask != null) {
-            throw new A2AClientInvalidArgsError("Task is already set, create new manager for new tasks.");
+            throw new A2AClientInvalidArgsError(
+                    "Task is already set, create new manager for new tasks.");
         }
         saveTask(task);
         return task;
     }
 
-    synchronized Task saveTaskEvent(TaskStatusUpdateEvent taskStatusUpdateEvent) throws A2AClientError {
+    synchronized Task saveTaskEvent(TaskStatusUpdateEvent taskStatusUpdateEvent)
+            throws A2AClientError {
         if (taskId == null) {
             taskId = taskStatusUpdateEvent.taskId();
         }
@@ -59,11 +60,12 @@ class ClientTaskManager {
         }
         Task task = currentTask;
         if (task == null) {
-            task = Task.builder()
-                    .status(new TaskStatus(TaskState.TASK_STATE_UNSPECIFIED))
-                    .id(taskId)
-                    .contextId(contextId == null ? "" : contextId)
-                    .build();
+            task =
+                    Task.builder()
+                            .status(new TaskStatus(TaskState.TASK_STATE_UNSPECIFIED))
+                            .id(taskId)
+                            .contextId(contextId == null ? "" : contextId)
+                            .build();
         }
 
         Task.Builder taskBuilder = Task.builder(task);
@@ -77,7 +79,8 @@ class ClientTaskManager {
             }
         }
         if (taskStatusUpdateEvent.metadata() != null) {
-            Map<String, Object> newMetadata = task.metadata() != null ? new HashMap<>(task.metadata()) : new HashMap<>();
+            Map<String, Object> newMetadata =
+                    task.metadata() != null ? new HashMap<>(task.metadata()) : new HashMap<>();
             newMetadata.putAll(taskStatusUpdateEvent.metadata());
             taskBuilder.metadata(newMetadata);
         }
@@ -95,11 +98,12 @@ class ClientTaskManager {
         }
         Task task = currentTask;
         if (task == null) {
-            task = Task.builder()
-                    .status(new TaskStatus(TaskState.TASK_STATE_UNSPECIFIED))
-                    .id(taskId)
-                    .contextId(contextId == null ? "" : contextId)
-                    .build();
+            task =
+                    Task.builder()
+                            .status(new TaskStatus(TaskState.TASK_STATE_UNSPECIFIED))
+                            .id(taskId)
+                            .contextId(contextId == null ? "" : contextId)
+                            .build();
         }
         currentTask = appendArtifactToTask(task, taskArtifactUpdateEvent, taskId);
         return currentTask;
@@ -118,7 +122,8 @@ class ClientTaskManager {
         List<Message> history = new ArrayList<>(task.history());
         if (task.status().message() != null) {
             history.add(task.status().message());
-            taskBuilder.status(new TaskStatus(task.status().state(), null, task.status().timestamp()));
+            taskBuilder.status(
+                    new TaskStatus(task.status().state(), null, task.status().timestamp()));
         }
         history.add(message);
         taskBuilder.history(history);

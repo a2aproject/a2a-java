@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
@@ -21,7 +21,9 @@ import org.mapstruct.Mapper;
  *   <li>Preserving the timestamp field (same type in both versions)</li>
  * </ul>
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {TaskStateMapper_v0_3.class, MessageMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {TaskStateMapper_v0_3.class, MessageMapper_v0_3.class})
 public interface TaskStatusMapper_v0_3 {
 
     /**
@@ -43,10 +45,9 @@ public interface TaskStatusMapper_v0_3 {
         }
 
         return new TaskStatus(
-            TaskStateMapper_v0_3.INSTANCE.toV10(v03.state()),
-            MessageMapper_v0_3.INSTANCE.toV10(v03.message()),
-            v03.timestamp()
-        );
+                TaskStateMapper_v0_3.INSTANCE.toV10(v03.state()),
+                MessageMapper_v0_3.INSTANCE.toV10(v03.message()),
+                v03.timestamp());
     }
 
     /**
@@ -63,9 +64,8 @@ public interface TaskStatusMapper_v0_3 {
         }
 
         return new TaskStatus_v0_3(
-            TaskStateMapper_v0_3.INSTANCE.fromV10(v10.state()),
-            MessageMapper_v0_3.INSTANCE.fromV10(v10.message()),
-            v10.timestamp()
-        );
+                TaskStateMapper_v0_3.INSTANCE.fromV10(v10.state()),
+                MessageMapper_v0_3.INSTANCE.fromV10(v10.message()),
+                v10.timestamp());
     }
 }

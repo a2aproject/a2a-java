@@ -19,8 +19,7 @@ import org.jspecify.annotations.Nullable;
  */
 public final class ProtoJsonUtils_v0_3 {
 
-    private ProtoJsonUtils_v0_3() {
-    }
+    private ProtoJsonUtils_v0_3() {}
 
     /**
      * Serializes a protobuf message to JSON using the supplied printer,
@@ -32,7 +31,8 @@ public final class ProtoJsonUtils_v0_3 {
      * @param proto   the protobuf message to serialize, or {@code null}
      * @return JSON string without HTML-escaped characters, or empty string if proto is null
      */
-    public static String toJson(JsonFormat.Printer printer, @Nullable MessageOrBuilder proto) throws InvalidProtocolBufferException {
+    public static String toJson(JsonFormat.Printer printer, @Nullable MessageOrBuilder proto)
+            throws InvalidProtocolBufferException {
         Assert.checkNotNullParam("printer", printer);
         if (proto == null) {
             return "";

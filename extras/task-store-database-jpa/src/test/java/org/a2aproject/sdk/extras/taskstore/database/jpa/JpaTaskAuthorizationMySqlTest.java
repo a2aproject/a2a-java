@@ -9,7 +9,10 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 @TestProfile(JpaTaskAuthorizationDatabaseProfile.MySql.class)
 @DisabledIfSystemProperty(named = "skipDockerTests", matches = "true")
 public class JpaTaskAuthorizationMySqlTest extends JpaTaskAuthorizationDatabaseTest {
-    @Override protected boolean mysql() { return true; }
+    @Override
+    protected boolean mysql() {
+        return true;
+    }
 
     @Test
     void temporaryTextSchemaDemonstratesCaseAndAccentEqualityFailure() throws Exception {

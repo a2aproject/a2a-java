@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -16,13 +15,19 @@ public record TaskArtifactUpdateEvent_v0_3(
         Artifact_v0_3 artifact,
         String contextId,
         Map<String, Object> metadata,
-        String kind
-) implements EventKind_v0_3, StreamingEventKind_v0_3, UpdateEvent_v0_3 {
+        String kind)
+        implements EventKind_v0_3, StreamingEventKind_v0_3, UpdateEvent_v0_3 {
 
     public static final String KIND = "artifact-update";
 
-    public TaskArtifactUpdateEvent_v0_3 (String taskId, @Nullable Boolean append, @Nullable Boolean lastChunk,
-                                         Artifact_v0_3 artifact, String contextId,@Nullable Map<String, Object> metadata, String kind){
+    public TaskArtifactUpdateEvent_v0_3(
+            String taskId,
+            @Nullable Boolean append,
+            @Nullable Boolean lastChunk,
+            Artifact_v0_3 artifact,
+            String contextId,
+            @Nullable Map<String, Object> metadata,
+            String kind) {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("artifact", artifact);
         Assert.checkNotNullParam("contextId", contextId);
@@ -38,9 +43,13 @@ public record TaskArtifactUpdateEvent_v0_3(
         this.metadata = metadata != null ? Map.copyOf(metadata) : null;
     }
 
-    public TaskArtifactUpdateEvent_v0_3(String taskId, Artifact_v0_3 artifact, String contextId,
-                                         @Nullable Boolean append, @Nullable Boolean lastChunk,
-                                         @Nullable Map<String, Object> metadata) {
+    public TaskArtifactUpdateEvent_v0_3(
+            String taskId,
+            Artifact_v0_3 artifact,
+            String contextId,
+            @Nullable Boolean append,
+            @Nullable Boolean lastChunk,
+            @Nullable Map<String, Object> metadata) {
         this(taskId, append, lastChunk, artifact, contextId, metadata, KIND);
     }
 
@@ -53,8 +62,7 @@ public record TaskArtifactUpdateEvent_v0_3(
         private Boolean lastChunk;
         private Map<String, Object> metadata;
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder(TaskArtifactUpdateEvent_v0_3 existing) {
             this.taskId = existing.taskId;
@@ -96,7 +104,8 @@ public record TaskArtifactUpdateEvent_v0_3(
         }
 
         public TaskArtifactUpdateEvent_v0_3 build() {
-            return new TaskArtifactUpdateEvent_v0_3(taskId, artifact, contextId, append, lastChunk, metadata);
+            return new TaskArtifactUpdateEvent_v0_3(
+                    taskId, artifact, contextId, append, lastChunk, metadata);
         }
     }
 }

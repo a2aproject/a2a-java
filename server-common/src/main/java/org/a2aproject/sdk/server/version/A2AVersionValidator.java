@@ -2,7 +2,6 @@ package org.a2aproject.sdk.server.version;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -40,17 +39,21 @@ public class A2AVersionValidator {
         }
 
         // Collect all unique protocol versions from all supported interfaces
-        List<String> supportedVersions = agentCard.supportedInterfaces().stream()
-                .map(AgentInterface::protocolVersion)
-                .distinct()
-                .collect(Collectors.toList());
+        List<String> supportedVersions =
+                agentCard.supportedInterfaces().stream()
+                        .map(AgentInterface::protocolVersion)
+                        .distinct()
+                        .collect(Collectors.toList());
 
         if (!isVersionCompatible(supportedVersions, requestedVersion)) {
             throw new VersionNotSupportedError(
-                null,
-                "Protocol version '" + requestedVersion + "' is not supported. " +
-                "Supported versions: " + supportedVersions,
-                null);
+                    null,
+                    "Protocol version '"
+                            + requestedVersion
+                            + "' is not supported. "
+                            + "Supported versions: "
+                            + supportedVersions,
+                    null);
         }
     }
 
@@ -103,7 +106,8 @@ public class A2AVersionValidator {
 
         String[] parts = version.split("\\.");
         if (parts.length < 2) {
-            throw new IllegalArgumentException("Version must have at least major.minor format: " + version);
+            throw new IllegalArgumentException(
+                    "Version must have at least major.minor format: " + version);
         }
 
         try {

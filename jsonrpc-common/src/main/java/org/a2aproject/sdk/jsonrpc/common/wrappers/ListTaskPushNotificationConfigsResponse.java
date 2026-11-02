@@ -18,11 +18,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<ListTaskPushNotificationConfigsResult> {
+public final class ListTaskPushNotificationConfigsResponse
+        extends A2AResponse<ListTaskPushNotificationConfigsResult> {
 
-    private ListTaskPushNotificationConfigsResponse() {
-    }
-
+    private ListTaskPushNotificationConfigsResponse() {}
 
     /**
      * Constructs response with all parameters.
@@ -32,7 +31,11 @@ public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<L
      * @param result the result containing list of push notification configurations and pagination info
      * @param error the error (if any)
      */
-    public ListTaskPushNotificationConfigsResponse(String jsonrpc, Object id, ListTaskPushNotificationConfigsResult result, A2AError error) {
+    public ListTaskPushNotificationConfigsResponse(
+            String jsonrpc,
+            Object id,
+            ListTaskPushNotificationConfigsResult result,
+            A2AError error) {
         super(jsonrpc, id, result, error, ListTaskPushNotificationConfigsResult.class);
     }
 
@@ -52,8 +55,8 @@ public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<L
      * @param id the request ID
      * @param result the result containing list of push notification configurations and pagination info
      */
-    public ListTaskPushNotificationConfigsResponse(Object id, ListTaskPushNotificationConfigsResult result) {
+    public ListTaskPushNotificationConfigsResponse(
+            Object id, ListTaskPushNotificationConfigsResult result) {
         this(null, id, result, null);
     }
-
 }

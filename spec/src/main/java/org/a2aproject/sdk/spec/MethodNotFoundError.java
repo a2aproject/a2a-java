@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -32,7 +31,10 @@ public class MethodNotFoundError extends A2AError {
      * @param message the error message (defaults to "Method not found" if null)
      * @param details additional error details (optional)
      */
-    public MethodNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public MethodNotFoundError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.METHOD_NOT_FOUND.code()),
                 defaultIfNull(message, "Method not found"),

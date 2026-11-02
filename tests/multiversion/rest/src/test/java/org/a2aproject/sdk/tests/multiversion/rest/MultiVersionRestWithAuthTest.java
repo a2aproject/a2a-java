@@ -5,11 +5,11 @@ import io.quarkus.test.junit.TestProfile;
 import io.vertx.core.Vertx;
 import jakarta.inject.Inject;
 import org.a2aproject.sdk.client.ClientBuilder;
-import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient;
 import org.a2aproject.sdk.client.transport.rest.RestTransport;
 import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
 import org.a2aproject.sdk.client.transport.spi.interceptors.auth.AuthInterceptor;
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerWithAuthTest;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
@@ -19,8 +19,7 @@ import org.junit.jupiter.api.Test;
 @TestProfile(AuthTestProfile.class)
 public class MultiVersionRestWithAuthTest extends AbstractA2AServerWithAuthTest {
 
-    @Inject
-    Vertx vertx;
+    @Inject Vertx vertx;
 
     public MultiVersionRestWithAuthTest() {
         super(8081);
@@ -38,11 +37,15 @@ public class MultiVersionRestWithAuthTest extends AbstractA2AServerWithAuthTest 
 
     @Override
     protected void configureTransportWithAuth(ClientBuilder builder) {
-        AuthInterceptor authInterceptor = new AuthInterceptor(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName) ? getEncodedCredentials() : null
-        );
+        AuthInterceptor authInterceptor =
+                new AuthInterceptor(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials()
+                                        : null);
 
-        builder.withTransport(RestTransport.class,
+        builder.withTransport(
+                RestTransport.class,
                 new RestTransportConfigBuilder()
                         .httpClient(new VertxA2AHttpClient(vertx))
                         .addInterceptor(authInterceptor));
@@ -50,9 +53,9 @@ public class MultiVersionRestWithAuthTest extends AbstractA2AServerWithAuthTest 
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(RestTransport.class,
-                new RestTransportConfigBuilder()
-                        .httpClient(new VertxA2AHttpClient(vertx)));
+        builder.withTransport(
+                RestTransport.class,
+                new RestTransportConfigBuilder().httpClient(new VertxA2AHttpClient(vertx)));
     }
 
     @Test

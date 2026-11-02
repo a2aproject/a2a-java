@@ -20,7 +20,8 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record OAuth2SecurityScheme(OAuthFlows flows, @Nullable String description, @Nullable String oauth2MetadataUrl)
+public record OAuth2SecurityScheme(
+        OAuthFlows flows, @Nullable String description, @Nullable String oauth2MetadataUrl)
         implements SecurityScheme {
 
     /**
@@ -75,8 +76,7 @@ public record OAuth2SecurityScheme(OAuthFlows flows, @Nullable String descriptio
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the OAuth flows configuration.
@@ -118,7 +118,8 @@ public record OAuth2SecurityScheme(OAuthFlows flows, @Nullable String descriptio
          * @throws IllegalArgumentException if flows is null
          */
         public OAuth2SecurityScheme build() {
-            return new OAuth2SecurityScheme(Assert.checkNotNullParam("flows", flows), description, oauth2MetadataUrl);
+            return new OAuth2SecurityScheme(
+                    Assert.checkNotNullParam("flows", flows), description, oauth2MetadataUrl);
         }
     }
 }

@@ -12,7 +12,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -38,8 +37,7 @@ class FileWithBytesTest {
     private static final String SVG_MIME_TYPE = "image/svg+xml";
     private static final String SVG_RESOURCE = "/a2a-logo-white.svg";
 
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     private Path svgPath() throws URISyntaxException {
         return Path.of(getClass().getResource(SVG_RESOURCE).toURI());
@@ -151,7 +149,7 @@ class FileWithBytesTest {
 
     @Test
     void testByteArrayConstructor_binaryContent() throws IOException {
-        byte[] content = new byte[]{0, 1, 2, (byte) 0xFF, (byte) 0xFE};
+        byte[] content = new byte[] {0, 1, 2, (byte) 0xFF, (byte) 0xFE};
 
         FileWithBytes fwb = new FileWithBytes("application/octet-stream", "bin.dat", content);
 
@@ -204,8 +202,10 @@ class FileWithBytesTest {
     void testPathConstructor_rejectsNonExistentFile() {
         Path nonExistent = tempDir.resolve("does-not-exist.txt");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new FileWithBytes("text/plain", nonExistent));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new FileWithBytes("text/plain", nonExistent));
 
         assertTrue(exception.getMessage().contains("does not exist"));
     }
@@ -215,8 +215,10 @@ class FileWithBytesTest {
         Path directory = tempDir.resolve("subdir");
         Files.createDirectory(directory);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new FileWithBytes("text/plain", directory));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new FileWithBytes("text/plain", directory));
 
         assertTrue(exception.getMessage().contains("Not a regular file"));
     }
@@ -232,8 +234,10 @@ class FileWithBytesTest {
             }
         }
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new FileWithBytes("application/octet-stream", largeFile));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new FileWithBytes("application/octet-stream", largeFile));
 
         assertTrue(exception.getMessage().contains("too large"));
         assertTrue(exception.getMessage().contains("maximum"));

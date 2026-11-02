@@ -28,7 +28,8 @@ import org.a2aproject.sdk.util.Assert;
  * @see <a href="https://www.jsonrpc.org/specification">JSON-RPC 2.0 Specification</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public abstract sealed class A2ARequest<T> implements A2AMessage permits NonStreamingJSONRPCRequest, StreamingJSONRPCRequest {
+public abstract sealed class A2ARequest<T> implements A2AMessage
+        permits NonStreamingJSONRPCRequest, StreamingJSONRPCRequest {
 
     /** The JSON-RPC protocol version. */
     protected String jsonrpc;
@@ -45,8 +46,7 @@ public abstract sealed class A2ARequest<T> implements A2AMessage permits NonStre
     /**
      * Default constructor for JSON deserialization.
      */
-    public A2ARequest() {
-    }
+    public A2ARequest() {}
 
     /**
      * {@inheritDoc}
@@ -91,7 +91,8 @@ public abstract sealed class A2ARequest<T> implements A2AMessage permits NonStre
      * @param params the parameters
      * @param paramsIsRequired whether parameters are required
      */
-    protected void validateAndSetJsonParameters(String jsonrpc, String method, Object id, T params, boolean paramsIsRequired) {
+    protected void validateAndSetJsonParameters(
+            String jsonrpc, String method, Object id, T params, boolean paramsIsRequired) {
         this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         if (!JSONRPC_VERSION.equals(this.jsonrpc)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
@@ -105,5 +106,4 @@ public abstract sealed class A2ARequest<T> implements A2AMessage permits NonStre
         }
         this.params = params;
     }
-
 }

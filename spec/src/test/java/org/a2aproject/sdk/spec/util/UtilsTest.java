@@ -1,12 +1,11 @@
 package org.a2aproject.sdk.spec.util;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.net.URISyntaxException;
-
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.junit.jupiter.api.Test;
 
@@ -26,14 +25,16 @@ class UtilsTest {
 
     @Test
     void testBuildBaseUrl_withAgentInterface_withDefaultTenant() {
-        AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "/default-tenant");
+        AgentInterface iface =
+                new AgentInterface("JSONRPC", "http://example.com", "/default-tenant");
         String url = Utils.buildBaseUrl(iface, null);
         assertEquals("http://example.com/default-tenant", url);
     }
 
     @Test
     void testBuildBaseUrl_withAgentInterface_withOverrideTenant() {
-        AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "/default-tenant");
+        AgentInterface iface =
+                new AgentInterface("JSONRPC", "http://example.com", "/default-tenant");
         String url = Utils.buildBaseUrl(iface, "/custom-tenant");
         assertEquals("http://example.com/custom-tenant", url);
     }
@@ -54,40 +55,58 @@ class UtilsTest {
 
     @Test
     void testBuildBaseUrl_withAgentInterface_nullInterface_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Utils.buildBaseUrl((AgentInterface) null, "/tenant");
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    Utils.buildBaseUrl((AgentInterface) null, "/tenant");
+                });
     }
 
     // ========== Security Validation Tests ==========
 
     @Test
     void testValidateTenant_pathTraversal_throws() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, "../../admin");
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, "../../admin");
+                        });
         assertNotNull(ex.getMessage());
-        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
+        assertEquals(
+                "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed",
+                ex.getMessage());
     }
 
     @Test
     void testValidateTenant_pathTraversalWithSlash_throws() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, "/../admin");
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, "/../admin");
+                        });
         assertNotNull(ex.getMessage());
-        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
+        assertEquals(
+                "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed",
+                ex.getMessage());
     }
 
     @Test
     void testValidateTenant_tooLong_throws() {
         String longTenant = "a".repeat(257);
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, longTenant);
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, longTenant);
+                        });
         assertNotNull(ex.getMessage());
         assertEquals("Tenant exceeds maximum length of 256 characters", ex.getMessage());
     }
@@ -103,63 +122,93 @@ class UtilsTest {
 
     @Test
     void testValidateTenant_invalidCharactersSpace_throws() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, "tenant with spaces");
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, "tenant with spaces");
+                        });
         assertNotNull(ex.getMessage());
-        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
+        assertEquals(
+                "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed",
+                ex.getMessage());
     }
 
     @Test
     void testValidateTenant_invalidCharactersSpecial_throws() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, "tenant@123");
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, "tenant@123");
+                        });
         assertNotNull(ex.getMessage());
-        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
+        assertEquals(
+                "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed",
+                ex.getMessage());
     }
 
     @Test
     void testValidateTenant_invalidCharactersQuery_throws() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, "tenant?param=value");
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, "tenant?param=value");
+                        });
         assertNotNull(ex.getMessage());
-        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
+        assertEquals(
+                "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed",
+                ex.getMessage());
     }
 
     @Test
     void testValidateTenant_slashInTenant_throws() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com", "");
-            Utils.buildBaseUrl(iface, "multi/level/tenant");
-        });
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            AgentInterface iface =
+                                    new AgentInterface("JSONRPC", "http://example.com", "");
+                            Utils.buildBaseUrl(iface, "multi/level/tenant");
+                        });
         assertNotNull(ex.getMessage());
-        assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
+        assertEquals(
+                "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed",
+                ex.getMessage());
     }
 
     @Test
     void testValidateTenant_leadingSlashMultiSegment_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Utils.validateTenant("/multi/level");
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    Utils.validateTenant("/multi/level");
+                });
     }
 
     @Test
     void testValidateTenant_intermediateSegments_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Utils.validateTenant("tenant/api/v1");
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    Utils.validateTenant("tenant/api/v1");
+                });
     }
 
     @Test
     void testValidateTenant_trailingSlashMultiSegment_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Utils.validateTenant("multi/level/");
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    Utils.validateTenant("multi/level/");
+                });
     }
 
     @Test
@@ -193,7 +242,8 @@ class UtilsTest {
     @Test
     void testBuildBaseUrl_complexScenario() {
         // Base URL with trailing slash, default tenant, custom override
-        AgentInterface iface = new AgentInterface("JSONRPC", "http://example.com:8080/api/", "/default");
+        AgentInterface iface =
+                new AgentInterface("JSONRPC", "http://example.com:8080/api/", "/default");
         String url = Utils.buildBaseUrl(iface, "custom-tenant");
         assertEquals("http://example.com:8080/api/custom-tenant", url);
     }
@@ -207,7 +257,8 @@ class UtilsTest {
 
     @Test
     void testBuildBaseUrl_httpsUrl() {
-        AgentInterface iface = new AgentInterface("JSONRPC", "https://secure.example.com", "/tenant");
+        AgentInterface iface =
+                new AgentInterface("JSONRPC", "https://secure.example.com", "/tenant");
         String url = Utils.buildBaseUrl(iface, null);
         assertEquals("https://secure.example.com/tenant", url);
     }
@@ -253,12 +304,14 @@ class UtilsTest {
 
     @Test
     void testBuildBaseUrl_string_urlAlreadyContainsTenant_noDoubling() {
-        assertEquals("http://example.com/acme", Utils.buildBaseUrl("http://example.com/acme", "acme"));
+        assertEquals(
+                "http://example.com/acme", Utils.buildBaseUrl("http://example.com/acme", "acme"));
     }
 
     @Test
     void testBuildBaseUrl_string_urlAlreadyContainsTenantWithTrailingSlash_noDoubling() {
-        assertEquals("http://example.com/acme", Utils.buildBaseUrl("http://example.com/acme/", "acme"));
+        assertEquals(
+                "http://example.com/acme", Utils.buildBaseUrl("http://example.com/acme/", "acme"));
     }
 
     // ========== buildBaseUrl(String, String) Tests ==========
@@ -275,17 +328,23 @@ class UtilsTest {
 
     @Test
     void testBuildBaseUrl_string_withTenant() {
-        assertEquals("http://example.com/my-tenant", Utils.buildBaseUrl("http://example.com", "my-tenant"));
+        assertEquals(
+                "http://example.com/my-tenant",
+                Utils.buildBaseUrl("http://example.com", "my-tenant"));
     }
 
     @Test
     void testBuildBaseUrl_string_withTenantLeadingSlash() {
-        assertEquals("http://example.com/my-tenant", Utils.buildBaseUrl("http://example.com", "/my-tenant"));
+        assertEquals(
+                "http://example.com/my-tenant",
+                Utils.buildBaseUrl("http://example.com", "/my-tenant"));
     }
 
     @Test
     void testBuildBaseUrl_string_withSubPath() {
-        assertEquals("http://example.com/spec03/my-tenant", Utils.buildBaseUrl("http://example.com/spec03", "my-tenant"));
+        assertEquals(
+                "http://example.com/spec03/my-tenant",
+                Utils.buildBaseUrl("http://example.com/spec03", "my-tenant"));
     }
 
     @Test
@@ -316,31 +375,36 @@ class UtilsTest {
 
     @Test
     void testBuildCardUrl_simple() {
-        assertEquals("http://example.com/.well-known/agent-card.json",
+        assertEquals(
+                "http://example.com/.well-known/agent-card.json",
                 Utils.buildCardUrl("http://example.com", "/.well-known/agent-card.json"));
     }
 
     @Test
     void testBuildCardUrl_baseTrailingSlash() {
-        assertEquals("http://example.com/.well-known/agent-card.json",
+        assertEquals(
+                "http://example.com/.well-known/agent-card.json",
                 Utils.buildCardUrl("http://example.com/", "/.well-known/agent-card.json"));
     }
 
     @Test
     void testBuildCardUrl_pathWithoutLeadingSlash() {
-        assertEquals("http://example.com/.well-known/agent-card.json",
+        assertEquals(
+                "http://example.com/.well-known/agent-card.json",
                 Utils.buildCardUrl("http://example.com", ".well-known/agent-card.json"));
     }
 
     @Test
     void testBuildCardUrl_preservesSubPath() {
-        assertEquals("http://example.com/spec03/.well-known/agent-card.json",
+        assertEquals(
+                "http://example.com/spec03/.well-known/agent-card.json",
                 Utils.buildCardUrl("http://example.com/spec03", "/.well-known/agent-card.json"));
     }
 
     @Test
     void testBuildCardUrl_noDoubleSlash() {
-        assertEquals("http://example.com/custom/agent.json",
+        assertEquals(
+                "http://example.com/custom/agent.json",
                 Utils.buildCardUrl("http://example.com/", "/custom/agent.json"));
     }
 
@@ -353,14 +417,17 @@ class UtilsTest {
 
     @Test
     void testStripWellKnownSuffix_withSuffix() {
-        assertEquals("http://example.com",
+        assertEquals(
+                "http://example.com",
                 Utils.stripWellKnownSuffix("http://example.com/.well-known/agent-card.json"));
     }
 
     @Test
     void testStripWellKnownSuffix_withSubPathAndSuffix() {
-        assertEquals("http://example.com/spec03",
-                Utils.stripWellKnownSuffix("http://example.com/spec03/.well-known/agent-card.json"));
+        assertEquals(
+                "http://example.com/spec03",
+                Utils.stripWellKnownSuffix(
+                        "http://example.com/spec03/.well-known/agent-card.json"));
     }
 
     @Test
@@ -370,42 +437,53 @@ class UtilsTest {
 
     @Test
     void testStripWellKnownSuffix_unrelatedPath() {
-        assertEquals("http://example.com/custom/agent.json",
+        assertEquals(
+                "http://example.com/custom/agent.json",
                 Utils.stripWellKnownSuffix("http://example.com/custom/agent.json"));
     }
 
     @Test
     void testStripWellKnownSuffix_tenantSpecific() {
-        assertEquals("http://example.com",
+        assertEquals(
+                "http://example.com",
                 Utils.stripWellKnownSuffix("http://example.com/.well-known/acme/agent-card.json"));
     }
 
     @Test
     void testStripWellKnownSuffix_tenantSpecificWithSubPath() {
-        assertEquals("http://example.com/spec03",
-                Utils.stripWellKnownSuffix("http://example.com/spec03/.well-known/acme/agent-card.json"));
+        assertEquals(
+                "http://example.com/spec03",
+                Utils.stripWellKnownSuffix(
+                        "http://example.com/spec03/.well-known/acme/agent-card.json"));
     }
 
     @Test
     void testStripWellKnownSuffix_tenantSpecificWithTrailingSlash() {
-        assertEquals("http://example.com",
+        assertEquals(
+                "http://example.com",
                 Utils.stripWellKnownSuffix("http://example.com/.well-known/acme/agent-card.json/"));
     }
 
     @Test
     void testStripWellKnownSuffix_multiLevelTenantNotStripped() {
         // Multi-level tenant paths (containing /) are not stripped
-        assertEquals("http://example.com/.well-known/org/team/agent-card.json",
-                Utils.stripWellKnownSuffix("http://example.com/.well-known/org/team/agent-card.json"));
+        assertEquals(
+                "http://example.com/.well-known/org/team/agent-card.json",
+                Utils.stripWellKnownSuffix(
+                        "http://example.com/.well-known/org/team/agent-card.json"));
     }
 
     @Test
     void testStripWellKnownSuffix_invalidTenantCharsNotStripped() {
         // Tenant with characters outside [a-zA-Z0-9_.-] must not be stripped
-        assertEquals("http://example.com/.well-known/invalid tenant/agent-card.json",
-                Utils.stripWellKnownSuffix("http://example.com/.well-known/invalid tenant/agent-card.json"));
-        assertEquals("http://example.com/.well-known/bad@tenant/agent-card.json",
-                Utils.stripWellKnownSuffix("http://example.com/.well-known/bad@tenant/agent-card.json"));
+        assertEquals(
+                "http://example.com/.well-known/invalid tenant/agent-card.json",
+                Utils.stripWellKnownSuffix(
+                        "http://example.com/.well-known/invalid tenant/agent-card.json"));
+        assertEquals(
+                "http://example.com/.well-known/bad@tenant/agent-card.json",
+                Utils.stripWellKnownSuffix(
+                        "http://example.com/.well-known/bad@tenant/agent-card.json"));
     }
 
     // -------------------------------------------------------------------------

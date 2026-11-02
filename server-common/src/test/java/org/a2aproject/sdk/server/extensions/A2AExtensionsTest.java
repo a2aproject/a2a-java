@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentExtension;
@@ -63,27 +62,27 @@ class A2AExtensionsTest {
 
     @Test
     void testFindExtensionByUri() {
-        AgentExtension ext1 = AgentExtension.builder()
-                .uri("foo")
-                .description("The Foo extension")
-                .build();
-        AgentExtension ext2 = AgentExtension.builder()
-                .uri("bar")
-                .description("The Bar extension")
-                .build();
+        AgentExtension ext1 =
+                AgentExtension.builder().uri("foo").description("The Foo extension").build();
+        AgentExtension ext2 =
+                AgentExtension.builder().uri("bar").description("The Bar extension").build();
 
-        AgentCard card = AgentCard.builder()
-                .name("Test Agent")
-                .description("Test Agent Description")
-                .version("1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://test.com")))
-                .skills(Collections.emptyList())
-                .defaultInputModes(Arrays.asList("text/plain"))
-                .defaultOutputModes(Arrays.asList("text/plain"))
-                .capabilities(AgentCapabilities.builder()
-                        .extensions(Arrays.asList(ext1, ext2))
-                        .build())
-                .build();
+        AgentCard card =
+                AgentCard.builder()
+                        .name("Test Agent")
+                        .description("Test Agent Description")
+                        .version("1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("jsonrpc", "http://test.com")))
+                        .skills(Collections.emptyList())
+                        .defaultInputModes(Arrays.asList("text/plain"))
+                        .defaultOutputModes(Arrays.asList("text/plain"))
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .extensions(Arrays.asList(ext1, ext2))
+                                        .build())
+                        .build();
 
         assertEquals(ext1, A2AExtensions.findExtensionByUri(card, "foo"));
         assertEquals(ext2, A2AExtensions.findExtensionByUri(card, "bar"));
@@ -92,18 +91,19 @@ class A2AExtensionsTest {
 
     @Test
     void testFindExtensionByUriNoExtensions() {
-        AgentCard card = AgentCard.builder()
-                .name("Test Agent")
-                .description("Test Agent Description")
-                .version("1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://test.com")))
-                .skills(Collections.emptyList())
-                .defaultInputModes(Arrays.asList("text/plain"))
-                .defaultOutputModes(Arrays.asList("text/plain"))
-                .capabilities(AgentCapabilities.builder()
-                        .extensions(null)
-                        .build())
-                .build();
+        AgentCard card =
+                AgentCard.builder()
+                        .name("Test Agent")
+                        .description("Test Agent Description")
+                        .version("1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("jsonrpc", "http://test.com")))
+                        .skills(Collections.emptyList())
+                        .defaultInputModes(Arrays.asList("text/plain"))
+                        .defaultOutputModes(Arrays.asList("text/plain"))
+                        .capabilities(AgentCapabilities.builder().extensions(null).build())
+                        .build();
 
         assertNull(A2AExtensions.findExtensionByUri(card, "foo"));
     }
@@ -111,16 +111,19 @@ class A2AExtensionsTest {
     @Test
     void testFindExtensionByUriNoCapabilities() {
         // Test with empty capabilities (no extensions list)
-        AgentCard card = AgentCard.builder()
-                .name("Test Agent")
-                .description("Test Agent Description")
-                .version("1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://test.com")))
-                .skills(Collections.emptyList())
-                .defaultInputModes(Arrays.asList("text/plain"))
-                .defaultOutputModes(Arrays.asList("text/plain"))
-                .capabilities(AgentCapabilities.builder().build())
-                .build();
+        AgentCard card =
+                AgentCard.builder()
+                        .name("Test Agent")
+                        .description("Test Agent Description")
+                        .version("1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("jsonrpc", "http://test.com")))
+                        .skills(Collections.emptyList())
+                        .defaultInputModes(Arrays.asList("text/plain"))
+                        .defaultOutputModes(Arrays.asList("text/plain"))
+                        .capabilities(AgentCapabilities.builder().build())
+                        .build();
 
         assertNull(A2AExtensions.findExtensionByUri(card, "foo"));
     }

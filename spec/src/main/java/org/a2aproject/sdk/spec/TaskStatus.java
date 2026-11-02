@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.time.OffsetDateTime;
-
-import org.a2aproject.sdk.util.Assert;
 import java.time.ZoneOffset;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -48,7 +47,8 @@ public record TaskStatus(TaskState state, @Nullable Message message, OffsetDateT
      * @param message optional status message
      * @param timestamp the status timestamp
      */
-    public TaskStatus(TaskState state, @Nullable Message message, @Nullable OffsetDateTime timestamp){
+    public TaskStatus(
+            TaskState state, @Nullable Message message, @Nullable OffsetDateTime timestamp) {
         this.state = Assert.checkNotNullParam("state", state);
         this.timestamp = timestamp == null ? OffsetDateTime.now(ZoneOffset.UTC) : timestamp;
         this.message = message;
@@ -62,6 +62,7 @@ public record TaskStatus(TaskState state, @Nullable Message message, OffsetDateT
     public OffsetDateTime timestamp() {
         return timestamp;
     }
+
     /**
      * Creates a TaskStatus with only a state, using the current UTC time as the timestamp.
      * <p>

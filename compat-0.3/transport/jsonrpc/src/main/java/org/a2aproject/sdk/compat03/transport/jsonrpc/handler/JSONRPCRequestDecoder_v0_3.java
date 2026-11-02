@@ -29,15 +29,14 @@ import org.jspecify.annotations.Nullable;
 /** Decodes compat JSON-RPC envelopes and typed requests without a server runtime. */
 public final class JSONRPCRequestDecoder_v0_3 {
 
-    private JSONRPCRequestDecoder_v0_3() {
-    }
+    private JSONRPCRequestDecoder_v0_3() {}
 
-    public sealed interface DecodeResult permits DecodedRequest, DecodeFailure {
-    }
+    public sealed interface DecodeResult permits DecodedRequest, DecodeFailure {}
 
     /** The recovered ID is kept separately from the deserialized wrapper's ID. */
-    public record DecodedRequest(@Nullable Object requestId, String methodName,
-            JSONRPCRequest_v0_3<?> request) implements DecodeResult {
+    public record DecodedRequest(
+            @Nullable Object requestId, String methodName, JSONRPCRequest_v0_3<?> request)
+            implements DecodeResult {
         public DecodedRequest {
             Assert.checkNotNullParam("methodName", methodName);
             Assert.checkNotNullParam("request", request);
@@ -45,8 +44,9 @@ public final class JSONRPCRequestDecoder_v0_3 {
     }
 
     /** The method is available only after envelope validation has recovered it. */
-    public record DecodeFailure(@Nullable Object requestId, @Nullable String methodName,
-            JSONRPCError_v0_3 error) implements DecodeResult {
+    public record DecodeFailure(
+            @Nullable Object requestId, @Nullable String methodName, JSONRPCError_v0_3 error)
+            implements DecodeResult {
         public DecodeFailure {
             Assert.checkNotNullParam("error", error);
         }
@@ -69,39 +69,50 @@ public final class JSONRPCRequestDecoder_v0_3 {
             // Extract id field early so error responses can include it
             com.google.gson.JsonElement idElement = node.get("id");
             if (idElement != null && !idElement.isJsonNull() && !idElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: 'id' must be a string, number, or null");
+                throw new InvalidRequestError_v0_3(
+                        "Invalid JSON-RPC request: 'id' must be a string, number, or null");
             }
             if (idElement != null && !idElement.isJsonNull() && idElement.isJsonPrimitive()) {
                 com.google.gson.JsonPrimitive idPrimitive = idElement.getAsJsonPrimitive();
-                requestId = idPrimitive.isNumber() ? idPrimitive.getAsLong() : idPrimitive.getAsString();
+                requestId =
+                        idPrimitive.isNumber()
+                                ? idPrimitive.getAsLong()
+                                : idPrimitive.getAsString();
             }
 
             // Validate jsonrpc field
             com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
-            if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
+            if (jsonrpcElement == null
+                    || !jsonrpcElement.isJsonPrimitive()
                     || !JSONRPCMessage_v0_3.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
+                throw new InvalidRequestError_v0_3(
+                        "Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
             }
 
             // Validate method field
             com.google.gson.JsonElement methodElement = node.get("method");
-            if (methodElement == null || !methodElement.isJsonPrimitive()
+            if (methodElement == null
+                    || !methodElement.isJsonPrimitive()
                     || !methodElement.getAsJsonPrimitive().isString()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'method' field");
+                throw new InvalidRequestError_v0_3(
+                        "Invalid JSON-RPC request: missing or invalid 'method' field");
             }
 
             methodName = methodElement.getAsString();
 
-            boolean streaming = SendStreamingMessageRequest_v0_3.METHOD.equals(methodName)
-                    || TaskResubscriptionRequest_v0_3.METHOD.equals(methodName);
-            JSONRPCRequest_v0_3<?> request = streaming
-                    ? deserializeStreamingRequest(requestBody, methodName)
-                    : deserializeNonStreamingRequest(requestBody, methodName);
+            boolean streaming =
+                    SendStreamingMessageRequest_v0_3.METHOD.equals(methodName)
+                            || TaskResubscriptionRequest_v0_3.METHOD.equals(methodName);
+            JSONRPCRequest_v0_3<?> request =
+                    streaming
+                            ? deserializeStreamingRequest(requestBody, methodName)
+                            : deserializeNonStreamingRequest(requestBody, methodName);
             return new DecodedRequest(requestId, methodName, request);
         } catch (JSONRPCError_v0_3 e) {
             return new DecodeFailure(requestId, methodName, e);
         } catch (JsonSyntaxException e) {
-            return new DecodeFailure(requestId, methodName, new JSONParseError_v0_3(e.getMessage()));
+            return new DecodeFailure(
+                    requestId, methodName, new JSONParseError_v0_3(e.getMessage()));
         } catch (Throwable t) {
             return new DecodeFailure(requestId, methodName, new InternalError_v0_3(t.getMessage()));
         }
@@ -114,17 +125,31 @@ public final class JSONRPCRequestDecoder_v0_3 {
         return JsonParser.parseString(body).getAsJsonObject();
     }
 
-    private static NonStreamingJSONRPCRequest_v0_3<?> deserializeNonStreamingRequest(String body, String methodName) {
+    private static NonStreamingJSONRPCRequest_v0_3<?> deserializeNonStreamingRequest(
+            String body, String methodName) {
         try {
             return switch (methodName) {
-                case GetTaskRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, GetTaskRequest_v0_3.class);
-                case CancelTaskRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, CancelTaskRequest_v0_3.class);
-                case SendMessageRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, SendMessageRequest_v0_3.class);
-                case SetTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, SetTaskPushNotificationConfigRequest_v0_3.class);
-                case GetTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, GetTaskPushNotificationConfigRequest_v0_3.class);
-                case ListTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, ListTaskPushNotificationConfigRequest_v0_3.class);
-                case DeleteTaskPushNotificationConfigRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, DeleteTaskPushNotificationConfigRequest_v0_3.class);
-                case GetAuthenticatedExtendedCardRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, GetAuthenticatedExtendedCardRequest_v0_3.class);
+                case GetTaskRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(body, GetTaskRequest_v0_3.class);
+                case CancelTaskRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(body, CancelTaskRequest_v0_3.class);
+                case SendMessageRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(body, SendMessageRequest_v0_3.class);
+                case SetTaskPushNotificationConfigRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(
+                                body, SetTaskPushNotificationConfigRequest_v0_3.class);
+                case GetTaskPushNotificationConfigRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(
+                                body, GetTaskPushNotificationConfigRequest_v0_3.class);
+                case ListTaskPushNotificationConfigRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(
+                                body, ListTaskPushNotificationConfigRequest_v0_3.class);
+                case DeleteTaskPushNotificationConfigRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(
+                                body, DeleteTaskPushNotificationConfigRequest_v0_3.class);
+                case GetAuthenticatedExtendedCardRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(
+                                body, GetAuthenticatedExtendedCardRequest_v0_3.class);
                 default -> throw new MethodNotFoundError_v0_3();
             };
         } catch (JSONRPCError_v0_3 e) {
@@ -134,11 +159,14 @@ public final class JSONRPCRequestDecoder_v0_3 {
         }
     }
 
-    private static StreamingJSONRPCRequest_v0_3<?> deserializeStreamingRequest(String body, String methodName) {
+    private static StreamingJSONRPCRequest_v0_3<?> deserializeStreamingRequest(
+            String body, String methodName) {
         try {
             return switch (methodName) {
-                case SendStreamingMessageRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, SendStreamingMessageRequest_v0_3.class);
-                case TaskResubscriptionRequest_v0_3.METHOD -> JsonUtil_v0_3.fromJson(body, TaskResubscriptionRequest_v0_3.class);
+                case SendStreamingMessageRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(body, SendStreamingMessageRequest_v0_3.class);
+                case TaskResubscriptionRequest_v0_3.METHOD ->
+                        JsonUtil_v0_3.fromJson(body, TaskResubscriptionRequest_v0_3.class);
                 default -> throw new MethodNotFoundError_v0_3();
             };
         } catch (JSONRPCError_v0_3 e) {
@@ -147,5 +175,4 @@ public final class JSONRPCRequestDecoder_v0_3 {
             throw new InvalidParamsError_v0_3(e.getMessage());
         }
     }
-
 }

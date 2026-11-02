@@ -1,10 +1,10 @@
 package org.a2aproject.sdk.client.http;
 
-import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,10 +23,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import org.jspecify.annotations.Nullable;
-
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Default HTTP client implementation using JDK 11+ {@link HttpClient}.
@@ -99,7 +98,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
      * @return a client with secure transport defaults and the supplied redirect policy
      */
-    public static JdkA2AHttpClient withRedirectHeaderPolicy(RedirectHeaderPolicy redirectHeaderPolicy) {
+    public static JdkA2AHttpClient withRedirectHeaderPolicy(
+            RedirectHeaderPolicy redirectHeaderPolicy) {
         return withConfiguration(SSEParserConfig.DEFAULT, redirectHeaderPolicy);
     }
 
@@ -131,7 +131,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     /** Creates a default JDK client with custom SSE and redirect settings. */
     public static JdkA2AHttpClient withConfiguration(
             SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
-        return new JdkA2AHttpClient(createDefaultHttpClient(), sseParserConfig, redirectHeaderPolicy);
+        return new JdkA2AHttpClient(
+                createDefaultHttpClient(), sseParserConfig, redirectHeaderPolicy);
     }
 
     private static HttpClient createDefaultHttpClient() {
@@ -241,7 +242,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         @Override
         public T addHeaders(Map<String, String> headers) {
-            if(headers != null && ! headers.isEmpty()) {
+            if (headers != null && !headers.isEmpty()) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
                     addHeader(entry.getKey(), entry.getValue());
                 }
@@ -272,126 +273,148 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 HttpRequest request,
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable
-        ) {
-            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer, sseParserConfig);
+                Runnable completeRunnable) {
+            ServerSentEventParser sseParser =
+                    new ServerSentEventParser(messageConsumer, errorConsumer, sseParserConfig);
             AtomicBoolean useSseParser = new AtomicBoolean(false);
             AtomicBoolean errorNotified = new AtomicBoolean(false);
             StringBuilder nonSseBodyBuffer = new StringBuilder();
 
-            Flow.Subscriber<String> subscriber = new Flow.Subscriber<String>() {
-                private Flow.@Nullable Subscription subscription;
+            Flow.Subscriber<String> subscriber =
+                    new Flow.Subscriber<String>() {
+                        private Flow.@Nullable Subscription subscription;
 
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    this.subscription = subscription;
-                    this.subscription.request(1);
-                }
-
-                @Override
-                public void onNext(String item) {
-                    if (item != null) {
-                        if (useSseParser.get()) {
-                            sseParser.processLine(item);
-                        } else {
-                            // Preserve blank lines so JSON string values containing literal newlines survive intact
-                            if (nonSseBodyBuffer.length() > 0) {
-                                nonSseBodyBuffer.append('\n');
-                            }
-                            nonSseBodyBuffer.append(item);
-                        }
-                    }
-                    if (subscription != null) {
-                        subscription.request(1);
-                    }
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    if (errorNotified.compareAndSet(false, true)) {
-                        if (!isCancellation(throwable)) {
-                            errorConsumer.accept(throwable);
-                        }
-                    }
-                }
-
-                @Override
-                public void onComplete() {
-                    if (errorNotified.compareAndSet(false, true)) {
-                        if (useSseParser.get()) {
-                            sseParser.flush();
-                        } else {
-                            String body = nonSseBodyBuffer.toString();
-                            if (!body.isEmpty()) {
-                                messageConsumer.accept(new ServerSentEvent(body));
-                            }
-                        }
-                        completeRunnable.run();
-                    }
-                }
-            };
-
-            // Create a custom body handler that checks status and Content-Type before processing body
-            BodyHandler<Void> bodyHandler = responseInfo -> {
-                // Check for authentication/authorization errors only
-                if (responseInfo.statusCode() == HTTP_UNAUTHORIZED || responseInfo.statusCode() == HTTP_FORBIDDEN) {
-                    final int statusCode = responseInfo.statusCode();
-                    final String errorMessage = statusCode == HTTP_UNAUTHORIZED
-                            ? A2AErrorMessages.AUTHENTICATION_FAILED
-                            : A2AErrorMessages.AUTHORIZATION_FAILED;
-                    final A2AClientHTTPError httpError = new A2AClientHTTPError(
-                            statusCode, errorMessage, null, responseInfo.headers().map());
-                    // Return a body subscriber that immediately signals error
-                    return BodySubscribers.fromSubscriber(new Flow.Subscriber<List<ByteBuffer>>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
-                            subscriber.onError(new IOException(errorMessage, httpError));
+                            this.subscription = subscription;
+                            this.subscription.request(1);
                         }
 
                         @Override
-                        public void onNext(List<ByteBuffer> item) {
-                            // Should not be called
+                        public void onNext(String item) {
+                            if (item != null) {
+                                if (useSseParser.get()) {
+                                    sseParser.processLine(item);
+                                } else {
+                                    // Preserve blank lines so JSON string values containing literal
+                                    // newlines survive intact
+                                    if (nonSseBodyBuffer.length() > 0) {
+                                        nonSseBodyBuffer.append('\n');
+                                    }
+                                    nonSseBodyBuffer.append(item);
+                                }
+                            }
+                            if (subscription != null) {
+                                subscription.request(1);
+                            }
                         }
 
                         @Override
                         public void onError(Throwable throwable) {
-                            // Should not be called
+                            if (errorNotified.compareAndSet(false, true)) {
+                                if (!isCancellation(throwable)) {
+                                    errorConsumer.accept(throwable);
+                                }
+                            }
                         }
 
                         @Override
                         public void onComplete() {
-                            // Should not be called
+                            if (errorNotified.compareAndSet(false, true)) {
+                                if (useSseParser.get()) {
+                                    sseParser.flush();
+                                } else {
+                                    String body = nonSseBodyBuffer.toString();
+                                    if (!body.isEmpty()) {
+                                        messageConsumer.accept(new ServerSentEvent(body));
+                                    }
+                                }
+                                completeRunnable.run();
+                            }
                         }
-                    });
-                }
-                // Use SSE parser only for actual SSE responses; plain body lines are forwarded directly
-                String contentType = responseInfo.headers().firstValue("Content-Type").orElse("");
-                boolean isSse = JdkHttpResponse.success(responseInfo.statusCode())
-                        && contentType.contains(EVENT_STREAM);
-                useSseParser.set(isSse);
-                if (isSse) {
-                    // Use a bounded byte-level subscriber so that the maxLineLength limit is
-                    // enforced *before* a full line is materialised in memory, preventing memory
-                    // exhaustion from a malicious server that never sends a newline.
-                    return new BoundedLineBodySubscriber(subscriber, sseParserConfig.maxLineLength(), sseParser);
-                }
-                return BodyHandlers.fromLineSubscriber(subscriber).apply(responseInfo);
-            };
+                    };
+
+            // Create a custom body handler that checks status and Content-Type before processing
+            // body
+            BodyHandler<Void> bodyHandler =
+                    responseInfo -> {
+                        // Check for authentication/authorization errors only
+                        if (responseInfo.statusCode() == HTTP_UNAUTHORIZED
+                                || responseInfo.statusCode() == HTTP_FORBIDDEN) {
+                            final int statusCode = responseInfo.statusCode();
+                            final String errorMessage =
+                                    statusCode == HTTP_UNAUTHORIZED
+                                            ? A2AErrorMessages.AUTHENTICATION_FAILED
+                                            : A2AErrorMessages.AUTHORIZATION_FAILED;
+                            final A2AClientHTTPError httpError =
+                                    new A2AClientHTTPError(
+                                            statusCode,
+                                            errorMessage,
+                                            null,
+                                            responseInfo.headers().map());
+                            // Return a body subscriber that immediately signals error
+                            return BodySubscribers.fromSubscriber(
+                                    new Flow.Subscriber<List<ByteBuffer>>() {
+                                        @Override
+                                        public void onSubscribe(Flow.Subscription subscription) {
+                                            subscriber.onError(
+                                                    new IOException(errorMessage, httpError));
+                                        }
+
+                                        @Override
+                                        public void onNext(List<ByteBuffer> item) {
+                                            // Should not be called
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable throwable) {
+                                            // Should not be called
+                                        }
+
+                                        @Override
+                                        public void onComplete() {
+                                            // Should not be called
+                                        }
+                                    });
+                        }
+                        // Use SSE parser only for actual SSE responses; plain body lines are
+                        // forwarded directly
+                        String contentType =
+                                responseInfo.headers().firstValue("Content-Type").orElse("");
+                        boolean isSse =
+                                JdkHttpResponse.success(responseInfo.statusCode())
+                                        && contentType.contains(EVENT_STREAM);
+                        useSseParser.set(isSse);
+                        if (isSse) {
+                            // Use a bounded byte-level subscriber so that the maxLineLength limit
+                            // is
+                            // enforced *before* a full line is materialised in memory, preventing
+                            // memory
+                            // exhaustion from a malicious server that never sends a newline.
+                            return new BoundedLineBodySubscriber(
+                                    subscriber, sseParserConfig.maxLineLength(), sseParser);
+                        }
+                        return BodyHandlers.fromLineSubscriber(subscriber).apply(responseInfo);
+                    };
 
             // Send the response async, and let the subscriber handle the lines.
             // handle() catches failures before the body handler is reached (e.g. connection
             // errors, DNS failures) and routes them to errorConsumer, then always completes
             // normally — consistent with the Vert.x and Android implementations.
             return client.sendAsync(request, bodyHandler)
-                    .<Void>handle((response, throwable) -> {
-                        if (throwable != null && errorNotified.compareAndSet(false, true)) {
-                            if (!isCancellation(throwable)) {
-                                Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
-                                errorConsumer.accept(cause);
-                            }
-                        }
-                        return null;
-                    });
+                    .<Void>handle(
+                            (response, throwable) -> {
+                                if (throwable != null && errorNotified.compareAndSet(false, true)) {
+                                    if (!isCancellation(throwable)) {
+                                        Throwable cause =
+                                                throwable.getCause() != null
+                                                        ? throwable.getCause()
+                                                        : throwable;
+                                        errorConsumer.accept(cause);
+                                    }
+                                }
+                                return null;
+                            });
         }
     }
 
@@ -408,7 +431,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         private HttpClient resolveClient() throws IOException {
             if (followRedirects && httpClient.followRedirects() != HttpClient.Redirect.NEVER) {
                 throw new IOException(
-                        "The supplied HttpClient must disable native redirects when followRedirects(true) is used");
+                        "The supplied HttpClient must disable native redirects when"
+                                + " followRedirects(true) is used");
             }
             return followRedirects ? httpClient : getNoRedirectClient();
         }
@@ -424,31 +448,47 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         @Override
         public A2AHttpResponse get() throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(false).build();
-            HttpResponse<String> response = resolveClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+            HttpResponse<String> response =
+                    resolveClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (followRedirects) {
                 String location = response.headers().firstValue("Location").orElse(null);
-                RedirectHeaderPolicy.RedirectedRequest redirect = redirectHeaderPolicy
-                        .redirectedRequest(request.uri(), response.statusCode(), location, headers)
-                        .orElse(null);
+                RedirectHeaderPolicy.RedirectedRequest redirect =
+                        redirectHeaderPolicy
+                                .redirectedRequest(
+                                        request.uri(), response.statusCode(), location, headers)
+                                .orElse(null);
                 if (redirect != null) {
-                    HttpClient redirectClient = RedirectHeaderPolicy.sameOrigin(request.uri(), redirect.target())
-                            ? resolveClient()
-                            : getCredentialFreeNoRedirectClient();
-                    HttpRequest redirectRequest = createRequestBuilder(redirect.target(), redirect.headers())
-                            .GET().build();
-                    response = redirectClient.send(redirectRequest, BodyHandlers.ofString(StandardCharsets.UTF_8));
+                    HttpClient redirectClient =
+                            RedirectHeaderPolicy.sameOrigin(request.uri(), redirect.target())
+                                    ? resolveClient()
+                                    : getCredentialFreeNoRedirectClient();
+                    HttpRequest redirectRequest =
+                            createRequestBuilder(redirect.target(), redirect.headers())
+                                    .GET()
+                                    .build();
+                    response =
+                            redirectClient.send(
+                                    redirectRequest, BodyHandlers.ofString(StandardCharsets.UTF_8));
                 }
             }
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
-                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, response.headers().map()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_UNAUTHORIZED,
+                                A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null,
+                                response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
-                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, response.headers().map()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_FORBIDDEN,
+                                A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null,
+                                response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -458,35 +498,48 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         public CompletableFuture<Void> getAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException {
-            HttpRequest request = createRequestBuilder(true)
-                    .build();
-            return super.asyncRequest(getNoRedirectClient(), request, messageConsumer, errorConsumer, completeRunnable);
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
+            HttpRequest request = createRequestBuilder(true).build();
+            return super.asyncRequest(
+                    getNoRedirectClient(),
+                    request,
+                    messageConsumer,
+                    errorConsumer,
+                    completeRunnable);
         }
-
     }
 
-    private class JdkDeleteBuilder extends JdkBuilder<DeleteBuilder> implements A2AHttpClient.DeleteBuilder {
+    private class JdkDeleteBuilder extends JdkBuilder<DeleteBuilder>
+            implements A2AHttpClient.DeleteBuilder {
 
         @Override
         public A2AHttpResponse delete() throws IOException, InterruptedException {
             HttpRequest request = super.createRequestBuilder().DELETE().build();
             HttpResponse<String> response =
-                    getNoRedirectClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+                    getNoRedirectClient()
+                            .send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
-                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, response.headers().map()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_UNAUTHORIZED,
+                                A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null,
+                                response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
-                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, response.headers().map()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_FORBIDDEN,
+                                A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null,
+                                response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
         }
-
     }
 
     private HttpClient getNoRedirectClient() {
@@ -521,11 +574,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     }
 
     private HttpClient createNoRedirectClient(boolean includeCredentials) {
-        HttpClient.Builder builder = HttpClient.newBuilder()
-                .version(httpClient.version())
-                .followRedirects(HttpClient.Redirect.NEVER)
-                .sslContext(httpClient.sslContext())
-                .sslParameters(httpClient.sslParameters());
+        HttpClient.Builder builder =
+                HttpClient.newBuilder()
+                        .version(httpClient.version())
+                        .followRedirects(HttpClient.Redirect.NEVER)
+                        .sslContext(httpClient.sslContext())
+                        .sslParameters(httpClient.sslParameters());
         httpClient.connectTimeout().ifPresent(builder::connectTimeout);
         httpClient.proxy().ifPresent(builder::proxy);
         httpClient.executor().ifPresent(builder::executor);
@@ -538,7 +592,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         return builder.build();
     }
 
-    private class JdkPostBuilder extends JdkBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
+    private class JdkPostBuilder extends JdkBuilder<PostBuilder>
+            implements A2AHttpClient.PostBuilder {
         String body = "";
         boolean followRedirects = false;
 
@@ -555,8 +610,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         }
 
         private HttpRequest.Builder createRequestBuilder(boolean SSE) throws IOException {
-            HttpRequest.Builder builder = super.createRequestBuilder()
-                    .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+            HttpRequest.Builder builder =
+                    super.createRequestBuilder()
+                            .POST(
+                                    HttpRequest.BodyPublishers.ofString(
+                                            body, StandardCharsets.UTF_8));
             if (SSE) {
                 builder.header(ACCEPT, EVENT_STREAM);
             }
@@ -566,16 +624,21 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         private HttpClient resolveClient() throws IOException {
             if (followRedirects && httpClient.followRedirects() != HttpClient.Redirect.NEVER) {
                 throw new IOException(
-                        "The supplied HttpClient must disable native redirects when followRedirects(true) is used");
+                        "The supplied HttpClient must disable native redirects when"
+                                + " followRedirects(true) is used");
             }
             return followRedirects ? httpClient : getNoRedirectClient();
         }
 
         private HttpRequest createRedirectRequest(RedirectHeaderPolicy.RedirectedRequest redirect) {
-            HttpRequest.Builder builder = createRequestBuilder(redirect.target(), redirect.headers());
+            HttpRequest.Builder builder =
+                    createRequestBuilder(redirect.target(), redirect.headers());
             return redirect.redirectAsGet()
                     ? builder.GET().build()
-                    : builder.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build();
+                    : builder.POST(
+                                    HttpRequest.BodyPublishers.ofString(
+                                            body, StandardCharsets.UTF_8))
+                            .build();
         }
 
         @Override
@@ -586,28 +649,41 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
             if (followRedirects) {
                 String location = response.headers().firstValue("Location").orElse(null);
-                RedirectHeaderPolicy.RedirectedRequest redirect = redirectHeaderPolicy
-                        .redirectedRequest(request.uri(), response.statusCode(), location, headers)
-                        .orElse(null);
+                RedirectHeaderPolicy.RedirectedRequest redirect =
+                        redirectHeaderPolicy
+                                .redirectedRequest(
+                                        request.uri(), response.statusCode(), location, headers)
+                                .orElse(null);
                 if (redirect != null) {
                     // A caller-supplied CookieHandler may add credentials after our explicit
                     // header filtering. Do not use that client for a cross-origin follow-up.
-                    HttpClient redirectClient = RedirectHeaderPolicy.sameOrigin(request.uri(), redirect.target())
-                            ? resolveClient()
-                            : getCredentialFreeNoRedirectClient();
-                    response = redirectClient.send(
-                            createRedirectRequest(redirect), BodyHandlers.ofString(StandardCharsets.UTF_8));
+                    HttpClient redirectClient =
+                            RedirectHeaderPolicy.sameOrigin(request.uri(), redirect.target())
+                                    ? resolveClient()
+                                    : getCredentialFreeNoRedirectClient();
+                    response =
+                            redirectClient.send(
+                                    createRedirectRequest(redirect),
+                                    BodyHandlers.ofString(StandardCharsets.UTF_8));
                 }
             }
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
-                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, response.headers().map()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_UNAUTHORIZED,
+                                A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null,
+                                response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
-                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, response.headers().map()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_FORBIDDEN,
+                                A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null,
+                                response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -617,10 +693,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         public CompletableFuture<Void> postAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException {
-            HttpRequest request = createRequestBuilder(true)
-                    .build();
-            return super.asyncRequest(resolveClient(), request, messageConsumer, errorConsumer, completeRunnable);
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
+            HttpRequest request = createRequestBuilder(true).build();
+            return super.asyncRequest(
+                    resolveClient(), request, messageConsumer, errorConsumer, completeRunnable);
         }
     }
 
@@ -662,16 +739,20 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      * <p>When {@code maxLineBytes <= 0} the per-line byte cap is disabled, matching the
      * semantics of {@link SSEParserConfig#maxLineLength()} == 0.
      */
-    private static final class BoundedLineBodySubscriber implements HttpResponse.BodySubscriber<Void> {
+    private static final class BoundedLineBodySubscriber
+            implements HttpResponse.BodySubscriber<Void> {
 
         private final Flow.Subscriber<String> lineSubscriber;
         private final ServerSentEventParser sseParser;
         private final CompletableFuture<Void> result = new CompletableFuture<>();
         private final BoundedLineAccumulator accumulator;
+
         /** True when a bare CR was the last byte of the previous chunk (may start a CRLF pair). */
         private boolean pendingCR = false;
 
-        BoundedLineBodySubscriber(Flow.Subscriber<String> lineSubscriber, int maxLineBytes,
+        BoundedLineBodySubscriber(
+                Flow.Subscriber<String> lineSubscriber,
+                int maxLineBytes,
                 ServerSentEventParser sseParser) {
             this.lineSubscriber = lineSubscriber;
             this.sseParser = sseParser;
@@ -691,10 +772,18 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             subscription.request(Long.MAX_VALUE);
             // Give the line subscriber a no-op subscription: it cannot cancel the HTTP
             // connection from the line level, and back-pressure is already handled above.
-            lineSubscriber.onSubscribe(new Flow.Subscription() {
-                @Override public void request(long n) { /* no-op */ }
-                @Override public void cancel() { /* no-op */ }
-            });
+            lineSubscriber.onSubscribe(
+                    new Flow.Subscription() {
+                        @Override
+                        public void request(long n) {
+                            /* no-op */
+                        }
+
+                        @Override
+                        public void cancel() {
+                            /* no-op */
+                        }
+                    });
         }
 
         private record TerminatorScan(int lineLen, int resumePos, boolean crAtBoundary) {}
@@ -800,4 +889,3 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         }
     }
 }
-

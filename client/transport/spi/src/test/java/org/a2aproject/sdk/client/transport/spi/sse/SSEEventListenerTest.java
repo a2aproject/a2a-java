@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -42,8 +41,9 @@ public class SSEEventListenerTest {
     private static class TestSSEEventListener extends AbstractSSEEventListener {
         private StreamingEventKind eventToHandle;
 
-        public TestSSEEventListener(Consumer<StreamingEventKind> eventHandler,
-                                    @Nullable Consumer<Throwable> errorHandler) {
+        public TestSSEEventListener(
+                Consumer<StreamingEventKind> eventHandler,
+                @Nullable Consumer<Throwable> errorHandler) {
             super(eventHandler, errorHandler);
         }
 
@@ -117,18 +117,16 @@ public class SSEEventListenerTest {
 
     private static TaskStatusUpdateEvent createTaskStatusUpdateEvent(TaskState state) {
         return new TaskStatusUpdateEvent(
-                TEST_TASK_ID,
-                new TaskStatus(state),
-                TEST_CONTEXT_ID,
-                null
-        );
+                TEST_TASK_ID, new TaskStatus(state), TEST_CONTEXT_ID, null);
     }
 
-    private static TestSSEEventListener createListenerWithEventCapture(AtomicReference<StreamingEventKind> eventCapture) {
+    private static TestSSEEventListener createListenerWithEventCapture(
+            AtomicReference<StreamingEventKind> eventCapture) {
         return new TestSSEEventListener(eventCapture::set, null);
     }
 
-    private static TestSSEEventListener createListenerWithErrorCapture(AtomicReference<Throwable> errorCapture) {
+    private static TestSSEEventListener createListenerWithErrorCapture(
+            AtomicReference<Throwable> errorCapture) {
         return new TestSSEEventListener(event -> {}, errorCapture::set);
     }
 
@@ -189,10 +187,8 @@ public class SSEEventListenerTest {
     @Test
     public void testOnErrorCancelsFuture() {
         AtomicBoolean errorHandlerCalled = new AtomicBoolean(false);
-        TestSSEEventListener listener = new TestSSEEventListener(
-                event -> {},
-                error -> errorHandlerCalled.set(true)
-        );
+        TestSSEEventListener listener =
+                new TestSSEEventListener(event -> {}, error -> errorHandlerCalled.set(true));
 
         CancelCapturingFuture future = new CancelCapturingFuture();
 
@@ -205,7 +201,8 @@ public class SSEEventListenerTest {
     @Test
     public void testShouldAutoCloseWithFinalTaskStatusUpdateEvent() {
         TestSSEEventListener listener = createBasicListener();
-        TaskStatusUpdateEvent finalEvent = createTaskStatusUpdateEvent(TaskState.TASK_STATE_COMPLETED);
+        TaskStatusUpdateEvent finalEvent =
+                createTaskStatusUpdateEvent(TaskState.TASK_STATE_COMPLETED);
 
         assertTrue(listener.shouldAutoClose(finalEvent));
     }
@@ -213,28 +210,35 @@ public class SSEEventListenerTest {
     @Test
     public void testShouldAutoCloseWithNonFinalTaskStatusUpdateEvent() {
         TestSSEEventListener listener = createBasicListener();
-        TaskStatusUpdateEvent nonFinalEvent = createTaskStatusUpdateEvent(TaskState.TASK_STATE_WORKING);
+        TaskStatusUpdateEvent nonFinalEvent =
+                createTaskStatusUpdateEvent(TaskState.TASK_STATE_WORKING);
 
         assertFalse(listener.shouldAutoClose(nonFinalEvent));
     }
 
     @ParameterizedTest
-    @EnumSource(value = TaskState.class, names = {"TASK_STATE_COMPLETED", "TASK_STATE_FAILED", "TASK_STATE_CANCELED"})
+    @EnumSource(
+            value = TaskState.class,
+            names = {"TASK_STATE_COMPLETED", "TASK_STATE_FAILED", "TASK_STATE_CANCELED"})
     public void testShouldAutoCloseWithFinalTaskStates(TaskState finalState) {
         TestSSEEventListener listener = createBasicListener();
         Task task = createTask(finalState);
 
-        assertTrue(listener.shouldAutoClose(task), 
+        assertTrue(
+                listener.shouldAutoClose(task),
                 "Task with state " + finalState + " should trigger auto-close");
     }
 
     @ParameterizedTest
-    @EnumSource(value = TaskState.class, names = {"TASK_STATE_WORKING", "TASK_STATE_SUBMITTED"})
+    @EnumSource(
+            value = TaskState.class,
+            names = {"TASK_STATE_WORKING", "TASK_STATE_SUBMITTED"})
     public void testShouldAutoCloseWithNonFinalTaskStates(TaskState nonFinalState) {
         TestSSEEventListener listener = createBasicListener();
         Task task = createTask(nonFinalState);
 
-        assertFalse(listener.shouldAutoClose(task), 
+        assertFalse(
+                listener.shouldAutoClose(task),
                 "Task with state " + nonFinalState + " should not trigger auto-close");
     }
 
@@ -251,7 +255,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         TestSSEEventListener listener = createListenerWithEventCapture(receivedEvent);
 
-        TaskStatusUpdateEvent finalEvent = createTaskStatusUpdateEvent(TaskState.TASK_STATE_COMPLETED);
+        TaskStatusUpdateEvent finalEvent =
+                createTaskStatusUpdateEvent(TaskState.TASK_STATE_COMPLETED);
         CancelCapturingFuture future = new CancelCapturingFuture();
 
         listener.setEventToHandle(finalEvent);
@@ -282,7 +287,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         TestSSEEventListener listener = createListenerWithEventCapture(receivedEvent);
 
-        TaskStatusUpdateEvent finalEvent = createTaskStatusUpdateEvent(TaskState.TASK_STATE_COMPLETED);
+        TaskStatusUpdateEvent finalEvent =
+                createTaskStatusUpdateEvent(TaskState.TASK_STATE_COMPLETED);
 
         // Should not throw with null future
         listener.setEventToHandle(finalEvent);

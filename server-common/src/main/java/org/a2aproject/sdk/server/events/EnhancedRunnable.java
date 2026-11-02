@@ -3,7 +3,6 @@ package org.a2aproject.sdk.server.events;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.jspecify.annotations.Nullable;
 
 public abstract class EnhancedRunnable implements Runnable {
@@ -22,8 +21,8 @@ public abstract class EnhancedRunnable implements Runnable {
     public void addDoneCallback(DoneCallback doneCallback) {
         if (started.get()) {
             throw new IllegalStateException(
-                "Cannot add callback after runnable has started execution. " +
-                "Callbacks must be registered before CompletableFuture.runAsync() is called.");
+                    "Cannot add callback after runnable has started execution. Callbacks must be"
+                            + " registered before CompletableFuture.runAsync() is called.");
         }
         doneCallbacks.add(doneCallback);
     }

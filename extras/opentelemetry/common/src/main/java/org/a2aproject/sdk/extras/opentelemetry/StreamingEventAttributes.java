@@ -21,8 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 public final class StreamingEventAttributes {
 
-    private StreamingEventAttributes() {
-    }
+    private StreamingEventAttributes() {}
 
     /**
      * Applies task-specific attributes derived from the streaming event to the span builder.
@@ -53,8 +52,7 @@ public final class StreamingEventAttributes {
                     builder.setAttribute(GENAI_TASK_ID, message.taskId());
                 }
             }
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -70,15 +68,19 @@ public final class StreamingEventAttributes {
      * @param operationName the A2A operation name recorded as {@code gen_ai.agent.a2a.operation.name}
      * @param success    {@code false} adds the {@code error.type} attribute
      */
-    public static void recordDuration(@Nullable DoubleHistogram histogram, long startNanos,
-            String operationName, boolean success) {
+    public static void recordDuration(
+            @Nullable DoubleHistogram histogram,
+            long startNanos,
+            String operationName,
+            boolean success) {
         if (histogram == null) {
             return;
         }
         double seconds = (System.nanoTime() - startNanos) / 1_000_000_000.0;
-        AttributesBuilder builder = Attributes.builder()
-                .put(GENAI_OPERATION_NAME, operationName)
-                .put(GENAI_SYSTEM, GENAI_SYSTEM_VALUE);
+        AttributesBuilder builder =
+                Attributes.builder()
+                        .put(GENAI_OPERATION_NAME, operationName)
+                        .put(GENAI_SYSTEM, GENAI_SYSTEM_VALUE);
         if (!success) {
             builder.put(ERROR_TYPE, ERROR_TYPE_VALUE);
         }

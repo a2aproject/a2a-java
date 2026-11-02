@@ -6,7 +6,8 @@ package org.a2aproject.sdk.client.http;
  */
 public class JsonMessages {
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD =
+            """
             {
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -77,5 +78,6 @@ public class JsonMessages {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-               }""";
+               }\
+            """;
 }

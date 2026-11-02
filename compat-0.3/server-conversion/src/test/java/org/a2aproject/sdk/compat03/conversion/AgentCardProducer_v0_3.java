@@ -1,5 +1,10 @@
 package org.a2aproject.sdk.compat03.conversion;
 
+import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.profile.IfBuildProfile;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -7,19 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import io.quarkus.arc.DefaultBean;
-import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
  * Produces v0.3 AgentCard for compat layer tests.
@@ -45,30 +42,33 @@ public class AgentCardProducer_v0_3 {
         String preferredTransport = loadPreferredTransportFromProperties();
 
         // v0.3 uses 'url' field for primary endpoint
-        String url = "grpc".equalsIgnoreCase(preferredTransport)
-            ? "localhost:" + port
-            : "http://localhost:" + port;
+        String url =
+                "grpc".equalsIgnoreCase(preferredTransport)
+                        ? "localhost:" + port
+                        : "http://localhost:" + port;
 
-        AgentCard_v0_3.Builder builder = new AgentCard_v0_3.Builder()
-            .name("compat-0.3-test-agent")
-            .description("Test agent for v0.3 compatibility layer")
-            .url(url)
-            .version("1.0.0")
-            .preferredTransport(preferredTransport)
-            .capabilities(new AgentCapabilities_v0_3(true, true, true, List.of()))
-            .defaultInputModes(List.of("text"))
-            .defaultOutputModes(List.of("text"))
-            .skills(List.of())
-            .additionalInterfaces(new ArrayList<>());
+        AgentCard_v0_3.Builder builder =
+                new AgentCard_v0_3.Builder()
+                        .name("compat-0.3-test-agent")
+                        .description("Test agent for v0.3 compatibility layer")
+                        .url(url)
+                        .version("1.0.0")
+                        .preferredTransport(preferredTransport)
+                        .capabilities(new AgentCapabilities_v0_3(true, true, true, List.of()))
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .additionalInterfaces(new ArrayList<>());
 
         if (securityEnabled) {
-            builder.securitySchemes(Map.of(
-                    BASIC_AUTH_SCHEME_NAME,
-                    new HTTPAuthSecurityScheme_v0_3.Builder()
-                            .scheme("basic")
-                            .description("HTTP Basic authentication")
-                            .build()))
-                   .security(List.of(Map.of(BASIC_AUTH_SCHEME_NAME, List.of())));
+            builder.securitySchemes(
+                            Map.of(
+                                    BASIC_AUTH_SCHEME_NAME,
+                                    new HTTPAuthSecurityScheme_v0_3.Builder()
+                                            .scheme("basic")
+                                            .description("HTTP Basic authentication")
+                                            .build()))
+                    .security(List.of(Map.of(BASIC_AUTH_SCHEME_NAME, List.of())));
         }
 
         return builder.build();

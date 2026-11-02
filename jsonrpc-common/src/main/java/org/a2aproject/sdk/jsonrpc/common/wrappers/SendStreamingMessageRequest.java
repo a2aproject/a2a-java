@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 
@@ -26,9 +25,7 @@ import org.a2aproject.sdk.spec.StreamingEventKind;
  */
 public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<MessageSendParams> {
 
-    private SendStreamingMessageRequest() {
-    }
-
+    private SendStreamingMessageRequest() {}
 
     /**
      * Constructs request with all parameters.
@@ -47,7 +44,7 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
      * @param id the request ID
      * @param params the request parameters
      */
-    public SendStreamingMessageRequest(Object id,  MessageSendParams params) {
+    public SendStreamingMessageRequest(Object id, MessageSendParams params) {
         this(null, id, params);
     }
 
@@ -67,59 +64,58 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
      * of JSON-RPC protocol fields.
      */
     public static class Builder {
-            private String jsonrpc;
-            private Object id;
-            private MessageSendParams params;
+        private String jsonrpc;
+        private Object id;
+        private MessageSendParams params;
 
-            /**
-             * Creates a new Builder with all fields unset.
-             */
-            private Builder() {
-            }
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {}
 
-            /**
-             * Sets the JSON-RPC protocol version.
-             *
-             * @param jsonrpc the JSON-RPC version (defaults to "2.0")
-             * @return this builder
-             */
-            public Builder jsonrpc(String jsonrpc) {
-                this.jsonrpc = jsonrpc;
-                return this;
-            }
+        /**
+         * Sets the JSON-RPC protocol version.
+         *
+         * @param jsonrpc the JSON-RPC version (defaults to "2.0")
+         * @return this builder
+         */
+        public Builder jsonrpc(String jsonrpc) {
+            this.jsonrpc = jsonrpc;
+            return this;
+        }
 
-            /**
-             * Sets the JSON-RPC request ID.
-             *
-             * @param id the request identifier (auto-generated UUID if null)
-             * @return this builder
-             */
-            public Builder id(Object id) {
-                this.id = id;
-                return this;
-            }
+        /**
+         * Sets the JSON-RPC request ID.
+         *
+         * @param id the request identifier (auto-generated UUID if null)
+         * @return this builder
+         */
+        public Builder id(Object id) {
+            this.id = id;
+            return this;
+        }
 
-            /**
-             * Sets the message send parameters.
-             *
-             * @param params the parameters containing the message and configuration
-             * @return this builder
-             */
-            public Builder params(MessageSendParams params) {
-                this.params = params;
-                return this;
-            }
+        /**
+         * Sets the message send parameters.
+         *
+         * @param params the parameters containing the message and configuration
+         * @return this builder
+         */
+        public Builder params(MessageSendParams params) {
+            this.params = params;
+            return this;
+        }
 
-            /**
-             * Builds the {@link SendStreamingMessageRequest}.
-             *
-             * @return a new streaming message request instance
-             */
-            public SendStreamingMessageRequest build() {
-                if (id == null) {
-                    id = UUID.randomUUID().toString();
-                }
-                return new SendStreamingMessageRequest(jsonrpc, id, params);
+        /**
+         * Builds the {@link SendStreamingMessageRequest}.
+         *
+         * @return a new streaming message request instance
+         */
+        public SendStreamingMessageRequest build() {
+            if (id == null) {
+                id = UUID.randomUUID().toString();
             }
+            return new SendStreamingMessageRequest(jsonrpc, id, params);
         }
     }
+}

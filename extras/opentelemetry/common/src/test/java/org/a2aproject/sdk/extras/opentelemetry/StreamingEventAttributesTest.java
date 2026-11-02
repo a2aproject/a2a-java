@@ -40,21 +40,29 @@ class StreamingEventAttributesTest {
     void recordDuration_setsErrorTypeAttributeOnFailure() {
         DoubleHistogram histogram = mock(DoubleHistogram.class);
 
-        StreamingEventAttributes.recordDuration(histogram, System.nanoTime() - 500_000L, "test-op", false);
+        StreamingEventAttributes.recordDuration(
+                histogram, System.nanoTime() - 500_000L, "test-op", false);
 
         ArgumentCaptor<Attributes> attrsCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(histogram).record(anyDouble(), attrsCaptor.capture());
-        assertNotNull(attrsCaptor.getValue().get(AttributeKey.stringKey(A2AObservabilityNames.ERROR_TYPE)));
+        assertNotNull(
+                attrsCaptor
+                        .getValue()
+                        .get(AttributeKey.stringKey(A2AObservabilityNames.ERROR_TYPE)));
     }
 
     @Test
     void recordDuration_omitsErrorTypeAttributeOnSuccess() {
         DoubleHistogram histogram = mock(DoubleHistogram.class);
 
-        StreamingEventAttributes.recordDuration(histogram, System.nanoTime() - 500_000L, "test-op", true);
+        StreamingEventAttributes.recordDuration(
+                histogram, System.nanoTime() - 500_000L, "test-op", true);
 
         ArgumentCaptor<Attributes> attrsCaptor = ArgumentCaptor.forClass(Attributes.class);
         verify(histogram).record(anyDouble(), attrsCaptor.capture());
-        assertNull(attrsCaptor.getValue().get(AttributeKey.stringKey(A2AObservabilityNames.ERROR_TYPE)));
+        assertNull(
+                attrsCaptor
+                        .getValue()
+                        .get(AttributeKey.stringKey(A2AObservabilityNames.ERROR_TYPE)));
     }
 }

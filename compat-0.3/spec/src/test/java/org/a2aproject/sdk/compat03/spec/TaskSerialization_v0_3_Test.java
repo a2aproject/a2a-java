@@ -8,11 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for Task serialization and deserialization using Gson.
@@ -22,11 +20,12 @@ class TaskSerialization_v0_3_Test {
     @Test
     void testBasicTaskSerialization() throws JsonProcessingException_v0_3 {
         // Create a basic task
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                        .build();
 
         // Serialize to JSON
         String json = JsonUtil_v0_3.toJson(task);
@@ -48,11 +47,12 @@ class TaskSerialization_v0_3_Test {
     void testTaskWithTimestamp() throws JsonProcessingException_v0_3 {
         OffsetDateTime timestamp = OffsetDateTime.now();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING, null, timestamp))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING, null, timestamp))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -67,22 +67,21 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskWithArtifacts() throws JsonProcessingException_v0_3 {
-        Artifact_v0_3 artifact = new Artifact_v0_3.Builder()
-                .artifactId("artifact-1")
-                .name("Test Artifact")
-                .description("Description of artifact")
-                .parts(List.of(
-                        new TextPart_v0_3("Hello"),
-                        new TextPart_v0_3("World")
-                ))
-                .build();
+        Artifact_v0_3 artifact =
+                new Artifact_v0_3.Builder()
+                        .artifactId("artifact-1")
+                        .name("Test Artifact")
+                        .description("Description of artifact")
+                        .parts(List.of(new TextPart_v0_3("Hello"), new TextPart_v0_3("World")))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -104,17 +103,19 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskWithHistory() throws JsonProcessingException_v0_3 {
-        Message_v0_3 message = new Message_v0_3.Builder()
-                .role(Message_v0_3.Role.USER)
-                .parts(List.of(new TextPart_v0_3("Test message")))
-                .build();
+        Message_v0_3 message =
+                new Message_v0_3.Builder()
+                        .role(Message_v0_3.Role.USER)
+                        .parts(List.of(new TextPart_v0_3("Test message")))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING))
-                .history(List.of(message))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING))
+                        .history(List.of(message))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -137,28 +138,32 @@ class TaskSerialization_v0_3_Test {
     void testTaskWithAllFields() throws JsonProcessingException_v0_3 {
         OffsetDateTime timestamp = OffsetDateTime.now();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-789")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING, null, timestamp))
-                .history(List.of(
-                        new Message_v0_3.Builder()
-                                .role(Message_v0_3.Role.USER)
-                                .parts(List.of(new TextPart_v0_3("User message")))
-                                .build(),
-                        new Message_v0_3.Builder()
-                                .role(Message_v0_3.Role.AGENT)
-                                .parts(List.of(new TextPart_v0_3("Agent response")))
-                                .build()
-                ))
-                .artifacts(List.of(
-                        new Artifact_v0_3.Builder()
-                                .artifactId("artifact-1")
-                                .parts(List.of(new TextPart_v0_3("Artifact content")))
-                                .build()
-                ))
-                .metadata(Map.of("key1", "value1", "key2", 42))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-789")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING, null, timestamp))
+                        .history(
+                                List.of(
+                                        new Message_v0_3.Builder()
+                                                .role(Message_v0_3.Role.USER)
+                                                .parts(List.of(new TextPart_v0_3("User message")))
+                                                .build(),
+                                        new Message_v0_3.Builder()
+                                                .role(Message_v0_3.Role.AGENT)
+                                                .parts(List.of(new TextPart_v0_3("Agent response")))
+                                                .build()))
+                        .artifacts(
+                                List.of(
+                                        new Artifact_v0_3.Builder()
+                                                .artifactId("artifact-1")
+                                                .parts(
+                                                        List.of(
+                                                                new TextPart_v0_3(
+                                                                        "Artifact content")))
+                                                .build()))
+                        .metadata(Map.of("key1", "value1", "key2", 42))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -180,11 +185,12 @@ class TaskSerialization_v0_3_Test {
     @Test
     void testTaskWithDifferentStates() throws JsonProcessingException_v0_3 {
         for (TaskState_v0_3 state : TaskState_v0_3.values()) {
-            Task_v0_3 task = new Task_v0_3.Builder()
-                    .id("task-" + state.asString())
-                    .contextId("context-123")
-                    .status(new TaskStatus_v0_3(state))
-                    .build();
+            Task_v0_3 task =
+                    new Task_v0_3.Builder()
+                            .id("task-" + state.asString())
+                            .contextId("context-123")
+                            .status(new TaskStatus_v0_3(state))
+                            .build();
 
             // Serialize
             String json = JsonUtil_v0_3.toJson(task);
@@ -202,12 +208,13 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskWithNullOptionalFields() throws JsonProcessingException_v0_3 {
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
-                // artifacts, history, metadata not set
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.SUBMITTED))
+                        // artifacts, history, metadata not set
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -229,19 +236,23 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskWithFilePartBytes() throws JsonProcessingException_v0_3 {
-        FilePart_v0_3 filePart = new FilePart_v0_3(new FileWithBytes_v0_3("application/pdf", "document.pdf", "base64data"));
+        FilePart_v0_3 filePart =
+                new FilePart_v0_3(
+                        new FileWithBytes_v0_3("application/pdf", "document.pdf", "base64data"));
 
-        Artifact_v0_3 artifact = new Artifact_v0_3.Builder()
-                .artifactId("file-artifact")
-                .parts(List.of(filePart))
-                .build();
+        Artifact_v0_3 artifact =
+                new Artifact_v0_3.Builder()
+                        .artifactId("file-artifact")
+                        .parts(List.of(filePart))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -266,19 +277,24 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskWithFilePartUri() throws JsonProcessingException_v0_3 {
-        FilePart_v0_3 filePart = new FilePart_v0_3(new FileWithUri_v0_3("image/png", "photo.png", "https://example.com/photo.png"));
+        FilePart_v0_3 filePart =
+                new FilePart_v0_3(
+                        new FileWithUri_v0_3(
+                                "image/png", "photo.png", "https://example.com/photo.png"));
 
-        Artifact_v0_3 artifact = new Artifact_v0_3.Builder()
-                .artifactId("uri-artifact")
-                .parts(List.of(filePart))
-                .build();
+        Artifact_v0_3 artifact =
+                new Artifact_v0_3.Builder()
+                        .artifactId("uri-artifact")
+                        .parts(List.of(filePart))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -302,17 +318,19 @@ class TaskSerialization_v0_3_Test {
     void testTaskWithDataPart() throws JsonProcessingException_v0_3 {
         DataPart_v0_3 dataPart = new DataPart_v0_3(Map.of("temperature", 22.5, "humidity", 65));
 
-        Artifact_v0_3 artifact = new Artifact_v0_3.Builder()
-                .artifactId("data-artifact")
-                .parts(List.of(dataPart))
-                .build();
+        Artifact_v0_3 artifact =
+                new Artifact_v0_3.Builder()
+                        .artifactId("data-artifact")
+                        .parts(List.of(dataPart))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -336,28 +354,34 @@ class TaskSerialization_v0_3_Test {
         // Create a comprehensive task with all part types
         OffsetDateTime timestamp = OffsetDateTime.now();
 
-        Task_v0_3 original = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-789")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING, null, timestamp))
-                .history(List.of(
-                        new Message_v0_3.Builder()
-                                .role(Message_v0_3.Role.USER)
-                                .parts(List.of(
-                                        new TextPart_v0_3("Text"),
-                                        new FilePart_v0_3(new FileWithBytes_v0_3("text/plain", "file.txt", "data")),
-                                        new DataPart_v0_3(Map.of("key", "value"))
-                                ))
-                                .build()
-                ))
-                .artifacts(List.of(
-                        new Artifact_v0_3.Builder()
-                                .artifactId("artifact-1")
-                                .parts(List.of(new TextPart_v0_3("Content")))
-                                .build()
-                ))
-                .metadata(Map.of("meta1", "value1"))
-                .build();
+        Task_v0_3 original =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-789")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING, null, timestamp))
+                        .history(
+                                List.of(
+                                        new Message_v0_3.Builder()
+                                                .role(Message_v0_3.Role.USER)
+                                                .parts(
+                                                        List.of(
+                                                                new TextPart_v0_3("Text"),
+                                                                new FilePart_v0_3(
+                                                                        new FileWithBytes_v0_3(
+                                                                                "text/plain",
+                                                                                "file.txt",
+                                                                                "data")),
+                                                                new DataPart_v0_3(
+                                                                        Map.of("key", "value"))))
+                                                .build()))
+                        .artifacts(
+                                List.of(
+                                        new Artifact_v0_3.Builder()
+                                                .artifactId("artifact-1")
+                                                .parts(List.of(new TextPart_v0_3("Content")))
+                                                .build()))
+                        .metadata(Map.of("meta1", "value1"))
+                        .build();
 
         // Serialize to JSON
         String json = JsonUtil_v0_3.toJson(original);
@@ -381,16 +405,18 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskStatusWithMessage() throws JsonProcessingException_v0_3 {
-        Message_v0_3 statusMessage = new Message_v0_3.Builder()
-                .role(Message_v0_3.Role.AGENT)
-                .parts(List.of(new TextPart_v0_3("Processing complete")))
-                .build();
+        Message_v0_3 statusMessage =
+                new Message_v0_3.Builder()
+                        .role(Message_v0_3.Role.AGENT)
+                        .parts(List.of(new TextPart_v0_3("Processing complete")))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED, statusMessage, null))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED, statusMessage, null))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);
@@ -411,16 +437,17 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "submitted"
-              },
-              "kind": "task"
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "submitted"
+                  },
+                  "kind": "task"
+                }
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -434,28 +461,29 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskWithArtifactsFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "completed"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "artifact-1",
-                  "name": "Result",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "completed"
+                  },
+                  "artifacts": [
                     {
-                      "kind": "text",
-                      "text": "Hello World"
+                      "artifactId": "artifact-1",
+                      "name": "Result",
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "text": "Hello World"
+                        }
+                      ]
                     }
-                  ]
+                  ],
+                  "kind": "task"
                 }
-              ],
-              "kind": "task"
-            }
-            """;
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -466,36 +494,38 @@ class TaskSerialization_v0_3_Test {
         assertEquals("Result", task.artifacts().get(0).name());
         assertEquals(1, task.artifacts().get(0).parts().size());
         assertTrue(task.artifacts().get(0).parts().get(0) instanceof TextPart_v0_3);
-        assertEquals("Hello World", ((TextPart_v0_3) task.artifacts().get(0).parts().get(0)).text());
+        assertEquals(
+                "Hello World", ((TextPart_v0_3) task.artifacts().get(0).parts().get(0)).text());
     }
 
     @Test
     void testDeserializeTaskWithFilePartBytesFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "completed"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "file-artifact",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "completed"
+                  },
+                  "artifacts": [
                     {
-                      "kind": "file",
-                      "file": {
-                        "mimeType": "application/pdf",
-                        "name": "document.pdf",
-                        "bytes": "base64encodeddata"
-                      }
+                      "artifactId": "file-artifact",
+                      "parts": [
+                        {
+                          "kind": "file",
+                          "file": {
+                            "mimeType": "application/pdf",
+                            "name": "document.pdf",
+                            "bytes": "base64encodeddata"
+                          }
+                        }
+                      ]
                     }
-                  ]
+                  ],
+                  "kind": "task"
                 }
-              ],
-              "kind": "task"
-            }
-            """;
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -513,31 +543,32 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskWithFilePartUriFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "completed"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "uri-artifact",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "completed"
+                  },
+                  "artifacts": [
                     {
-                      "kind": "file",
-                      "file": {
-                        "mimeType": "image/png",
-                        "name": "photo.png",
-                        "uri": "https://example.com/photo.png"
-                      }
+                      "artifactId": "uri-artifact",
+                      "parts": [
+                        {
+                          "kind": "file",
+                          "file": {
+                            "mimeType": "image/png",
+                            "name": "photo.png",
+                            "uri": "https://example.com/photo.png"
+                          }
+                        }
+                      ]
                     }
-                  ]
+                  ],
+                  "kind": "task"
                 }
-              ],
-              "kind": "task"
-            }
-            """;
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -554,30 +585,31 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskWithDataPartFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "completed"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "data-artifact",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "completed"
+                  },
+                  "artifacts": [
                     {
-                      "kind": "data",
-                      "data": {
-                        "temperature": 22.5,
-                        "humidity": 65
-                      }
+                      "artifactId": "data-artifact",
+                      "parts": [
+                        {
+                          "kind": "data",
+                          "data": {
+                            "temperature": 22.5,
+                            "humidity": 65
+                          }
+                        }
+                      ]
                     }
-                  ]
+                  ],
+                  "kind": "task"
                 }
-              ],
-              "kind": "task"
-            }
-            """;
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -590,38 +622,39 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskWithHistoryFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "working"
-              },
-              "history": [
+        String json =
+                """
                 {
-                  "messageId": "msg-001",
-                  "role": "user",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "working"
+                  },
+                  "history": [
                     {
-                      "kind": "text",
-                      "text": "User message"
-                    }
-                  ]
-                },
-                {
-                  "messageId": "msg-002",
-                  "role": "agent",
-                  "parts": [
+                      "messageId": "msg-001",
+                      "role": "user",
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "text": "User message"
+                        }
+                      ]
+                    },
                     {
-                      "kind": "text",
-                      "text": "Agent response"
+                      "messageId": "msg-002",
+                      "role": "agent",
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "text": "Agent response"
+                        }
+                      ]
                     }
-                  ]
+                  ],
+                  "kind": "task"
                 }
-              ],
-              "kind": "task"
-            }
-            """;
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -635,17 +668,18 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskWithTimestampFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "working",
-                "timestamp": "2023-10-01T12:00:00.234-05:00"
-              },
-              "kind": "task"
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "working",
+                    "timestamp": "2023-10-01T12:00:00.234-05:00"
+                  },
+                  "kind": "task"
+                }
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -657,20 +691,21 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testDeserializeTaskWithMetadataFromJson() throws JsonProcessingException_v0_3 {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "completed"
-              },
-              "metadata": {
-                "key1": "value1",
-                "key2": 42
-              },
-              "kind": "task"
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "completed"
+                  },
+                  "metadata": {
+                    "key1": "value1",
+                    "key2": 42
+                  },
+                  "kind": "task"
+                }
+                """;
 
         Task_v0_3 task = JsonUtil_v0_3.fromJson(json, Task_v0_3.class);
 
@@ -681,22 +716,30 @@ class TaskSerialization_v0_3_Test {
 
     @Test
     void testTaskWithMixedPartTypes() throws JsonProcessingException_v0_3 {
-        Artifact_v0_3 artifact = new Artifact_v0_3.Builder()
-                .artifactId("mixed-artifact")
-                .parts(List.of(
-                        new TextPart_v0_3("Text content"),
-                        new FilePart_v0_3(new FileWithBytes_v0_3("application/json", "data.json", "{}")),
-                        new DataPart_v0_3(Map.of("result", 42)),
-                        new FilePart_v0_3(new FileWithUri_v0_3("image/png", "image.png", "https://example.com/img.png"))
-                ))
-                .build();
+        Artifact_v0_3 artifact =
+                new Artifact_v0_3.Builder()
+                        .artifactId("mixed-artifact")
+                        .parts(
+                                List.of(
+                                        new TextPart_v0_3("Text content"),
+                                        new FilePart_v0_3(
+                                                new FileWithBytes_v0_3(
+                                                        "application/json", "data.json", "{}")),
+                                        new DataPart_v0_3(Map.of("result", 42)),
+                                        new FilePart_v0_3(
+                                                new FileWithUri_v0_3(
+                                                        "image/png",
+                                                        "image.png",
+                                                        "https://example.com/img.png"))))
+                        .build();
 
-        Task_v0_3 task = new Task_v0_3.Builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task_v0_3 task =
+                new Task_v0_3.Builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil_v0_3.toJson(task);

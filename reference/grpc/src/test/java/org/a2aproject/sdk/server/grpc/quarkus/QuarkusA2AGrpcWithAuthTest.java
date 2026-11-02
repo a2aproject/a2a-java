@@ -1,7 +1,11 @@
 package org.a2aproject.sdk.server.grpc.quarkus;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
+import jakarta.inject.Inject;
 import java.util.concurrent.TimeUnit;
-
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
@@ -11,11 +15,6 @@ import org.a2aproject.sdk.server.apps.common.AbstractA2AServerWithAuthTest;
 import org.a2aproject.sdk.server.apps.common.AuthTestProfile;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -36,9 +35,7 @@ import org.junit.jupiter.api.Test;
 @TestProfile(AuthTestProfile.class)
 public class QuarkusA2AGrpcWithAuthTest extends AbstractA2AServerWithAuthTest {
 
-    @Inject
-    @PublicAgentCard
-    AgentCard agentCard;
+    @Inject @PublicAgentCard AgentCard agentCard;
 
     private static ManagedChannel authenticatedChannel;
     private static ManagedChannel unauthenticatedChannel;
@@ -61,31 +58,41 @@ public class QuarkusA2AGrpcWithAuthTest extends AbstractA2AServerWithAuthTest {
     @Override
     protected void configureTransportWithAuth(ClientBuilder builder) {
         // Use AuthInterceptor with inline CredentialService
-        AuthInterceptor authInterceptor = new AuthInterceptor(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName) ? getEncodedCredentials() : null
-        );
+        AuthInterceptor authInterceptor =
+                new AuthInterceptor(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials()
+                                        : null);
 
-        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
-                .channelFactory(target -> {
-                    authenticatedChannel = ManagedChannelBuilder
-                            .forTarget(target)
-                            .usePlaintext()
-                            .build();
-                    return authenticatedChannel;
-                })
-                .addInterceptor(authInterceptor));
+        builder.withTransport(
+                GrpcTransport.class,
+                new GrpcTransportConfigBuilder()
+                        .channelFactory(
+                                target -> {
+                                    authenticatedChannel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    return authenticatedChannel;
+                                })
+                        .addInterceptor(authInterceptor));
     }
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
         // No auth (for unauthenticated client creation)
-        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
-            unauthenticatedChannel = ManagedChannelBuilder
-                    .forTarget(target)
-                    .usePlaintext()
-                    .build();
-            return unauthenticatedChannel;
-        }));
+        builder.withTransport(
+                GrpcTransport.class,
+                new GrpcTransportConfigBuilder()
+                        .channelFactory(
+                                target -> {
+                                    unauthenticatedChannel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    return unauthenticatedChannel;
+                                }));
     }
 
     @AfterAll

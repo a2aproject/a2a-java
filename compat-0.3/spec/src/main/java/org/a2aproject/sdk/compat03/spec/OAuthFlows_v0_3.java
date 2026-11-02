@@ -3,8 +3,11 @@ package org.a2aproject.sdk.compat03.spec;
 /**
  * Defines the configuration for the supported OAuth 2.0 flows.
  */
-public record OAuthFlows_v0_3(AuthorizationCodeOAuthFlow_v0_3 authorizationCode, ClientCredentialsOAuthFlow_v0_3 clientCredentials,
-                              ImplicitOAuthFlow_v0_3 implicit, PasswordOAuthFlow_v0_3 password) {
+public record OAuthFlows_v0_3(
+        AuthorizationCodeOAuthFlow_v0_3 authorizationCode,
+        ClientCredentialsOAuthFlow_v0_3 clientCredentials,
+        ImplicitOAuthFlow_v0_3 implicit,
+        PasswordOAuthFlow_v0_3 password) {
 
     public static class Builder {
         private AuthorizationCodeOAuthFlow_v0_3 authorizationCode;

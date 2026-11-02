@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.DataPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
@@ -57,14 +57,13 @@ public interface PartMapper_v0_3 {
             return new TextPart(v03Text.text(), v03Text.metadata());
         } else if (v03 instanceof FilePart_v0_3 v03File) {
             return new FilePart(
-                FileContentMapper_v0_3.INSTANCE.toV10(v03File.file()),
-                v03File.metadata()
-            );
+                    FileContentMapper_v0_3.INSTANCE.toV10(v03File.file()), v03File.metadata());
         } else if (v03 instanceof DataPart_v0_3 v03Data) {
             return new DataPart(v03Data.data(), v03Data.metadata());
         }
 
-        throw new InvalidRequestError(null, "Unrecognized Part type: " + v03.getClass().getName(), null);
+        throw new InvalidRequestError(
+                null, "Unrecognized Part type: " + v03.getClass().getName(), null);
     }
 
     /**
@@ -85,20 +84,20 @@ public interface PartMapper_v0_3 {
             return new TextPart_v0_3(v10Text.text(), v10Text.metadata());
         } else if (v10 instanceof FilePart v10File) {
             return new FilePart_v0_3(
-                FileContentMapper_v0_3.INSTANCE.fromV10(v10File.file()),
-                v10File.metadata()
-            );
+                    FileContentMapper_v0_3.INSTANCE.fromV10(v10File.file()), v10File.metadata());
         } else if (v10 instanceof DataPart v10Data) {
             // v1.0 DataPart.data() returns Object, but v0.3 expects Map<String, Object>
             Object data = v10Data.data();
             if (!(data instanceof java.util.Map)) {
-                throw new InvalidRequestError(null, "DataPart data must be a Map for v0.3 compatibility", null);
+                throw new InvalidRequestError(
+                        null, "DataPart data must be a Map for v0.3 compatibility", null);
             }
             @SuppressWarnings("unchecked")
             java.util.Map<String, Object> dataMap = (java.util.Map<String, Object>) data;
             return new DataPart_v0_3(dataMap, v10Data.metadata());
         }
 
-        throw new InvalidRequestError(null, "Unrecognized Part type: " + v10.getClass().getName(), null);
+        throw new InvalidRequestError(
+                null, "Unrecognized Part type: " + v10.getClass().getName(), null);
     }
 }

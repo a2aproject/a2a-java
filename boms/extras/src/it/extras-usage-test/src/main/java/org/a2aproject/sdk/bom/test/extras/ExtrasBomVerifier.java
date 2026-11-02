@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.bom.test.extras;
 
-import org.a2aproject.sdk.bom.test.DynamicBomVerifier;
-
 import java.util.Set;
+import org.a2aproject.sdk.bom.test.DynamicBomVerifier;
 
 /**
  * Verifies Extras BOM completeness by attempting to load all discovered classes.
@@ -11,24 +10,29 @@ import java.util.Set;
  */
 public class ExtrasBomVerifier extends DynamicBomVerifier {
 
-    private static final Set<String> EXTRAS_EXCLUSIONS = Set.of(
-        "boms/",            // BOM test modules themselves
-        "docs/",            // Documentation site (not an SDK artifact)
-        "examples/",        // Example applications
-        "itk/",             // Integration Test Kit agent
-        "tck/",             // TCK test suite
-        "tests/",           // Integration tests
-        "test-utils-docker/", // Test utilities for Docker-based tests
-        "compat-0.3/",      // Compat 0.3 modules (part of SDK BOM, not extras BOM)
-        "extras/queue-manager-replicated/tests-multi-instance/",   // Test harness applications
-        "extras/queue-manager-replicated/tests-single-instance/",   // Test harness applications
-        "extras/opentelemetry/integration-tests/",  // Test harness applications
-        "extras/multitenancy/tests/"                // Test support jar (uses provided junit/rest-assured deps)
-    );
+    private static final Set<String> EXTRAS_EXCLUSIONS =
+            Set.of(
+                    "boms/", // BOM test modules themselves
+                    "docs/", // Documentation site (not an SDK artifact)
+                    "examples/", // Example applications
+                    "itk/", // Integration Test Kit agent
+                    "tck/", // TCK test suite
+                    "tests/", // Integration tests
+                    "test-utils-docker/", // Test utilities for Docker-based tests
+                    "compat-0.3/", // Compat 0.3 modules (part of SDK BOM, not extras BOM)
+                    "extras/queue-manager-replicated/tests-multi-instance/", // Test harness
+                    // applications
+                    "extras/queue-manager-replicated/tests-single-instance/", // Test harness
+                    // applications
+                    "extras/opentelemetry/integration-tests/", // Test harness applications
+                    "extras/multitenancy/tests/" // Test support jar (uses provided
+                    // junit/rest-assured deps)
+                    );
 
-    private static final Set<String> EXTRAS_FORBIDDEN = Set.of(
-        "reference/"   // Reference implementations (separate BOM) - must NOT be loadable
-    );
+    private static final Set<String> EXTRAS_FORBIDDEN =
+            Set.of(
+                    "reference/" // Reference implementations (separate BOM) - must NOT be loadable
+                    );
 
     public ExtrasBomVerifier() {
         super(EXTRAS_EXCLUSIONS, EXTRAS_FORBIDDEN);

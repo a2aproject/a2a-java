@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,7 +17,8 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record ListTaskPushNotificationConfigsParams(String id, int pageSize, String pageToken, @Nullable String tenant) {
+public record ListTaskPushNotificationConfigsParams(
+        String id, int pageSize, String pageToken, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -48,10 +49,10 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
      * @return the effective page size
      */
     public int getEffectivePageSize() {
-      if (pageSize <= 0 || pageSize > 100) {
-        return 100;
-      }
-      return pageSize;
+        if (pageSize <= 0 || pageSize > 100) {
+            return 100;
+        }
+        return pageSize;
     }
 
     /**
@@ -75,8 +76,7 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the id.
@@ -130,11 +130,10 @@ public record ListTaskPushNotificationConfigsParams(String id, int pageSize, Str
          */
         public ListTaskPushNotificationConfigsParams build() {
             return new ListTaskPushNotificationConfigsParams(
-                Assert.checkNotNullParam("id", id),
-                pageSize != null ? pageSize : 0,
-                pageToken != null ? pageToken : "",
-                tenant
-            );
+                    Assert.checkNotNullParam("id", id),
+                    pageSize != null ? pageSize : 0,
+                    pageToken != null ? pageToken : "",
+                    tenant);
         }
     }
 }

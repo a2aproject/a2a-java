@@ -4,20 +4,18 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.a2aproject.sdk.compat03.server.apps.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.apps.common.TestUtilsBean;
 import org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes;
-import org.a2aproject.sdk.compat03.server.apps.quarkus.A2AServerRoutes_v0_3;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
@@ -25,14 +23,11 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 
 @Singleton
 public class A2ATestRoutes {
-    @Inject
-    TestUtilsBean testUtilsBean;
+    @Inject TestUtilsBean testUtilsBean;
 
-    @Inject
-    A2AServerRoutes a2AServerRoutes;
+    @Inject A2AServerRoutes a2AServerRoutes;
 
-    @Inject
-    A2AServerRoutes_v0_3 a2AServerRoutes_v0_3;
+    @Inject A2AServerRoutes_v0_3 a2AServerRoutes_v0_3;
 
     AtomicInteger streamingSubscribedCount = new AtomicInteger(0);
 
@@ -45,81 +40,91 @@ public class A2ATestRoutes {
 
     void setupRoutes(@Observes Router router) {
         router.post("/test/task")
-            .consumes(APPLICATION_JSON)
-            .handler(BodyHandler.create())
-            .blockingHandler(ctx -> {
-                String body = ctx.body().asString();
-                saveTask(body, ctx);
-            });
+                .consumes(APPLICATION_JSON)
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        ctx -> {
+                            String body = ctx.body().asString();
+                            saveTask(body, ctx);
+                        });
 
         router.get("/test/task/:taskId")
-            .produces(APPLICATION_JSON)
-            .blockingHandler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                getTask(taskId, ctx);
-            });
+                .produces(APPLICATION_JSON)
+                .blockingHandler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            getTask(taskId, ctx);
+                        });
 
         router.delete("/test/task/:taskId")
-            .blockingHandler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                deleteTask(taskId, ctx);
-            });
+                .blockingHandler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            deleteTask(taskId, ctx);
+                        });
 
         router.post("/test/queue/ensure/:taskId")
-            .handler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                ensureTaskQueue(taskId, ctx);
-            });
+                .handler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            ensureTaskQueue(taskId, ctx);
+                        });
 
         router.post("/test/queue/enqueueTaskStatusUpdateEvent/:taskId")
-            .handler(BodyHandler.create())
-            .handler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                String body = ctx.body().asString();
-                enqueueTaskStatusUpdateEvent(taskId, body, ctx);
-            });
+                .handler(BodyHandler.create())
+                .handler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            String body = ctx.body().asString();
+                            enqueueTaskStatusUpdateEvent(taskId, body, ctx);
+                        });
 
         router.post("/test/queue/enqueueTaskArtifactUpdateEvent/:taskId")
-            .handler(BodyHandler.create())
-            .handler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                String body = ctx.body().asString();
-                enqueueTaskArtifactUpdateEvent(taskId, body, ctx);
-            });
+                .handler(BodyHandler.create())
+                .handler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            String body = ctx.body().asString();
+                            enqueueTaskArtifactUpdateEvent(taskId, body, ctx);
+                        });
 
         router.get("/test/streamingSubscribedCount")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> getStreamingSubscribedCount(ctx));
+                .produces(TEXT_PLAIN)
+                .handler(ctx -> getStreamingSubscribedCount(ctx));
 
         router.get("/test/queue/childCount/:taskId")
-            .produces(TEXT_PLAIN)
-            .handler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                getChildQueueCount(taskId, ctx);
-            });
+                .produces(TEXT_PLAIN)
+                .handler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            getChildQueueCount(taskId, ctx);
+                        });
 
         router.delete("/test/task/:taskId/config/:configId")
-            .blockingHandler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                String configId = ctx.pathParam("configId");
-                deleteTaskPushNotificationConfig(taskId, configId, ctx);
-            });
+                .blockingHandler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            String configId = ctx.pathParam("configId");
+                            deleteTaskPushNotificationConfig(taskId, configId, ctx);
+                        });
 
         router.post("/test/task/:taskId")
-            .handler(BodyHandler.create())
-            .blockingHandler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                String body = ctx.body().asString();
-                saveTaskPushNotificationConfig(taskId, body, ctx);
-            });
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            String body = ctx.body().asString();
+                            saveTaskPushNotificationConfig(taskId, body, ctx);
+                        });
 
         router.post("/test/queue/awaitChildCountStable/:taskId/:expectedCount/:timeoutMs")
-            .blockingHandler(ctx -> {
-                String taskId = ctx.pathParam("taskId");
-                String expectedCount = ctx.pathParam("expectedCount");
-                String timeoutMs = ctx.pathParam("timeoutMs");
-                awaitChildQueueCountStable(taskId, expectedCount, timeoutMs, ctx);
-            });
+                .blockingHandler(
+                        ctx -> {
+                            String taskId = ctx.pathParam("taskId");
+                            String expectedCount = ctx.pathParam("expectedCount");
+                            String timeoutMs = ctx.pathParam("timeoutMs");
+                            awaitChildQueueCountStable(taskId, expectedCount, timeoutMs, ctx);
+                        });
     }
 
     public void saveTask(String body, RoutingContext rc) {
@@ -200,7 +205,8 @@ public class A2ATestRoutes {
         rc.response().setStatusCode(200).end(String.valueOf(count));
     }
 
-    public void deleteTaskPushNotificationConfig(String taskId, String configId, RoutingContext rc) {
+    public void deleteTaskPushNotificationConfig(
+            String taskId, String configId, RoutingContext rc) {
         try {
             Task task = testUtilsBean.getTask(taskId);
             if (task == null) {
@@ -216,7 +222,8 @@ public class A2ATestRoutes {
 
     public void saveTaskPushNotificationConfig(String taskId, String body, RoutingContext rc) {
         try {
-            TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
+            TaskPushNotificationConfig notificationConfig =
+                    JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
             if (notificationConfig == null) {
                 rc.response().setStatusCode(404).end();
                 return;
@@ -229,11 +236,13 @@ public class A2ATestRoutes {
         }
     }
 
-    public void awaitChildQueueCountStable(String taskId, String expectedCountStr, String timeoutMsStr, RoutingContext rc) {
+    public void awaitChildQueueCountStable(
+            String taskId, String expectedCountStr, String timeoutMsStr, RoutingContext rc) {
         try {
             int expectedCount = Integer.parseInt(expectedCountStr);
             long timeoutMs = Long.parseLong(timeoutMsStr);
-            boolean stable = testUtilsBean.awaitChildQueueCountStable(taskId, expectedCount, timeoutMs);
+            boolean stable =
+                    testUtilsBean.awaitChildQueueCountStable(taskId, expectedCount, timeoutMs);
             rc.response().setStatusCode(200).end(String.valueOf(stable));
         } catch (Throwable t) {
             errorResponse(t, rc);

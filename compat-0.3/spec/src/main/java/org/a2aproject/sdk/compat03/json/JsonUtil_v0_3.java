@@ -22,48 +22,47 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.a2aproject.sdk.compat03.spec.APIKeySecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
-import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
-import org.a2aproject.sdk.compat03.spec.DataPart_v0_3;
-import org.a2aproject.sdk.compat03.spec.FileContent_v0_3;
-import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
-import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
-import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
-import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
-import org.a2aproject.sdk.compat03.spec.MutualTLSSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.OAuth2SecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.OpenIdConnectSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.Part_v0_3;
-import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
-import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import org.a2aproject.sdk.compat03.spec.APIKeySecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
+import org.a2aproject.sdk.compat03.spec.DataPart_v0_3;
+import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.FileContent_v0_3;
+import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
+import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
+import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
+import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidAgentResponseError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
+import org.a2aproject.sdk.compat03.spec.MutualTLSSecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.OAuth2SecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.OpenIdConnectSecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
+import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
+import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
 import org.jspecify.annotations.Nullable;
-
 
 public class JsonUtil_v0_3 {
     private static final String THROWABLE_MARKER_FIELD = "__throwable";
@@ -81,11 +80,13 @@ public class JsonUtil_v0_3 {
                 .registerTypeAdapter(Message_v0_3.Role.class, new RoleTypeAdapter())
                 .registerTypeAdapter(Part_v0_3.Kind.class, new PartKindTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent_v0_3.class, new FileContentTypeAdapter())
-                .registerTypeHierarchyAdapter(SecurityScheme_v0_3.class, new SecuritySchemeTypeAdapter())
+                .registerTypeHierarchyAdapter(
+                        SecurityScheme_v0_3.class, new SecuritySchemeTypeAdapter())
                 .registerTypeAdapter(void.class, new VoidTypeAdapter())
                 .registerTypeAdapter(Void.class, new VoidTypeAdapter())
                 .registerTypeAdapterFactory(new JSONRPCResponseTypeAdapterFactory())
-                .registerTypeAdapter(AgentCapabilities_v0_3.class, new AgentCapabilitiesTypeAdapter());
+                .registerTypeAdapter(
+                        AgentCapabilities_v0_3.class, new AgentCapabilitiesTypeAdapter());
     }
 
     /**
@@ -96,13 +97,16 @@ public class JsonUtil_v0_3 {
      * <p>
      * Used throughout the SDK for consistent JSON serialization and deserialization.
      */
-    public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
-            .registerTypeHierarchyAdapter(Part_v0_3.class, new PartTypeAdapter())
-            .registerTypeHierarchyAdapter(StreamingEventKind_v0_3.class, new StreamingEventKindTypeAdapter())
-            .registerTypeAdapter(EventKind_v0_3.class, new EventKindTypeAdapter())
-            .create();
+    public static final Gson OBJECT_MAPPER =
+            createBaseGsonBuilder()
+                    .registerTypeHierarchyAdapter(Part_v0_3.class, new PartTypeAdapter())
+                    .registerTypeHierarchyAdapter(
+                            StreamingEventKind_v0_3.class, new StreamingEventKindTypeAdapter())
+                    .registerTypeAdapter(EventKind_v0_3.class, new EventKindTypeAdapter())
+                    .create();
 
-    public static <T> T fromJson(String json, Class<T> classOfT) throws JsonProcessingException_v0_3 {
+    public static <T> T fromJson(String json, Class<T> classOfT)
+            throws JsonProcessingException_v0_3 {
         try {
             return OBJECT_MAPPER.fromJson(json, classOfT);
         } catch (JsonSyntaxException e) {
@@ -139,12 +143,16 @@ public class JsonUtil_v0_3 {
      * Writes a JSON-RPC {@code id} field. Handles null, String, and Number values,
      * preserving fractional precision for non-integer numeric IDs.
      */
-    public static void writeJsonRpcId(JsonWriter out, @Nullable Object id) throws java.io.IOException {
+    public static void writeJsonRpcId(JsonWriter out, @Nullable Object id)
+            throws java.io.IOException {
         out.name("id");
         if (id == null) {
             out.nullValue();
         } else if (id instanceof Number n) {
-            if (id instanceof Long || id instanceof Integer || id instanceof Short || id instanceof Byte) {
+            if (id instanceof Long
+                    || id instanceof Integer
+                    || id instanceof Short
+                    || id instanceof Byte) {
                 out.value(n.longValue());
             } else {
                 out.value(n);
@@ -180,8 +188,7 @@ public class JsonUtil_v0_3 {
         }
 
         @Override
-        public @Nullable
-        OffsetDateTime read(JsonReader in) throws java.io.IOException {
+        public @Nullable OffsetDateTime read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -190,7 +197,8 @@ public class JsonUtil_v0_3 {
             try {
                 return OffsetDateTime.parse(dateTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             } catch (DateTimeParseException e) {
-                throw new JsonSyntaxException("Failed to parse OffsetDateTime: " + dateTimeString, e);
+                throw new JsonSyntaxException(
+                        "Failed to parse OffsetDateTime: " + dateTimeString, e);
             }
         }
     }
@@ -230,8 +238,7 @@ public class JsonUtil_v0_3 {
         }
 
         @Override
-        public @Nullable
-        Throwable read(JsonReader in) throws java.io.IOException {
+        public @Nullable Throwable read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -244,12 +251,9 @@ public class JsonUtil_v0_3 {
             while (in.hasNext()) {
                 String fieldName = in.nextName();
                 switch (fieldName) {
-                    case "type" ->
-                        type = in.nextString();
-                    case "message" ->
-                        message = in.nextString();
-                    default ->
-                        in.skipValue();
+                    case "type" -> type = in.nextString();
+                    case "message" -> message = in.nextString();
+                    default -> in.skipValue();
                 }
             }
             in.endObject();
@@ -363,14 +367,10 @@ public class JsonUtil_v0_3 {
                 while (in.hasNext()) {
                     String fieldName = in.nextName();
                     switch (fieldName) {
-                        case CODE_FIELD ->
-                            code = in.nextInt();
-                        case MESSAGE_FIELD ->
-                            message = in.nextString();
-                        case DATA_FIELD ->
-                            data = readDataValue(in);
-                        default ->
-                            in.skipValue();
+                        case CODE_FIELD -> code = in.nextInt();
+                        case MESSAGE_FIELD -> message = in.nextString();
+                        case DATA_FIELD -> data = readDataValue(in);
+                        default -> in.skipValue();
                     }
                 }
                 in.endObject();
@@ -380,28 +380,27 @@ public class JsonUtil_v0_3 {
 
             private @Nullable Object readDataValue(JsonReader in) throws java.io.IOException {
                 return switch (in.peek()) {
-                    case STRING ->
-                        in.nextString();
-                    case NUMBER ->
-                        in.nextDouble();
-                    case BOOLEAN ->
-                        in.nextBoolean();
+                    case STRING -> in.nextString();
+                    case NUMBER -> in.nextDouble();
+                    case BOOLEAN -> in.nextBoolean();
                     case NULL -> {
                         in.nextNull();
                         yield null;
                     }
                     case BEGIN_OBJECT -> {
-                        com.google.gson.JsonElement element = com.google.gson.JsonParser.parseReader(in);
+                        com.google.gson.JsonElement element =
+                                com.google.gson.JsonParser.parseReader(in);
                         if (element.isJsonObject()) {
                             com.google.gson.JsonObject obj = element.getAsJsonObject();
-                            if (obj.has(TYPE_FIELD) && obj.has(MESSAGE_FIELD) && obj.has(THROWABLE_MARKER_FIELD)) {
+                            if (obj.has(TYPE_FIELD)
+                                    && obj.has(MESSAGE_FIELD)
+                                    && obj.has(THROWABLE_MARKER_FIELD)) {
                                 yield THROWABLE_ADAPTER.fromJsonTree(element);
                             }
                         }
                         yield gson.fromJson(element, Object.class);
                     }
-                    case BEGIN_ARRAY ->
-                        gson.fromJson(in, Object.class);
+                    case BEGIN_ARRAY -> gson.fromJson(in, Object.class);
                     default -> {
                         in.skipValue();
                         yield null;
@@ -409,43 +408,41 @@ public class JsonUtil_v0_3 {
                 };
             }
 
-            private static JSONRPCError_v0_3 createErrorInstance(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+            private static JSONRPCError_v0_3 createErrorInstance(
+                    @Nullable Integer code, @Nullable String message, @Nullable Object data) {
                 if (code == null) {
                     throw new JsonSyntaxException("JSONRPCError must have a code field");
                 }
 
                 return switch (code) {
-                    case JSON_PARSE_ERROR_CODE ->
-                        new JSONParseError_v0_3(code, message, data);
+                    case JSON_PARSE_ERROR_CODE -> new JSONParseError_v0_3(code, message, data);
                     case INVALID_REQUEST_ERROR_CODE ->
-                        new InvalidRequestError_v0_3(code, message, data);
+                            new InvalidRequestError_v0_3(code, message, data);
                     case METHOD_NOT_FOUND_ERROR_CODE ->
-                        new MethodNotFoundError_v0_3(code, message, data);
+                            new MethodNotFoundError_v0_3(code, message, data);
                     case INVALID_PARAMS_ERROR_CODE ->
-                        new InvalidParamsError_v0_3(code, message, data);
-                    case INTERNAL_ERROR_CODE ->
-                        new InternalError_v0_3(code, message, data);
+                            new InvalidParamsError_v0_3(code, message, data);
+                    case INTERNAL_ERROR_CODE -> new InternalError_v0_3(code, message, data);
                     case TASK_NOT_FOUND_ERROR_CODE ->
-                        new TaskNotFoundError_v0_3(code, message, data);
+                            new TaskNotFoundError_v0_3(code, message, data);
                     case TASK_NOT_CANCELABLE_ERROR_CODE ->
-                        new TaskNotCancelableError_v0_3(code, message, data);
+                            new TaskNotCancelableError_v0_3(code, message, data);
                     case PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE ->
-                        new PushNotificationNotSupportedError_v0_3(code, message, data);
+                            new PushNotificationNotSupportedError_v0_3(code, message, data);
                     case UNSUPPORTED_OPERATION_ERROR_CODE ->
-                        new UnsupportedOperationError_v0_3(code, message, data);
+                            new UnsupportedOperationError_v0_3(code, message, data);
                     case CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE ->
-                        new ContentTypeNotSupportedError_v0_3(code, message, data);
+                            new ContentTypeNotSupportedError_v0_3(code, message, data);
                     case INVALID_AGENT_RESPONSE_ERROR_CODE ->
-                        new InvalidAgentResponseError_v0_3(code, message, data);
+                            new InvalidAgentResponseError_v0_3(code, message, data);
                     case AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE ->
-                        new AuthenticatedExtendedCardNotConfiguredError_v0_3(code, message, data);
-                    default ->
-                        new JSONRPCError_v0_3(code, message, data);
+                            new AuthenticatedExtendedCardNotConfiguredError_v0_3(
+                                    code, message, data);
+                    default -> new JSONRPCError_v0_3(code, message, data);
                 };
             }
         }
     }
-
 
     /**
      * Gson TypeAdapter for serializing and deserializing {@link TaskState_v0_3} enum.
@@ -474,8 +471,7 @@ public class JsonUtil_v0_3 {
         }
 
         @Override
-        public @Nullable
-        TaskState_v0_3 read(JsonReader in) throws java.io.IOException {
+        public @Nullable TaskState_v0_3 read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -522,12 +518,9 @@ public class JsonUtil_v0_3 {
             String roleString = in.nextString();
             try {
                 return switch (roleString) {
-                    case "user" ->
-                        Message_v0_3.Role.USER;
-                    case "agent" ->
-                        Message_v0_3.Role.AGENT;
-                    default ->
-                        throw new IllegalArgumentException("Invalid Role: " + roleString);
+                    case "user" -> Message_v0_3.Role.USER;
+                    case "agent" -> Message_v0_3.Role.AGENT;
+                    default -> throw new IllegalArgumentException("Invalid Role: " + roleString);
                 };
             } catch (IllegalArgumentException e) {
                 throw new JsonSyntaxException("Invalid Message.Role: " + roleString, e);
@@ -568,14 +561,11 @@ public class JsonUtil_v0_3 {
             String kindString = in.nextString();
             try {
                 return switch (kindString) {
-                    case "text" ->
-                        Part_v0_3.Kind.TEXT;
-                    case "file" ->
-                        Part_v0_3.Kind.FILE;
-                    case "data" ->
-                        Part_v0_3.Kind.DATA;
+                    case "text" -> Part_v0_3.Kind.TEXT;
+                    case "file" -> Part_v0_3.Kind.FILE;
+                    case "data" -> Part_v0_3.Kind.DATA;
                     default ->
-                        throw new IllegalArgumentException("Invalid Part.Kind: " + kindString);
+                            throw new IllegalArgumentException("Invalid Part.Kind: " + kindString);
                 };
             } catch (IllegalArgumentException e) {
                 throw new JsonSyntaxException("Invalid Part.Kind: " + kindString, e);
@@ -616,13 +606,13 @@ public class JsonUtil_v0_3 {
             } else if (value instanceof DataPart_v0_3 dataPart) {
                 delegateGson.toJson(dataPart, DataPart_v0_3.class, out);
             } else {
-                throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
+                throw new JsonSyntaxException(
+                        "Unknown Part subclass: " + value.getClass().getName());
             }
         }
 
         @Override
-        public @Nullable
-        Part_v0_3<?> read(JsonReader in) throws java.io.IOException {
+        public @Nullable Part_v0_3<?> read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -643,14 +633,10 @@ public class JsonUtil_v0_3 {
             String kind = kindElement.getAsString();
             // Use the delegate Gson to deserialize to the concrete type
             return switch (kind) {
-                case "text" ->
-                    delegateGson.fromJson(jsonElement, TextPart_v0_3.class);
-                case "file" ->
-                    delegateGson.fromJson(jsonElement, FilePart_v0_3.class);
-                case "data" ->
-                    delegateGson.fromJson(jsonElement, DataPart_v0_3.class);
-                default ->
-                    throw new JsonSyntaxException("Unknown Part kind: " + kind);
+                case "text" -> delegateGson.fromJson(jsonElement, TextPart_v0_3.class);
+                case "file" -> delegateGson.fromJson(jsonElement, FilePart_v0_3.class);
+                case "data" -> delegateGson.fromJson(jsonElement, DataPart_v0_3.class);
+                default -> throw new JsonSyntaxException("Unknown Part kind: " + kind);
             };
         }
     }
@@ -666,9 +652,10 @@ public class JsonUtil_v0_3 {
      */
     static class EventKindTypeAdapter extends TypeAdapter<EventKind_v0_3> {
 
-        private final Gson delegateGson = createBaseGsonBuilder()
-                .registerTypeHierarchyAdapter(Part_v0_3.class, new PartTypeAdapter())
-                .create();
+        private final Gson delegateGson =
+                createBaseGsonBuilder()
+                        .registerTypeHierarchyAdapter(Part_v0_3.class, new PartTypeAdapter())
+                        .create();
 
         @Override
         public void write(JsonWriter out, EventKind_v0_3 value) throws java.io.IOException {
@@ -681,7 +668,8 @@ public class JsonUtil_v0_3 {
             } else if (value instanceof Message_v0_3 message) {
                 delegateGson.toJson(message, Message_v0_3.class, out);
             } else {
-                throw new JsonSyntaxException("Unknown EventKind implementation: " + value.getClass().getName());
+                throw new JsonSyntaxException(
+                        "Unknown EventKind implementation: " + value.getClass().getName());
             }
         }
 
@@ -730,12 +718,14 @@ public class JsonUtil_v0_3 {
     static class StreamingEventKindTypeAdapter extends TypeAdapter<StreamingEventKind_v0_3> {
 
         // Create separate Gson instance without the StreamingEventKind adapter to avoid recursion
-        private final Gson delegateGson = createBaseGsonBuilder()
-                .registerTypeHierarchyAdapter(Part_v0_3.class, new PartTypeAdapter())
-                .create();
+        private final Gson delegateGson =
+                createBaseGsonBuilder()
+                        .registerTypeHierarchyAdapter(Part_v0_3.class, new PartTypeAdapter())
+                        .create();
 
         @Override
-        public void write(JsonWriter out, StreamingEventKind_v0_3 value) throws java.io.IOException {
+        public void write(JsonWriter out, StreamingEventKind_v0_3 value)
+                throws java.io.IOException {
             if (value == null) {
                 out.nullValue();
                 return;
@@ -750,13 +740,13 @@ public class JsonUtil_v0_3 {
             } else if (value instanceof TaskArtifactUpdateEvent_v0_3 event) {
                 delegateGson.toJson(event, TaskArtifactUpdateEvent_v0_3.class, out);
             } else {
-                throw new JsonSyntaxException("Unknown StreamingEventKind implementation: " + value.getClass().getName());
+                throw new JsonSyntaxException(
+                        "Unknown StreamingEventKind implementation: " + value.getClass().getName());
             }
         }
 
         @Override
-        public @Nullable
-        StreamingEventKind_v0_3 read(JsonReader in) throws java.io.IOException {
+        public @Nullable StreamingEventKind_v0_3 read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -777,16 +767,14 @@ public class JsonUtil_v0_3 {
             String kind = kindElement.getAsString();
             // Use the delegate Gson to deserialize to the concrete type
             return switch (kind) {
-                case "task" ->
-                    delegateGson.fromJson(jsonElement, Task_v0_3.class);
-                case "message" ->
-                    delegateGson.fromJson(jsonElement, Message_v0_3.class);
+                case "task" -> delegateGson.fromJson(jsonElement, Task_v0_3.class);
+                case "message" -> delegateGson.fromJson(jsonElement, Message_v0_3.class);
                 case "status-update" ->
-                    delegateGson.fromJson(jsonElement, TaskStatusUpdateEvent_v0_3.class);
+                        delegateGson.fromJson(jsonElement, TaskStatusUpdateEvent_v0_3.class);
                 case "artifact-update" ->
-                    delegateGson.fromJson(jsonElement, TaskArtifactUpdateEvent_v0_3.class);
+                        delegateGson.fromJson(jsonElement, TaskArtifactUpdateEvent_v0_3.class);
                 default ->
-                    throw new JsonSyntaxException("Unknown StreamingEventKind kind: " + kind);
+                        throw new JsonSyntaxException("Unknown StreamingEventKind kind: " + kind);
             };
         }
     }
@@ -826,7 +814,8 @@ public class JsonUtil_v0_3 {
             } else if (value instanceof MutualTLSSecurityScheme_v0_3 v) {
                 delegateGson.toJson(v, MutualTLSSecurityScheme_v0_3.class, out);
             } else {
-                throw new JsonSyntaxException("Unknown SecurityScheme implementation: " + value.getClass().getName());
+                throw new JsonSyntaxException(
+                        "Unknown SecurityScheme implementation: " + value.getClass().getName());
             }
         }
 
@@ -851,17 +840,16 @@ public class JsonUtil_v0_3 {
             String type = typeElement.getAsString();
             return switch (type) {
                 case APIKeySecurityScheme_v0_3.TYPE ->
-                    delegateGson.fromJson(jsonElement, APIKeySecurityScheme_v0_3.class);
+                        delegateGson.fromJson(jsonElement, APIKeySecurityScheme_v0_3.class);
                 case HTTPAuthSecurityScheme_v0_3.TYPE ->
-                    delegateGson.fromJson(jsonElement, HTTPAuthSecurityScheme_v0_3.class);
+                        delegateGson.fromJson(jsonElement, HTTPAuthSecurityScheme_v0_3.class);
                 case OAuth2SecurityScheme_v0_3.TYPE ->
-                    delegateGson.fromJson(jsonElement, OAuth2SecurityScheme_v0_3.class);
+                        delegateGson.fromJson(jsonElement, OAuth2SecurityScheme_v0_3.class);
                 case OpenIdConnectSecurityScheme_v0_3.TYPE ->
-                    delegateGson.fromJson(jsonElement, OpenIdConnectSecurityScheme_v0_3.class);
+                        delegateGson.fromJson(jsonElement, OpenIdConnectSecurityScheme_v0_3.class);
                 case MutualTLSSecurityScheme_v0_3.TYPE ->
-                    delegateGson.fromJson(jsonElement, MutualTLSSecurityScheme_v0_3.class);
-                default ->
-                    throw new JsonSyntaxException("Unknown SecurityScheme type: " + type);
+                        delegateGson.fromJson(jsonElement, MutualTLSSecurityScheme_v0_3.class);
+                default -> throw new JsonSyntaxException("Unknown SecurityScheme type: " + type);
             };
         }
     }
@@ -900,13 +888,13 @@ public class JsonUtil_v0_3 {
             } else if (value instanceof FileWithUri_v0_3 fileWithUri) {
                 delegateGson.toJson(fileWithUri, FileWithUri_v0_3.class, out);
             } else {
-                throw new JsonSyntaxException("Unknown FileContent implementation: " + value.getClass().getName());
+                throw new JsonSyntaxException(
+                        "Unknown FileContent implementation: " + value.getClass().getName());
             }
         }
 
         @Override
-        public @Nullable
-        FileContent_v0_3 read(JsonReader in) throws java.io.IOException {
+        public @Nullable FileContent_v0_3 read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -920,13 +908,15 @@ public class JsonUtil_v0_3 {
 
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
 
-            // Distinguish between FileWithBytes and FileWithUri by checking for "bytes" or "uri" field
+            // Distinguish between FileWithBytes and FileWithUri by checking for "bytes" or "uri"
+            // field
             if (jsonObject.has("bytes")) {
                 return delegateGson.fromJson(jsonElement, FileWithBytes_v0_3.class);
             } else if (jsonObject.has("uri")) {
                 return delegateGson.fromJson(jsonElement, FileWithUri_v0_3.class);
             } else {
-                throw new JsonSyntaxException("FileContent must have either 'bytes' or 'uri' field");
+                throw new JsonSyntaxException(
+                        "FileContent must have either 'bytes' or 'uri' field");
             }
         }
     }
@@ -963,7 +953,8 @@ public class JsonUtil_v0_3 {
         }
 
         @Override
-        public org.a2aproject.sdk.compat03.spec.@Nullable AgentCapabilities_v0_3 read(JsonReader in) throws java.io.IOException {
+        public org.a2aproject.sdk.compat03.spec.@Nullable AgentCapabilities_v0_3 read(JsonReader in)
+                throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -976,7 +967,6 @@ public class JsonUtil_v0_3 {
 
     static class VoidTypeAdapter extends TypeAdapter<Void> {
 
-
         @Override
         @SuppressWarnings("resource")
         public void write(final JsonWriter out, final Void value) throws java.io.IOException {
@@ -988,7 +978,6 @@ public class JsonUtil_v0_3 {
             in.skipValue();
             return null;
         }
-
     }
 
     /**
@@ -1037,7 +1026,8 @@ public class JsonUtil_v0_3 {
                         out.name("result");
                         Object result = response.getResult();
                         if (result == null) {
-                            // JsonWriter.nullValue() skips both name+value when serializeNulls=false,
+                            // JsonWriter.nullValue() skips both name+value when
+                            // serializeNulls=false,
                             // so we must temporarily enable it to write "result":null as required
                             // by JSON-RPC 2.0.
                             boolean prev = out.getSerializeNulls();
@@ -1060,5 +1050,4 @@ public class JsonUtil_v0_3 {
             };
         }
     }
-
 }

@@ -28,6 +28,4 @@ package org.a2aproject.sdk.spec;
  * @see FilePart
  * @see FileWithBytes
  */
-public record FileWithUri(String mimeType, String name, String uri) implements FileContent {
-}
-
+public record FileWithUri(String mimeType, String name, String uri) implements FileContent {}

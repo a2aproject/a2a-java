@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.ListTasksParams;
 
 /**
@@ -11,9 +10,7 @@ import org.a2aproject.sdk.spec.ListTasksParams;
  */
 public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasksParams> {
 
-    private ListTasksRequest() {
-    }
-
+    private ListTasksRequest() {}
 
     /**
      * Constructs request with all parameters.
@@ -56,8 +53,7 @@ public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasks
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the jsonrpc.

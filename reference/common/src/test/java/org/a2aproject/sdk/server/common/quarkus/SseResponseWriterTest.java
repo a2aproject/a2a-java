@@ -10,12 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
 import io.smallrye.mutiny.Multi;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -23,6 +17,11 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,12 +37,9 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SseResponseWriterTest {
 
-    @Mock
-    HttpServerResponse response;
-    @Mock
-    RoutingContext rc;
-    @Mock
-    MultiMap headers;
+    @Mock HttpServerResponse response;
+    @Mock RoutingContext rc;
+    @Mock MultiMap headers;
 
     private ServerCallContext context;
 
@@ -69,14 +65,17 @@ class SseResponseWriterTest {
     void singleEvent_setsHeadersAndWritesKickstartPlusData() {
         List<Buffer> written = captureWrites();
 
-        SseResponseWriter.writeSseStrings(Multi.createFrom().item("data: hello\n\n"), rc, context, null);
+        SseResponseWriter.writeSseStrings(
+                Multi.createFrom().item("data: hello\n\n"), rc, context, null);
 
         verify(response, times(1)).write(any(Buffer.class), any());
         verify(response).end();
         // First (and only) write must contain the SSE kickstart comment
-        assertTrue(written.get(0).toString().contains(": SSE stream started"),
+        assertTrue(
+                written.get(0).toString().contains(": SSE stream started"),
                 "First write should include SSE kickstart comment");
-        assertTrue(written.get(0).toString().contains("data: hello"),
+        assertTrue(
+                written.get(0).toString().contains("data: hello"),
                 "First write should include the event data");
     }
 
@@ -85,13 +84,14 @@ class SseResponseWriterTest {
         List<Buffer> written = captureWrites();
 
         SseResponseWriter.writeSseStrings(
-                Multi.createFrom().items("data: first\n\n", "data: second\n\n"),
-                rc, context, null);
+                Multi.createFrom().items("data: first\n\n", "data: second\n\n"), rc, context, null);
 
         verify(response, times(2)).write(any(Buffer.class), any());
-        assertTrue(written.get(0).toString().contains(": SSE stream started"),
+        assertTrue(
+                written.get(0).toString().contains(": SSE stream started"),
                 "First write should include SSE kickstart comment");
-        assertFalse(written.get(1).toString().contains(": SSE stream started"),
+        assertFalse(
+                written.get(1).toString().contains(": SSE stream started"),
                 "Subsequent writes must not repeat the kickstart comment");
     }
 
@@ -100,7 +100,8 @@ class SseResponseWriterTest {
         failingWrite(new RuntimeException("network error"));
         when(rc.failed()).thenReturn(false);
 
-        SseResponseWriter.writeSseStrings(Multi.createFrom().item("data: hello\n\n"), rc, context, null);
+        SseResponseWriter.writeSseStrings(
+                Multi.createFrom().item("data: hello\n\n"), rc, context, null);
 
         verify(rc).fail(any(Throwable.class));
     }
@@ -108,10 +109,13 @@ class SseResponseWriterTest {
     @Test
     void clientDisconnect_invokesEventConsumerCancelAndCancelsSubscription() {
         AtomicReference<Handler<Void>> capturedCloseHandler = new AtomicReference<>();
-        doAnswer(inv -> {
-            capturedCloseHandler.set(inv.getArgument(0));
-            return response;
-        }).when(response).closeHandler(any());
+        doAnswer(
+                        inv -> {
+                            capturedCloseHandler.set(inv.getArgument(0));
+                            return response;
+                        })
+                .when(response)
+                .closeHandler(any());
 
         // never() emits nothing and does not complete — subscriber stays attached
         SseResponseWriter.writeSseStrings(Multi.createFrom().nothing(), rc, context, null);
@@ -147,31 +151,40 @@ class SseResponseWriterTest {
 
     /** Configures the response mock to invoke write callbacks with a successful result. */
     private void successfulWrite() {
-        doAnswer(inv -> {
-            AsyncResult<Void> ok = successResult();
-            inv.<Handler<AsyncResult<Void>>>getArgument(1).handle(ok);
-            return response;
-        }).when(response).write(any(Buffer.class), any());
+        doAnswer(
+                        inv -> {
+                            AsyncResult<Void> ok = successResult();
+                            inv.<Handler<AsyncResult<Void>>>getArgument(1).handle(ok);
+                            return response;
+                        })
+                .when(response)
+                .write(any(Buffer.class), any());
     }
 
     /** Configures the response mock to invoke write callbacks with a failure. */
     private void failingWrite(Throwable cause) {
-        doAnswer(inv -> {
-            AsyncResult<Void> fail = failResult(cause);
-            inv.<Handler<AsyncResult<Void>>>getArgument(1).handle(fail);
-            return response;
-        }).when(response).write(any(Buffer.class), any());
+        doAnswer(
+                        inv -> {
+                            AsyncResult<Void> fail = failResult(cause);
+                            inv.<Handler<AsyncResult<Void>>>getArgument(1).handle(fail);
+                            return response;
+                        })
+                .when(response)
+                .write(any(Buffer.class), any());
     }
 
     /** Captures every Buffer passed to response.write() and still invokes the success callback. */
     private List<Buffer> captureWrites() {
         List<Buffer> written = new ArrayList<>();
-        doAnswer(inv -> {
-            written.add(inv.getArgument(0));
-            AsyncResult<Void> ok = successResult();
-            inv.<Handler<AsyncResult<Void>>>getArgument(1).handle(ok);
-            return response;
-        }).when(response).write(any(Buffer.class), any());
+        doAnswer(
+                        inv -> {
+                            written.add(inv.getArgument(0));
+                            AsyncResult<Void> ok = successResult();
+                            inv.<Handler<AsyncResult<Void>>>getArgument(1).handle(ok);
+                            return response;
+                        })
+                .when(response)
+                .write(any(Buffer.class), any());
         return written;
     }
 

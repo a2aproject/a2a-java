@@ -9,7 +9,6 @@ import static org.mockserver.verify.VerificationTimes.exactly;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -53,26 +52,34 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
     @Test
     public void synchronousPostFollowsRelativeRedirectLocation() throws Exception {
         relativeServer = ClientAndServer.startClientAndServer(0);
-        relativeServer.when(request().withMethod("POST").withPath("/agent"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/agent"))
                 .respond(response().withStatusCode(302).withHeader("Location", "/collect"));
-        relativeServer.when(request().withPath("/collect"))
+        relativeServer
+                .when(request().withPath("/collect"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        A2AHttpResponse result = createClient().createPost()
-                .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
-                .addHeader("X-API-Key", "FULCRUM-SYNTHETIC-RELATIVE")
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                createClient()
+                        .createPost()
+                        .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
+                        .addHeader("X-API-Key", "FULCRUM-SYNTHETIC-RELATIVE")
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
-        assertEquals(200, result.status(),
-                "Synchronous POST must resolve and follow a relative Location against the request URI");
+        assertEquals(
+                200,
+                result.status(),
+                "Synchronous POST must resolve and follow a relative Location against the request"
+                        + " URI");
         relativeServer.verify(request().withPath("/collect"), exactly(1));
     }
 
     @ParameterizedTest
     @ValueSource(ints = {301, 302, 303})
-    public void absoluteCrossOriginRedirectDoesNotForwardSensitiveHeaders(int redirectStatus) throws Exception {
+    public void absoluteCrossOriginRedirectDoesNotForwardSensitiveHeaders(int redirectStatus)
+            throws Exception {
         assertCrossOriginRedirectDoesNotForwardSensitiveHeaders(false, redirectStatus);
     }
 
@@ -88,38 +95,56 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
     }
 
     @Test
-    public void providerConfigurationDoesNotForwardCustomHeaderToUntrustedOrigin() throws Exception {
+    public void providerConfigurationDoesNotForwardCustomHeaderToUntrustedOrigin()
+            throws Exception {
         assertProviderConfigurationAppliesCustomRedirectPolicy(false);
     }
 
-    private void assertProviderConfigurationAppliesCustomRedirectPolicy(boolean trustCollector) throws Exception {
+    private void assertProviderConfigurationAppliesCustomRedirectPolicy(boolean trustCollector)
+            throws Exception {
         relativeServer = ClientAndServer.startClientAndServer(0);
         redirectCollector = ClientAndServer.startClientAndServer(0);
-        relativeServer.when(request().withMethod("POST").withPath("/agent"))
-                .respond(response().withStatusCode(302).withHeader(
-                        "Location", "http://127.0.0.1:" + redirectCollector.getLocalPort() + "/collect"));
-        redirectCollector.when(request().withPath("/collect"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/agent"))
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://127.0.0.1:"
+                                                + redirectCollector.getLocalPort()
+                                                + "/collect"));
+        redirectCollector
+                .when(request().withPath("/collect"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        int trustedPort = trustCollector ? redirectCollector.getLocalPort() : relativeServer.getLocalPort();
-        A2AHttpClient client = new VertxA2AHttpClientProvider().create(
-                A2AHttpClientConfiguration.builder()
-                        .redirectHeaderPolicy(new RedirectHeaderPolicy(
-                                Set.of("X-Trusted"),
-                                Set.of(URI.create("http://127.0.0.1:" + trustedPort))))
-                        .build());
+        int trustedPort =
+                trustCollector ? redirectCollector.getLocalPort() : relativeServer.getLocalPort();
+        A2AHttpClient client =
+                new VertxA2AHttpClientProvider()
+                        .create(
+                                A2AHttpClientConfiguration.builder()
+                                        .redirectHeaderPolicy(
+                                                new RedirectHeaderPolicy(
+                                                        Set.of("X-Trusted"),
+                                                        Set.of(
+                                                                URI.create(
+                                                                        "http://127.0.0.1:"
+                                                                                + trustedPort))))
+                                        .build());
         try {
-            A2AHttpResponse result = client.createPost()
-                    .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
-                    .addHeader("Authorization", "Bearer secret")
-                    .addHeader("X-Trusted", "allowed")
-                    .body("{}")
-                    .followRedirects(true)
-                    .post();
+            A2AHttpResponse result =
+                    client.createPost()
+                            .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
+                            .addHeader("Authorization", "Bearer secret")
+                            .addHeader("X-Trusted", "allowed")
+                            .body("{}")
+                            .followRedirects(true)
+                            .post();
 
             assertEquals(200, result.status());
-            org.mockserver.model.HttpRequest[] requests = redirectCollector.retrieveRecordedRequests(
-                    request().withPath("/collect"));
+            org.mockserver.model.HttpRequest[] requests =
+                    redirectCollector.retrieveRecordedRequests(request().withPath("/collect"));
             assertEquals(1, requests.length);
             if (trustCollector) {
                 assertEquals("allowed", requests[0].getFirstHeader("X-Trusted"));
@@ -132,29 +157,34 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
         }
     }
 
-    private void assertCrossOriginRedirectDoesNotForwardSensitiveHeaders(boolean protocolRelative, int redirectStatus)
-            throws Exception {
+    private void assertCrossOriginRedirectDoesNotForwardSensitiveHeaders(
+            boolean protocolRelative, int redirectStatus) throws Exception {
         relativeServer = ClientAndServer.startClientAndServer(0);
         redirectCollector = ClientAndServer.startClientAndServer(0);
         String target = "127.0.0.1:" + redirectCollector.getLocalPort() + "/collect";
         String location = protocolRelative ? "//" + target : "http://" + target;
 
-        relativeServer.when(request().withMethod("POST").withPath("/agent"))
-                .respond(response().withStatusCode(redirectStatus).withHeader("Location", location));
-        redirectCollector.when(request().withPath("/collect"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/agent"))
+                .respond(
+                        response().withStatusCode(redirectStatus).withHeader("Location", location));
+        redirectCollector
+                .when(request().withPath("/collect"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        A2AHttpResponse result = createClient().createPost()
-                .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
-                .addHeaders(requestHeaders())
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                createClient()
+                        .createPost()
+                        .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
+                        .addHeaders(requestHeaders())
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertEquals(200, result.status());
         redirectCollector.verify(request().withPath("/collect"), exactly(1));
-        org.mockserver.model.HttpRequest[] recorded = redirectCollector.retrieveRecordedRequests(
-                request().withPath("/collect"));
+        org.mockserver.model.HttpRequest[] recorded =
+                redirectCollector.retrieveRecordedRequests(request().withPath("/collect"));
         assertEquals(1, recorded.length);
         assertEquals("GET", recorded[0].getMethod().getValue());
         @Nullable String redirectedBody = recorded[0].getBodyAsString();
@@ -169,21 +199,26 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
     @Test
     public void sameOriginRedirectRetainsSensitiveHeaders() throws Exception {
         relativeServer = ClientAndServer.startClientAndServer(0);
-        relativeServer.when(request().withMethod("POST").withPath("/agent"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/agent"))
                 .respond(response().withStatusCode(307).withHeader("Location", "/collect"));
-        relativeServer.when(request().withMethod("POST").withPath("/collect"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/collect"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        A2AHttpResponse result = createClient().createPost()
-                .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
-                .addHeaders(requestHeaders())
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                createClient()
+                        .createPost()
+                        .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
+                        .addHeaders(requestHeaders())
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertEquals(200, result.status());
-        org.mockserver.model.HttpRequest[] recorded = relativeServer.retrieveRecordedRequests(
-                request().withMethod("POST").withPath("/collect"));
+        org.mockserver.model.HttpRequest[] recorded =
+                relativeServer.retrieveRecordedRequests(
+                        request().withMethod("POST").withPath("/collect"));
         assertEquals(1, recorded.length);
         assertHeadersPresent(recorded[0], requestHeaders());
     }
@@ -191,21 +226,26 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
     @Test
     public void sameOriginPostToGetRedirectDropsEntityHeaders() throws Exception {
         relativeServer = ClientAndServer.startClientAndServer(0);
-        relativeServer.when(request().withMethod("POST").withPath("/agent"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/agent"))
                 .respond(response().withStatusCode(302).withHeader("Location", "/collect"));
-        relativeServer.when(request().withMethod("GET").withPath("/collect"))
+        relativeServer
+                .when(request().withMethod("GET").withPath("/collect"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        A2AHttpResponse result = createClient().createPost()
-                .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
-                .addHeaders(requestHeaders())
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                createClient()
+                        .createPost()
+                        .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
+                        .addHeaders(requestHeaders())
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertEquals(200, result.status());
-        org.mockserver.model.HttpRequest[] recorded = relativeServer.retrieveRecordedRequests(
-                request().withMethod("GET").withPath("/collect"));
+        org.mockserver.model.HttpRequest[] recorded =
+                relativeServer.retrieveRecordedRequests(
+                        request().withMethod("GET").withPath("/collect"));
         assertEquals(1, recorded.length);
         assertHeadersPresent(recorded[0], credentialHeaders());
         assertEntityHeadersRemoved(recorded[0]);
@@ -214,14 +254,17 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
     @Test
     public void malformedRedirectLocationReturnsOriginalResponse() throws Exception {
         relativeServer = ClientAndServer.startClientAndServer(0);
-        relativeServer.when(request().withMethod("POST").withPath("/agent"))
+        relativeServer
+                .when(request().withMethod("POST").withPath("/agent"))
                 .respond(response().withStatusCode(302).withHeader("Location", "/pa th"));
 
-        A2AHttpResponse result = createClient().createPost()
-                .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                createClient()
+                        .createPost()
+                        .url("http://127.0.0.1:" + relativeServer.getLocalPort() + "/agent")
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertEquals(302, result.status());
     }
@@ -275,7 +318,8 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
             org.mockserver.model.HttpRequest request, Map<String, String> headers) {
         for (String headerName : headers.keySet()) {
             @Nullable String value = request.getFirstHeader(headerName);
-            assertTrue(value == null || value.isEmpty(),
+            assertTrue(
+                    value == null || value.isEmpty(),
                     headerName + " must not be forwarded on this redirect");
         }
     }
@@ -283,19 +327,23 @@ public class VertxA2AHttpClientRedirectTest extends AbstractA2AHttpClientRedirec
     private static void assertHeadersPresent(
             org.mockserver.model.HttpRequest request, Map<String, String> headers) {
         for (Map.Entry<String, String> header : headers.entrySet()) {
-            assertEquals(header.getValue(), request.getFirstHeader(header.getKey()),
+            assertEquals(
+                    header.getValue(),
+                    request.getFirstHeader(header.getKey()),
                     header.getKey() + " must be retained on this redirect");
         }
     }
 
     private static void assertEntityHeadersRemoved(org.mockserver.model.HttpRequest request) {
         @Nullable String contentLength = request.getFirstHeader("cOnTeNt-LeNgTh");
-        assertTrue(contentLength == null || !contentLength.equals("2"),
+        assertTrue(
+                contentLength == null || !contentLength.equals("2"),
                 "Content-Length must not retain the POST body length on a redirected GET");
         for (String headerName : entityHeaders().keySet()) {
             if (!headerName.equalsIgnoreCase("Content-Length")) {
                 @Nullable String value = request.getFirstHeader(headerName);
-                assertTrue(value == null || value.isEmpty(),
+                assertTrue(
+                        value == null || value.isEmpty(),
                         headerName + " must not be forwarded on a redirected GET");
             }
         }

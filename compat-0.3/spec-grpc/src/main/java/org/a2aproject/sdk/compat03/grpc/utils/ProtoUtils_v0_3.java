@@ -1,6 +1,8 @@
 package org.a2aproject.sdk.compat03.grpc.utils;
 
-
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -9,15 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Value;
 import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.spec.APIKeySecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCardSignature_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentExtension_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentInterface_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentProvider_v0_3;
@@ -37,9 +35,9 @@ import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.ImplicitOAuthFlow_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MutualTLSSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.OAuth2SecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.OAuthFlows_v0_3;
@@ -50,14 +48,14 @@ import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.jspecify.annotations.Nullable;
 
@@ -68,8 +66,10 @@ public class ProtoUtils_v0_3 {
 
     public static class ToProto {
 
-        public static org.a2aproject.sdk.compat03.grpc.AgentCard agentCard(AgentCard_v0_3 agentCard) {
-            org.a2aproject.sdk.compat03.grpc.AgentCard.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentCard.newBuilder();
+        public static org.a2aproject.sdk.compat03.grpc.AgentCard agentCard(
+                AgentCard_v0_3 agentCard) {
+            org.a2aproject.sdk.compat03.grpc.AgentCard.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentCard.newBuilder();
             if (agentCard.protocolVersion() != null) {
                 builder.setProtocolVersion(agentCard.protocolVersion());
             }
@@ -86,7 +86,10 @@ public class ProtoUtils_v0_3 {
                 builder.setPreferredTransport(agentCard.preferredTransport());
             }
             if (agentCard.additionalInterfaces() != null) {
-                builder.addAllAdditionalInterfaces(agentCard.additionalInterfaces().stream().map(item -> agentInterface(item)).collect(Collectors.toList()));
+                builder.addAllAdditionalInterfaces(
+                        agentCard.additionalInterfaces().stream()
+                                .map(item -> agentInterface(item))
+                                .collect(Collectors.toList()));
             }
             if (agentCard.provider() != null) {
                 builder.setProvider(agentProvider(agentCard.provider()));
@@ -103,19 +106,35 @@ public class ProtoUtils_v0_3 {
             if (agentCard.securitySchemes() != null) {
                 builder.putAllSecuritySchemes(
                         agentCard.securitySchemes().entrySet().stream()
-                                .collect(Collectors.toMap(Map.Entry::getKey, e -> securityScheme(e.getValue())))
-                );
+                                .collect(
+                                        Collectors.toMap(
+                                                Map.Entry::getKey,
+                                                e -> securityScheme(e.getValue()))));
             }
             if (agentCard.security() != null) {
-                builder.addAllSecurity(agentCard.security().stream().map(s -> {
-                    org.a2aproject.sdk.compat03.grpc.Security.Builder securityBuilder = org.a2aproject.sdk.compat03.grpc.Security.newBuilder();
-                    s.forEach((key, value) -> {
-                        org.a2aproject.sdk.compat03.grpc.StringList.Builder stringListBuilder = org.a2aproject.sdk.compat03.grpc.StringList.newBuilder();
-                        stringListBuilder.addAllList(value);
-                        securityBuilder.putSchemes(key, stringListBuilder.build());
-                    });
-                    return securityBuilder.build();
-                }).collect(Collectors.toList()));
+                builder.addAllSecurity(
+                        agentCard.security().stream()
+                                .map(
+                                        s -> {
+                                            org.a2aproject.sdk.compat03.grpc.Security.Builder
+                                                    securityBuilder =
+                                                            org.a2aproject.sdk.compat03.grpc
+                                                                    .Security.newBuilder();
+                                            s.forEach(
+                                                    (key, value) -> {
+                                                        org.a2aproject.sdk.compat03.grpc.StringList
+                                                                        .Builder
+                                                                stringListBuilder =
+                                                                        org.a2aproject.sdk.compat03
+                                                                                .grpc.StringList
+                                                                                .newBuilder();
+                                                        stringListBuilder.addAllList(value);
+                                                        securityBuilder.putSchemes(
+                                                                key, stringListBuilder.build());
+                                                    });
+                                            return securityBuilder.build();
+                                        })
+                                .collect(Collectors.toList()));
             }
             if (agentCard.defaultInputModes() != null) {
                 builder.addAllDefaultInputModes(agentCard.defaultInputModes());
@@ -124,32 +143,45 @@ public class ProtoUtils_v0_3 {
                 builder.addAllDefaultOutputModes(agentCard.defaultOutputModes());
             }
             if (agentCard.skills() != null) {
-                builder.addAllSkills(agentCard.skills().stream().map(ToProto::agentSkill).collect(Collectors.toList()));
+                builder.addAllSkills(
+                        agentCard.skills().stream()
+                                .map(ToProto::agentSkill)
+                                .collect(Collectors.toList()));
             }
-            builder.setSupportsAuthenticatedExtendedCard(agentCard.supportsAuthenticatedExtendedCard());
+            builder.setSupportsAuthenticatedExtendedCard(
+                    agentCard.supportsAuthenticatedExtendedCard());
             if (agentCard.signatures() != null) {
-                builder.addAllSignatures(agentCard.signatures().stream().map(ToProto::agentCardSignature).collect(Collectors.toList()));
+                builder.addAllSignatures(
+                        agentCard.signatures().stream()
+                                .map(ToProto::agentCardSignature)
+                                .collect(Collectors.toList()));
             }
             return builder.build();
         }
 
         public static org.a2aproject.sdk.compat03.grpc.Task task(Task_v0_3 task) {
-            org.a2aproject.sdk.compat03.grpc.Task.Builder builder = org.a2aproject.sdk.compat03.grpc.Task.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.Task.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.Task.newBuilder();
             builder.setId(task.id());
             builder.setContextId(task.contextId());
             builder.setStatus(taskStatus(task.status()));
             if (task.artifacts() != null) {
-                builder.addAllArtifacts(task.artifacts().stream().map(ToProto::artifact).collect(Collectors.toList()));
+                builder.addAllArtifacts(
+                        task.artifacts().stream()
+                                .map(ToProto::artifact)
+                                .collect(Collectors.toList()));
             }
             if (task.history() != null) {
-                builder.addAllHistory(task.history().stream().map(ToProto::message).collect(Collectors.toList()));
+                builder.addAllHistory(
+                        task.history().stream().map(ToProto::message).collect(Collectors.toList()));
             }
             builder.setMetadata(struct(task.metadata()));
             return builder.build();
         }
 
         public static org.a2aproject.sdk.compat03.grpc.Message message(Message_v0_3 message) {
-            org.a2aproject.sdk.compat03.grpc.Message.Builder builder = org.a2aproject.sdk.compat03.grpc.Message.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.Message.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.Message.newBuilder();
             if (message.messageId() != null) {
                 builder.setMessageId(message.messageId());
             }
@@ -161,22 +193,32 @@ public class ProtoUtils_v0_3 {
             }
             builder.setRole(role(message.role()));
             if (message.parts() != null) {
-                builder.addAllContent(message.parts().stream().map(ToProto::part).collect(Collectors.toList()));
+                builder.addAllContent(
+                        message.parts().stream().map(ToProto::part).collect(Collectors.toList()));
             }
             builder.setMetadata(struct(message.metadata()));
             return builder.build();
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig taskPushNotificationConfig(TaskPushNotificationConfig_v0_3 config) {
+        public static org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig
+                taskPushNotificationConfig(TaskPushNotificationConfig_v0_3 config) {
             String id = config.pushNotificationConfig().id();
-            org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
-            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs" + (id == null ? "" : ('/' + id)));
-            builder.setPushNotificationConfig(pushNotificationConfig(config.pushNotificationConfig()));
+            org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
+            builder.setName(
+                    "tasks/"
+                            + config.taskId()
+                            + "/pushNotificationConfigs"
+                            + (id == null ? "" : ('/' + id)));
+            builder.setPushNotificationConfig(
+                    pushNotificationConfig(config.pushNotificationConfig()));
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.PushNotificationConfig pushNotificationConfig(PushNotificationConfig_v0_3 config) {
-            org.a2aproject.sdk.compat03.grpc.PushNotificationConfig.Builder builder = org.a2aproject.sdk.compat03.grpc.PushNotificationConfig.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.PushNotificationConfig
+                pushNotificationConfig(PushNotificationConfig_v0_3 config) {
+            org.a2aproject.sdk.compat03.grpc.PushNotificationConfig.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.PushNotificationConfig.newBuilder();
             if (config.url() != null) {
                 builder.setUrl(config.url());
             }
@@ -192,8 +234,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent taskArtifactUpdateEvent(TaskArtifactUpdateEvent_v0_3 event) {
-            org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.newBuilder();
+        public static org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent
+                taskArtifactUpdateEvent(TaskArtifactUpdateEvent_v0_3 event) {
+            org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEvent.newBuilder();
             builder.setTaskId(event.taskId());
             builder.setContextId(event.contextId());
             builder.setArtifact(artifact(event.artifact()));
@@ -209,8 +253,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent taskStatusUpdateEvent(TaskStatusUpdateEvent_v0_3 event) {
-            org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.newBuilder();
+        public static org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent taskStatusUpdateEvent(
+                TaskStatusUpdateEvent_v0_3 event) {
+            org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEvent.newBuilder();
             builder.setTaskId(event.taskId());
             builder.setContextId(event.contextId());
             builder.setStatus(taskStatus(event.status()));
@@ -222,7 +268,8 @@ public class ProtoUtils_v0_3 {
         }
 
         private static org.a2aproject.sdk.compat03.grpc.Artifact artifact(Artifact_v0_3 artifact) {
-            org.a2aproject.sdk.compat03.grpc.Artifact.Builder builder = org.a2aproject.sdk.compat03.grpc.Artifact.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.Artifact.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.Artifact.newBuilder();
             if (artifact.artifactId() != null) {
                 builder.setArtifactId(artifact.artifactId());
             }
@@ -233,7 +280,8 @@ public class ProtoUtils_v0_3 {
                 builder.setDescription(artifact.description());
             }
             if (artifact.parts() != null) {
-                builder.addAllParts(artifact.parts().stream().map(ToProto::part).collect(Collectors.toList()));
+                builder.addAllParts(
+                        artifact.parts().stream().map(ToProto::part).collect(Collectors.toList()));
             }
             if (artifact.metadata() != null) {
                 builder.setMetadata(struct(artifact.metadata()));
@@ -242,7 +290,8 @@ public class ProtoUtils_v0_3 {
         }
 
         static org.a2aproject.sdk.compat03.grpc.Part part(Part_v0_3<?> part) {
-            org.a2aproject.sdk.compat03.grpc.Part.Builder builder = org.a2aproject.sdk.compat03.grpc.Part.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.Part.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.Part.newBuilder();
             if (part instanceof TextPart_v0_3 textPart) {
                 builder.setText(textPart.text());
                 if (!textPart.metadata().isEmpty()) {
@@ -263,10 +312,14 @@ public class ProtoUtils_v0_3 {
         }
 
         private static org.a2aproject.sdk.compat03.grpc.FilePart filePart(FilePart_v0_3 filePart) {
-            org.a2aproject.sdk.compat03.grpc.FilePart.Builder builder = org.a2aproject.sdk.compat03.grpc.FilePart.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.FilePart.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.FilePart.newBuilder();
             FileContent_v0_3 fileContent = filePart.file();
             if (fileContent instanceof FileWithBytes_v0_3) {
-                builder.setFileWithBytes(ByteString.copyFrom(((FileWithBytes_v0_3) fileContent).bytes(), StandardCharsets.UTF_8));
+                builder.setFileWithBytes(
+                        ByteString.copyFrom(
+                                ((FileWithBytes_v0_3) fileContent).bytes(),
+                                StandardCharsets.UTF_8));
             } else if (fileContent instanceof FileWithUri_v0_3) {
                 builder.setFileWithUri(((FileWithUri_v0_3) fileContent).uri());
             }
@@ -280,7 +333,8 @@ public class ProtoUtils_v0_3 {
         }
 
         private static org.a2aproject.sdk.compat03.grpc.DataPart dataPart(DataPart_v0_3 dataPart) {
-            org.a2aproject.sdk.compat03.grpc.DataPart.Builder builder = org.a2aproject.sdk.compat03.grpc.DataPart.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.DataPart.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.DataPart.newBuilder();
             if (dataPart.data() != null) {
                 builder.setData(struct(dataPart.data()));
             }
@@ -292,15 +346,15 @@ public class ProtoUtils_v0_3 {
                 return org.a2aproject.sdk.compat03.grpc.Role.ROLE_UNSPECIFIED;
             }
             return switch (role) {
-                case USER ->
-                    org.a2aproject.sdk.compat03.grpc.Role.ROLE_USER;
-                case AGENT ->
-                    org.a2aproject.sdk.compat03.grpc.Role.ROLE_AGENT;
+                case USER -> org.a2aproject.sdk.compat03.grpc.Role.ROLE_USER;
+                case AGENT -> org.a2aproject.sdk.compat03.grpc.Role.ROLE_AGENT;
             };
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.TaskStatus taskStatus(TaskStatus_v0_3 taskStatus) {
-            org.a2aproject.sdk.compat03.grpc.TaskStatus.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskStatus.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.TaskStatus taskStatus(
+                TaskStatus_v0_3 taskStatus) {
+            org.a2aproject.sdk.compat03.grpc.TaskStatus.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.TaskStatus.newBuilder();
             if (taskStatus.state() != null) {
                 builder.setState(taskState(taskStatus.state()));
             }
@@ -309,39 +363,39 @@ public class ProtoUtils_v0_3 {
             }
             if (taskStatus.timestamp() != null) {
                 Instant instant = taskStatus.timestamp().toInstant();
-                builder.setTimestamp(com.google.protobuf.Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build());
+                builder.setTimestamp(
+                        com.google.protobuf.Timestamp.newBuilder()
+                                .setSeconds(instant.getEpochSecond())
+                                .setNanos(instant.getNano())
+                                .build());
             }
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.TaskState taskState(TaskState_v0_3 taskState) {
+        private static org.a2aproject.sdk.compat03.grpc.TaskState taskState(
+                TaskState_v0_3 taskState) {
             if (taskState == null) {
                 return org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_UNSPECIFIED;
             }
             return switch (taskState) {
-                case SUBMITTED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_SUBMITTED;
-                case WORKING ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_WORKING;
+                case SUBMITTED -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_SUBMITTED;
+                case WORKING -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_WORKING;
                 case INPUT_REQUIRED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
+                        org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
                 case AUTH_REQUIRED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
-                case COMPLETED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_COMPLETED;
-                case CANCELED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_CANCELLED;
-                case FAILED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_FAILED;
-                case REJECTED ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_REJECTED;
-                default ->
-                    org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_UNSPECIFIED;
+                        org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
+                case COMPLETED -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_COMPLETED;
+                case CANCELED -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_CANCELLED;
+                case FAILED -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_FAILED;
+                case REJECTED -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_REJECTED;
+                default -> org.a2aproject.sdk.compat03.grpc.TaskState.TASK_STATE_UNSPECIFIED;
             };
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AuthenticationInfo authenticationInfo(PushNotificationAuthenticationInfo_v0_3 pushNotificationAuthenticationInfo) {
-            org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.Builder builder = org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AuthenticationInfo authenticationInfo(
+                PushNotificationAuthenticationInfo_v0_3 pushNotificationAuthenticationInfo) {
+            org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.newBuilder();
             if (pushNotificationAuthenticationInfo.schemes() != null) {
                 builder.addAllSchemes(pushNotificationAuthenticationInfo.schemes());
             }
@@ -351,8 +405,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration messageSendConfiguration(MessageSendConfiguration_v0_3 messageSendConfiguration) {
-            org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration.Builder builder = org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration.newBuilder();
+        public static org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration
+                messageSendConfiguration(MessageSendConfiguration_v0_3 messageSendConfiguration) {
+            org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.SendMessageConfiguration.newBuilder();
             if (messageSendConfiguration.acceptedOutputModes() != null) {
                 builder.addAllAcceptedOutputModes(messageSendConfiguration.acceptedOutputModes());
             }
@@ -360,42 +416,55 @@ public class ProtoUtils_v0_3 {
                 builder.setHistoryLength(messageSendConfiguration.historyLength());
             }
             if (messageSendConfiguration.pushNotificationConfig() != null) {
-                builder.setPushNotification(pushNotificationConfig(messageSendConfiguration.pushNotificationConfig()));
+                builder.setPushNotification(
+                        pushNotificationConfig(messageSendConfiguration.pushNotificationConfig()));
             }
             builder.setBlocking(messageSendConfiguration.blocking());
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AgentProvider agentProvider(AgentProvider_v0_3 agentProvider) {
-            org.a2aproject.sdk.compat03.grpc.AgentProvider.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentProvider.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AgentProvider agentProvider(
+                AgentProvider_v0_3 agentProvider) {
+            org.a2aproject.sdk.compat03.grpc.AgentProvider.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentProvider.newBuilder();
             builder.setOrganization(agentProvider.organization());
             builder.setUrl(agentProvider.url());
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AgentCapabilities agentCapabilities(AgentCapabilities_v0_3 agentCapabilities) {
-            org.a2aproject.sdk.compat03.grpc.AgentCapabilities.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentCapabilities.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AgentCapabilities agentCapabilities(
+                AgentCapabilities_v0_3 agentCapabilities) {
+            org.a2aproject.sdk.compat03.grpc.AgentCapabilities.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentCapabilities.newBuilder();
             builder.setStreaming(agentCapabilities.streaming());
             builder.setPushNotifications(agentCapabilities.pushNotifications());
             if (agentCapabilities.extensions() != null) {
-                builder.addAllExtensions(agentCapabilities.extensions().stream().map(ToProto::agentExtension).collect(Collectors.toList()));
+                builder.addAllExtensions(
+                        agentCapabilities.extensions().stream()
+                                .map(ToProto::agentExtension)
+                                .collect(Collectors.toList()));
             }
             return builder.build();
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.SendMessageRequest sendMessageRequest(MessageSendParams_v0_3 request) {
-            org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder builder =  org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
+        public static org.a2aproject.sdk.compat03.grpc.SendMessageRequest sendMessageRequest(
+                MessageSendParams_v0_3 request) {
+            org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
             builder.setRequest(message(request.message()));
             if (request.configuration() != null) {
                 builder.setConfiguration(messageSendConfiguration(request.configuration()));
             }
-            if (request.metadata() != null && ! request.metadata().isEmpty()) {
+            if (request.metadata() != null && !request.metadata().isEmpty()) {
                 builder.setMetadata(struct(request.metadata()));
             }
             return builder.build();
         }
-        private static org.a2aproject.sdk.compat03.grpc.AgentExtension agentExtension(AgentExtension_v0_3 agentExtension) {
-            org.a2aproject.sdk.compat03.grpc.AgentExtension.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentExtension.newBuilder();
+
+        private static org.a2aproject.sdk.compat03.grpc.AgentExtension agentExtension(
+                AgentExtension_v0_3 agentExtension) {
+            org.a2aproject.sdk.compat03.grpc.AgentExtension.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentExtension.newBuilder();
             if (agentExtension.description() != null) {
                 builder.setDescription(agentExtension.description());
             }
@@ -409,8 +478,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AgentSkill agentSkill(AgentSkill_v0_3 agentSkill) {
-            org.a2aproject.sdk.compat03.grpc.AgentSkill.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentSkill.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AgentSkill agentSkill(
+                AgentSkill_v0_3 agentSkill) {
+            org.a2aproject.sdk.compat03.grpc.AgentSkill.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentSkill.newBuilder();
             if (agentSkill.id() != null) {
                 builder.setId(agentSkill.id());
             }
@@ -433,21 +504,37 @@ public class ProtoUtils_v0_3 {
                 builder.addAllOutputModes(agentSkill.outputModes());
             }
             if (agentSkill.security() != null) {
-                builder.addAllSecurity(agentSkill.security().stream().map(s -> {
-                    org.a2aproject.sdk.compat03.grpc.Security.Builder securityBuilder = org.a2aproject.sdk.compat03.grpc.Security.newBuilder();
-                    s.forEach((key, value) -> {
-                        org.a2aproject.sdk.compat03.grpc.StringList.Builder stringListBuilder = org.a2aproject.sdk.compat03.grpc.StringList.newBuilder();
-                        stringListBuilder.addAllList(value);
-                        securityBuilder.putSchemes(key, stringListBuilder.build());
-                    });
-                    return securityBuilder.build();
-                }).collect(Collectors.toList()));
+                builder.addAllSecurity(
+                        agentSkill.security().stream()
+                                .map(
+                                        s -> {
+                                            org.a2aproject.sdk.compat03.grpc.Security.Builder
+                                                    securityBuilder =
+                                                            org.a2aproject.sdk.compat03.grpc
+                                                                    .Security.newBuilder();
+                                            s.forEach(
+                                                    (key, value) -> {
+                                                        org.a2aproject.sdk.compat03.grpc.StringList
+                                                                        .Builder
+                                                                stringListBuilder =
+                                                                        org.a2aproject.sdk.compat03
+                                                                                .grpc.StringList
+                                                                                .newBuilder();
+                                                        stringListBuilder.addAllList(value);
+                                                        securityBuilder.putSchemes(
+                                                                key, stringListBuilder.build());
+                                                    });
+                                            return securityBuilder.build();
+                                        })
+                                .collect(Collectors.toList()));
             }
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AgentCardSignature agentCardSignature(AgentCardSignature_v0_3 agentCardSignature) {
-            org.a2aproject.sdk.compat03.grpc.AgentCardSignature.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentCardSignature.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AgentCardSignature agentCardSignature(
+                AgentCardSignature_v0_3 agentCardSignature) {
+            org.a2aproject.sdk.compat03.grpc.AgentCardSignature.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentCardSignature.newBuilder();
             builder.setProtected(agentCardSignature.protectedHeader());
             builder.setSignature(agentCardSignature.signature());
             if (agentCardSignature.header() != null) {
@@ -456,24 +543,34 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.SecurityScheme securityScheme(SecurityScheme_v0_3 securityScheme) {
-            org.a2aproject.sdk.compat03.grpc.SecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.SecurityScheme.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.SecurityScheme securityScheme(
+                SecurityScheme_v0_3 securityScheme) {
+            org.a2aproject.sdk.compat03.grpc.SecurityScheme.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.SecurityScheme.newBuilder();
             if (securityScheme instanceof APIKeySecurityScheme_v0_3) {
-                builder.setApiKeySecurityScheme(apiKeySecurityScheme((APIKeySecurityScheme_v0_3) securityScheme));
+                builder.setApiKeySecurityScheme(
+                        apiKeySecurityScheme((APIKeySecurityScheme_v0_3) securityScheme));
             } else if (securityScheme instanceof HTTPAuthSecurityScheme_v0_3) {
-                builder.setHttpAuthSecurityScheme(httpAuthSecurityScheme((HTTPAuthSecurityScheme_v0_3) securityScheme));
+                builder.setHttpAuthSecurityScheme(
+                        httpAuthSecurityScheme((HTTPAuthSecurityScheme_v0_3) securityScheme));
             } else if (securityScheme instanceof OAuth2SecurityScheme_v0_3) {
-                builder.setOauth2SecurityScheme(oauthSecurityScheme((OAuth2SecurityScheme_v0_3) securityScheme));
+                builder.setOauth2SecurityScheme(
+                        oauthSecurityScheme((OAuth2SecurityScheme_v0_3) securityScheme));
             } else if (securityScheme instanceof OpenIdConnectSecurityScheme_v0_3) {
-                builder.setOpenIdConnectSecurityScheme(openIdConnectSecurityScheme((OpenIdConnectSecurityScheme_v0_3) securityScheme));
+                builder.setOpenIdConnectSecurityScheme(
+                        openIdConnectSecurityScheme(
+                                (OpenIdConnectSecurityScheme_v0_3) securityScheme));
             } else if (securityScheme instanceof MutualTLSSecurityScheme_v0_3) {
-                builder.setMtlsSecurityScheme(mutualTlsSecurityScheme((MutualTLSSecurityScheme_v0_3) securityScheme));
+                builder.setMtlsSecurityScheme(
+                        mutualTlsSecurityScheme((MutualTLSSecurityScheme_v0_3) securityScheme));
             }
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme apiKeySecurityScheme(APIKeySecurityScheme_v0_3 apiKeySecurityScheme) {
-            org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme apiKeySecurityScheme(
+                APIKeySecurityScheme_v0_3 apiKeySecurityScheme) {
+            org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.APIKeySecurityScheme.newBuilder();
             if (apiKeySecurityScheme.description() != null) {
                 builder.setDescription(apiKeySecurityScheme.description());
             }
@@ -486,8 +583,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme httpAuthSecurityScheme(HTTPAuthSecurityScheme_v0_3 httpAuthSecurityScheme) {
-            org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme
+                httpAuthSecurityScheme(HTTPAuthSecurityScheme_v0_3 httpAuthSecurityScheme) {
+            org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.HTTPAuthSecurityScheme.newBuilder();
             if (httpAuthSecurityScheme.bearerFormat() != null) {
                 builder.setBearerFormat(httpAuthSecurityScheme.bearerFormat());
             }
@@ -500,8 +599,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme oauthSecurityScheme(OAuth2SecurityScheme_v0_3 oauth2SecurityScheme) {
-            org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme oauthSecurityScheme(
+                OAuth2SecurityScheme_v0_3 oauth2SecurityScheme) {
+            org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.OAuth2SecurityScheme.newBuilder();
             if (oauth2SecurityScheme.description() != null) {
                 builder.setDescription(oauth2SecurityScheme.description());
             }
@@ -514,13 +615,17 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.OAuthFlows oauthFlows(OAuthFlows_v0_3 oAuthFlows) {
-            org.a2aproject.sdk.compat03.grpc.OAuthFlows.Builder builder = org.a2aproject.sdk.compat03.grpc.OAuthFlows.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.OAuthFlows oauthFlows(
+                OAuthFlows_v0_3 oAuthFlows) {
+            org.a2aproject.sdk.compat03.grpc.OAuthFlows.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.OAuthFlows.newBuilder();
             if (oAuthFlows.authorizationCode() != null) {
-                builder.setAuthorizationCode(authorizationCodeOAuthFlow(oAuthFlows.authorizationCode()));
+                builder.setAuthorizationCode(
+                        authorizationCodeOAuthFlow(oAuthFlows.authorizationCode()));
             }
             if (oAuthFlows.clientCredentials() != null) {
-                builder.setClientCredentials(clientCredentialsOAuthFlow(oAuthFlows.clientCredentials()));
+                builder.setClientCredentials(
+                        clientCredentialsOAuthFlow(oAuthFlows.clientCredentials()));
             }
             if (oAuthFlows.implicit() != null) {
                 builder.setImplicit(implicitOAuthFlow(oAuthFlows.implicit()));
@@ -531,8 +636,11 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow authorizationCodeOAuthFlow(AuthorizationCodeOAuthFlow_v0_3 authorizationCodeOAuthFlow) {
-            org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow.Builder builder = org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow
+                authorizationCodeOAuthFlow(
+                        AuthorizationCodeOAuthFlow_v0_3 authorizationCodeOAuthFlow) {
+            org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AuthorizationCodeOAuthFlow.newBuilder();
             if (authorizationCodeOAuthFlow.authorizationUrl() != null) {
                 builder.setAuthorizationUrl(authorizationCodeOAuthFlow.authorizationUrl());
             }
@@ -548,16 +656,25 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(List<TaskPushNotificationConfig_v0_3> configs) {
-            List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(configs.size());
-            for(TaskPushNotificationConfig_v0_3 config: configs) {
+        public static org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse
+                listTaskPushNotificationConfigResponse(
+                        List<TaskPushNotificationConfig_v0_3> configs) {
+            List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> confs =
+                    new ArrayList<>(configs.size());
+            for (TaskPushNotificationConfig_v0_3 config : configs) {
                 confs.add(taskPushNotificationConfig(config));
             }
-            return org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder().addAllConfigs(confs).build();
+            return org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse
+                    .newBuilder()
+                    .addAllConfigs(confs)
+                    .build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow clientCredentialsOAuthFlow(ClientCredentialsOAuthFlow_v0_3 clientCredentialsOAuthFlow) {
-            org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow.Builder builder = org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow
+                clientCredentialsOAuthFlow(
+                        ClientCredentialsOAuthFlow_v0_3 clientCredentialsOAuthFlow) {
+            org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.ClientCredentialsOAuthFlow.newBuilder();
             if (clientCredentialsOAuthFlow.refreshUrl() != null) {
                 builder.setRefreshUrl(clientCredentialsOAuthFlow.refreshUrl());
             }
@@ -570,8 +687,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow implicitOAuthFlow(ImplicitOAuthFlow_v0_3 implicitOAuthFlow) {
-            org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow.Builder builder = org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow implicitOAuthFlow(
+                ImplicitOAuthFlow_v0_3 implicitOAuthFlow) {
+            org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.ImplicitOAuthFlow.newBuilder();
             if (implicitOAuthFlow.authorizationUrl() != null) {
                 builder.setAuthorizationUrl(implicitOAuthFlow.authorizationUrl());
             }
@@ -584,8 +703,10 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow passwordOAuthFlow(PasswordOAuthFlow_v0_3 passwordOAuthFlow) {
-            org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.Builder builder = org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow passwordOAuthFlow(
+                PasswordOAuthFlow_v0_3 passwordOAuthFlow) {
+            org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.newBuilder();
             if (passwordOAuthFlow.refreshUrl() != null) {
                 builder.setRefreshUrl(passwordOAuthFlow.refreshUrl());
             }
@@ -598,8 +719,11 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme openIdConnectSecurityScheme(OpenIdConnectSecurityScheme_v0_3 openIdConnectSecurityScheme) {
-            org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme
+                openIdConnectSecurityScheme(
+                        OpenIdConnectSecurityScheme_v0_3 openIdConnectSecurityScheme) {
+            org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.OpenIdConnectSecurityScheme.newBuilder();
             if (openIdConnectSecurityScheme.description() != null) {
                 builder.setDescription(openIdConnectSecurityScheme.description());
             }
@@ -609,16 +733,20 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme mutualTlsSecurityScheme(MutualTLSSecurityScheme_v0_3 mutualTlsSecurityScheme) {
-            org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme.Builder builder = org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme
+                mutualTlsSecurityScheme(MutualTLSSecurityScheme_v0_3 mutualTlsSecurityScheme) {
+            org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.MutualTlsSecurityScheme.newBuilder();
             if (mutualTlsSecurityScheme.description() != null) {
                 builder.setDescription(mutualTlsSecurityScheme.description());
             }
             return builder.build();
         }
 
-        private static org.a2aproject.sdk.compat03.grpc.AgentInterface agentInterface(AgentInterface_v0_3 agentInterface) {
-            org.a2aproject.sdk.compat03.grpc.AgentInterface.Builder builder = org.a2aproject.sdk.compat03.grpc.AgentInterface.newBuilder();
+        private static org.a2aproject.sdk.compat03.grpc.AgentInterface agentInterface(
+                AgentInterface_v0_3 agentInterface) {
+            org.a2aproject.sdk.compat03.grpc.AgentInterface.Builder builder =
+                    org.a2aproject.sdk.compat03.grpc.AgentInterface.newBuilder();
             if (agentInterface.transport() != null) {
                 builder.setTransport(agentInterface.transport());
             }
@@ -653,7 +781,8 @@ public class ProtoUtils_v0_3 {
         }
 
         private static com.google.protobuf.ListValue listValue(List<Object> list) {
-            com.google.protobuf.ListValue.Builder listValueBuilder = com.google.protobuf.ListValue.newBuilder();
+            com.google.protobuf.ListValue.Builder listValueBuilder =
+                    com.google.protobuf.ListValue.newBuilder();
             if (list != null) {
                 list.forEach(o -> listValueBuilder.addValues(value(o)));
             }
@@ -663,11 +792,15 @@ public class ProtoUtils_v0_3 {
         public static StreamResponse streamResponse(StreamingEventKind_v0_3 streamingEventKind) {
             if (streamingEventKind instanceof TaskStatusUpdateEvent_v0_3) {
                 return StreamResponse.newBuilder()
-                        .setStatusUpdate(taskStatusUpdateEvent((TaskStatusUpdateEvent_v0_3) streamingEventKind))
+                        .setStatusUpdate(
+                                taskStatusUpdateEvent(
+                                        (TaskStatusUpdateEvent_v0_3) streamingEventKind))
                         .build();
             } else if (streamingEventKind instanceof TaskArtifactUpdateEvent_v0_3) {
                 return StreamResponse.newBuilder()
-                        .setArtifactUpdate(taskArtifactUpdateEvent((TaskArtifactUpdateEvent_v0_3) streamingEventKind))
+                        .setArtifactUpdate(
+                                taskArtifactUpdateEvent(
+                                        (TaskArtifactUpdateEvent_v0_3) streamingEventKind))
                         .build();
             } else if (streamingEventKind instanceof Message_v0_3) {
                 return StreamResponse.newBuilder()
@@ -682,7 +815,8 @@ public class ProtoUtils_v0_3 {
             }
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.SendMessageResponse taskOrMessage(EventKind_v0_3 eventKind) {
+        public static org.a2aproject.sdk.compat03.grpc.SendMessageResponse taskOrMessage(
+                EventKind_v0_3 eventKind) {
             if (eventKind instanceof Task_v0_3) {
                 return org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder()
                         .setTask(task((Task_v0_3) eventKind))
@@ -696,7 +830,8 @@ public class ProtoUtils_v0_3 {
             }
         }
 
-        public static org.a2aproject.sdk.compat03.grpc.StreamResponse taskOrMessageStream(StreamingEventKind_v0_3 eventKind) {
+        public static org.a2aproject.sdk.compat03.grpc.StreamResponse taskOrMessageStream(
+                StreamingEventKind_v0_3 eventKind) {
             if (eventKind instanceof Task_v0_3 task) {
                 return org.a2aproject.sdk.compat03.grpc.StreamResponse.newBuilder()
                         .setTask(task(task))
@@ -717,24 +852,26 @@ public class ProtoUtils_v0_3 {
                 throw new IllegalArgumentException("Unsupported event type: " + eventKind);
             }
         }
-
     }
 
     public static class FromProto {
 
-        public static TaskQueryParams_v0_3 taskQueryParams(org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder request) {
+        public static TaskQueryParams_v0_3 taskQueryParams(
+                org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskQueryParams_v0_3(id, request.getHistoryLength());
         }
 
-        public static TaskIdParams_v0_3 taskIdParams(org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder request) {
+        public static TaskIdParams_v0_3 taskIdParams(
+                org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskIdParams_v0_3(id);
         }
 
-        public static MessageSendParams_v0_3 messageSendParams(org.a2aproject.sdk.compat03.grpc.SendMessageRequestOrBuilder request) {
+        public static MessageSendParams_v0_3 messageSendParams(
+                org.a2aproject.sdk.compat03.grpc.SendMessageRequestOrBuilder request) {
             MessageSendParams_v0_3.Builder builder = new MessageSendParams_v0_3.Builder();
             builder.message(message(request.getRequest()));
             if (request.hasConfiguration()) {
@@ -746,22 +883,28 @@ public class ProtoUtils_v0_3 {
             return builder.build();
         }
 
-        public static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder request) {
+        public static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(
+                org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder
+                        request) {
             return taskPushNotificationConfig(request.getConfig(), true);
         }
 
-        public static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder config) {
+        public static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(
+                org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder config) {
             return taskPushNotificationConfig(config, false);
         }
 
-        private static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder config, boolean create) {
+        private static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(
+                org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfigOrBuilder config,
+                boolean create) {
             String name = config.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
             String taskId = parts[1];
             String configId = "";
             if (create) {
                 if (parts.length < 3) {
-                    throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+                    throw new IllegalArgumentException(
+                            "Invalid name format for TaskPushNotificationConfig: " + name);
                 }
                 if (parts.length == 4) {
                     configId = parts[3];
@@ -770,15 +913,19 @@ public class ProtoUtils_v0_3 {
                 }
             } else {
                 if (parts.length < 4) {
-                    throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+                    throw new IllegalArgumentException(
+                            "Invalid name format for TaskPushNotificationConfig: " + name);
                 }
                 configId = parts[3];
             }
-            PushNotificationConfig_v0_3 pnc = pushNotification(config.getPushNotificationConfig(), configId);
+            PushNotificationConfig_v0_3 pnc =
+                    pushNotification(config.getPushNotificationConfig(), configId);
             return new TaskPushNotificationConfig_v0_3(taskId, pnc);
         }
 
-        public static GetTaskPushNotificationConfigParams_v0_3 getTaskPushNotificationConfigParams(org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder request) {
+        public static GetTaskPushNotificationConfigParams_v0_3 getTaskPushNotificationConfigParams(
+                org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder
+                        request) {
             String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
             String taskId = parts[1];
@@ -786,85 +933,107 @@ public class ProtoUtils_v0_3 {
             if (parts.length == 2) {
                 configId = taskId;
             } else if (parts.length < 4) {
-                throw new IllegalArgumentException("Invalid name format for GetTaskPushNotificationConfigRequest: " + name);
+                throw new IllegalArgumentException(
+                        "Invalid name format for GetTaskPushNotificationConfigRequest: " + name);
             } else {
                 configId = parts[3];
             }
             return new GetTaskPushNotificationConfigParams_v0_3(taskId, configId);
         }
 
-        public static TaskIdParams_v0_3 taskIdParams(org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder request) {
+        public static TaskIdParams_v0_3 taskIdParams(
+                org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskIdParams_v0_3(id);
         }
 
-        public static List<TaskPushNotificationConfig_v0_3> listTaskPushNotificationConfigParams(org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
-            List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
+        public static List<TaskPushNotificationConfig_v0_3> listTaskPushNotificationConfigParams(
+                org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponseOrBuilder
+                        response) {
+            List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> configs =
+                    response.getConfigsList();
             List<TaskPushNotificationConfig_v0_3> result = new ArrayList<>(configs.size());
-            for(org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig config : configs) {
+            for (org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig config : configs) {
                 result.add(taskPushNotificationConfig(config, false));
             }
             return result;
         }
 
-        public static ListTaskPushNotificationConfigParams_v0_3 listTaskPushNotificationConfigParams(org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder request) {
+        public static ListTaskPushNotificationConfigParams_v0_3
+                listTaskPushNotificationConfigParams(
+                        org.a2aproject.sdk.compat03.grpc
+                                        .ListTaskPushNotificationConfigRequestOrBuilder
+                                request) {
             String parent = request.getParent();
             String id = parent.substring(parent.lastIndexOf('/') + 1);
             return new ListTaskPushNotificationConfigParams_v0_3(id);
         }
 
-        public static DeleteTaskPushNotificationConfigParams_v0_3 deleteTaskPushNotificationConfigParams(org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder request) {
+        public static DeleteTaskPushNotificationConfigParams_v0_3
+                deleteTaskPushNotificationConfigParams(
+                        org.a2aproject.sdk.compat03.grpc
+                                        .DeleteTaskPushNotificationConfigRequestOrBuilder
+                                request) {
             String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
             if (parts.length < 4) {
-                throw new IllegalArgumentException("Invalid name format for DeleteTaskPushNotificationConfigRequest: " + name);
+                throw new IllegalArgumentException(
+                        "Invalid name format for DeleteTaskPushNotificationConfigRequest: " + name);
             }
             String taskId = parts[1];
             String configId = parts[3];
             return new DeleteTaskPushNotificationConfigParams_v0_3(taskId, configId);
         }
 
-        private static AgentExtension_v0_3 agentExtension(org.a2aproject.sdk.compat03.grpc.AgentExtensionOrBuilder agentExtension) {
+        private static AgentExtension_v0_3 agentExtension(
+                org.a2aproject.sdk.compat03.grpc.AgentExtensionOrBuilder agentExtension) {
             return new AgentExtension_v0_3(
                     agentExtension.getDescription(),
                     struct(agentExtension.getParams()),
                     agentExtension.getRequired(),
-                    agentExtension.getUri()
-            );
+                    agentExtension.getUri());
         }
 
-        private static MessageSendConfiguration_v0_3 messageSendConfiguration(org.a2aproject.sdk.compat03.grpc.SendMessageConfigurationOrBuilder sendMessageConfiguration) {
+        private static MessageSendConfiguration_v0_3 messageSendConfiguration(
+                org.a2aproject.sdk.compat03.grpc.SendMessageConfigurationOrBuilder
+                        sendMessageConfiguration) {
             return new MessageSendConfiguration_v0_3(
-                    sendMessageConfiguration.getAcceptedOutputModesList().isEmpty() ? null :
-                            new ArrayList<>(sendMessageConfiguration.getAcceptedOutputModesList()),
+                    sendMessageConfiguration.getAcceptedOutputModesList().isEmpty()
+                            ? null
+                            : new ArrayList<>(
+                                    sendMessageConfiguration.getAcceptedOutputModesList()),
                     sendMessageConfiguration.getHistoryLength(),
                     pushNotification(sendMessageConfiguration.getPushNotification()),
-                    sendMessageConfiguration.getBlocking()
-            );
+                    sendMessageConfiguration.getBlocking());
         }
 
-        private static @Nullable PushNotificationConfig_v0_3 pushNotification(org.a2aproject.sdk.compat03.grpc.PushNotificationConfigOrBuilder pushNotification, String configId) {
-            if(pushNotification == null || pushNotification.getDefaultInstanceForType().equals(pushNotification)) {
+        private static @Nullable PushNotificationConfig_v0_3 pushNotification(
+                org.a2aproject.sdk.compat03.grpc.PushNotificationConfigOrBuilder pushNotification,
+                String configId) {
+            if (pushNotification == null
+                    || pushNotification.getDefaultInstanceForType().equals(pushNotification)) {
                 return null;
             }
             return new PushNotificationConfig_v0_3(
                     pushNotification.getUrl(),
                     pushNotification.getToken().isEmpty() ? null : pushNotification.getToken(),
-                    pushNotification.hasAuthentication() ? authenticationInfo(pushNotification.getAuthentication()) : null,
-                    pushNotification.getId().isEmpty() ? configId : pushNotification.getId()
-            );
+                    pushNotification.hasAuthentication()
+                            ? authenticationInfo(pushNotification.getAuthentication())
+                            : null,
+                    pushNotification.getId().isEmpty() ? configId : pushNotification.getId());
         }
 
-        private static @Nullable PushNotificationConfig_v0_3 pushNotification(org.a2aproject.sdk.compat03.grpc.PushNotificationConfigOrBuilder pushNotification) {
+        private static @Nullable PushNotificationConfig_v0_3 pushNotification(
+                org.a2aproject.sdk.compat03.grpc.PushNotificationConfigOrBuilder pushNotification) {
             return pushNotification(pushNotification, pushNotification.getId());
         }
 
-        private static PushNotificationAuthenticationInfo_v0_3 authenticationInfo(org.a2aproject.sdk.compat03.grpc.AuthenticationInfoOrBuilder authenticationInfo) {
+        private static PushNotificationAuthenticationInfo_v0_3 authenticationInfo(
+                org.a2aproject.sdk.compat03.grpc.AuthenticationInfoOrBuilder authenticationInfo) {
             return new PushNotificationAuthenticationInfo_v0_3(
                     new ArrayList<>(authenticationInfo.getSchemesList()),
-                    authenticationInfo.getCredentials()
-            );
+                    authenticationInfo.getCredentials());
         }
 
         public static Task_v0_3 task(org.a2aproject.sdk.compat03.grpc.TaskOrBuilder task) {
@@ -872,26 +1041,33 @@ public class ProtoUtils_v0_3 {
                     task.getId(),
                     task.getContextId(),
                     taskStatus(task.getStatus()),
-                    task.getArtifactsList().stream().map(item -> artifact(item)).collect(Collectors.toList()),
-                    task.getHistoryList().stream().map(item -> message(item)).collect(Collectors.toList()),
-                    struct(task.getMetadata())
-            );
+                    task.getArtifactsList().stream()
+                            .map(item -> artifact(item))
+                            .collect(Collectors.toList()),
+                    task.getHistoryList().stream()
+                            .map(item -> message(item))
+                            .collect(Collectors.toList()),
+                    struct(task.getMetadata()));
         }
 
-        public static Message_v0_3 message(org.a2aproject.sdk.compat03.grpc.MessageOrBuilder message) {
+        public static Message_v0_3 message(
+                org.a2aproject.sdk.compat03.grpc.MessageOrBuilder message) {
             return new Message_v0_3(
                     role(message.getRole()),
-                    message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
-                    message.getMessageId().isEmpty() ? null :  message.getMessageId(),
-                    message.getContextId().isEmpty() ? null :  message.getContextId(),
-                    message.getTaskId().isEmpty() ? null :  message.getTaskId(),
+                    message.getContentList().stream()
+                            .map(item -> part(item))
+                            .collect(Collectors.toList()),
+                    message.getMessageId().isEmpty() ? null : message.getMessageId(),
+                    message.getContextId().isEmpty() ? null : message.getContextId(),
+                    message.getTaskId().isEmpty() ? null : message.getTaskId(),
                     null, // referenceTaskIds is not in grpc message
                     struct(message.getMetadata()),
-                    message.getExtensionsList().isEmpty() ? null : message.getExtensionsList()
-            );
+                    message.getExtensionsList().isEmpty() ? null : message.getExtensionsList());
         }
 
-        public static TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent(org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEventOrBuilder taskStatusUpdateEvent) {
+        public static TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent(
+                org.a2aproject.sdk.compat03.grpc.TaskStatusUpdateEventOrBuilder
+                        taskStatusUpdateEvent) {
             return new TaskStatusUpdateEvent_v0_3.Builder()
                     .taskId(taskStatusUpdateEvent.getTaskId())
                     .status(taskStatus(taskStatusUpdateEvent.getStatus()))
@@ -901,7 +1077,9 @@ public class ProtoUtils_v0_3 {
                     .build();
         }
 
-        public static TaskArtifactUpdateEvent_v0_3 taskArtifactUpdateEvent(org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEventOrBuilder taskArtifactUpdateEvent) {
+        public static TaskArtifactUpdateEvent_v0_3 taskArtifactUpdateEvent(
+                org.a2aproject.sdk.compat03.grpc.TaskArtifactUpdateEventOrBuilder
+                        taskArtifactUpdateEvent) {
             return new TaskArtifactUpdateEvent_v0_3.Builder()
                     .taskId(taskArtifactUpdateEvent.getTaskId())
                     .append(taskArtifactUpdateEvent.getAppend())
@@ -912,15 +1090,17 @@ public class ProtoUtils_v0_3 {
                     .build();
         }
 
-        private static Artifact_v0_3 artifact(org.a2aproject.sdk.compat03.grpc.ArtifactOrBuilder artifact) {
+        private static Artifact_v0_3 artifact(
+                org.a2aproject.sdk.compat03.grpc.ArtifactOrBuilder artifact) {
             return new Artifact_v0_3(
                     artifact.getArtifactId(),
                     artifact.getName(),
                     artifact.getDescription(),
-                    artifact.getPartsList().stream().map(item -> part(item)).collect(Collectors.toList()),
+                    artifact.getPartsList().stream()
+                            .map(item -> part(item))
+                            .collect(Collectors.toList()),
                     struct(artifact.getMetadata()),
-                    artifact.getExtensionsList().isEmpty() ? null : artifact.getExtensionsList()
-            );
+                    artifact.getExtensionsList().isEmpty() ? null : artifact.getExtensionsList());
         }
 
         static Part_v0_3<?> part(org.a2aproject.sdk.compat03.grpc.PartOrBuilder part) {
@@ -935,23 +1115,34 @@ public class ProtoUtils_v0_3 {
             throw new InvalidRequestError_v0_3();
         }
 
-        private static FilePart_v0_3 filePart(org.a2aproject.sdk.compat03.grpc.FilePartOrBuilder filePart,
-                                              @Nullable Map<String, Object> metadata) {
+        private static FilePart_v0_3 filePart(
+                org.a2aproject.sdk.compat03.grpc.FilePartOrBuilder filePart,
+                @Nullable Map<String, Object> metadata) {
             String name = filePart.getName().isEmpty() ? null : filePart.getName();
             if (filePart.hasFileWithBytes()) {
-                return new FilePart_v0_3(new FileWithBytes_v0_3(filePart.getMimeType(), name, filePart.getFileWithBytes().toStringUtf8()), metadata);
+                return new FilePart_v0_3(
+                        new FileWithBytes_v0_3(
+                                filePart.getMimeType(),
+                                name,
+                                filePart.getFileWithBytes().toStringUtf8()),
+                        metadata);
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart_v0_3(new FileWithUri_v0_3(filePart.getMimeType(), name, filePart.getFileWithUri()), metadata);
+                return new FilePart_v0_3(
+                        new FileWithUri_v0_3(
+                                filePart.getMimeType(), name, filePart.getFileWithUri()),
+                        metadata);
             }
             throw new InvalidRequestError_v0_3();
         }
 
-        private static DataPart_v0_3 dataPart(org.a2aproject.sdk.compat03.grpc.DataPartOrBuilder dataPart,
-                                              @Nullable Map<String, Object> metadata) {
+        private static DataPart_v0_3 dataPart(
+                org.a2aproject.sdk.compat03.grpc.DataPartOrBuilder dataPart,
+                @Nullable Map<String, Object> metadata) {
             return new DataPart_v0_3(struct(dataPart.getData()), metadata);
         }
 
-        private static @Nullable TaskStatus_v0_3 taskStatus(org.a2aproject.sdk.compat03.grpc.TaskStatusOrBuilder taskStatus) {
+        private static @Nullable TaskStatus_v0_3 taskStatus(
+                org.a2aproject.sdk.compat03.grpc.TaskStatusOrBuilder taskStatus) {
             TaskState_v0_3 state = taskState(taskStatus.getState());
             if (state == null) {
                 return null;
@@ -959,49 +1150,41 @@ public class ProtoUtils_v0_3 {
             return new TaskStatus_v0_3(
                     taskState(taskStatus.getState()),
                     taskStatus.hasUpdate() ? message(taskStatus.getUpdateOrBuilder()) : null,
-                    OffsetDateTime.ofInstant(Instant.ofEpochSecond(taskStatus.getTimestamp().getSeconds(), taskStatus.getTimestamp().getNanos()), ZoneOffset.UTC)
-            );
+                    OffsetDateTime.ofInstant(
+                            Instant.ofEpochSecond(
+                                    taskStatus.getTimestamp().getSeconds(),
+                                    taskStatus.getTimestamp().getNanos()),
+                            ZoneOffset.UTC));
         }
 
-        private static Message_v0_3.@Nullable Role role(org.a2aproject.sdk.compat03.grpc.Role role) {
+        private static Message_v0_3.@Nullable Role role(
+                org.a2aproject.sdk.compat03.grpc.Role role) {
             if (role == null) {
                 return null;
             }
             return switch (role) {
-                case ROLE_USER ->
-                    Message_v0_3.Role.USER;
-                case ROLE_AGENT ->
-                    Message_v0_3.Role.AGENT;
-                default ->
-                    throw new InvalidRequestError_v0_3();
+                case ROLE_USER -> Message_v0_3.Role.USER;
+                case ROLE_AGENT -> Message_v0_3.Role.AGENT;
+                default -> throw new InvalidRequestError_v0_3();
             };
         }
 
-        private static @Nullable TaskState_v0_3 taskState(org.a2aproject.sdk.compat03.grpc.TaskState taskState) {
+        private static @Nullable TaskState_v0_3 taskState(
+                org.a2aproject.sdk.compat03.grpc.TaskState taskState) {
             if (taskState == null) {
                 return null;
             }
             return switch (taskState) {
-                case TASK_STATE_SUBMITTED ->
-                    TaskState_v0_3.SUBMITTED;
-                case TASK_STATE_WORKING ->
-                    TaskState_v0_3.WORKING;
-                case TASK_STATE_INPUT_REQUIRED ->
-                    TaskState_v0_3.INPUT_REQUIRED;
-                case TASK_STATE_AUTH_REQUIRED ->
-                    TaskState_v0_3.AUTH_REQUIRED;
-                case TASK_STATE_COMPLETED ->
-                    TaskState_v0_3.COMPLETED;
-                case TASK_STATE_CANCELLED ->
-                    TaskState_v0_3.CANCELED;
-                case TASK_STATE_FAILED ->
-                    TaskState_v0_3.FAILED;
-                case TASK_STATE_REJECTED ->
-                    TaskState_v0_3.REJECTED;
-                case TASK_STATE_UNSPECIFIED ->
-                    null;
-                case UNRECOGNIZED ->
-                    null;
+                case TASK_STATE_SUBMITTED -> TaskState_v0_3.SUBMITTED;
+                case TASK_STATE_WORKING -> TaskState_v0_3.WORKING;
+                case TASK_STATE_INPUT_REQUIRED -> TaskState_v0_3.INPUT_REQUIRED;
+                case TASK_STATE_AUTH_REQUIRED -> TaskState_v0_3.AUTH_REQUIRED;
+                case TASK_STATE_COMPLETED -> TaskState_v0_3.COMPLETED;
+                case TASK_STATE_CANCELLED -> TaskState_v0_3.CANCELED;
+                case TASK_STATE_FAILED -> TaskState_v0_3.FAILED;
+                case TASK_STATE_REJECTED -> TaskState_v0_3.REJECTED;
+                case TASK_STATE_UNSPECIFIED -> null;
+                case UNRECOGNIZED -> null;
             };
         }
 
@@ -1033,5 +1216,4 @@ public class ProtoUtils_v0_3 {
             }
         }
     }
-
 }

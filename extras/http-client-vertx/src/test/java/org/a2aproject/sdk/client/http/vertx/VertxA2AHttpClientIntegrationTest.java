@@ -22,7 +22,7 @@ public class VertxA2AHttpClientIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        mockServer = ClientAndServer.startClientAndServer(0);  // Use random port
+        mockServer = ClientAndServer.startClientAndServer(0); // Use random port
         client = new VertxA2AHttpClient();
     }
 
@@ -46,9 +46,7 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("GET").withPath("/test"))
                 .respond(response().withStatusCode(200).withBody("success"));
 
-        A2AHttpResponse response = client.createGet()
-                .url(getBaseUrl() + "/test")
-                .get();
+        A2AHttpResponse response = client.createGet().url(getBaseUrl() + "/test").get();
 
         assertEquals(200, response.status());
         assertTrue(response.success());
@@ -58,16 +56,15 @@ public class VertxA2AHttpClientIntegrationTest {
     @Test
     public void testPostRequestSuccess() throws Exception {
         mockServer
-                .when(request()
-                        .withMethod("POST")
-                        .withPath("/test")
-                        .withBody("{\"key\":\"value\"}"))
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/test")
+                                .withBody("{\"key\":\"value\"}"))
                 .respond(response().withStatusCode(201).withBody("created"));
 
-        A2AHttpResponse response = client.createPost()
-                .url(getBaseUrl() + "/test")
-                .body("{\"key\":\"value\"}")
-                .post();
+        A2AHttpResponse response =
+                client.createPost().url(getBaseUrl() + "/test").body("{\"key\":\"value\"}").post();
 
         assertEquals(201, response.status());
         assertTrue(response.success());
@@ -80,9 +77,7 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("DELETE").withPath("/test"))
                 .respond(response().withStatusCode(204));
 
-        A2AHttpResponse response = client.createDelete()
-                .url(getBaseUrl() + "/test")
-                .delete();
+        A2AHttpResponse response = client.createDelete().url(getBaseUrl() + "/test").delete();
 
         assertEquals(204, response.status());
         assertTrue(response.success());
@@ -99,10 +94,11 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("GET").withPath("/test"))
                 .respond(response().withStatusCode(200).withBody("ok"));
 
-        A2AHttpResponse response = client.createGet()
-                .url(getBaseUrl() + "/test")
-                .addHeader("Host", "custom-logical-host.example.com")
-                .get();
+        A2AHttpResponse response =
+                client.createGet()
+                        .url(getBaseUrl() + "/test")
+                        .addHeader("Host", "custom-logical-host.example.com")
+                        .get();
 
         assertEquals(200, response.status());
         mockServer.verify(
@@ -116,11 +112,12 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("GET").withPath("/test"))
                 .respond(response().withStatusCode(401));
 
-        Exception exception = assertThrows(java.io.IOException.class, () -> {
-            client.createGet()
-                    .url(getBaseUrl() + "/test")
-                    .get();
-        });
+        Exception exception =
+                assertThrows(
+                        java.io.IOException.class,
+                        () -> {
+                            client.createGet().url(getBaseUrl() + "/test").get();
+                        });
 
         assertEquals(A2AErrorMessages.AUTHENTICATION_FAILED, exception.getMessage());
     }
@@ -131,11 +128,12 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("GET").withPath("/test"))
                 .respond(response().withStatusCode(403));
 
-        Exception exception = assertThrows(java.io.IOException.class, () -> {
-            client.createGet()
-                    .url(getBaseUrl() + "/test")
-                    .get();
-        });
+        Exception exception =
+                assertThrows(
+                        java.io.IOException.class,
+                        () -> {
+                            client.createGet().url(getBaseUrl() + "/test").get();
+                        });
 
         assertEquals(A2AErrorMessages.AUTHORIZATION_FAILED, exception.getMessage());
     }
@@ -146,12 +144,12 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("POST").withPath("/test"))
                 .respond(response().withStatusCode(401));
 
-        Exception exception = assertThrows(java.io.IOException.class, () -> {
-            client.createPost()
-                    .url(getBaseUrl() + "/test")
-                    .body("{}")
-                    .post();
-        });
+        Exception exception =
+                assertThrows(
+                        java.io.IOException.class,
+                        () -> {
+                            client.createPost().url(getBaseUrl() + "/test").body("{}").post();
+                        });
 
         assertEquals(A2AErrorMessages.AUTHENTICATION_FAILED, exception.getMessage());
     }
@@ -162,12 +160,12 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("POST").withPath("/test"))
                 .respond(response().withStatusCode(403));
 
-        Exception exception = assertThrows(java.io.IOException.class, () -> {
-            client.createPost()
-                    .url(getBaseUrl() + "/test")
-                    .body("{}")
-                    .post();
-        });
+        Exception exception =
+                assertThrows(
+                        java.io.IOException.class,
+                        () -> {
+                            client.createPost().url(getBaseUrl() + "/test").body("{}").post();
+                        });
 
         assertEquals(A2AErrorMessages.AUTHORIZATION_FAILED, exception.getMessage());
     }
@@ -178,11 +176,12 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("DELETE").withPath("/test"))
                 .respond(response().withStatusCode(401));
 
-        Exception exception = assertThrows(java.io.IOException.class, () -> {
-            client.createDelete()
-                    .url(getBaseUrl() + "/test")
-                    .delete();
-        });
+        Exception exception =
+                assertThrows(
+                        java.io.IOException.class,
+                        () -> {
+                            client.createDelete().url(getBaseUrl() + "/test").delete();
+                        });
 
         assertEquals(A2AErrorMessages.AUTHENTICATION_FAILED, exception.getMessage());
     }
@@ -190,18 +189,20 @@ public class VertxA2AHttpClientIntegrationTest {
     @Test
     public void testHeaderPropagation() throws Exception {
         mockServer
-                .when(request()
-                        .withMethod("GET")
-                        .withPath("/test")
-                        .withHeader("Authorization", "Bearer token")
-                        .withHeader("X-Custom-Header", "custom-value"))
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/test")
+                                .withHeader("Authorization", "Bearer token")
+                                .withHeader("X-Custom-Header", "custom-value"))
                 .respond(response().withStatusCode(200).withBody("ok"));
 
-        A2AHttpResponse response = client.createGet()
-                .url(getBaseUrl() + "/test")
-                .addHeader("Authorization", "Bearer token")
-                .addHeader("X-Custom-Header", "custom-value")
-                .get();
+        A2AHttpResponse response =
+                client.createGet()
+                        .url(getBaseUrl() + "/test")
+                        .addHeader("Authorization", "Bearer token")
+                        .addHeader("X-Custom-Header", "custom-value")
+                        .get();
 
         assertEquals(200, response.status());
         assertEquals("ok", response.body());
@@ -213,9 +214,7 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("GET").withPath("/test"))
                 .respond(response().withStatusCode(500).withBody("Internal Server Error"));
 
-        A2AHttpResponse response = client.createGet()
-                .url(getBaseUrl() + "/test")
-                .get();
+        A2AHttpResponse response = client.createGet().url(getBaseUrl() + "/test").get();
 
         assertEquals(500, response.status());
         assertFalse(response.success());
@@ -228,9 +227,7 @@ public class VertxA2AHttpClientIntegrationTest {
                 .when(request().withMethod("GET").withPath("/test"))
                 .respond(response().withStatusCode(404).withBody("Not Found"));
 
-        A2AHttpResponse response = client.createGet()
-                .url(getBaseUrl() + "/test")
-                .get();
+        A2AHttpResponse response = client.createGet().url(getBaseUrl() + "/test").get();
 
         assertEquals(404, response.status());
         assertFalse(response.success());

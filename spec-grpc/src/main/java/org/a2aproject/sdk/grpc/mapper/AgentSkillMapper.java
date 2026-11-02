@@ -6,7 +6,8 @@ import org.mapstruct.Mapper;
 /**
  * Mapper between {@link org.a2aproject.sdk.spec.AgentSkill} and {@link org.a2aproject.sdk.grpc.AgentSkill}.
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = SecurityRequirementMapper.class)
 public interface AgentSkillMapper {

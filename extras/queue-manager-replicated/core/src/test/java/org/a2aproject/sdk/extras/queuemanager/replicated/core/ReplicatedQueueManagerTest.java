@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.events.EventQueue;
@@ -43,6 +42,7 @@ class ReplicatedQueueManagerTest {
     private StreamingEventKind testEvent;
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
+
     @BeforeEach
     void setUp() {
         // Create MainEventBus first
@@ -50,21 +50,24 @@ class ReplicatedQueueManagerTest {
         mainEventBus = new MainEventBus();
 
         // Create QueueManager before MainEventBusProcessor (processor needs it as parameter)
-        queueManager = new ReplicatedQueueManager(
-            new NoOpReplicationStrategy(),
-            new MockTaskStateProvider(true),
-            mainEventBus
-        );
+        queueManager =
+                new ReplicatedQueueManager(
+                        new NoOpReplicationStrategy(),
+                        new MockTaskStateProvider(true),
+                        mainEventBus);
 
         // Create MainEventBusProcessor with QueueManager
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
-        testEvent = TaskStatusUpdateEvent.builder()
-                .taskId("test-task")
-                .contextId("test-context")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        testEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("test-task")
+                        .contextId("test-context")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
     }
 
     /**
@@ -82,7 +85,7 @@ class ReplicatedQueueManagerTest {
     @AfterEach
     void tearDown() {
         if (mainEventBusProcessor != null) {
-            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
+            mainEventBusProcessor.setCallback(null); // Clear any test callbacks
             EventQueueUtil.stop(mainEventBusProcessor);
         }
         mainEventBusProcessor = null;
@@ -100,21 +103,24 @@ class ReplicatedQueueManagerTest {
      */
     private void waitForEventProcessing(Runnable action) throws InterruptedException {
         CountDownLatch processingLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, org.a2aproject.sdk.spec.Event event) {
-                processingLatch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(
+                            String taskId, org.a2aproject.sdk.spec.Event event) {
+                        processingLatch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for basic event processing wait
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {
+                        // Not needed for basic event processing wait
+                    }
+                });
 
         try {
             action.run();
-            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+            assertTrue(
+                    processingLatch.await(5, TimeUnit.SECONDS),
                     "MainEventBusProcessor should have processed the event within timeout");
         } finally {
             mainEventBusProcessor.setCallback(null);
@@ -124,7 +130,8 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyTriggeredOnNormalEnqueue() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "test-task-1";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -141,12 +148,14 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyNotTriggeredOnReplicatedEvent() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "test-task-2";
         EventQueue queue = queueManager.createOrTap(taskId);
 
-        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, getTaskStatusUpdateEventWithNewId(taskId));
+        ReplicatedEventQueueItem replicatedEvent =
+                new ReplicatedEventQueueItem(taskId, getTaskStatusUpdateEventWithNewId(taskId));
         queueManager.onReplicatedEvent(replicatedEvent);
 
         assertEquals(0, strategy.getCallCount());
@@ -155,7 +164,9 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyWithCountingImplementation() throws InterruptedException {
         CountingReplicationStrategy countingStrategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true), mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(
+                        countingStrategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "test-task-3";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -169,7 +180,8 @@ class ReplicatedQueueManagerTest {
         assertEquals(taskId, countingStrategy.getLastTaskId());
         assertEquals(event, countingStrategy.getLastEvent());
 
-        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, getTaskStatusUpdateEventWithNewId(taskId));
+        ReplicatedEventQueueItem replicatedEvent =
+                new ReplicatedEventQueueItem(taskId, getTaskStatusUpdateEventWithNewId(taskId));
         queueManager.onReplicatedEvent(replicatedEvent);
 
         assertEquals(2, countingStrategy.getCallCount());
@@ -178,13 +190,15 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicatedEventDeliveredToCorrectQueue() throws InterruptedException {
         String taskId = "test-task-4";
-        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId);  // Use matching taskId
+        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId); // Use matching taskId
         EventQueue queue = queueManager.createOrTap(taskId);
 
-        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, eventForTask);
+        ReplicatedEventQueueItem replicatedEvent =
+                new ReplicatedEventQueueItem(taskId, eventForTask);
 
         // Use callback to wait for event processing
-        EventQueueItem item = dequeueEventWithRetry(queue, () -> queueManager.onReplicatedEvent(replicatedEvent));
+        EventQueueItem item =
+                dequeueEventWithRetry(queue, () -> queueManager.onReplicatedEvent(replicatedEvent));
         assertNotNull(item, "Event should be available in queue");
         Event dequeuedEvent = item.getEvent();
         assertEquals(eventForTask, dequeuedEvent);
@@ -193,7 +207,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicatedEventCreatesQueueIfNeeded() throws InterruptedException {
         String taskId = "non-existent-task";
-        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId);  // Use matching taskId
+        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId); // Use matching taskId
 
         // Verify no queue exists initially
         assertNull(queueManager.get(taskId));
@@ -207,16 +221,24 @@ class ReplicatedQueueManagerTest {
         EventQueue mainQueue = queueManager.get(taskId);
         assertNotNull(mainQueue, "MainQueue should exist after createOrTap");
 
-        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, eventForTask);
+        ReplicatedEventQueueItem replicatedEvent =
+                new ReplicatedEventQueueItem(taskId, eventForTask);
 
         // Process the replicated event and wait for distribution
         // Use callback to wait for event processing
-        EventQueueItem item = dequeueEventWithRetry(childQueue, () -> {
-            assertDoesNotThrow(() -> queueManager.onReplicatedEvent(replicatedEvent));
-        });
+        EventQueueItem item =
+                dequeueEventWithRetry(
+                        childQueue,
+                        () -> {
+                            assertDoesNotThrow(
+                                    () -> queueManager.onReplicatedEvent(replicatedEvent));
+                        });
         assertNotNull(item, "Event should be available in queue");
         Event dequeuedEvent = item.getEvent();
-        assertEquals(eventForTask, dequeuedEvent, "The replicated event should be enqueued in the newly created queue");
+        assertEquals(
+                eventForTask,
+                dequeuedEvent,
+                "The replicated event should be enqueued in the newly created queue");
     }
 
     @Test
@@ -247,7 +269,9 @@ class ReplicatedQueueManagerTest {
     void testQueueToTaskIdMappingMaintained() throws InterruptedException {
         String taskId = "test-task-6";
         CountingReplicationStrategy countingStrategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true), mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(
+                        countingStrategy, new MockTaskStateProvider(true), mainEventBus);
         TaskStatusUpdateEvent event = createEventForTask(taskId);
 
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -255,25 +279,29 @@ class ReplicatedQueueManagerTest {
 
         assertEquals(taskId, countingStrategy.getLastTaskId());
 
-        queueManager.close(taskId);  // Task is active, so NO poison pill is sent
+        queueManager.close(taskId); // Task is active, so NO poison pill is sent
 
         EventQueue newQueue = queueManager.createOrTap(taskId);
         waitForEventProcessing(() -> newQueue.enqueueEvent(event));
 
         assertEquals(taskId, countingStrategy.getLastTaskId());
-        // 2 replication calls: 1 testEvent, 1 testEvent (no QueueClosedEvent because task is active)
+        // 2 replication calls: 1 testEvent, 1 testEvent (no QueueClosedEvent because task is
+        // active)
         assertEquals(2, countingStrategy.getCallCount());
     }
 
     @Test
     void testReplicatedEventJsonSerialization() throws Exception {
-        // Test that ReplicatedEventQueueItem can be properly serialized and deserialized with StreamingEventKind
-        TaskStatusUpdateEvent originalEvent = TaskStatusUpdateEvent.builder()
-                .taskId("json-test-task")
-                .contextId("json-test-context")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
-        ReplicatedEventQueueItem original = new ReplicatedEventQueueItem("json-test-task", originalEvent);
+        // Test that ReplicatedEventQueueItem can be properly serialized and deserialized with
+        // StreamingEventKind
+        TaskStatusUpdateEvent originalEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("json-test-task")
+                        .contextId("json-test-context")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
+        ReplicatedEventQueueItem original =
+                new ReplicatedEventQueueItem("json-test-task", originalEvent);
 
         // Serialize to JSON
         String json = JsonUtil.toJson(original);
@@ -283,7 +311,8 @@ class ReplicatedQueueManagerTest {
         assertTrue(json.contains("\"statusUpdate\""));
 
         // Deserialize back
-        ReplicatedEventQueueItem deserialized = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserialized =
+                JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertNotNull(deserialized);
         assertEquals("json-test-task", deserialized.getTaskId());
         assertNotNull(deserialized.getEvent());
@@ -294,7 +323,8 @@ class ReplicatedQueueManagerTest {
     @Test
     void testParallelReplicationBehavior() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "parallel-test-task";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -306,105 +336,125 @@ class ReplicatedQueueManagerTest {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(numThreads);
-        
+
         // Use CyclicBarrier for better thread synchronization
         // This ensures all threads start their work at approximately the same time
-        java.util.concurrent.CyclicBarrier barrier = new java.util.concurrent.CyclicBarrier(numThreads);
+        java.util.concurrent.CyclicBarrier barrier =
+                new java.util.concurrent.CyclicBarrier(numThreads);
 
         // Track processed events for better diagnostics on failure
-        java.util.concurrent.CopyOnWriteArrayList<org.a2aproject.sdk.spec.Event> processedEvents = 
-            new java.util.concurrent.CopyOnWriteArrayList<>();
+        java.util.concurrent.CopyOnWriteArrayList<org.a2aproject.sdk.spec.Event> processedEvents =
+                new java.util.concurrent.CopyOnWriteArrayList<>();
 
         // Set up callback to wait for ALL events to be processed by MainEventBusProcessor
         // Must wait for all 50 events (25 normal + 25 replicated) to ensure all normal events
         // have triggered replication before we check the count
         CountDownLatch processingLatch = new CountDownLatch(totalEventCount);
-        mainEventBusProcessor.setCallback(new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String tid, org.a2aproject.sdk.spec.Event event) {
-                processedEvents.add(event);
-                processingLatch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new org.a2aproject.sdk.server.events.MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String tid, org.a2aproject.sdk.spec.Event event) {
+                        processedEvents.add(event);
+                        processingLatch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String tid) {
-                // Not needed for this test
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String tid) {
+                        // Not needed for this test
+                    }
+                });
 
         // Launch threads that will enqueue events normally (should trigger replication)
         for (int i = 0; i < numThreads / 2; i++) {
             final int threadId = i;
-            executor.submit(() -> {
-                try {
-                    startLatch.await();
-                    barrier.await(); // Synchronize thread starts for better interleaving
-                    for (int j = 0; j < eventsPerThread; j++) {
-                        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                                .taskId(taskId)  // Use same taskId as queue
-                                .contextId("test-context")
-                                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                                .build();
-                        queue.enqueueEvent(event);
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (java.util.concurrent.BrokenBarrierException e) {
-                    throw new RuntimeException("Barrier broken", e);
-                } finally {
-                    doneLatch.countDown();
-                }
-            });
+            executor.submit(
+                    () -> {
+                        try {
+                            startLatch.await();
+                            barrier.await(); // Synchronize thread starts for better interleaving
+                            for (int j = 0; j < eventsPerThread; j++) {
+                                TaskStatusUpdateEvent event =
+                                        TaskStatusUpdateEvent.builder()
+                                                .taskId(taskId) // Use same taskId as queue
+                                                .contextId("test-context")
+                                                .status(
+                                                        new TaskStatus(
+                                                                TaskState.TASK_STATE_WORKING))
+                                                .build();
+                                queue.enqueueEvent(event);
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } catch (java.util.concurrent.BrokenBarrierException e) {
+                            throw new RuntimeException("Barrier broken", e);
+                        } finally {
+                            doneLatch.countDown();
+                        }
+                    });
         }
 
         // Launch threads that will send replicated events (should NOT trigger replication)
         for (int i = numThreads / 2; i < numThreads; i++) {
             final int threadId = i;
-            executor.submit(() -> {
-                try {
-                    startLatch.await();
-                    barrier.await(); // Synchronize thread starts for better interleaving
-                    for (int j = 0; j < eventsPerThread; j++) {
-                        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                                .taskId(taskId)  // Use same taskId as queue
-                                .contextId("test-context")
-                                // Use a non-terminal state: a COMPLETED event processed mid-stream
-                                // finalizes the task and closes the queue, so overlapping normal
-                                // enqueues no longer trigger replication and the count assertion
-                                // becomes timing-dependent (flaky). Replicated events are skipped by
-                                // the replication hook via isReplicated() regardless of state.
-                                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                                .build();
-                        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
-                        queueManager.onReplicatedEvent(replicatedEvent);
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (java.util.concurrent.BrokenBarrierException e) {
-                    throw new RuntimeException("Barrier broken", e);
-                } finally {
-                    doneLatch.countDown();
-                }
-            });
+            executor.submit(
+                    () -> {
+                        try {
+                            startLatch.await();
+                            barrier.await(); // Synchronize thread starts for better interleaving
+                            for (int j = 0; j < eventsPerThread; j++) {
+                                TaskStatusUpdateEvent event =
+                                        TaskStatusUpdateEvent.builder()
+                                                .taskId(taskId) // Use same taskId as queue
+                                                .contextId("test-context")
+                                                // Use a non-terminal state: a COMPLETED event
+                                                // processed mid-stream
+                                                // finalizes the task and closes the queue, so
+                                                // overlapping normal
+                                                // enqueues no longer trigger replication and the
+                                                // count assertion
+                                                // becomes timing-dependent (flaky). Replicated
+                                                // events are skipped by
+                                                // the replication hook via isReplicated()
+                                                // regardless of state.
+                                                .status(
+                                                        new TaskStatus(
+                                                                TaskState.TASK_STATE_WORKING))
+                                                .build();
+                                ReplicatedEventQueueItem replicatedEvent =
+                                        new ReplicatedEventQueueItem(taskId, event);
+                                queueManager.onReplicatedEvent(replicatedEvent);
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } catch (java.util.concurrent.BrokenBarrierException e) {
+                            throw new RuntimeException("Barrier broken", e);
+                        } finally {
+                            doneLatch.countDown();
+                        }
+                    });
         }
 
         // Start all threads simultaneously
         startLatch.countDown();
 
         // Wait for all threads to complete with explicit timeout
-        assertTrue(doneLatch.await(10, TimeUnit.SECONDS), 
+        assertTrue(
+                doneLatch.await(10, TimeUnit.SECONDS),
                 "All " + numThreads + " threads should complete within 10 seconds");
 
         executor.shutdown();
-        assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS), 
+        assertTrue(
+                executor.awaitTermination(5, TimeUnit.SECONDS),
                 "Executor should shutdown within 5 seconds");
 
         // Wait for MainEventBusProcessor to process all events
         try {
             boolean allProcessed = processingLatch.await(10, TimeUnit.SECONDS);
-            assertTrue(allProcessed,
-                    String.format("MainEventBusProcessor should have processed all %d events within timeout. " +
-                            "Processed: %d, Remaining: %d",
+            assertTrue(
+                    allProcessed,
+                    String.format(
+                            "MainEventBusProcessor should have processed all %d events within"
+                                    + " timeout. Processed: %d, Remaining: %d",
                             totalEventCount, processedEvents.size(), processingLatch.getCount()));
         } finally {
             mainEventBusProcessor.setCallback(null);
@@ -412,22 +462,32 @@ class ReplicatedQueueManagerTest {
         }
 
         // Verify we processed the expected number of events
-        assertEquals(totalEventCount, processedEvents.size(),
-                "Should have processed exactly " + totalEventCount + " events (normal + replicated)");
+        assertEquals(
+                totalEventCount,
+                processedEvents.size(),
+                "Should have processed exactly "
+                        + totalEventCount
+                        + " events (normal + replicated)");
 
         // Only the normal enqueue operations should have triggered replication
         // numThreads/2 threads * eventsPerThread events each = total expected replication calls
         int expectedReplicationCalls = (numThreads / 2) * eventsPerThread;
-        assertEquals(expectedReplicationCalls, strategy.getCallCount(),
-                String.format("Only normal enqueue operations should trigger replication, not replicated events. " +
-                        "Expected: %d, Actual: %d", expectedReplicationCalls, strategy.getCallCount()));
+        assertEquals(
+                expectedReplicationCalls,
+                strategy.getCallCount(),
+                String.format(
+                        "Only normal enqueue operations should trigger replication, not replicated"
+                                + " events. Expected: %d, Actual: %d",
+                        expectedReplicationCalls, strategy.getCallCount()));
     }
 
     @Test
     void testReplicatedEventSkippedWhenTaskInactive() throws InterruptedException {
         // Create a task state provider that returns false (task is inactive)
         MockTaskStateProvider stateProvider = new MockTaskStateProvider(false);
-        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider, mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(
+                        new CountingReplicationStrategy(), stateProvider, mainEventBus);
 
         String taskId = "inactive-task";
 
@@ -446,10 +506,12 @@ class ReplicatedQueueManagerTest {
     void testReplicatedEventProcessedWhenTaskActive() throws InterruptedException {
         // Create a task state provider that returns true (task is active)
         MockTaskStateProvider stateProvider = new MockTaskStateProvider(true);
-        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider, mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(
+                        new CountingReplicationStrategy(), stateProvider, mainEventBus);
 
         String taskId = "active-task";
-        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId);  // Use matching taskId
+        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId); // Use matching taskId
 
         // Verify no queue exists initially
         assertNull(queueManager.get(taskId));
@@ -464,22 +526,26 @@ class ReplicatedQueueManagerTest {
         assertNotNull(mainQueue, "MainQueue should exist after createOrTap");
 
         // Process a replicated event for an active task
-        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, eventForTask);
+        ReplicatedEventQueueItem replicatedEvent =
+                new ReplicatedEventQueueItem(taskId, eventForTask);
 
         // Verify the event was enqueued and distributed to our ChildQueue
         // Use callback to wait for event processing
-        EventQueueItem item = dequeueEventWithRetry(childQueue, () -> queueManager.onReplicatedEvent(replicatedEvent));
+        EventQueueItem item =
+                dequeueEventWithRetry(
+                        childQueue, () -> queueManager.onReplicatedEvent(replicatedEvent));
         assertNotNull(item, "Event should be available in queue");
         Event dequeuedEvent = item.getEvent();
         assertEquals(eventForTask, dequeuedEvent, "Event should be enqueued for active task");
     }
 
-
     @Test
     void testReplicatedEventToExistingQueueWhenTaskBecomesInactive() throws InterruptedException {
         // Create a task state provider that returns true initially
         MockTaskStateProvider stateProvider = new MockTaskStateProvider(true);
-        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider, mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(
+                        new CountingReplicationStrategy(), stateProvider, mainEventBus);
 
         String taskId = "task-becomes-inactive";
 
@@ -498,11 +564,12 @@ class ReplicatedQueueManagerTest {
         stateProvider.setActive(false);
 
         // Process a replicated event - should be skipped
-        TaskStatusUpdateEvent newEvent = TaskStatusUpdateEvent.builder()
-                .taskId(taskId)
-                .contextId("test-context")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        TaskStatusUpdateEvent newEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId("test-context")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, newEvent);
         queueManager.onReplicatedEvent(replicatedEvent);
 
@@ -518,7 +585,8 @@ class ReplicatedQueueManagerTest {
     @Test
     void testPoisonPillSentViaTransactionAwareEvent() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
+        queueManager =
+                new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "poison-pill-test";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -533,23 +601,30 @@ class ReplicatedQueueManagerTest {
 
         // Simulate the CDI event observer being called (what happens in real execution)
         // Create a final task for the event
-        Task finalTask = Task.builder()
-                .id(taskId)
-                .contextId("test-context")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        Task finalTask =
+                Task.builder()
+                        .id(taskId)
+                        .contextId("test-context")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
         TaskFinalizedEvent taskFinalizedEvent = new TaskFinalizedEvent(taskId, finalTask);
 
         // Call the observer method directly (simulating CDI event delivery)
         queueManager.onTaskFinalized(taskFinalizedEvent);
 
         // Verify that final Task and QueueClosedEvent were replicated
-        // strategy.getCallCount() should be 3: testEvent, final Task, then QueueClosedEvent (poison pill)
-        assertEquals(3, strategy.getCallCount(), "Should have replicated testEvent, final Task, and QueueClosedEvent");
+        // strategy.getCallCount() should be 3: testEvent, final Task, then QueueClosedEvent (poison
+        // pill)
+        assertEquals(
+                3,
+                strategy.getCallCount(),
+                "Should have replicated testEvent, final Task, and QueueClosedEvent");
 
         // Verify the last event is QueueClosedEvent (poison pill)
         Event lastEvent = strategy.getLastEvent();
-        assertTrue(lastEvent instanceof QueueClosedEvent, "Last replicated event should be QueueClosedEvent (poison pill)");
+        assertTrue(
+                lastEvent instanceof QueueClosedEvent,
+                "Last replicated event should be QueueClosedEvent (poison pill)");
         assertEquals(taskId, ((QueueClosedEvent) lastEvent).getTaskId());
     }
 
@@ -572,7 +647,8 @@ class ReplicatedQueueManagerTest {
         assertTrue(json.contains("\"closedEvent\":true"), "JSON should contain closedEvent flag");
 
         // Deserialize back
-        ReplicatedEventQueueItem deserialized = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserialized =
+                JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertNotNull(deserialized);
         assertEquals(taskId, deserialized.getTaskId());
         assertTrue(deserialized.isClosedEvent(), "Deserialized should be marked as closed event");
@@ -582,7 +658,8 @@ class ReplicatedQueueManagerTest {
         // Verify getEvent() returns QueueClosedEvent
         Event reconstructedEvent = deserialized.getEvent();
         assertNotNull(reconstructedEvent);
-        assertTrue(reconstructedEvent instanceof QueueClosedEvent,
+        assertTrue(
+                reconstructedEvent instanceof QueueClosedEvent,
                 "getEvent() should return QueueClosedEvent");
         assertEquals(taskId, ((QueueClosedEvent) reconstructedEvent).getTaskId());
     }
@@ -590,12 +667,13 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicatedQueueClosedEventTerminatesConsumer() throws InterruptedException {
         String taskId = "remote-close-test";
-        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId);  // Use matching taskId
+        TaskStatusUpdateEvent eventForTask = createEventForTask(taskId); // Use matching taskId
         EventQueue queue = queueManager.createOrTap(taskId);
 
         // Simulate receiving QueueClosedEvent from remote node
         QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
-        ReplicatedEventQueueItem replicatedClosedEvent = new ReplicatedEventQueueItem(taskId, closedEvent);
+        ReplicatedEventQueueItem replicatedClosedEvent =
+                new ReplicatedEventQueueItem(taskId, closedEvent);
 
         // Dequeue the normal event first (use callback to wait for async processing)
         EventQueueItem item1 = dequeueEventWithRetry(queue, () -> queue.enqueueEvent(eventForTask));
@@ -603,16 +681,20 @@ class ReplicatedQueueManagerTest {
         assertEquals(eventForTask, item1.getEvent());
 
         // Next dequeue should get the QueueClosedEvent (use callback to wait for async processing)
-        EventQueueItem item2 = dequeueEventWithRetry(queue, () -> queueManager.onReplicatedEvent(replicatedClosedEvent));
+        EventQueueItem item2 =
+                dequeueEventWithRetry(
+                        queue, () -> queueManager.onReplicatedEvent(replicatedClosedEvent));
         assertNotNull(item2, "QueueClosedEvent should be available");
-        assertTrue(item2.getEvent() instanceof QueueClosedEvent,
+        assertTrue(
+                item2.getEvent() instanceof QueueClosedEvent,
                 "Second event should be QueueClosedEvent");
     }
 
     private TaskStatusUpdateEvent getTaskStatusUpdateEventWithNewId(String taskId) {
-        return TaskStatusUpdateEvent.builder((TaskStatusUpdateEvent) testEvent).taskId(taskId).build();
+        return TaskStatusUpdateEvent.builder((TaskStatusUpdateEvent) testEvent)
+                .taskId(taskId)
+                .build();
     }
-
 
     private static class NoOpReplicationStrategy implements ReplicationStrategy {
         @Override
@@ -646,8 +728,8 @@ class ReplicatedQueueManagerTest {
         }
     }
 
-
-    private static class MockTaskStateProvider implements org.a2aproject.sdk.server.tasks.TaskStateProvider {
+    private static class MockTaskStateProvider
+            implements org.a2aproject.sdk.server.tasks.TaskStateProvider {
         private volatile boolean active;
 
         public MockTaskStateProvider(boolean active) {
@@ -661,7 +743,7 @@ class ReplicatedQueueManagerTest {
 
         @Override
         public boolean isTaskFinalized(String taskId) {
-            return !active;  // If task is inactive, it's finalized; if active, not finalized
+            return !active; // If task is inactive, it's finalized; if active, not finalized
         }
 
         public void setActive(boolean active) {
@@ -677,7 +759,8 @@ class ReplicatedQueueManagerTest {
      * @param enqueueAction the action that enqueues the event (triggers event processing)
      * @return the dequeued EventQueueItem, or null if queue is closed
      */
-    private EventQueueItem dequeueEventWithRetry(EventQueue queue, Runnable enqueueAction) throws InterruptedException {
+    private EventQueueItem dequeueEventWithRetry(EventQueue queue, Runnable enqueueAction)
+            throws InterruptedException {
         // Wait for event to be processed and distributed
         waitForEventProcessing(enqueueAction);
 

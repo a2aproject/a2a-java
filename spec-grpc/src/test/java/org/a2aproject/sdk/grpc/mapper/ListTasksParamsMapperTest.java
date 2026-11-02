@@ -11,7 +11,8 @@ public class ListTasksParamsMapperTest {
 
     @Test
     void toProtoWithDefaultBuilder() {
-        ListTasksRequest request = ListTasksParamsMapper.INSTANCE.toProto(ListTasksParams.builder().build());
+        ListTasksRequest request =
+                ListTasksParamsMapper.INSTANCE.toProto(ListTasksParams.builder().build());
 
         assertEquals("", request.getTenant());
     }
@@ -25,30 +26,34 @@ public class ListTasksParamsMapperTest {
 
     @Test
     void toProtoWithTenant() {
-        ListTasksRequest request = ListTasksParamsMapper.INSTANCE.toProto(
-                ListTasksParams.builder().tenant("tenant-123").build());
+        ListTasksRequest request =
+                ListTasksParamsMapper.INSTANCE.toProto(
+                        ListTasksParams.builder().tenant("tenant-123").build());
 
         assertEquals("tenant-123", request.getTenant());
     }
 
     @Test
     void fromProtoWithoutTenant() {
-        ListTasksParams params = ListTasksParamsMapper.INSTANCE.fromProto(ListTasksRequest.newBuilder().build());
+        ListTasksParams params =
+                ListTasksParamsMapper.INSTANCE.fromProto(ListTasksRequest.newBuilder().build());
 
         assertNull(params.tenant());
     }
 
     @Test
     void fromProtoWithTenant() {
-        ListTasksParams params = ListTasksParamsMapper.INSTANCE.fromProto(
-                ListTasksRequest.newBuilder().setTenant("tenant-123").build());
+        ListTasksParams params =
+                ListTasksParamsMapper.INSTANCE.fromProto(
+                        ListTasksRequest.newBuilder().setTenant("tenant-123").build());
 
         assertEquals("tenant-123", params.tenant());
     }
 
     @Test
     void nullTenantRoundTrip() {
-        ListTasksRequest request = ListTasksParamsMapper.INSTANCE.toProto(ListTasksParams.builder().build());
+        ListTasksRequest request =
+                ListTasksParamsMapper.INSTANCE.toProto(ListTasksParams.builder().build());
         ListTasksParams params = ListTasksParamsMapper.INSTANCE.fromProto(request);
 
         assertNull(params.tenant());

@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**

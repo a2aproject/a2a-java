@@ -1,11 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.Map;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * Represents a plain text content part within a {@link Message} or {@link Artifact}.
@@ -28,7 +26,8 @@ import org.jspecify.annotations.Nullable;
  * @see Message
  * @see Artifact
  */
-public record TextPart(String text, @Nullable Map<String, Object> metadata) implements Part<String> {
+public record TextPart(String text, @Nullable Map<String, Object> metadata)
+        implements Part<String> {
 
     /**
      * The JSON member name discriminator for text parts: "text".
@@ -44,7 +43,7 @@ public record TextPart(String text, @Nullable Map<String, Object> metadata) impl
      * @param text the text content (required, must not be null)
      * @throws IllegalArgumentException if text is null
      */
-    public TextPart (String text, @Nullable Map<String, Object> metadata) {
+    public TextPart(String text, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("text", text);
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.text = text;
@@ -56,7 +55,7 @@ public record TextPart(String text, @Nullable Map<String, Object> metadata) impl
      * @param text the text content (required, must not be null)
      * @throws IllegalArgumentException if data is null
      */
-    public TextPart (String text){
+    public TextPart(String text) {
         this(text, null);
     }
 }

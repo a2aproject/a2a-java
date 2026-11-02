@@ -1,27 +1,29 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.compat03.util.Utils_v0_3;
-
 import java.util.UUID;
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * A get task push notification request.
  */
-public final class GetTaskPushNotificationConfigRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<GetTaskPushNotificationConfigParams_v0_3> {
+public final class GetTaskPushNotificationConfigRequest_v0_3
+        extends NonStreamingJSONRPCRequest_v0_3<GetTaskPushNotificationConfigParams_v0_3> {
 
-    private GetTaskPushNotificationConfigRequest_v0_3() {
-    }
-
+    private GetTaskPushNotificationConfigRequest_v0_3() {}
 
     public static final String METHOD = "tasks/pushNotificationConfig/get";
 
-    public GetTaskPushNotificationConfigRequest_v0_3(String jsonrpc, Object id, String method, GetTaskPushNotificationConfigParams_v0_3 params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+    public GetTaskPushNotificationConfigRequest_v0_3(
+            String jsonrpc,
+            Object id,
+            String method,
+            GetTaskPushNotificationConfigParams_v0_3 params) {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
+        if (!method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid GetTaskPushNotificationRequest method");
         }
         Assert.isValidJsonRpcId(id);
@@ -31,7 +33,8 @@ public final class GetTaskPushNotificationConfigRequest_v0_3 extends NonStreamin
         this.params = params;
     }
 
-    public GetTaskPushNotificationConfigRequest_v0_3(String id, GetTaskPushNotificationConfigParams_v0_3 params) {
+    public GetTaskPushNotificationConfigRequest_v0_3(
+            String id, GetTaskPushNotificationConfigParams_v0_3 params) {
         this(null, id, METHOD, params);
     }
 
@@ -56,7 +59,8 @@ public final class GetTaskPushNotificationConfigRequest_v0_3 extends NonStreamin
             return this;
         }
 
-        public GetTaskPushNotificationConfigRequest_v0_3.Builder params(GetTaskPushNotificationConfigParams_v0_3 params) {
+        public GetTaskPushNotificationConfigRequest_v0_3.Builder params(
+                GetTaskPushNotificationConfigParams_v0_3 params) {
             this.params = params;
             return this;
         }

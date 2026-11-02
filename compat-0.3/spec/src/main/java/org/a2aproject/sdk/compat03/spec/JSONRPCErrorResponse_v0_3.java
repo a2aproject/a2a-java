@@ -7,8 +7,7 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class JSONRPCErrorResponse_v0_3 extends JSONRPCResponse_v0_3<Void> {
 
-    private JSONRPCErrorResponse_v0_3() {
-    }
+    private JSONRPCErrorResponse_v0_3() {}
 
     /**
      * Constructs a JSON-RPC error response with all fields.
@@ -21,7 +20,8 @@ public final class JSONRPCErrorResponse_v0_3 extends JSONRPCResponse_v0_3<Void> 
      * @param error the error object describing what went wrong (required)
      * @throws IllegalArgumentException if error is null
      */
-    public JSONRPCErrorResponse_v0_3(String jsonrpc, Object id, Void result, JSONRPCError_v0_3 error) {
+    public JSONRPCErrorResponse_v0_3(
+            String jsonrpc, Object id, Void result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, Void.class);
         Assert.checkNotNullParam("error", error);
     }

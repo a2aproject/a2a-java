@@ -8,7 +8,9 @@ import org.mapstruct.Mapping;
 /**
  * Mapper between {@link org.a2aproject.sdk.spec.TaskStatusUpdateEvent} and {@link org.a2aproject.sdk.grpc.TaskStatusUpdateEvent}.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStatusMapper.class, A2ACommonFieldMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {TaskStatusMapper.class, A2ACommonFieldMapper.class})
 public interface TaskStatusUpdateEventMapper {
 
     TaskStatusUpdateEventMapper INSTANCE = A2AMappers.getMapper(TaskStatusUpdateEventMapper.class);
@@ -31,7 +33,6 @@ public interface TaskStatusUpdateEventMapper {
                 proto.getTaskId(),
                 status,
                 proto.getContextId(),
-                A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata())
-        );
+                A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata()));
     }
 }

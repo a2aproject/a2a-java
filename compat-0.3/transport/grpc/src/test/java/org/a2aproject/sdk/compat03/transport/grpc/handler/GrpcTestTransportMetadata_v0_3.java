@@ -5,5 +5,4 @@ package org.a2aproject.sdk.compat03.transport.grpc.handler;
 /**
  * Placeholder stub - awaiting server-common port.
  */
-public class GrpcTestTransportMetadata_v0_3 {
-}
+public class GrpcTestTransportMetadata_v0_3 {}

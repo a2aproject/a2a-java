@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class TaskStatusUpdateEventTest {
@@ -21,7 +20,8 @@ class TaskStatusUpdateEventTest {
         Map<String, Object> metadata = Map.of("source", "sensor");
         TaskStatus status = new TaskStatus(TaskState.TASK_STATE_WORKING);
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent(TASK_ID, status, CONTEXT_ID, metadata);
+        TaskStatusUpdateEvent event =
+                new TaskStatusUpdateEvent(TASK_ID, status, CONTEXT_ID, metadata);
 
         assertEquals(TASK_ID, event.taskId());
         assertEquals(status, event.status());
@@ -31,31 +31,42 @@ class TaskStatusUpdateEventTest {
 
     @Test
     void testConstruction_withNullMetadata() {
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent(
-                TASK_ID,
-                new TaskStatus(TaskState.TASK_STATE_WORKING),
-                CONTEXT_ID,
-                null);
+        TaskStatusUpdateEvent event =
+                new TaskStatusUpdateEvent(
+                        TASK_ID, new TaskStatus(TaskState.TASK_STATE_WORKING), CONTEXT_ID, null);
 
         assertNull(event.metadata());
     }
 
     @Test
     void testConstruction_nullTaskId_throwsException() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new TaskStatusUpdateEvent(null, new TaskStatus(TaskState.TASK_STATE_WORKING), CONTEXT_ID, Map.of()));
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new TaskStatusUpdateEvent(
+                                null,
+                                new TaskStatus(TaskState.TASK_STATE_WORKING),
+                                CONTEXT_ID,
+                                Map.of()));
     }
 
     @Test
     void testConstruction_nullStatus_throwsException() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new TaskStatusUpdateEvent(TASK_ID, null, CONTEXT_ID, Map.of()));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new TaskStatusUpdateEvent(TASK_ID, null, CONTEXT_ID, Map.of()));
     }
 
     @Test
     void testConstruction_nullContextId_throwsException() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new TaskStatusUpdateEvent(TASK_ID, new TaskStatus(TaskState.TASK_STATE_WORKING), null, Map.of()));
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new TaskStatusUpdateEvent(
+                                TASK_ID,
+                                new TaskStatus(TaskState.TASK_STATE_WORKING),
+                                null,
+                                Map.of()));
     }
 
     @Test
@@ -63,17 +74,20 @@ class TaskStatusUpdateEventTest {
         Map<String, Object> mutableMetadata = new HashMap<>();
         mutableMetadata.put("source", "sensor");
 
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId(TASK_ID)
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .contextId(CONTEXT_ID)
-                .metadata(mutableMetadata)
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(TASK_ID)
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .contextId(CONTEXT_ID)
+                        .metadata(mutableMetadata)
+                        .build();
 
         mutableMetadata.put("write", "should-not-leak");
 
         assertEquals(Map.of("source", "sensor"), event.metadata());
-        assertThrows(UnsupportedOperationException.class, () -> event.metadata().put("another", "value"));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> event.metadata().put("another", "value"));
     }
 
     @Test
@@ -81,11 +95,12 @@ class TaskStatusUpdateEventTest {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("foo", null);
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent(
-                TASK_ID,
-                new TaskStatus(TaskState.TASK_STATE_WORKING),
-                CONTEXT_ID,
-                metadata);
+        TaskStatusUpdateEvent event =
+                new TaskStatusUpdateEvent(
+                        TASK_ID,
+                        new TaskStatus(TaskState.TASK_STATE_WORKING),
+                        CONTEXT_ID,
+                        metadata);
 
         assertEquals(1, event.metadata().size());
         assertTrue(event.metadata().containsKey("foo"));
@@ -95,11 +110,12 @@ class TaskStatusUpdateEventTest {
 
     @Test
     void testBuilderFromExistingEvent_keepsEqualValues() {
-        TaskStatusUpdateEvent original = new TaskStatusUpdateEvent(
-                TASK_ID,
-                new TaskStatus(TaskState.TASK_STATE_WORKING),
-                CONTEXT_ID,
-                Map.of("source", "sensor"));
+        TaskStatusUpdateEvent original =
+                new TaskStatusUpdateEvent(
+                        TASK_ID,
+                        new TaskStatus(TaskState.TASK_STATE_WORKING),
+                        CONTEXT_ID,
+                        Map.of("source", "sensor"));
 
         TaskStatusUpdateEvent copied = TaskStatusUpdateEvent.builder(original).build();
 

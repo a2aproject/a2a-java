@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.concurrent.Executor;
-
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -24,8 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AsyncManagedExecutorProducerTest {
 
-    @Mock
-    private ManagedExecutor managedExecutor;
+    @Mock private ManagedExecutor managedExecutor;
 
     private AsyncManagedExecutorProducer producer;
 
@@ -69,15 +67,13 @@ class AsyncManagedExecutorProducerTest {
         void produce_withNullManagedExecutor_throwsIllegalStateException() {
             producer.managedExecutor = null;
 
-            IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
-                () -> producer.produce()
-            );
+            IllegalStateException exception =
+                    assertThrows(IllegalStateException.class, () -> producer.produce());
 
             assertEquals(
-                "ManagedExecutor not injected - ensure MicroProfile Context Propagation is available",
-                exception.getMessage()
-            );
+                    "ManagedExecutor not injected - ensure MicroProfile Context Propagation is"
+                            + " available",
+                    exception.getMessage());
         }
 
         @Test
@@ -97,59 +93,46 @@ class AsyncManagedExecutorProducerTest {
         @Test
         void producer_hasCorrectAnnotations() {
             assertTrue(
-                AsyncManagedExecutorProducer.class.isAnnotationPresent(
-                    jakarta.enterprise.context.ApplicationScoped.class
-                )
-            );
+                    AsyncManagedExecutorProducer.class.isAnnotationPresent(
+                            jakarta.enterprise.context.ApplicationScoped.class));
 
             assertTrue(
-                AsyncManagedExecutorProducer.class.isAnnotationPresent(
-                    jakarta.enterprise.inject.Alternative.class
-                )
-            );
+                    AsyncManagedExecutorProducer.class.isAnnotationPresent(
+                            jakarta.enterprise.inject.Alternative.class));
 
             assertTrue(
-                AsyncManagedExecutorProducer.class.isAnnotationPresent(
-                    jakarta.annotation.Priority.class
-                )
-            );
+                    AsyncManagedExecutorProducer.class.isAnnotationPresent(
+                            jakarta.annotation.Priority.class));
             assertEquals(
-                20,
-                AsyncManagedExecutorProducer.class.getAnnotation(
-                    jakarta.annotation.Priority.class
-                ).value()
-            );
+                    20,
+                    AsyncManagedExecutorProducer.class
+                            .getAnnotation(jakarta.annotation.Priority.class)
+                            .value());
         }
 
         @Test
         void produceMethod_hasCorrectAnnotations() throws NoSuchMethodException {
             var method = AsyncManagedExecutorProducer.class.getMethod("produce");
 
-            assertTrue(
-                method.isAnnotationPresent(jakarta.enterprise.inject.Produces.class)
-            );
+            assertTrue(method.isAnnotationPresent(jakarta.enterprise.inject.Produces.class));
 
             assertTrue(
-                method.isAnnotationPresent(org.a2aproject.sdk.server.util.async.Internal.class)
-            );
+                    method.isAnnotationPresent(
+                            org.a2aproject.sdk.server.util.async.Internal.class));
         }
 
         @Test
         void initMethod_hasPostConstructAnnotation() throws NoSuchMethodException {
             var method = AsyncManagedExecutorProducer.class.getMethod("init");
 
-            assertTrue(
-                method.isAnnotationPresent(jakarta.annotation.PostConstruct.class)
-            );
+            assertTrue(method.isAnnotationPresent(jakarta.annotation.PostConstruct.class));
         }
 
         @Test
         void managedExecutorField_hasInjectAnnotation() throws NoSuchFieldException {
             var field = AsyncManagedExecutorProducer.class.getDeclaredField("managedExecutor");
 
-            assertTrue(
-                field.isAnnotationPresent(jakarta.inject.Inject.class)
-            );
+            assertTrue(field.isAnnotationPresent(jakarta.inject.Inject.class));
         }
     }
 

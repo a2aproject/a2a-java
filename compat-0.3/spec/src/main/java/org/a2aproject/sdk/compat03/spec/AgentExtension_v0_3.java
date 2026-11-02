@@ -1,13 +1,13 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * A declaration of a protocol extension supported by an Agent.
  */
-public record AgentExtension_v0_3(String description, Map<String, Object> params, boolean required, String uri) {
+public record AgentExtension_v0_3(
+        String description, Map<String, Object> params, boolean required, String uri) {
 
     public AgentExtension_v0_3 {
         Assert.checkNotNullParam("uri", uri);
@@ -43,5 +43,4 @@ public record AgentExtension_v0_3(String description, Map<String, Object> params
             return new AgentExtension_v0_3(description, params, required, uri);
         }
     }
-
 }

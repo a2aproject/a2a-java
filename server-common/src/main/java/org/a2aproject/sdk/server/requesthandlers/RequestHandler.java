@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server.requesthandlers;
 
 import java.util.concurrent.Flow;
-
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -22,46 +21,35 @@ import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.jspecify.annotations.Nullable;
 
 public interface RequestHandler {
-    Task onGetTask(
-            TaskQueryParams params,
-            ServerCallContext context) throws A2AError;
+    Task onGetTask(TaskQueryParams params, ServerCallContext context) throws A2AError;
 
-    ListTasksResult onListTasks(
-            ListTasksParams params,
-            ServerCallContext context) throws A2AError;
+    ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError;
 
-    Task onCancelTask(
-            CancelTaskParams params,
-            ServerCallContext context) throws A2AError;
+    Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError;
 
-    EventKind onMessageSend(
-            MessageSendParams params,
-            ServerCallContext context) throws A2AError;
+    EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError;
 
     Flow.Publisher<StreamingEventKind> onMessageSendStream(
-            MessageSendParams params,
-            ServerCallContext context) throws A2AError;
+            MessageSendParams params, ServerCallContext context) throws A2AError;
 
     TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
-            TaskPushNotificationConfig params,
-            ServerCallContext context) throws A2AError;
+            TaskPushNotificationConfig params, ServerCallContext context) throws A2AError;
 
     TaskPushNotificationConfig onGetTaskPushNotificationConfig(
-            GetTaskPushNotificationConfigParams params,
-            ServerCallContext context) throws A2AError;
+            GetTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError;
 
     Flow.Publisher<StreamingEventKind> onSubscribeToTask(
-            TaskIdParams params,
-            ServerCallContext context) throws A2AError;
+            TaskIdParams params, ServerCallContext context) throws A2AError;
 
     ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(
-            ListTaskPushNotificationConfigsParams params,
-            ServerCallContext context) throws A2AError;
+            ListTaskPushNotificationConfigsParams params, ServerCallContext context)
+            throws A2AError;
 
     void onDeleteTaskPushNotificationConfig(
-            DeleteTaskPushNotificationConfigParams params,
-            ServerCallContext context) throws A2AError;
+            DeleteTaskPushNotificationConfigParams params, ServerCallContext context)
+            throws A2AError;
 
-    void authorizeTaskAccess(@Nullable String requestedTaskId, ServerCallContext context,
-            TaskOperation operation) throws A2AError;
+    void authorizeTaskAccess(
+            @Nullable String requestedTaskId, ServerCallContext context, TaskOperation operation)
+            throws A2AError;
 }

@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.testutils.docker;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for checking Docker/Podman availability and test skip settings.
@@ -65,10 +64,11 @@ public final class DockerAvailability {
 
     private static boolean tryContainerCommand(String command) {
         try {
-            Process process = new ProcessBuilder(command, "info")
-                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                    .redirectError(ProcessBuilder.Redirect.DISCARD)
-                    .start();
+            Process process =
+                    new ProcessBuilder(command, "info")
+                            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                            .redirectError(ProcessBuilder.Redirect.DISCARD)
+                            .start();
 
             boolean finished = process.waitFor(5, TimeUnit.SECONDS);
             if (!finished) {

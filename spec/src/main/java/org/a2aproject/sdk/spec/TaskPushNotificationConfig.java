@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -32,8 +32,13 @@ import org.jspecify.annotations.Nullable;
  * @see MessageSendConfiguration for configuring push notifications on message send
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskPushNotificationConfig(@Nullable String id, @Nullable String taskId, String url, @Nullable String token,
-        @Nullable AuthenticationInfo authentication, @Nullable String tenant) {
+public record TaskPushNotificationConfig(
+        @Nullable String id,
+        @Nullable String taskId,
+        String url,
+        @Nullable String token,
+        @Nullable AuthenticationInfo authentication,
+        @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -85,8 +90,7 @@ public record TaskPushNotificationConfig(@Nullable String id, @Nullable String t
         private @Nullable String tenant;
 
         /** Creates an empty builder. */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Creates a builder initialized from an existing configuration.

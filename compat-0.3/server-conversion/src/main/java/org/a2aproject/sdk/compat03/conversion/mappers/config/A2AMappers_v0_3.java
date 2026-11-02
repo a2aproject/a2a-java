@@ -55,15 +55,19 @@ public final class A2AMappers_v0_3 {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getMapper(Class<T> mapperInterface) {
-        return (T) MAPPERS.computeIfAbsent(mapperInterface, clazz -> {
-            try {
-                // MapStruct generates implementation with "Impl" suffix
-                String implName = clazz.getName() + "Impl";
-                Class<?> implClass = Class.forName(implName);
-                return implClass.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to load mapper: " + clazz.getName(), e);
-            }
-        });
+        return (T)
+                MAPPERS.computeIfAbsent(
+                        mapperInterface,
+                        clazz -> {
+                            try {
+                                // MapStruct generates implementation with "Impl" suffix
+                                String implName = clazz.getName() + "Impl";
+                                Class<?> implClass = Class.forName(implName);
+                                return implClass.getDeclaredConstructor().newInstance();
+                            } catch (Exception e) {
+                                throw new RuntimeException(
+                                        "Failed to load mapper: " + clazz.getName(), e);
+                            }
+                        });
     }
 }

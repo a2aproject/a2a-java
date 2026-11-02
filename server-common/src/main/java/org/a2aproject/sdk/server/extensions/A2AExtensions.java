@@ -3,7 +3,6 @@ package org.a2aproject.sdk.server.extensions;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentExtension;
@@ -17,7 +16,7 @@ public class A2AExtensions {
         if (values == null) {
             return extensions;
         }
-        
+
         for (String value : values) {
             if (value != null) {
                 // Split by comma and trim whitespace
@@ -30,7 +29,7 @@ public class A2AExtensions {
                 }
             }
         }
-        
+
         return extensions;
     }
 
@@ -62,9 +61,11 @@ public class A2AExtensions {
         for (AgentExtension extension : agentCard.capabilities().extensions()) {
             if (extension.required() && !context.isExtensionRequested(extension.uri())) {
                 throw new ExtensionSupportRequiredError(
-                    null,
-                    "Required extension '" + extension.uri() + "' was not requested by the client",
-                    null);
+                        null,
+                        "Required extension '"
+                                + extension.uri()
+                                + "' was not requested by the client",
+                        null);
             }
         }
     }

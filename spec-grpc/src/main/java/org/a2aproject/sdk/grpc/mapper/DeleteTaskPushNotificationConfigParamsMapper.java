@@ -12,7 +12,8 @@ import org.mapstruct.Mapping;
 @Mapper(config = A2AProtoMapperConfig.class, uses = A2ACommonFieldMapper.class)
 public interface DeleteTaskPushNotificationConfigParamsMapper {
 
-    DeleteTaskPushNotificationConfigParamsMapper INSTANCE = A2AMappers.getMapper(DeleteTaskPushNotificationConfigParamsMapper.class);
+    DeleteTaskPushNotificationConfigParamsMapper INSTANCE =
+            A2AMappers.getMapper(DeleteTaskPushNotificationConfigParamsMapper.class);
 
     /**
      * Converts proto DeleteTaskPushNotificationConfigRequest to domain DeleteTaskPushNotificationConfigParams.
@@ -21,13 +22,18 @@ public interface DeleteTaskPushNotificationConfigParamsMapper {
     @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "id", source = "id")
     @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
-    DeleteTaskPushNotificationConfigParams fromProto(org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest proto);
+    DeleteTaskPushNotificationConfigParams fromProto(
+            org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest proto);
 
     /**
      * Converts domain DeleteTaskPushNotificationConfigParams to proto DeleteTaskPushNotificationConfigRequest.
      */
     @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
-    org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest toProto(DeleteTaskPushNotificationConfigParams domain);
+    @Mapping(
+            target = "tenant",
+            source = "tenant",
+            conditionExpression = "java(domain.tenant() != null)")
+    org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest toProto(
+            DeleteTaskPushNotificationConfigParams domain);
 }

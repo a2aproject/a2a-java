@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Instant;
 import java.util.stream.Stream;
-
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,15 +27,17 @@ class PageTokenTest {
      */
     static Stream<Arguments> validTokens() {
         return Stream.of(
-            Arguments.of("1640000000000:user123", 1640000000000L, "user123"),
-            Arguments.of("1640000000000:user:123:extra", 1640000000000L, "user:123:extra"),
-            Arguments.of("0:user123", 0L, "user123"),
-            Arguments.of("-1000:user123", -1000L, "user123"),
-            Arguments.of(Long.MAX_VALUE + ":user123", Long.MAX_VALUE, "user123"),
-            Arguments.of(Long.MIN_VALUE + ":user123", Long.MIN_VALUE, "user123"),
-            Arguments.of("1640000000000:" + "a".repeat(1000), 1640000000000L, "a".repeat(1000)),
-            Arguments.of("1640000000000:user-123_test@example.com", 1640000000000L, "user-123_test@example.com")
-        );
+                Arguments.of("1640000000000:user123", 1640000000000L, "user123"),
+                Arguments.of("1640000000000:user:123:extra", 1640000000000L, "user:123:extra"),
+                Arguments.of("0:user123", 0L, "user123"),
+                Arguments.of("-1000:user123", -1000L, "user123"),
+                Arguments.of(Long.MAX_VALUE + ":user123", Long.MAX_VALUE, "user123"),
+                Arguments.of(Long.MIN_VALUE + ":user123", Long.MIN_VALUE, "user123"),
+                Arguments.of("1640000000000:" + "a".repeat(1000), 1640000000000L, "a".repeat(1000)),
+                Arguments.of(
+                        "1640000000000:user-123_test@example.com",
+                        1640000000000L,
+                        "user-123_test@example.com"));
     }
 
     /**
@@ -44,7 +45,8 @@ class PageTokenTest {
      */
     @ParameterizedTest
     @MethodSource("validTokens")
-    void testFromString_validTokens_parseCorrectly(String tokenStr, long expectedTimestampMillis, String expectedId) {
+    void testFromString_validTokens_parseCorrectly(
+            String tokenStr, long expectedTimestampMillis, String expectedId) {
         PageToken token = PageToken.fromString(tokenStr);
 
         assertNotNull(token);
@@ -72,14 +74,22 @@ class PageTokenTest {
      */
     static Stream<Arguments> invalidTokenFormats() {
         return Stream.of(
-            Arguments.of("1640000000000user123", "Invalid pageToken format: expected 'timestamp:id'"),
-            Arguments.of("1640000000000", "Invalid pageToken format: expected 'timestamp:id'"),
-            Arguments.of("1640000000000:", "Invalid pageToken format: id part cannot be empty"),
-            Arguments.of(":", "Invalid pageToken format: timestamp must be numeric milliseconds"),
-            Arguments.of("notanumber:user123", "Invalid pageToken format: timestamp must be numeric milliseconds"),
-            Arguments.of("1640000000.123:user123", "Invalid pageToken format: timestamp must be numeric milliseconds"),
-            Arguments.of("1640 000 000:user123", "Invalid pageToken format: timestamp must be numeric milliseconds")
-        );
+                Arguments.of(
+                        "1640000000000user123",
+                        "Invalid pageToken format: expected 'timestamp:id'"),
+                Arguments.of("1640000000000", "Invalid pageToken format: expected 'timestamp:id'"),
+                Arguments.of("1640000000000:", "Invalid pageToken format: id part cannot be empty"),
+                Arguments.of(
+                        ":", "Invalid pageToken format: timestamp must be numeric milliseconds"),
+                Arguments.of(
+                        "notanumber:user123",
+                        "Invalid pageToken format: timestamp must be numeric milliseconds"),
+                Arguments.of(
+                        "1640000000.123:user123",
+                        "Invalid pageToken format: timestamp must be numeric milliseconds"),
+                Arguments.of(
+                        "1640 000 000:user123",
+                        "Invalid pageToken format: timestamp must be numeric milliseconds"));
     }
 
     /**
@@ -87,10 +97,14 @@ class PageTokenTest {
      */
     @ParameterizedTest
     @MethodSource("invalidTokenFormats")
-    void testFromString_invalidFormats_throwsInvalidParamsError(String tokenStr, String expectedErrorMessage) {
-        InvalidParamsError ex = assertThrows(InvalidParamsError.class, () -> {
-            PageToken.fromString(tokenStr);
-        });
+    void testFromString_invalidFormats_throwsInvalidParamsError(
+            String tokenStr, String expectedErrorMessage) {
+        InvalidParamsError ex =
+                assertThrows(
+                        InvalidParamsError.class,
+                        () -> {
+                            PageToken.fromString(tokenStr);
+                        });
         assertNotNull(ex.getMessage());
         assertEquals(expectedErrorMessage, ex.getMessage());
     }
@@ -103,11 +117,10 @@ class PageTokenTest {
      */
     static Stream<Arguments> toStringTestData() {
         return Stream.of(
-            Arguments.of(1640000000000L, "user123", "1640000000000:user123"),
-            Arguments.of(1640000000000L, "user:123", "1640000000000:user:123"),
-            Arguments.of(0L, "user123", "0:user123"),
-            Arguments.of(-1000L, "user123", "-1000:user123")
-        );
+                Arguments.of(1640000000000L, "user123", "1640000000000:user123"),
+                Arguments.of(1640000000000L, "user:123", "1640000000000:user:123"),
+                Arguments.of(0L, "user123", "0:user123"),
+                Arguments.of(-1000L, "user123", "-1000:user123"));
     }
 
     /**
@@ -128,11 +141,10 @@ class PageTokenTest {
      */
     static Stream<String> roundTripTokens() {
         return Stream.of(
-            "1640000000000:user123",
-            "1640000000000:user:123:extra",
-            "0:user123",
-            "-1000:user123"
-        );
+                "1640000000000:user123",
+                "1640000000000:user:123:extra",
+                "0:user123",
+                "-1000:user123");
     }
 
     /**

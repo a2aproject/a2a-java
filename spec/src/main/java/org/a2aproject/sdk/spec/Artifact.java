@@ -2,9 +2,8 @@ package org.a2aproject.sdk.spec;
 
 import java.util.List;
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,8 +30,13 @@ import org.jspecify.annotations.Nullable;
  * @param extensions protocol extensions used in this artifact (optional)
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record Artifact(String artifactId, @Nullable String name, @Nullable String description, List<Part<?>> parts, @Nullable Map<String, Object> metadata,
-                       @Nullable List<String> extensions) {
+public record Artifact(
+        String artifactId,
+        @Nullable String name,
+        @Nullable String description,
+        List<Part<?>> parts,
+        @Nullable Map<String, Object> metadata,
+        @Nullable List<String> extensions) {
 
     /**
      * Compact constructor that validates required fields.
@@ -105,8 +109,7 @@ public record Artifact(String artifactId, @Nullable String name, @Nullable Strin
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder(){
-        }
+        private Builder() {}
 
         /**
          * Creates a new Builder initialized with values from an existing Artifact.
@@ -206,7 +209,13 @@ public record Artifact(String artifactId, @Nullable String name, @Nullable Strin
          * @throws IllegalArgumentException if required fields are missing or parts is empty
          */
         public Artifact build() {
-            return new Artifact(Assert.checkNotNullParam("artifactId", artifactId), name, description, Assert.checkNotNullParam("parts", parts), metadata, extensions);
+            return new Artifact(
+                    Assert.checkNotNullParam("artifactId", artifactId),
+                    name,
+                    description,
+                    Assert.checkNotNullParam("parts", parts),
+                    metadata,
+                    extensions);
         }
     }
 }

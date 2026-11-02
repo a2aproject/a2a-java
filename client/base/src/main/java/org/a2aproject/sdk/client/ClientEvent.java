@@ -71,5 +71,4 @@ package org.a2aproject.sdk.client;
  * @see TaskUpdateEvent
  * @see ClientBuilder#addConsumer(java.util.function.BiConsumer)
  */
-public sealed interface ClientEvent permits MessageEvent, TaskEvent, TaskUpdateEvent {
-}
+public sealed interface ClientEvent permits MessageEvent, TaskEvent, TaskUpdateEvent {}

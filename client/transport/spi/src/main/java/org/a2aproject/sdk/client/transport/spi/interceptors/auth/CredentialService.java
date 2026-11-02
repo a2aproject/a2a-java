@@ -15,5 +15,6 @@ public interface CredentialService {
      * @param clientCallContext the client call context, which may be {@code null}.
      * @return the credential or {@code null} if the credential could not be retrieved
      */
-    @Nullable String getCredential(String securitySchemeName, @Nullable ClientCallContext clientCallContext);
+    @Nullable String getCredential(
+            String securitySchemeName, @Nullable ClientCallContext clientCallContext);
 }

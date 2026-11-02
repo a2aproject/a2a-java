@@ -2,15 +2,20 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * The set of skills, or distinct capabilities, that the agent can perform.
  */
-public record AgentSkill_v0_3(String id, String name, String description, List<String> tags,
-                              List<String> examples, List<String> inputModes, List<String> outputModes,
-                              List<Map<String, List<String>>> security) {
+public record AgentSkill_v0_3(
+        String id,
+        String name,
+        String description,
+        List<String> tags,
+        List<String> examples,
+        List<String> inputModes,
+        List<String> outputModes,
+        List<Map<String, List<String>>> security) {
 
     public AgentSkill_v0_3 {
         Assert.checkNotNullParam("description", description);
@@ -71,7 +76,8 @@ public record AgentSkill_v0_3(String id, String name, String description, List<S
         }
 
         public AgentSkill_v0_3 build() {
-            return new AgentSkill_v0_3(id, name, description, tags, examples, inputModes, outputModes, security);
+            return new AgentSkill_v0_3(
+                    id, name, description, tags, examples, inputModes, outputModes, security);
         }
     }
 }

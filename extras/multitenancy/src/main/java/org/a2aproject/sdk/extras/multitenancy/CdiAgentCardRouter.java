@@ -1,15 +1,13 @@
 package org.a2aproject.sdk.extras.multitenancy;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
@@ -42,19 +40,19 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class CdiAgentCardRouter implements AgentCardRouter {
 
-    @Inject
-    @Any
-    Instance<AgentCard> allCards;
+    @Inject @Any Instance<AgentCard> allCards;
 
     private @Nullable AgentCard defaultExtendedCard;
     private @Nullable AgentCard defaultPublicCard;
 
     @PostConstruct
     void init() {
-        defaultExtendedCard = CdiUtils.resolveDefaultBean(
-                allCards, Tenant.class, ExtendedAgentCard.class, "@ExtendedAgentCard");
-        defaultPublicCard = CdiUtils.resolveDefaultBean(
-                allCards, Tenant.class, PublicAgentCard.class, "@PublicAgentCard");
+        defaultExtendedCard =
+                CdiUtils.resolveDefaultBean(
+                        allCards, Tenant.class, ExtendedAgentCard.class, "@ExtendedAgentCard");
+        defaultPublicCard =
+                CdiUtils.resolveDefaultBean(
+                        allCards, Tenant.class, PublicAgentCard.class, "@PublicAgentCard");
     }
 
     @Override
@@ -62,8 +60,8 @@ public class CdiAgentCardRouter implements AgentCardRouter {
         if (tenant == null || tenant.isBlank()) {
             return defaultExtendedCard;
         }
-        Instance<AgentCard> selected = allCards.select(
-                new Tenant.Literal(tenant), ExtendedAgentCard.Literal.INSTANCE);
+        Instance<AgentCard> selected =
+                allCards.select(new Tenant.Literal(tenant), ExtendedAgentCard.Literal.INSTANCE);
         if (selected.isResolvable()) {
             return selected.get();
         }
@@ -125,6 +123,7 @@ public class CdiAgentCardRouter implements AgentCardRouter {
 
     private static IllegalStateException duplicateTenantBean(String cardType, String tenant) {
         return new IllegalStateException(
-                String.format("Multiple tenant %s cards detected for tenant '%s'", cardType, tenant));
+                String.format(
+                        "Multiple tenant %s cards detected for tenant '%s'", cardType, tenant));
     }
 }

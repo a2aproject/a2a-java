@@ -5,7 +5,6 @@ import jakarta.persistence.CacheRetrieveMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -33,9 +32,14 @@ public class JpaTaskOwnershipTransactions {
     }
 
     static byte @Nullable [] owner(EntityManager em, String taskId) {
-        return em.createQuery("SELECT o.subjectKey FROM JpaTaskOwner o WHERE o.taskId = :taskId", byte[].class)
+        return em.createQuery(
+                        "SELECT o.subjectKey FROM JpaTaskOwner o WHERE o.taskId = :taskId",
+                        byte[].class)
                 .setParameter("taskId", taskId)
                 .setHint("jakarta.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
-                .setHint("org.hibernate.cacheable", false).getResultStream().findFirst().orElse(null);
+                .setHint("org.hibernate.cacheable", false)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
     }
 }

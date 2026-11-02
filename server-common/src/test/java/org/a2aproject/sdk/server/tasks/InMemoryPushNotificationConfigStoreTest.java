@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.common.A2AHeaders;
@@ -39,21 +38,19 @@ class InMemoryPushNotificationConfigStoreTest {
     private InMemoryPushNotificationConfigStore configStore;
     private BasePushNotificationSender notificationSender;
 
-    @Mock
-    private A2AHttpClient mockHttpClient;
+    @Mock private A2AHttpClient mockHttpClient;
 
-    @Mock
-    private A2AHttpClient.PostBuilder mockPostBuilder;
+    @Mock private A2AHttpClient.PostBuilder mockPostBuilder;
 
-    @Mock
-    private A2AHttpResponse mockHttpResponse;
+    @Mock private A2AHttpResponse mockHttpResponse;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         configStore = new InMemoryPushNotificationConfigStore();
-        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient,
-                PushNotificationUrlValidator.ALLOW_ALL);
+        notificationSender =
+                new BasePushNotificationSender(
+                        configStore, mockHttpClient, PushNotificationUrlValidator.ALLOW_ALL);
     }
 
     private void setupBasicMockHttpResponse() throws Exception {
@@ -66,15 +63,17 @@ class InMemoryPushNotificationConfigStoreTest {
         when(mockHttpResponse.success()).thenReturn(true);
     }
 
-    private void verifyHttpCallWithoutToken(TaskPushNotificationConfig config, Task task, String expectedToken) throws Exception {
+    private void verifyHttpCallWithoutToken(
+            TaskPushNotificationConfig config, Task task, String expectedToken) throws Exception {
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockHttpClient).createPost();
         verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).body(bodyCaptor.capture());
         verify(mockPostBuilder).post();
         // Verify that addHeader was never called for authentication token
-        verify(mockPostBuilder, never()).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, expectedToken);
-        
+        verify(mockPostBuilder, never())
+                .addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, expectedToken);
+
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
@@ -82,18 +81,13 @@ class InMemoryPushNotificationConfigStoreTest {
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
-        return Task.builder()
-                .id(taskId)
-                .contextId("ctx456")
-                .status(new TaskStatus(state))
-                .build();
+        return Task.builder().id(taskId).contextId("ctx456").status(new TaskStatus(state)).build();
     }
 
-    private TaskPushNotificationConfig createSamplePushConfig(String taskId, String url, String configId, String token) {
-        TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder()
-                .url(url)
-                .id(configId)
-                .taskId(taskId);
+    private TaskPushNotificationConfig createSamplePushConfig(
+            String taskId, String url, String configId, String token) {
+        TaskPushNotificationConfig.Builder builder =
+                TaskPushNotificationConfig.builder().url(url).id(configId).taskId(taskId);
         if (token != null) {
             builder.token(token);
         }
@@ -103,7 +97,8 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSetInfoAddsNewConfig() {
         String taskId = "task_new";
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://new.url/callback", "cfg1", null);
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://new.url/callback", "cfg1", null);
 
         TaskPushNotificationConfig result = configStore.setInfo(config);
 
@@ -111,7 +106,8 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(config.url(), result.url());
         assertEquals(config.id(), result.id());
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
         assertEquals(config.url(), configResult.configs().get(0).url());
@@ -121,28 +117,25 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSetInfoAppendsToExistingConfig() {
         String taskId = "task_update";
-        TaskPushNotificationConfig initialConfig = createSamplePushConfig(taskId,
-                "http://initial.url/callback", "cfg_initial", null);
+        TaskPushNotificationConfig initialConfig =
+                createSamplePushConfig(taskId, "http://initial.url/callback", "cfg_initial", null);
         configStore.setInfo(initialConfig);
 
-        TaskPushNotificationConfig updatedConfig = createSamplePushConfig(taskId,
-                "http://updated.url/callback", "cfg_updated", null);
+        TaskPushNotificationConfig updatedConfig =
+                createSamplePushConfig(taskId, "http://updated.url/callback", "cfg_updated", null);
         configStore.setInfo(updatedConfig);
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
         assertEquals(2, configResult.configs().size());
 
         // Find the configs by ID since order might vary
         List<TaskPushNotificationConfig> configs = configResult.configs();
-        TaskPushNotificationConfig foundInitial = configs.stream()
-                .filter(c -> "cfg_initial".equals(c.id()))
-                .findFirst()
-                .orElse(null);
-        TaskPushNotificationConfig foundUpdated = configs.stream()
-                .filter(c -> "cfg_updated".equals(c.id()))
-                .findFirst()
-                .orElse(null);
+        TaskPushNotificationConfig foundInitial =
+                configs.stream().filter(c -> "cfg_initial".equals(c.id())).findFirst().orElse(null);
+        TaskPushNotificationConfig foundUpdated =
+                configs.stream().filter(c -> "cfg_updated".equals(c.id())).findFirst().orElse(null);
 
         assertNotNull(foundInitial);
         assertNotNull(foundUpdated);
@@ -153,24 +146,27 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSetInfoWithEmptyConfigId() {
         String taskId = "task1";
-        TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
-                .id("")
-                .url("http://initial.url/callback")
-                .taskId(taskId)
-                .build();
+        TaskPushNotificationConfig initialConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("")
+                        .url("http://initial.url/callback")
+                        .taskId(taskId)
+                        .build();
 
         TaskPushNotificationConfig result = configStore.setInfo(initialConfig);
         assertEquals(taskId, result.id(), "Config ID should default to taskId when not provided");
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertEquals(1, configResult.configs().size());
         assertEquals(taskId, configResult.configs().get(0).id());
 
-        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
-                .id("")
-                .url("http://initial.url/callback_new")
-                .taskId(taskId)
-                .build();
+        TaskPushNotificationConfig duplicateConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("")
+                        .url("http://initial.url/callback_new")
+                        .taskId(taskId)
+                        .build();
 
         assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
 
@@ -182,19 +178,21 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSetInfoWithNullConfigId() {
         String taskId = "task_with_null_config_id";
-        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
-                .url("http://initial.url/callback")
-                .taskId(taskId)
-                .build();
+        TaskPushNotificationConfig config =
+                TaskPushNotificationConfig.builder()
+                        .url("http://initial.url/callback")
+                        .taskId(taskId)
+                        .build();
 
         TaskPushNotificationConfig result = configStore.setInfo(config);
 
         assertEquals(taskId, result.id(), "Config ID should default to taskId when null");
 
-        TaskPushNotificationConfig duplicateConfig = TaskPushNotificationConfig.builder()
-                .url("http://updated.url/callback")
-                .taskId(taskId)
-                .build();
+        TaskPushNotificationConfig duplicateConfig =
+                TaskPushNotificationConfig.builder()
+                        .url("http://updated.url/callback")
+                        .taskId(taskId)
+                        .build();
 
         assertThrows(InvalidParamsError.class, () -> configStore.setInfo(duplicateConfig));
     }
@@ -202,14 +200,16 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSetInfoAllowsV03DefaultConfigUpdate() {
         String taskId = "task_v03_default_update";
-        TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
-                .taskId(taskId)
-                .url("http://initial.url/callback")
-                .build();
-        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
-                .taskId(taskId)
-                .url("http://updated.url/callback")
-                .build();
+        TaskPushNotificationConfig initialConfig =
+                TaskPushNotificationConfig.builder()
+                        .taskId(taskId)
+                        .url("http://initial.url/callback")
+                        .build();
+        TaskPushNotificationConfig updatedConfig =
+                TaskPushNotificationConfig.builder()
+                        .taskId(taskId)
+                        .url("http://updated.url/callback")
+                        .build();
 
         configStore.setInfo(initialConfig, "0.3");
         TaskPushNotificationConfig result = configStore.setInfo(updatedConfig, "0.3");
@@ -224,10 +224,12 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testGetInfoExistingConfig() {
         String taskId = "task_get_exist";
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://get.this/callback", "cfg1", null);
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://get.this/callback", "cfg1", null);
         configStore.setInfo(config);
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
         assertEquals(config.url(), configResult.configs().get(0).url());
@@ -237,26 +239,34 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testGetInfoNonExistentConfig() {
         String taskId = "task_get_non_exist";
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
-        assertTrue(configResult.configs().isEmpty(), "Should return empty list for non-existent task ID");
+        assertTrue(
+                configResult.configs().isEmpty(),
+                "Should return empty list for non-existent task ID");
     }
 
     @Test
     public void testDeleteInfoExistingConfig() {
         String taskId = "task_delete_exist";
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://delete.this/callback", "cfg1", null);
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://delete.this/callback", "cfg1", null);
         configStore.setInfo(config);
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
 
         configStore.deleteInfo(taskId, config.id());
 
-        ListTaskPushNotificationConfigsResult configsAfterDelete = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configsAfterDelete =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configsAfterDelete);
-        assertTrue(configsAfterDelete.configs().isEmpty(), "Should return empty list when no configs remain after deletion");
+        assertTrue(
+                configsAfterDelete.configs().isEmpty(),
+                "Should return empty list when no configs remain after deletion");
     }
 
     @Test
@@ -265,34 +275,42 @@ class InMemoryPushNotificationConfigStoreTest {
         // Should not throw an error
         configStore.deleteInfo(taskId, "non_existent_id");
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
-        assertTrue(configResult.configs().isEmpty(), "Should return empty list for non-existent task ID");
+        assertTrue(
+                configResult.configs().isEmpty(),
+                "Should return empty list for non-existent task ID");
     }
 
     @Test
     public void testDeleteInfoWithNullConfigId() {
         String taskId = "task_delete_null_config";
-        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
-                .id("") // No ID set, will use taskId
-                .url("http://delete.this/callback")
-                .taskId(taskId)
-                .build();
+        TaskPushNotificationConfig config =
+                TaskPushNotificationConfig.builder()
+                        .id("") // No ID set, will use taskId
+                        .url("http://delete.this/callback")
+                        .taskId(taskId)
+                        .build();
         configStore.setInfo(config);
 
         // Delete with null configId should use taskId
         configStore.deleteInfo(taskId, null);
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
-        assertTrue(configResult.configs().isEmpty(), "Should return empty list after deletion when using taskId as configId");
+        assertTrue(
+                configResult.configs().isEmpty(),
+                "Should return empty list after deletion when using taskId as configId");
     }
 
     @Test
     public void testSendNotificationSuccess() throws Exception {
         String taskId = "task_send_success";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", null);
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", null);
         configStore.setInfo(config);
 
         // Mock successful HTTP response
@@ -317,7 +335,8 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testSendNotificationWithToken() throws Exception {
         String taskId = "task_send_with_token";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", "unique_token");
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(config);
 
         setupBasicMockHttpResponse();
@@ -332,7 +351,7 @@ class InMemoryPushNotificationConfigStoreTest {
         // Verify that the token is included in request headers as X-A2A-Notification-Token
         verify(mockPostBuilder).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, config.token());
         verify(mockPostBuilder).post();
-        
+
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
@@ -354,7 +373,8 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testSendNotificationWithEmptyToken() throws Exception {
         String taskId = "task_send_empty_token";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", "");
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", "");
         configStore.setInfo(config);
 
         setupBasicMockHttpResponse();
@@ -366,7 +386,8 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testSendNotificationWithBlankToken() throws Exception {
         String taskId = "task_send_blank_token";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", "   ");
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", "   ");
         configStore.setInfo(config);
 
         setupBasicMockHttpResponse();
@@ -377,13 +398,16 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testMultipleConfigsForSameTask() {
         String taskId = "task_multiple";
-        TaskPushNotificationConfig config1 = createSamplePushConfig(taskId, "http://url1.com/callback", "cfg1", null);
-        TaskPushNotificationConfig config2 = createSamplePushConfig(taskId, "http://url2.com/callback", "cfg2", null);
+        TaskPushNotificationConfig config1 =
+                createSamplePushConfig(taskId, "http://url1.com/callback", "cfg1", null);
+        TaskPushNotificationConfig config2 =
+                createSamplePushConfig(taskId, "http://url2.com/callback", "cfg2", null);
 
         configStore.setInfo(config1);
         configStore.setInfo(config2);
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
         assertEquals(2, configResult.configs().size());
 
@@ -396,8 +420,10 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testDeleteSpecificConfigFromMultiple() {
         String taskId = "task_delete_specific";
-        TaskPushNotificationConfig config1 = createSamplePushConfig(taskId, "http://url1.com/callback", "cfg1", null);
-        TaskPushNotificationConfig config2 = createSamplePushConfig(taskId, "http://url2.com/callback", "cfg2", null);
+        TaskPushNotificationConfig config1 =
+                createSamplePushConfig(taskId, "http://url1.com/callback", "cfg1", null);
+        TaskPushNotificationConfig config2 =
+                createSamplePushConfig(taskId, "http://url2.com/callback", "cfg2", null);
 
         configStore.setInfo(config1);
         configStore.setInfo(config2);
@@ -405,7 +431,8 @@ class InMemoryPushNotificationConfigStoreTest {
         // Delete only config1
         configStore.deleteInfo(taskId, "cfg1");
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
         assertEquals("cfg2", configResult.configs().get(0).id());
@@ -414,20 +441,23 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testConfigStoreIntegration() {
         String taskId = "integration_test";
-        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://example.com", "test_id", "test_token");
+        TaskPushNotificationConfig config =
+                createSamplePushConfig(taskId, "http://example.com", "test_id", "test_token");
 
         // Test that we can store and retrieve configurations
         TaskPushNotificationConfig storedConfig = configStore.setInfo(config);
         assertEquals(config.url(), storedConfig.url());
         assertEquals(config.token(), storedConfig.token());
 
-        ListTaskPushNotificationConfigsResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult configResult =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertEquals(1, configResult.configs().size());
         assertEquals(config.url(), configResult.configs().get(0).url());
 
         // Test deletion
         configStore.deleteInfo(taskId, storedConfig.id());
-        ListTaskPushNotificationConfigsResult afterDeletion = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        ListTaskPushNotificationConfigsResult afterDeletion =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
         assertNotNull(afterDeletion);
         assertTrue(afterDeletion.configs().isEmpty());
     }
@@ -437,13 +467,15 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination";
         // Create 5 configs
         for (int i = 0; i < 5; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Request first page with pageSize=2
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
@@ -456,37 +488,37 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_token";
         // Create 5 configs
         for (int i = 0; i < 5; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Get first page
-        ListTaskPushNotificationConfigsParams firstPageParams = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsParams firstPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
         ListTaskPushNotificationConfigsResult firstPage = configStore.getInfo(firstPageParams);
         assertNotNull(firstPage.nextPageToken());
 
         // Get second page using nextPageToken
-        ListTaskPushNotificationConfigsParams secondPageParams = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, firstPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigsParams secondPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, firstPage.nextPageToken(), "");
         ListTaskPushNotificationConfigsResult secondPage = configStore.getInfo(secondPageParams);
 
         assertNotNull(secondPage);
         assertEquals(2, secondPage.configs().size(), "Should return 2 configs for second page");
-        assertNotNull(secondPage.nextPageToken(), "Should have nextPageToken when more items exist");
+        assertNotNull(
+                secondPage.nextPageToken(), "Should have nextPageToken when more items exist");
 
         // Verify NO overlap between pages - collect all IDs from both pages
-        List<String> firstPageIds = firstPage.configs().stream()
-                .map(c -> c.id())
-                .toList();
-        List<String> secondPageIds = secondPage.configs().stream()
-                .map(c -> c.id())
-                .toList();
+        List<String> firstPageIds = firstPage.configs().stream().map(c -> c.id()).toList();
+        List<String> secondPageIds = secondPage.configs().stream().map(c -> c.id()).toList();
 
         // Check that no ID from first page appears in second page
         for (String id : firstPageIds) {
-            assertTrue(!secondPageIds.contains(id),
-                "Config " + id + " appears in both pages - overlap detected!");
+            assertTrue(
+                    !secondPageIds.contains(id),
+                    "Config " + id + " appears in both pages - overlap detected!");
         }
 
         // Also verify the pages are sequential (first page ends before second page starts)
@@ -502,23 +534,26 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_last";
         // Create 5 configs
         for (int i = 0; i < 5; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Get first page (2 items)
-        ListTaskPushNotificationConfigsParams firstPageParams = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsParams firstPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
         ListTaskPushNotificationConfigsResult firstPage = configStore.getInfo(firstPageParams);
 
         // Get second page (2 items)
-        ListTaskPushNotificationConfigsParams secondPageParams = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, firstPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigsParams secondPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, firstPage.nextPageToken(), "");
         ListTaskPushNotificationConfigsResult secondPage = configStore.getInfo(secondPageParams);
 
         // Get last page (1 item remaining)
-        ListTaskPushNotificationConfigsParams lastPageParams = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, secondPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigsParams lastPageParams =
+                new ListTaskPushNotificationConfigsParams(
+                        taskId, 2, secondPage.nextPageToken(), "");
         ListTaskPushNotificationConfigsResult lastPage = configStore.getInfo(lastPageParams);
 
         assertNotNull(lastPage);
@@ -531,13 +566,15 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_zero";
         // Create 5 configs
         for (int i = 0; i < 5; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Request with pageSize=0 should return all configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 0, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 0, "", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
@@ -550,17 +587,20 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_negative";
         // Create 3 configs
         for (int i = 0; i < 3; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Request with negative pageSize should return all configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, -1, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, -1, "", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
-        assertEquals(3, result.configs().size(), "Should return all configs when pageSize is negative");
+        assertEquals(
+                3, result.configs().size(), "Should return all configs when pageSize is negative");
         assertNull(result.nextPageToken(), "Should not have nextPageToken when returning all");
     }
 
@@ -569,18 +609,22 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_large";
         // Create 3 configs
         for (int i = 0; i < 3; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Request with pageSize larger than available configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 10, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 10, "", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
         assertEquals(3, result.configs().size(), "Should return all 3 configs");
-        assertNull(result.nextPageToken(), "Should not have nextPageToken when all configs fit in one page");
+        assertNull(
+                result.nextPageToken(),
+                "Should not have nextPageToken when all configs fit in one page");
     }
 
     @Test
@@ -588,18 +632,22 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_exact";
         // Create exactly 3 configs
         for (int i = 0; i < 3; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Request with pageSize equal to number of configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 3, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 3, "", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
         assertEquals(3, result.configs().size(), "Should return all 3 configs");
-        assertNull(result.nextPageToken(), "Should not have nextPageToken when configs exactly match pageSize");
+        assertNull(
+                result.nextPageToken(),
+                "Should not have nextPageToken when configs exactly match pageSize");
     }
 
     @Test
@@ -607,19 +655,22 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_invalid_token";
         // Create 5 configs
         for (int i = 0; i < 5; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
         // Request with invalid pageToken - implementation behavior is to start from beginning
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, "invalid_token_that_does_not_exist", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(
+                        taskId, 2, "invalid_token_that_does_not_exist", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
         // When token is not found, implementation starts from beginning
-        assertEquals(2, result.configs().size(), "Should return first page when token is not found");
+        assertEquals(
+                2, result.configs().size(), "Should return first page when token is not found");
         assertNotNull(result.nextPageToken(), "Should have nextPageToken since more items exist");
     }
 
@@ -628,7 +679,8 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_empty";
         // No configs created
 
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
         ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
         assertNotNull(result);
@@ -640,11 +692,17 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testSetAndGetProtocolVersion() {
         String taskId = "task1";
         String configId = "cfg1";
-        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
-                .id(configId).taskId(taskId).url("http://example.com/hook").build();
+        TaskPushNotificationConfig config =
+                TaskPushNotificationConfig.builder()
+                        .id(configId)
+                        .taskId(taskId)
+                        .url("http://example.com/hook")
+                        .build();
         configStore.setInfo(config);
 
-        assertEquals(AgentInterface.CURRENT_PROTOCOL_VERSION, configStore.getProtocolVersion(taskId, configId));
+        assertEquals(
+                AgentInterface.CURRENT_PROTOCOL_VERSION,
+                configStore.getProtocolVersion(taskId, configId));
 
         configStore.setInfo(config, "0.3");
         assertEquals("0.3", configStore.getProtocolVersion(taskId, configId));
@@ -654,19 +712,27 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testDeleteInfoCleansUpProtocolVersion() {
         String taskId = "task1";
         String configId = "cfg1";
-        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
-                .id(configId).taskId(taskId).url("http://example.com/hook").build();
+        TaskPushNotificationConfig config =
+                TaskPushNotificationConfig.builder()
+                        .id(configId)
+                        .taskId(taskId)
+                        .url("http://example.com/hook")
+                        .build();
         configStore.setInfo(config, "0.3");
 
         assertEquals("0.3", configStore.getProtocolVersion(taskId, configId));
 
         configStore.deleteInfo(taskId, configId);
-        assertEquals(AgentInterface.CURRENT_PROTOCOL_VERSION, configStore.getProtocolVersion(taskId, configId));
+        assertEquals(
+                AgentInterface.CURRENT_PROTOCOL_VERSION,
+                configStore.getProtocolVersion(taskId, configId));
     }
 
     @Test
     public void testGetProtocolVersionReturnsDefaultForUnknownConfig() {
-        assertEquals(AgentInterface.CURRENT_PROTOCOL_VERSION, configStore.getProtocolVersion("nonexistent", "nonexistent"));
+        assertEquals(
+                AgentInterface.CURRENT_PROTOCOL_VERSION,
+                configStore.getProtocolVersion("nonexistent", "nonexistent"));
     }
 
     @Test
@@ -674,8 +740,9 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_pagination_full";
         // Create 7 configs
         for (int i = 0; i < 7; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
             configStore.setInfo(config);
         }
 
@@ -685,7 +752,8 @@ class InMemoryPushNotificationConfigStoreTest {
         int pageCount = 0;
 
         do {
-            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 3, pageToken, "");
+            ListTaskPushNotificationConfigsParams params =
+                    new ListTaskPushNotificationConfigsParams(taskId, 3, pageToken, "");
             ListTaskPushNotificationConfigsResult result = configStore.getInfo(params);
 
             totalCollected += result.configs().size();
@@ -705,30 +773,39 @@ class InMemoryPushNotificationConfigStoreTest {
     public void testSetInfoAtLimitExactlyAllowed() {
         String taskId = "task_limit_exact";
         for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
-            configStore.setInfo(createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, null));
+            configStore.setInfo(
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, null));
         }
 
-        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
+        ListTaskPushNotificationConfigsResult result =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(
+                InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK,
+                result.configs().size());
     }
 
     @Test
     public void testSetInfoRejectsExceedingPerTaskLimit() {
         String taskId = "task_limit_exceed";
         for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
-            configStore.setInfo(createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, null));
+            configStore.setInfo(
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, null));
         }
 
         // The (MAX+1)-th distinct config for the same task must be rejected
-        TaskPushNotificationConfig overflow = createSamplePushConfig(taskId,
-                "http://url-overflow.com/callback", "cfg-overflow", null);
+        TaskPushNotificationConfig overflow =
+                createSamplePushConfig(
+                        taskId, "http://url-overflow.com/callback", "cfg-overflow", null);
         assertThrows(InvalidParamsError.class, () -> configStore.setInfo(overflow));
 
         // The store is unchanged
-        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, result.configs().size());
+        ListTaskPushNotificationConfigsResult result =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(
+                InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK,
+                result.configs().size());
         assertTrue(result.configs().stream().noneMatch(c -> "cfg-overflow".equals(c.id())));
     }
 
@@ -739,30 +816,35 @@ class InMemoryPushNotificationConfigStoreTest {
 
         // Fill to limit - 1, leaving exactly one slot open
         for (int i = 0; i < limit - 1; i++) {
-            configStore.setInfo(createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, null));
+            configStore.setInfo(
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, null));
         }
 
         CyclicBarrier barrier = new CyclicBarrier(2);
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger errorCount = new AtomicInteger(0);
 
-        Runnable contestant = () -> {
-            try {
-                barrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-            try {
-                configStore.setInfo(createSamplePushConfig(taskId,
-                        "http://concurrent.com/callback",
-                        "cfg-concurrent-" + Thread.currentThread().getId(), null));
-                successCount.incrementAndGet();
-            } catch (InvalidParamsError e) {
-                errorCount.incrementAndGet();
-            }
-        };
+        Runnable contestant =
+                () -> {
+                    try {
+                        barrier.await();
+                    } catch (InterruptedException | BrokenBarrierException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                    try {
+                        configStore.setInfo(
+                                createSamplePushConfig(
+                                        taskId,
+                                        "http://concurrent.com/callback",
+                                        "cfg-concurrent-" + Thread.currentThread().getId(),
+                                        null));
+                        successCount.incrementAndGet();
+                    } catch (InvalidParamsError e) {
+                        errorCount.incrementAndGet();
+                    }
+                };
 
         Thread t1 = new Thread(contestant);
         Thread t2 = new Thread(contestant);
@@ -774,28 +856,41 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(1, successCount.get(), "Exactly one thread should succeed");
         assertEquals(1, errorCount.get(), "Exactly one thread should be rejected");
 
-        ListTaskPushNotificationConfigsResult result = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(limit, result.configs().size(), "Store must be at exactly the limit after the race");
+        ListTaskPushNotificationConfigsResult result =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(
+                limit,
+                result.configs().size(),
+                "Store must be at exactly the limit after the race");
     }
 
     @Test
     public void testSetInfoUpdateExistingConfigAtLimitAllowed() {
         String taskId = "task_limit_update";
         for (int i = 0; i < InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK; i++) {
-            configStore.setInfo(createSamplePushConfig(taskId,
-                    "http://url" + i + ".com/callback", "cfg" + i, null));
+            configStore.setInfo(
+                    createSamplePushConfig(
+                            taskId, "http://url" + i + ".com/callback", "cfg" + i, null));
         }
 
         // Updating an existing config at the limit must still be allowed
-        TaskPushNotificationConfig updated = createSamplePushConfig(taskId,
-                "http://url-updated.com/callback", "cfg0", "new-token");
+        TaskPushNotificationConfig updated =
+                createSamplePushConfig(
+                        taskId, "http://url-updated.com/callback", "cfg0", "new-token");
         TaskPushNotificationConfig result = configStore.setInfo(updated);
 
         assertEquals("cfg0", result.id());
-        ListTaskPushNotificationConfigsResult configs = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
-        assertEquals(InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK, configs.configs().size());
-        assertEquals("http://url-updated.com/callback",
-                configs.configs().stream().filter(c -> "cfg0".equals(c.id())).findFirst().orElseThrow().url());
+        ListTaskPushNotificationConfigsResult configs =
+                configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId));
+        assertEquals(
+                InMemoryPushNotificationConfigStore.MAX_PUSH_CONFIGS_PER_TASK,
+                configs.configs().size());
+        assertEquals(
+                "http://url-updated.com/callback",
+                configs.configs().stream()
+                        .filter(c -> "cfg0".equals(c.id()))
+                        .findFirst()
+                        .orElseThrow()
+                        .url());
     }
-
 }

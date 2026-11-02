@@ -7,15 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.TaskEvent;
 import org.a2aproject.sdk.client.TaskUpdateEvent;
@@ -35,7 +34,6 @@ import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TextPart;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,15 +44,11 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
-    @Inject
-    PushNotificationConfigStore pushNotificationConfigStore;
+    @Inject PushNotificationConfigStore pushNotificationConfigStore;
 
-    @Inject
-    @PublicAgentCard
-    AgentCard agentCard;
+    @Inject @PublicAgentCard AgentCard agentCard;
 
-    @Inject
-    MockPushNotificationSender mockPushNotificationSender;
+    @Inject MockPushNotificationSender mockPushNotificationSender;
 
     private Client client;
 
@@ -64,15 +58,14 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         mockPushNotificationSender.clear();
 
         // Create client configuration - enable streaming for automatic push notifications
-        ClientConfig clientConfig = new ClientConfig.Builder()
-            .setStreaming(true)
-            .build();
+        ClientConfig clientConfig = new ClientConfig.Builder().setStreaming(true).build();
 
         // Build client with JSON-RPC transport
-        client = Client.builder(agentCard)
-            .clientConfig(clientConfig)
-            .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-            .build();
+        client =
+                Client.builder(agentCard)
+                        .clientConfig(clientConfig)
+                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                        .build();
     }
 
     @Test
@@ -85,11 +78,14 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         // Simple test to verify the mock notification mechanism works
         mockPushNotificationSender.clear();
 
-        Task testTask = Task.builder()
-            .id("direct-test-task")
-            .contextId("test-context")
-            .status(new org.a2aproject.sdk.spec.TaskStatus(org.a2aproject.sdk.spec.TaskState.TASK_STATE_SUBMITTED))
-            .build();
+        Task testTask =
+                Task.builder()
+                        .id("direct-test-task")
+                        .contextId("test-context")
+                        .status(
+                                new org.a2aproject.sdk.spec.TaskStatus(
+                                        org.a2aproject.sdk.spec.TaskState.TASK_STATE_SUBMITTED))
+                        .build();
 
         // Directly trigger the mock
         mockPushNotificationSender.sendNotification(testTask, null);
@@ -103,26 +99,31 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
     @Test
     public void testJpaDatabasePushNotificationConfigStoreIntegration() throws Exception {
         // Step 1: Create the task (no client-provided taskId — server generates it)
-        Message createMessage = Message.builder()
-            .role(Message.Role.ROLE_USER)
-            .parts(List.of(new TextPart("create"))) // Send the "create" command
-            .messageId("test-msg-1")
-            .build();
+        Message createMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("create"))) // Send the "create" command
+                        .messageId("test-msg-1")
+                        .build();
 
         // Use a latch to wait for the first operation to complete and capture server-generated ids
         CountDownLatch createLatch = new CountDownLatch(1);
         AtomicReference<Task> createdTaskRef = new AtomicReference<>();
-        client.sendMessage(createMessage, List.of((event, card) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                createdTaskRef.set(taskEvent.getTask());
-                createLatch.countDown();
-                return;
-            }
-            if (event instanceof TaskUpdateEvent taskUpdateEvent) {
-                createdTaskRef.set(taskUpdateEvent.getTask());
-                createLatch.countDown();
-            }
-        }), (e) -> createLatch.countDown());
+        client.sendMessage(
+                createMessage,
+                List.of(
+                        (event, card) -> {
+                            if (event instanceof TaskEvent taskEvent) {
+                                createdTaskRef.set(taskEvent.getTask());
+                                createLatch.countDown();
+                                return;
+                            }
+                            if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                                createdTaskRef.set(taskUpdateEvent.getTask());
+                                createLatch.countDown();
+                            }
+                        }),
+                (e) -> createLatch.countDown());
         assertTrue(createLatch.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
 
         assertNotNull(createdTaskRef.get(), "Task should have been created");
@@ -130,19 +131,22 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         final String contextId = createdTaskRef.get().contextId();
 
         // Step 2: Set the push notification configuration
-        TaskPushNotificationConfig taskPushConfig = TaskPushNotificationConfig.builder()
-            .id("test-config-1")
-            .taskId(taskId)
-            .url("http://localhost:9999/mock-endpoint")
-            .token("test-token-123")
-            .tenant("")
-            .build();
-        TaskPushNotificationConfig setResult = client.createTaskPushNotificationConfiguration(taskPushConfig);
+        TaskPushNotificationConfig taskPushConfig =
+                TaskPushNotificationConfig.builder()
+                        .id("test-config-1")
+                        .taskId(taskId)
+                        .url("http://localhost:9999/mock-endpoint")
+                        .token("test-token-123")
+                        .tenant("")
+                        .build();
+        TaskPushNotificationConfig setResult =
+                client.createTaskPushNotificationConfiguration(taskPushConfig);
         assertNotNull(setResult);
 
         // Step 3: Verify the configuration was stored using client API
-        TaskPushNotificationConfig storedConfig = client.getTaskPushNotificationConfiguration(
-            new GetTaskPushNotificationConfigParams(taskId, "test-config-1"));
+        TaskPushNotificationConfig storedConfig =
+                client.getTaskPushNotificationConfiguration(
+                        new GetTaskPushNotificationConfigParams(taskId, "test-config-1"));
 
         assertNotNull(storedConfig);
         assertEquals(taskId, storedConfig.taskId());
@@ -151,20 +155,25 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertEquals("test-token-123", storedConfig.token());
 
         // Step 4: Update the task to trigger the notification
-        Message updateMessage = Message.builder()
-            .role(Message.Role.ROLE_USER)
-            .parts(List.of(new TextPart("update"))) // Send the "update" command
-            .taskId(taskId)
-            .messageId("test-msg-2")
-            .contextId(contextId)
-            .build();
+        Message updateMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("update"))) // Send the "update" command
+                        .taskId(taskId)
+                        .messageId("test-msg-2")
+                        .contextId(contextId)
+                        .build();
 
         CountDownLatch updateLatch = new CountDownLatch(1);
-        client.sendMessage(updateMessage, List.of((event, card) -> updateLatch.countDown()), (e) -> updateLatch.countDown());
+        client.sendMessage(
+                updateMessage,
+                List.of((event, card) -> updateLatch.countDown()),
+                (e) -> updateLatch.countDown());
         assertTrue(updateLatch.await(10, TimeUnit.SECONDS), "Timeout waiting for task update");
 
         // Step 5: Poll for the async notification to be captured
-        // With the new StreamingEventKind support, we receive all event types (Task, Message, TaskArtifactUpdateEvent, etc.)
+        // With the new StreamingEventKind support, we receive all event types (Task, Message,
+        // TaskArtifactUpdateEvent, etc.)
         long end = System.currentTimeMillis() + 5000;
         boolean notificationReceived = false;
 
@@ -180,38 +189,49 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Step 6: Verify the captured notification
         // Check if we received events for this task (could be Task, TaskArtifactUpdateEvent, etc.)
-        Queue<org.a2aproject.sdk.spec.StreamingEventKind> capturedEvents = mockPushNotificationSender.getCapturedEvents();
+        Queue<org.a2aproject.sdk.spec.StreamingEventKind> capturedEvents =
+                mockPushNotificationSender.getCapturedEvents();
 
         // Look for Task events with artifacts OR TaskArtifactUpdateEvent for this task
-        boolean hasTaskWithArtifact = capturedEvents.stream()
-            .filter(e -> e instanceof Task)
-            .map(e -> (Task) e)
-            .anyMatch(t -> taskId.equals(t.id()) && t.artifacts() != null && t.artifacts().size() > 0);
+        boolean hasTaskWithArtifact =
+                capturedEvents.stream()
+                        .filter(e -> e instanceof Task)
+                        .map(e -> (Task) e)
+                        .anyMatch(
+                                t ->
+                                        taskId.equals(t.id())
+                                                && t.artifacts() != null
+                                                && t.artifacts().size() > 0);
 
-        boolean hasArtifactUpdateEvent = capturedEvents.stream()
-            .filter(e -> e instanceof org.a2aproject.sdk.spec.TaskArtifactUpdateEvent)
-            .map(e -> (org.a2aproject.sdk.spec.TaskArtifactUpdateEvent) e)
-            .anyMatch(e -> taskId.equals(e.taskId()));
+        boolean hasArtifactUpdateEvent =
+                capturedEvents.stream()
+                        .filter(e -> e instanceof org.a2aproject.sdk.spec.TaskArtifactUpdateEvent)
+                        .map(e -> (org.a2aproject.sdk.spec.TaskArtifactUpdateEvent) e)
+                        .anyMatch(e -> taskId.equals(e.taskId()));
 
-        assertTrue(hasTaskWithArtifact || hasArtifactUpdateEvent,
-            "Notification should contain either Task with artifacts or TaskArtifactUpdateEvent for task " + taskId);
+        assertTrue(
+                hasTaskWithArtifact || hasArtifactUpdateEvent,
+                "Notification should contain either Task with artifacts or TaskArtifactUpdateEvent"
+                        + " for task "
+                        + taskId);
 
         // Step 7: Clean up - delete the push notification configuration
         client.deleteTaskPushNotificationConfigurations(
-            new DeleteTaskPushNotificationConfigParams(taskId, "test-config-1"));
+                new DeleteTaskPushNotificationConfigParams(taskId, "test-config-1"));
 
         // Verify deletion by asserting that getting the config now throws an exception
-        assertThrows(A2AClientException.class, () -> {
-            client.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(taskId, "test-config-1"));
-        }, "Getting a deleted config should throw an A2AClientException");
+        assertThrows(
+                A2AClientException.class,
+                () -> {
+                    client.getTaskPushNotificationConfiguration(
+                            new GetTaskPushNotificationConfigParams(taskId, "test-config-1"));
+                },
+                "Getting a deleted config should throw an A2AClientException");
     }
 
-    private TaskPushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return TaskPushNotificationConfig.builder()
-                .url(url)
-                .id(configId)
-                .token(token)
-                .build();
+    private TaskPushNotificationConfig createSamplePushConfig(
+            String url, String configId, String token) {
+        return TaskPushNotificationConfig.builder().url(url).id(configId).token(token).build();
     }
 
     @Test
@@ -221,7 +241,8 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         // Create 5 configs
         createSamples(taskId, 5);
         // Request first page with pageSize=2
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
         ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
@@ -237,31 +258,32 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 5);
 
         // Get first page
-        ListTaskPushNotificationConfigsParams firstPageParams = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
-        ListTaskPushNotificationConfigsResult firstPage = pushNotificationConfigStore.getInfo(firstPageParams);
+        ListTaskPushNotificationConfigsParams firstPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsResult firstPage =
+                pushNotificationConfigStore.getInfo(firstPageParams);
         assertNotNull(firstPage.nextPageToken());
 
         // Get second page using nextPageToken
-        ListTaskPushNotificationConfigsParams secondPageParams = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, firstPage.nextPageToken(), "");
-        ListTaskPushNotificationConfigsResult secondPage = pushNotificationConfigStore.getInfo(secondPageParams);
+        ListTaskPushNotificationConfigsParams secondPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, firstPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigsResult secondPage =
+                pushNotificationConfigStore.getInfo(secondPageParams);
 
         assertNotNull(secondPage);
         assertEquals(2, secondPage.configs().size(), "Should return 2 configs for second page");
-        assertNotNull(secondPage.nextPageToken(), "Should have nextPageToken when more items exist");
+        assertNotNull(
+                secondPage.nextPageToken(), "Should have nextPageToken when more items exist");
 
         // Verify NO overlap between pages - collect all IDs from both pages
-        List<String> firstPageIds = firstPage.configs().stream()
-                .map(c -> c.id())
-                .toList();
-        List<String> secondPageIds = secondPage.configs().stream()
-                .map(c -> c.id())
-                .toList();
+        List<String> firstPageIds = firstPage.configs().stream().map(c -> c.id()).toList();
+        List<String> secondPageIds = secondPage.configs().stream().map(c -> c.id()).toList();
 
         // Check that no ID from first page appears in second page
         for (String id : firstPageIds) {
-            assertTrue(!secondPageIds.contains(id),
-                "Config " + id + " appears in both pages - overlap detected!");
+            assertTrue(
+                    !secondPageIds.contains(id),
+                    "Config " + id + " appears in both pages - overlap detected!");
         }
 
         // Also verify the pages are sequential (first page ends before second page starts)
@@ -282,18 +304,23 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 5);
 
         // Get first page (2 items)
-        ListTaskPushNotificationConfigsParams firstPageParams = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
-        ListTaskPushNotificationConfigsResult firstPage = pushNotificationConfigStore.getInfo(firstPageParams);
+        ListTaskPushNotificationConfigsParams firstPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsResult firstPage =
+                pushNotificationConfigStore.getInfo(firstPageParams);
 
         // Get second page (2 items)
-        ListTaskPushNotificationConfigsParams secondPageParams = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, firstPage.nextPageToken(), "");
-        ListTaskPushNotificationConfigsResult secondPage = pushNotificationConfigStore.getInfo(secondPageParams);
+        ListTaskPushNotificationConfigsParams secondPageParams =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, firstPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigsResult secondPage =
+                pushNotificationConfigStore.getInfo(secondPageParams);
 
         // Get last page (1 item remaining)
-        ListTaskPushNotificationConfigsParams lastPageParams = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, secondPage.nextPageToken(), "");
-        ListTaskPushNotificationConfigsResult lastPage = pushNotificationConfigStore.getInfo(lastPageParams);
+        ListTaskPushNotificationConfigsParams lastPageParams =
+                new ListTaskPushNotificationConfigsParams(
+                        taskId, 2, secondPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigsResult lastPage =
+                pushNotificationConfigStore.getInfo(lastPageParams);
 
         assertNotNull(lastPage);
         assertEquals(1, lastPage.configs().size(), "Last page should have 1 remaining config");
@@ -308,7 +335,8 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 5);
 
         // Request with pageSize=0 should return all configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 0, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 0, "", "");
         ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
@@ -324,11 +352,13 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 3);
 
         // Request with negative pageSize should return all configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, -1, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, -1, "", "");
         ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
-        assertEquals(3, result.configs().size(), "Should return all configs when pageSize is negative");
+        assertEquals(
+                3, result.configs().size(), "Should return all configs when pageSize is negative");
         assertNull(result.nextPageToken(), "Should not have nextPageToken when returning all");
     }
 
@@ -340,12 +370,15 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 3);
 
         // Request with pageSize larger than available configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 10, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 10, "", "");
         ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
         assertEquals(3, result.configs().size(), "Should return all 3 configs");
-        assertNull(result.nextPageToken(), "Should not have nextPageToken when all configs fit in one page");
+        assertNull(
+                result.nextPageToken(),
+                "Should not have nextPageToken when all configs fit in one page");
     }
 
     @Test
@@ -356,12 +389,15 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 3);
 
         // Request with pageSize equal to number of configs
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 3, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 3, "", "");
         ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
         assertEquals(3, result.configs().size(), "Should return all 3 configs");
-        assertNull(result.nextPageToken(), "Should not have nextPageToken when configs exactly match pageSize");
+        assertNull(
+                result.nextPageToken(),
+                "Should not have nextPageToken when configs exactly match pageSize");
     }
 
     @Test
@@ -372,11 +408,14 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         createSamples(taskId, 5);
 
         // Request with invalid pageToken - should throw InvalidParamsError for invalid format
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(
-                taskId, 2, "invalid_token_that_does_not_exist", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(
+                        taskId, 2, "invalid_token_that_does_not_exist", "");
 
-        assertThrows(org.a2aproject.sdk.spec.InvalidParamsError.class, () -> pushNotificationConfigStore.getInfo(params),
-          "Should throw InvalidParamsError for invalid pageToken format (missing colon)");
+        assertThrows(
+                org.a2aproject.sdk.spec.InvalidParamsError.class,
+                () -> pushNotificationConfigStore.getInfo(params),
+                "Should throw InvalidParamsError for invalid pageToken format (missing colon)");
     }
 
     @Test
@@ -385,7 +424,8 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         String taskId = "task_pagination_empty_" + System.currentTimeMillis();
         // No configs created
 
-        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "", "");
         ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
@@ -406,8 +446,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         int pageCount = 0;
 
         do {
-            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, 3, pageToken, "");
-            ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
+            ListTaskPushNotificationConfigsParams params =
+                    new ListTaskPushNotificationConfigsParams(taskId, 3, pageToken, "");
+            ListTaskPushNotificationConfigsResult result =
+                    pushNotificationConfigStore.getInfo(params);
 
             totalCollected += result.configs().size();
             pageToken = result.nextPageToken();
@@ -425,152 +467,161 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
     @Test
     @Transactional
     public void testPageTokenWithNonNumericTimestamp() {
-      String taskId = "task_malformed_token_" + System.currentTimeMillis();
-      createSamples(taskId, 3);
+        String taskId = "task_malformed_token_" + System.currentTimeMillis();
+        createSamples(taskId, 3);
 
-      ListTaskPushNotificationConfigsParams params =
-          new ListTaskPushNotificationConfigsParams(taskId, 2, "not_a_number:cfg1", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "not_a_number:cfg1", "");
 
-      assertThrows(org.a2aproject.sdk.spec.InvalidParamsError.class,
-          () -> pushNotificationConfigStore.getInfo(params),
-          "Should throw InvalidParamsError for non-numeric timestamp in pageToken");
+        assertThrows(
+                org.a2aproject.sdk.spec.InvalidParamsError.class,
+                () -> pushNotificationConfigStore.getInfo(params),
+                "Should throw InvalidParamsError for non-numeric timestamp in pageToken");
     }
 
     @Test
     @Transactional
     public void testPageTokenWithMissingColon() {
-      String taskId = "task_missing_colon_" + System.currentTimeMillis();
-      createSamples(taskId, 5);
+        String taskId = "task_missing_colon_" + System.currentTimeMillis();
+        createSamples(taskId, 5);
 
-      ListTaskPushNotificationConfigsParams params =
-          new ListTaskPushNotificationConfigsParams(taskId, 2, "123456789cfg1", "");
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 2, "123456789cfg1", "");
 
-      assertThrows(org.a2aproject.sdk.spec.InvalidParamsError.class, () -> pushNotificationConfigStore.getInfo(params),
-          "Should throw InvalidParamsError for invalid pageToken format (missing colon)");
+        assertThrows(
+                org.a2aproject.sdk.spec.InvalidParamsError.class,
+                () -> pushNotificationConfigStore.getInfo(params),
+                "Should throw InvalidParamsError for invalid pageToken format (missing colon)");
     }
 
     @Test
     @Transactional
     public void testPaginationBoundaryExactlyMaxResultsPlusOne() {
-      String taskId = "task_boundary_" + System.currentTimeMillis();
+        String taskId = "task_boundary_" + System.currentTimeMillis();
 
-      createSamples(taskId, 4);
+        createSamples(taskId, 4);
 
-      ListTaskPushNotificationConfigsParams params =
-          new ListTaskPushNotificationConfigsParams(taskId, 4, "", "");
-      ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 4, "", "");
+        ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
-      assertEquals(4, result.configs().size(),
-          "Should return all 4 configs when pageSize equals total count");
-      assertNull(result.nextPageToken(),
-          "Should not have nextPageToken when count equals pageSize");
+        assertEquals(
+                4,
+                result.configs().size(),
+                "Should return all 4 configs when pageSize equals total count");
+        assertNull(
+                result.nextPageToken(), "Should not have nextPageToken when count equals pageSize");
     }
 
     @Test
     @Transactional
     public void testMultipleTasksDoNotInterfere() {
-      String taskId1 = "task1_" + System.currentTimeMillis();
-      String taskId2 = "task2_" + System.currentTimeMillis();
+        String taskId1 = "task1_" + System.currentTimeMillis();
+        String taskId2 = "task2_" + System.currentTimeMillis();
 
-      createSamples(taskId1, 3);
-      createSamples(taskId2, 2);
+        createSamples(taskId1, 3);
+        createSamples(taskId2, 2);
 
-      ListTaskPushNotificationConfigsResult result1 =
-          pushNotificationConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId1));
-      ListTaskPushNotificationConfigsResult result2 =
-          pushNotificationConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId2));
+        ListTaskPushNotificationConfigsResult result1 =
+                pushNotificationConfigStore.getInfo(
+                        new ListTaskPushNotificationConfigsParams(taskId1));
+        ListTaskPushNotificationConfigsResult result2 =
+                pushNotificationConfigStore.getInfo(
+                        new ListTaskPushNotificationConfigsParams(taskId2));
 
-      assertEquals(3, result1.configs().size(), "Task1 should have 3 configs");
-      assertEquals(2, result2.configs().size(), "Task2 should have 2 configs");
+        assertEquals(3, result1.configs().size(), "Task1 should have 3 configs");
+        assertEquals(2, result2.configs().size(), "Task2 should have 2 configs");
 
-      List<String> task1Ids = result1.configs().stream()
-          .map(c -> taskId1 + c.id())
-          .toList();
-      List<String> task2Ids = result2.configs().stream()
-          .map(c -> taskId2 + c.id())
-          .toList();
+        List<String> task1Ids = result1.configs().stream().map(c -> taskId1 + c.id()).toList();
+        List<String> task2Ids = result2.configs().stream().map(c -> taskId2 + c.id()).toList();
 
-      for (String id : task1Ids) {
-        assertTrue(!task2Ids.contains(id),
-            "Configs from different tasks should not overlap");
-      }
+        for (String id : task1Ids) {
+            assertTrue(!task2Ids.contains(id), "Configs from different tasks should not overlap");
+        }
     }
 
     @Test
     @Transactional
     public void testGetInfoWithNonExistentTaskIdDoesNotThrow() {
-      String nonExistentTaskId = "non_existent_task_" + System.currentTimeMillis();
+        String nonExistentTaskId = "non_existent_task_" + System.currentTimeMillis();
 
-      ListTaskPushNotificationConfigsParams params =
-          new ListTaskPushNotificationConfigsParams(nonExistentTaskId, 10, "", "");
-      ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(nonExistentTaskId, 10, "", "");
+        ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
-      assertNotNull(result, "Result should not be null");
-      assertTrue(result.configs().isEmpty(),
-          "Should return empty list for non-existent task");
-      assertNull(result.nextPageToken(),
-          "Should not have nextPageToken for empty result");
+        assertNotNull(result, "Result should not be null");
+        assertTrue(result.configs().isEmpty(), "Should return empty list for non-existent task");
+        assertNull(result.nextPageToken(), "Should not have nextPageToken for empty result");
     }
 
     @Test
     @Transactional
     public void testGetInfoReturnsTenantFromParams() {
-      String taskId = "task_tenant_" + System.currentTimeMillis();
-      String tenant = "test-tenant-123";
+        String taskId = "task_tenant_" + System.currentTimeMillis();
+        String tenant = "test-tenant-123";
 
-      TaskPushNotificationConfig config = createSamplePushConfig(
-          "http://url.com/callback", "cfg1", "token");
-      pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
+        TaskPushNotificationConfig config =
+                createSamplePushConfig("http://url.com/callback", "cfg1", "token");
+        pushNotificationConfigStore.setInfo(
+                TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
-      ListTaskPushNotificationConfigsParams params =
-          new ListTaskPushNotificationConfigsParams(taskId, 0, "", tenant);
-      ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
+        ListTaskPushNotificationConfigsParams params =
+                new ListTaskPushNotificationConfigsParams(taskId, 0, "", tenant);
+        ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
 
-      assertNotNull(result);
-      assertEquals(1, result.configs().size());
-      assertEquals(tenant, result.configs().get(0).tenant(),
-          "Tenant from params should be returned in result");
+        assertNotNull(result);
+        assertEquals(1, result.configs().size());
+        assertEquals(
+                tenant,
+                result.configs().get(0).tenant(),
+                "Tenant from params should be returned in result");
     }
 
     @Test
     @Transactional
     public void testPaginationOrderingConsistency() {
-      String taskId = "task_ordering_consistency_" + System.currentTimeMillis();
-      createSamples(taskId, 15);
+        String taskId = "task_ordering_consistency_" + System.currentTimeMillis();
+        createSamples(taskId, 15);
 
-      List<String> allConfigIds = new java.util.ArrayList<>();
-      String pageToken = "";
-      int pageCount = 0;
+        List<String> allConfigIds = new java.util.ArrayList<>();
+        String pageToken = "";
+        int pageCount = 0;
 
-      do {
-        ListTaskPushNotificationConfigsParams params =
-            new ListTaskPushNotificationConfigsParams(taskId, 3, pageToken, "");
-        ListTaskPushNotificationConfigsResult result = pushNotificationConfigStore.getInfo(params);
+        do {
+            ListTaskPushNotificationConfigsParams params =
+                    new ListTaskPushNotificationConfigsParams(taskId, 3, pageToken, "");
+            ListTaskPushNotificationConfigsResult result =
+                    pushNotificationConfigStore.getInfo(params);
 
-        result.configs().forEach(c ->
-            allConfigIds.add(c.id()));
-        pageToken = result.nextPageToken();
-        pageCount++;
+            result.configs().forEach(c -> allConfigIds.add(c.id()));
+            pageToken = result.nextPageToken();
+            pageCount++;
 
-        assertTrue(pageCount <= 20, "Should not have more than 20 pages for 15 configs");
+            assertTrue(pageCount <= 20, "Should not have more than 20 pages for 15 configs");
 
-      } while (pageToken != null);
+        } while (pageToken != null);
 
-      assertEquals(15, allConfigIds.size(), "Should retrieve all 15 configs");
-      assertEquals(15, new java.util.HashSet<>(allConfigIds).size(),
-          "All config IDs should be unique - no duplicates");
+        assertEquals(15, allConfigIds.size(), "Should retrieve all 15 configs");
+        assertEquals(
+                15,
+                new java.util.HashSet<>(allConfigIds).size(),
+                "All config IDs should be unique - no duplicates");
 
-      assertEquals("cfg14", allConfigIds.get(0),
-          "First config should be most recently created (DESC order)");
-      assertEquals("cfg0", allConfigIds.get(14),
-          "Last config should be oldest created");
+        assertEquals(
+                "cfg14",
+                allConfigIds.get(0),
+                "First config should be most recently created (DESC order)");
+        assertEquals("cfg0", allConfigIds.get(14), "Last config should be oldest created");
     }
-  private void createSamples(String taskId, int size) {
+
+    private void createSamples(String taskId, int size) {
         // Create configs with slight delays to ensure unique timestamps for deterministic ordering
         for (int i = 0; i < size; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(
-                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
-            pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            pushNotificationConfigStore.setInfo(
+                    TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
             // Sleep briefly to ensure each config gets a unique timestamp
             // This prevents non-deterministic ordering in pagination tests
@@ -587,24 +638,33 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
     @Transactional
     public void testPushConfigLimitEnforced() {
         String taskId = "task_limit_" + System.currentTimeMillis();
-        int limit = org.a2aproject.sdk.server.tasks.PushNotificationConfigStore.DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
+        int limit =
+                org.a2aproject.sdk.server.tasks.PushNotificationConfigStore
+                        .DEFAULT_MAX_PUSH_CONFIGS_PER_TASK;
 
         // Register configs up to the limit.
         for (int i = 0; i < limit; i++) {
-            TaskPushNotificationConfig config = createSamplePushConfig(
-                    "http://limit" + i + ".com/callback", "limit-cfg" + i, "token" + i);
-            pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
+            TaskPushNotificationConfig config =
+                    createSamplePushConfig(
+                            "http://limit" + i + ".com/callback", "limit-cfg" + i, "token" + i);
+            pushNotificationConfigStore.setInfo(
+                    TaskPushNotificationConfig.builder(config).taskId(taskId).build());
         }
 
         // The (limit+1)-th distinct config must be rejected.
-        TaskPushNotificationConfig extra = createSamplePushConfig(
-                "http://extra.com/callback", "limit-extra", "token-extra");
-        assertThrows(InvalidParamsError.class, () ->
-                pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(extra).taskId(taskId).build()));
+        TaskPushNotificationConfig extra =
+                createSamplePushConfig("http://extra.com/callback", "limit-extra", "token-extra");
+        assertThrows(
+                InvalidParamsError.class,
+                () ->
+                        pushNotificationConfigStore.setInfo(
+                                TaskPushNotificationConfig.builder(extra).taskId(taskId).build()));
 
         // Re-registering an existing config ID at the limit is still allowed.
-        TaskPushNotificationConfig existing = createSamplePushConfig(
-                "http://limit0.com/callback-updated", "limit-cfg0", "token-updated");
-        pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(existing).taskId(taskId).build());
+        TaskPushNotificationConfig existing =
+                createSamplePushConfig(
+                        "http://limit0.com/callback-updated", "limit-cfg0", "token-updated");
+        pushNotificationConfigStore.setInfo(
+                TaskPushNotificationConfig.builder(existing).taskId(taskId).build());
     }
 }

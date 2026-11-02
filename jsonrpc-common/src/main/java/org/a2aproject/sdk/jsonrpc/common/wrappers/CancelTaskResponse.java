@@ -21,12 +21,9 @@ import org.a2aproject.sdk.spec.TaskState;
  * @see TaskNotCancelableError for the error when cancellation fails
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-
 public final class CancelTaskResponse extends A2AResponse<Task> {
 
-    private CancelTaskResponse() {
-    }
-
+    private CancelTaskResponse() {}
 
     /**
      * Constructs a CancelTaskResponse with full parameters.
@@ -49,7 +46,6 @@ public final class CancelTaskResponse extends A2AResponse<Task> {
     public CancelTaskResponse(Object id, A2AError error) {
         this(null, id, null, error);
     }
-
 
     /**
      * Constructs a CancelTaskResponse with a successful result.

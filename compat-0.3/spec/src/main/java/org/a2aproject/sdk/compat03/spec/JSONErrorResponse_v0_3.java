@@ -15,5 +15,4 @@ package org.a2aproject.sdk.compat03.spec;
  * @see JSONRPCErrorResponse_v0_3
  * @see JSONRPCError_v0_3
  */
-public record JSONErrorResponse_v0_3(String error) {
-}
+public record JSONErrorResponse_v0_3(String error) {}

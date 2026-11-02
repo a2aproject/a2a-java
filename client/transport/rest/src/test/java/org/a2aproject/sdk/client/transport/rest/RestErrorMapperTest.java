@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.spec.A2AClientException;
@@ -53,8 +52,9 @@ public class RestErrorMapperTest {
 
     @Test
     public void testRecognizedA2AErrorDoesNotWrapInHttpError() {
-        String body = "{\"error\": {\"code\": 404, \"status\": \"NOT_FOUND\", \"message\": \"Task not found\", " +
-                "\"details\": [{\"reason\": \"TASK_NOT_FOUND\"}]}}";
+        String body =
+                "{\"error\": {\"code\": 404, \"status\": \"NOT_FOUND\", \"message\": \"Task not"
+                        + " found\", \"details\": [{\"reason\": \"TASK_NOT_FOUND\"}]}}";
         A2AClientException ex = RestErrorMapper.mapRestError(body, 404, Map.of());
 
         assertInstanceOf(TaskNotFoundError.class, ex.getCause());
@@ -63,43 +63,44 @@ public class RestErrorMapperTest {
     @Test
     public void testMapRestErrorFromA2AHttpResponse() {
         Map<String, List<String>> headerMap = Map.of("X-Custom", List.of("value"));
-        A2AHttpResponse response = new A2AHttpResponse() {
-            @Override
-            public int status() {
-                return 500;
-            }
-
-            @Override
-            public boolean success() {
-                return false;
-            }
-
-            @Override
-            public String body() {
-                return "";
-            }
-
-            @Override
-            public A2AHttpHeaders headers() {
-                return new A2AHttpHeaders() {
+        A2AHttpResponse response =
+                new A2AHttpResponse() {
                     @Override
-                    public String firstValue(String name) {
-                        List<String> values = headerMap.get(name);
-                        return values != null && !values.isEmpty() ? values.get(0) : null;
+                    public int status() {
+                        return 500;
                     }
 
                     @Override
-                    public List<String> allValues(String name) {
-                        return headerMap.getOrDefault(name, List.of());
+                    public boolean success() {
+                        return false;
                     }
 
                     @Override
-                    public Map<String, List<String>> toMap() {
-                        return headerMap;
+                    public String body() {
+                        return "";
+                    }
+
+                    @Override
+                    public A2AHttpHeaders headers() {
+                        return new A2AHttpHeaders() {
+                            @Override
+                            public String firstValue(String name) {
+                                List<String> values = headerMap.get(name);
+                                return values != null && !values.isEmpty() ? values.get(0) : null;
+                            }
+
+                            @Override
+                            public List<String> allValues(String name) {
+                                return headerMap.getOrDefault(name, List.of());
+                            }
+
+                            @Override
+                            public Map<String, List<String>> toMap() {
+                                return headerMap;
+                            }
+                        };
                     }
                 };
-            }
-        };
 
         A2AClientException ex = RestErrorMapper.mapRestError(response);
         assertInstanceOf(A2AClientHTTPError.class, ex.getCause());

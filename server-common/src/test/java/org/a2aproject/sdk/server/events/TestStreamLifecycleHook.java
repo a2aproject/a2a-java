@@ -3,7 +3,6 @@ package org.a2aproject.sdk.server.events;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-
 import org.a2aproject.sdk.spec.Event;
 import org.jspecify.annotations.Nullable;
 

@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -23,8 +22,8 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
@@ -46,11 +45,13 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     private static final int HTTP_UNAUTHORIZED = 401;
     private static final int HTTP_FORBIDDEN = 403;
 
-    private static final Executor NET_EXECUTOR = Executors.newCachedThreadPool(r -> {
-        Thread t = new Thread(r, "A2A-OkHttp-Test-Net");
-        t.setDaemon(true);
-        return t;
-    });
+    private static final Executor NET_EXECUTOR =
+            Executors.newCachedThreadPool(
+                    r -> {
+                        Thread t = new Thread(r, "A2A-OkHttp-Test-Net");
+                        t.setDaemon(true);
+                        return t;
+                    });
 
     private final SSEParserConfig sseParserConfig;
 
@@ -135,13 +136,21 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
             A2AHttpHeaders responseHeaders = fromOkHttpHeaders(response);
 
             if (status == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
-                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
-                                null, responseHeaders.toMap()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_UNAUTHORIZED,
+                                A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null,
+                                responseHeaders.toMap()));
             } else if (status == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
-                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
-                                null, responseHeaders.toMap()));
+                throw new IOException(
+                        A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(
+                                HTTP_FORBIDDEN,
+                                A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null,
+                                responseHeaders.toMap()));
             }
 
             ResponseBody body = response.body();
@@ -179,15 +188,20 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
         private boolean handleErrorStatus(
                 Response response,
                 Consumer<ServerSentEvent> messageConsumer,
-                Consumer<Throwable> errorConsumer) throws IOException {
+                Consumer<Throwable> errorConsumer)
+                throws IOException {
             int status = response.code();
             if (status == HTTP_UNAUTHORIZED || status == HTTP_FORBIDDEN) {
                 A2AHttpHeaders responseHeaders = fromOkHttpHeaders(response);
-                String msg = status == HTTP_UNAUTHORIZED
-                        ? A2AErrorMessages.AUTHENTICATION_FAILED
-                        : A2AErrorMessages.AUTHORIZATION_FAILED;
-                errorConsumer.accept(new IOException(msg,
-                        new A2AClientHTTPError(status, msg, null, responseHeaders.toMap())));
+                String msg =
+                        status == HTTP_UNAUTHORIZED
+                                ? A2AErrorMessages.AUTHENTICATION_FAILED
+                                : A2AErrorMessages.AUTHORIZATION_FAILED;
+                errorConsumer.accept(
+                        new IOException(
+                                msg,
+                                new A2AClientHTTPError(
+                                        status, msg, null, responseHeaders.toMap())));
                 return true;
             }
 
@@ -208,12 +222,16 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
                 ResponseBody body,
                 boolean isSse,
                 Consumer<ServerSentEvent> messageConsumer,
-                Consumer<Throwable> errorConsumer) throws IOException {
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(body.byteStream(), StandardCharsets.UTF_8))) {
+                Consumer<Throwable> errorConsumer)
+                throws IOException {
+            try (BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(body.byteStream(), StandardCharsets.UTF_8))) {
                 String line;
                 if (isSse) {
-                    ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer, sseParserConfig);
+                    ServerSentEventParser sseParser =
+                            new ServerSentEventParser(
+                                    messageConsumer, errorConsumer, sseParserConfig);
                     while ((line = reader.readLine()) != null) {
                         sseParser.processLine(line);
                     }
@@ -240,7 +258,7 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     private static class OkHttpGetBuilder extends OkHttpBuilder<GetBuilder> implements GetBuilder {
         private boolean followRedirects = false;
 
-OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
+        OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
             super(sseParserConfig);
         }
 
@@ -260,17 +278,27 @@ OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
                     if (location != null) {
                         RedirectHeaderPolicy.@Nullable RedirectedRequest redirect;
                         try {
-                            redirect = RedirectHeaderPolicy.DEFAULT
-                                    .redirectedRequest(URI.create(url), response.code(), location, headers)
-                                    .orElse(null);
+                            redirect =
+                                    RedirectHeaderPolicy.DEFAULT
+                                            .redirectedRequest(
+                                                    URI.create(url),
+                                                    response.code(),
+                                                    location,
+                                                    headers)
+                                            .orElse(null);
                         } catch (IllegalArgumentException e) {
                             redirect = null;
                         }
                         if (redirect != null) {
-                            Request followUpRequest = applyHeaders(
-                                    new Request.Builder().url(redirect.target().toString()), redirect.headers())
-                                    .get().build();
-                            try (Response followUpResponse = client.newCall(followUpRequest).execute()) {
+                            Request followUpRequest =
+                                    applyHeaders(
+                                                    new Request.Builder()
+                                                            .url(redirect.target().toString()),
+                                                    redirect.headers())
+                                            .get()
+                                            .build();
+                            try (Response followUpResponse =
+                                    client.newCall(followUpRequest).execute()) {
                                 return toResponse(followUpResponse);
                             }
                         }
@@ -285,27 +313,34 @@ OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) {
-            return CompletableFuture.runAsync(() -> {
-                try {
-                    OkHttpClient client = buildClient(false);
-                    Request request = applyHeaders(
-                            new Request.Builder().url(url).get()
-                                    .addHeader(ACCEPT, EVENT_STREAM))
-                            .build();
-                    Response response = client.newCall(request).execute();
-                    processSSEResponse(response, messageConsumer, errorConsumer, completeRunnable);
-                } catch (Exception e) {
-                    errorConsumer.accept(e);
-                }
-            }, NET_EXECUTOR);
+            return CompletableFuture.runAsync(
+                    () -> {
+                        try {
+                            OkHttpClient client = buildClient(false);
+                            Request request =
+                                    applyHeaders(
+                                                    new Request.Builder()
+                                                            .url(url)
+                                                            .get()
+                                                            .addHeader(ACCEPT, EVENT_STREAM))
+                                            .build();
+                            Response response = client.newCall(request).execute();
+                            processSSEResponse(
+                                    response, messageConsumer, errorConsumer, completeRunnable);
+                        } catch (Exception e) {
+                            errorConsumer.accept(e);
+                        }
+                    },
+                    NET_EXECUTOR);
         }
     }
 
-    private static class OkHttpPostBuilder extends OkHttpBuilder<PostBuilder> implements PostBuilder {
+    private static class OkHttpPostBuilder extends OkHttpBuilder<PostBuilder>
+            implements PostBuilder {
         private String body = "";
         private boolean followRedirects = false;
 
-OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
+        OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
             super(sseParserConfig);
         }
 
@@ -324,18 +359,23 @@ OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
         @Override
         public A2AHttpResponse post() throws IOException {
             OkHttpClient client = buildClient(false);
-            Request request = applyHeaders(
-                    new Request.Builder().url(url)
-                            .post(RequestBody.create(body, JSON)))
-                    .build();
+            Request request =
+                    applyHeaders(
+                                    new Request.Builder()
+                                            .url(url)
+                                            .post(RequestBody.create(body, JSON)))
+                            .build();
             try (Response response = client.newCall(request).execute()) {
                 RedirectHeaderPolicy.RedirectedRequest redirect = redirectedRequest(response);
                 if (redirect != null) {
-                    Request.Builder redirectRequest = applyHeaders(
-                            new Request.Builder().url(redirect.target().toString()), redirect.headers());
-                    Request followUpRequest = redirect.redirectAsGet()
-                            ? redirectRequest.get().build()
-                            : redirectRequest.post(RequestBody.create(body, JSON)).build();
+                    Request.Builder redirectRequest =
+                            applyHeaders(
+                                    new Request.Builder().url(redirect.target().toString()),
+                                    redirect.headers());
+                    Request followUpRequest =
+                            redirect.redirectAsGet()
+                                    ? redirectRequest.get().build()
+                                    : redirectRequest.post(RequestBody.create(body, JSON)).build();
                     try (Response followUpResponse = client.newCall(followUpRequest).execute()) {
                         return toResponse(followUpResponse);
                     }
@@ -344,7 +384,8 @@ OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
             }
         }
 
-        private RedirectHeaderPolicy.@Nullable RedirectedRequest redirectedRequest(Response response) {
+        private RedirectHeaderPolicy.@Nullable RedirectedRequest redirectedRequest(
+                Response response) {
             if (!followRedirects) {
                 return null;
             }
@@ -366,25 +407,31 @@ OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) {
-            return CompletableFuture.runAsync(() -> {
-                try {
-                    OkHttpClient client = buildClient(false);
-                    Request request = applyHeaders(
-                            new Request.Builder().url(url)
-                                    .post(RequestBody.create(body, JSON))
-                                    .addHeader(ACCEPT, EVENT_STREAM))
-                            .build();
-                    Response response = client.newCall(request).execute();
-                    processSSEResponse(response, messageConsumer, errorConsumer, completeRunnable);
-                } catch (Exception e) {
-                    errorConsumer.accept(e);
-                }
-            }, NET_EXECUTOR);
+            return CompletableFuture.runAsync(
+                    () -> {
+                        try {
+                            OkHttpClient client = buildClient(false);
+                            Request request =
+                                    applyHeaders(
+                                                    new Request.Builder()
+                                                            .url(url)
+                                                            .post(RequestBody.create(body, JSON))
+                                                            .addHeader(ACCEPT, EVENT_STREAM))
+                                            .build();
+                            Response response = client.newCall(request).execute();
+                            processSSEResponse(
+                                    response, messageConsumer, errorConsumer, completeRunnable);
+                        } catch (Exception e) {
+                            errorConsumer.accept(e);
+                        }
+                    },
+                    NET_EXECUTOR);
         }
     }
 
-    private static class OkHttpDeleteBuilder extends OkHttpBuilder<DeleteBuilder> implements DeleteBuilder {
-OkHttpDeleteBuilder(SSEParserConfig sseParserConfig) {
+    private static class OkHttpDeleteBuilder extends OkHttpBuilder<DeleteBuilder>
+            implements DeleteBuilder {
+        OkHttpDeleteBuilder(SSEParserConfig sseParserConfig) {
             super(sseParserConfig);
         }
 
@@ -406,7 +453,8 @@ OkHttpDeleteBuilder(SSEParserConfig sseParserConfig) {
         return A2AHttpHeaders.of(headerMap);
     }
 
-    private record OkHttpResponse(int status, String body, A2AHttpHeaders headers) implements A2AHttpResponse {
+    private record OkHttpResponse(int status, String body, A2AHttpHeaders headers)
+            implements A2AHttpResponse {
         @Override
         public boolean success() {
             return status >= HTTP_OK && status < HTTP_MULT_CHOICE;

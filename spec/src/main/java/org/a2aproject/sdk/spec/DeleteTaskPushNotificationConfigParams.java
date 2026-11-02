@@ -1,9 +1,7 @@
 package org.a2aproject.sdk.spec;
 
-
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,7 +15,8 @@ import org.jspecify.annotations.Nullable;
  * @param tenant optional tenant, provided as a path parameter.
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record DeleteTaskPushNotificationConfigParams(String taskId, String id, @Nullable String tenant) {
+public record DeleteTaskPushNotificationConfigParams(
+        String taskId, String id, @Nullable String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -66,8 +65,7 @@ public record DeleteTaskPushNotificationConfigParams(String taskId, String id, @
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the task identifier.

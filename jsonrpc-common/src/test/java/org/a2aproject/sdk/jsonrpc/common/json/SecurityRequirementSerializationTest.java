@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import org.a2aproject.sdk.spec.SecurityRequirement;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for SecurityRequirement serialization and deserialization with JSON.
@@ -17,15 +15,16 @@ class SecurityRequirementSerializationTest {
 
     @Test
     void testSecurityRequirementSerializationWithSingleScheme() throws JsonProcessingException {
-        SecurityRequirement requirement = SecurityRequirement.builder()
-                .scheme("oauth2", List.of("read", "write"))
-                .build();
+        SecurityRequirement requirement =
+                SecurityRequirement.builder().scheme("oauth2", List.of("read", "write")).build();
 
         String json = JsonUtil.toJson(requirement);
         assertNotNull(json);
 
-        String expected = """
-            {"schemes":{"oauth2":{"list":["read","write"]}}}""";
+        String expected =
+                """
+                {"schemes":{"oauth2":{"list":["read","write"]}}}\
+                """;
         assertEquals(expected, json);
 
         SecurityRequirement deserialized = JsonUtil.fromJson(json, SecurityRequirement.class);
@@ -34,16 +33,19 @@ class SecurityRequirementSerializationTest {
 
     @Test
     void testSecurityRequirementSerializationWithMultipleSchemes() throws JsonProcessingException {
-        SecurityRequirement requirement = SecurityRequirement.builder()
-                .scheme("oauth2", List.of("profile"))
-                .scheme("apiKey", List.of())
-                .build();
+        SecurityRequirement requirement =
+                SecurityRequirement.builder()
+                        .scheme("oauth2", List.of("profile"))
+                        .scheme("apiKey", List.of())
+                        .build();
 
         String json = JsonUtil.toJson(requirement);
         assertNotNull(json);
 
-        String expected = """
-            {"schemes":{"oauth2":{"list":["profile"]},"apiKey":{"list":[]}}}""";
+        String expected =
+                """
+                {"schemes":{"oauth2":{"list":["profile"]},"apiKey":{"list":[]}}}\
+                """;
         assertEquals(expected, json);
 
         SecurityRequirement deserialized = JsonUtil.fromJson(json, SecurityRequirement.class);
@@ -52,15 +54,16 @@ class SecurityRequirementSerializationTest {
 
     @Test
     void testSecurityRequirementSerializationWithEmptyScopes() throws JsonProcessingException {
-        SecurityRequirement requirement = SecurityRequirement.builder()
-                .scheme("apiKey", List.of())
-                .build();
+        SecurityRequirement requirement =
+                SecurityRequirement.builder().scheme("apiKey", List.of()).build();
 
         String json = JsonUtil.toJson(requirement);
         assertNotNull(json);
 
-        String expected = """
-                {"schemes":{"apiKey":{"list":[]}}}""";
+        String expected =
+                """
+                {"schemes":{"apiKey":{"list":[]}}}\
+                """;
         assertEquals(expected, json);
 
         SecurityRequirement deserialized = JsonUtil.fromJson(json, SecurityRequirement.class);
@@ -74,8 +77,10 @@ class SecurityRequirementSerializationTest {
         String json = JsonUtil.toJson(requirement);
 
         assertNotNull(json);
-        String expected = """
-              {"schemes":{}}""";
+        String expected =
+                """
+                {"schemes":{}}\
+                """;
         assertEquals(expected, json);
 
         SecurityRequirement deserialized = JsonUtil.fromJson(json, SecurityRequirement.class);

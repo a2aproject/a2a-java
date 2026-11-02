@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class CancelTaskParamsTest {
@@ -29,15 +28,17 @@ class CancelTaskParamsTest {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("foo", null);
 
-        CancelTaskParams params = CancelTaskParams.builder()
-                .id("task-1")
-                .tenant("tenant-1")
-                .metadata(metadata)
-                .build();
+        CancelTaskParams params =
+                CancelTaskParams.builder()
+                        .id("task-1")
+                        .tenant("tenant-1")
+                        .metadata(metadata)
+                        .build();
 
         assertEquals(1, params.metadata().size());
         assertTrue(params.metadata().containsKey("foo"));
         assertNull(params.metadata().get("foo"));
-        assertThrows(UnsupportedOperationException.class, () -> params.metadata().put("bar", "baz"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> params.metadata().put("bar", "baz"));
     }
 }

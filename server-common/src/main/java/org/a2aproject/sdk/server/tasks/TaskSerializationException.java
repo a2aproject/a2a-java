@@ -81,7 +81,8 @@ public class TaskSerializationException extends TaskStoreException {
      * @param msg the exception message
      * @param cause the underlying cause
      */
-    public TaskSerializationException(@Nullable final String taskId, final String msg, final Throwable cause) {
+    public TaskSerializationException(
+            @Nullable final String taskId, final String msg, final Throwable cause) {
         super(taskId, msg, cause);
     }
 }

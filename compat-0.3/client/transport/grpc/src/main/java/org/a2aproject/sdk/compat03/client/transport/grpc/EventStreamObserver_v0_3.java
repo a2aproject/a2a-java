@@ -1,15 +1,13 @@
 package org.a2aproject.sdk.compat03.client.transport.grpc;
 
+import static org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.FromProto;
 
-import org.a2aproject.sdk.compat03.grpc.StreamResponse;
-import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
 import io.grpc.stub.StreamObserver;
-
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
+import org.a2aproject.sdk.compat03.grpc.StreamResponse;
+import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
 import org.jspecify.annotations.Nullable;
-import static org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.FromProto;
 
 public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> {
 
@@ -17,7 +15,9 @@ public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> 
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     @Nullable private final Consumer<Throwable> errorHandler;
 
-    public EventStreamObserver_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
+    public EventStreamObserver_v0_3(
+            Consumer<StreamingEventKind_v0_3> eventHandler,
+            @Nullable Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
     }
@@ -41,7 +41,10 @@ public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> 
             default:
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
                 if (errorHandler != null) {
-                    errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                    errorHandler.accept(
+                            new IllegalStateException(
+                                    "Invalid stream response from server: "
+                                            + response.getPayloadCase()));
                 }
                 return;
         }
@@ -53,7 +56,8 @@ public class EventStreamObserver_v0_3 implements StreamObserver<StreamResponse> 
         if (errorHandler != null) {
             // Map gRPC errors to proper A2A exceptions
             if (t instanceof io.grpc.StatusRuntimeException) {
-                errorHandler.accept(GrpcErrorMapper_v0_3.mapGrpcError((io.grpc.StatusRuntimeException) t));
+                errorHandler.accept(
+                        GrpcErrorMapper_v0_3.mapGrpcError((io.grpc.StatusRuntimeException) t));
             } else {
                 errorHandler.accept(t);
             }

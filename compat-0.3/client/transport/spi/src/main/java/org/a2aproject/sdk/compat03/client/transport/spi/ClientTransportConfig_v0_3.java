@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.compat03.client.transport.spi;
 
-import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
 import java.util.ArrayList;
-
 import java.util.List;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
 
 /**
  * Configuration for an A2A client transport.

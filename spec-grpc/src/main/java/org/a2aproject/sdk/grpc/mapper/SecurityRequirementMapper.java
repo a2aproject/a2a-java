@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.grpc.mapper;
 
+import com.google.protobuf.ProtocolStringList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.protobuf.ProtocolStringList;
 import org.a2aproject.sdk.grpc.StringList;
 import org.mapstruct.Mapper;
 
@@ -46,12 +45,14 @@ public interface SecurityRequirementMapper {
      * @param domainRequirement domain SecurityRequirement with schemes map
      * @return SecurityRequirement proto message, or null if input is null
      */
-    default org.a2aproject.sdk.grpc.SecurityRequirement mapSecurityRequirement(org.a2aproject.sdk.spec.SecurityRequirement domainRequirement) {
+    default org.a2aproject.sdk.grpc.SecurityRequirement mapSecurityRequirement(
+            org.a2aproject.sdk.spec.SecurityRequirement domainRequirement) {
         if (domainRequirement == null) {
             return null;
         }
 
-        org.a2aproject.sdk.grpc.SecurityRequirement.Builder securityBuilder = org.a2aproject.sdk.grpc.SecurityRequirement.newBuilder();
+        org.a2aproject.sdk.grpc.SecurityRequirement.Builder securityBuilder =
+                org.a2aproject.sdk.grpc.SecurityRequirement.newBuilder();
         Map<String, List<String>> schemes = domainRequirement.schemes();
         if (schemes != null) {
             for (Map.Entry<String, List<String>> entry : schemes.entrySet()) {
@@ -74,12 +75,14 @@ public interface SecurityRequirementMapper {
      * @param domainSecurity list of SecurityRequirement domain objects
      * @return list of SecurityRequirement proto messages, or null if input is null
      */
-    default List<org.a2aproject.sdk.grpc.SecurityRequirement> toProto(List<org.a2aproject.sdk.spec.SecurityRequirement> domainSecurity) {
+    default List<org.a2aproject.sdk.grpc.SecurityRequirement> toProto(
+            List<org.a2aproject.sdk.spec.SecurityRequirement> domainSecurity) {
         if (domainSecurity == null) {
             return null;
         }
 
-        List<org.a2aproject.sdk.grpc.SecurityRequirement> protoList = new ArrayList<>(domainSecurity.size());
+        List<org.a2aproject.sdk.grpc.SecurityRequirement> protoList =
+                new ArrayList<>(domainSecurity.size());
         for (org.a2aproject.sdk.spec.SecurityRequirement requirement : domainSecurity) {
             protoList.add(mapSecurityRequirement(requirement));
         }
@@ -92,12 +95,14 @@ public interface SecurityRequirementMapper {
      * @param protoSecurity list of SecurityRequirement proto messages
      * @return list of SecurityRequirement domain objects, or null if input is null
      */
-    default List<org.a2aproject.sdk.spec.SecurityRequirement> fromProto(List<org.a2aproject.sdk.grpc.SecurityRequirement> protoSecurity) {
+    default List<org.a2aproject.sdk.spec.SecurityRequirement> fromProto(
+            List<org.a2aproject.sdk.grpc.SecurityRequirement> protoSecurity) {
         if (protoSecurity == null) {
             return null;
         }
 
-        List<org.a2aproject.sdk.spec.SecurityRequirement> domainList = new ArrayList<>(protoSecurity.size());
+        List<org.a2aproject.sdk.spec.SecurityRequirement> domainList =
+                new ArrayList<>(protoSecurity.size());
         for (org.a2aproject.sdk.grpc.SecurityRequirement security : protoSecurity) {
             Map<String, List<String>> schemeMap = new LinkedHashMap<>();
             for (Map.Entry<String, StringList> entry : security.getSchemesMap().entrySet()) {

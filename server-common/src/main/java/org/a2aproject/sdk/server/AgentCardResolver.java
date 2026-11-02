@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server;
 
 import java.util.function.Supplier;
-
 import org.a2aproject.sdk.server.multitenancy.AgentCardRouter;
 import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -15,15 +14,19 @@ public final class AgentCardResolver {
     private final Supplier<@Nullable AgentCard> extendedCard;
     private final @Nullable AgentCardRouter router;
 
-    private AgentCardResolver(Supplier<@Nullable AgentCard> publicCard,
-            Supplier<@Nullable AgentCard> extendedCard, @Nullable AgentCardRouter router) {
+    private AgentCardResolver(
+            Supplier<@Nullable AgentCard> publicCard,
+            Supplier<@Nullable AgentCard> extendedCard,
+            @Nullable AgentCardRouter router) {
         this.publicCard = Assert.checkNotNullParam("publicCard", publicCard);
         this.extendedCard = Assert.checkNotNullParam("extendedCard", extendedCard);
         this.router = router;
     }
 
-    public static AgentCardResolver of(Supplier<@Nullable AgentCard> publicCard,
-            Supplier<@Nullable AgentCard> extendedCard, @Nullable AgentCardRouter router) {
+    public static AgentCardResolver of(
+            Supplier<@Nullable AgentCard> publicCard,
+            Supplier<@Nullable AgentCard> extendedCard,
+            @Nullable AgentCardRouter router) {
         return new AgentCardResolver(publicCard, extendedCard, router);
     }
 

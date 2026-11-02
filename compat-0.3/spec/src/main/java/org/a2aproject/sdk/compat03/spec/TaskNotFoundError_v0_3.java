@@ -7,7 +7,7 @@ import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
  */
 public class TaskNotFoundError_v0_3 extends JSONRPCError_v0_3 {
 
-    public final static Integer DEFAULT_CODE = A2AErrorCodes_v0_3.TASK_NOT_FOUND_ERROR_CODE;
+    public static final Integer DEFAULT_CODE = A2AErrorCodes_v0_3.TASK_NOT_FOUND_ERROR_CODE;
 
     public TaskNotFoundError_v0_3() {
         this(null, null, null);
