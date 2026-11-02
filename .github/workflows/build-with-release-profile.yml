@@ -7,7 +7,11 @@ name: Build with '-Prelease' (Trigger)
 
 on:
   pull_request:  # Changed from pull_request_target for security
+    branches:
+      - 0.3.x
   push:
+    branches:
+      - 0.3.x
   workflow_dispatch:
 
 # Only run the latest job
