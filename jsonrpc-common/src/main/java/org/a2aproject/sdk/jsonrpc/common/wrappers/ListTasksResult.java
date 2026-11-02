@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
  * @param tasks Array of tasks matching the specified criteria
  * @param totalSize Total number of matching tasks across all pages, after any applicable authorization
  *                  filtering
- * @param pageSize Number of tasks returned in this response
+ * @param pageSize The page size used for this response; may be greater than the number of tasks returned
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */
 public record ListTasksResult(
@@ -38,9 +38,6 @@ public record ListTasksResult(
         }
         if (pageSize < 0) {
             throw new IllegalArgumentException("pageSize must be non-negative");
-        }
-        if (pageSize != tasks.size()) {
-            throw new IllegalArgumentException("pageSize must be equal to the number of tasks in the list. Got " + pageSize + ", but list has " + tasks.size() + " tasks.");
         }
         // Make defensive copy
         tasks = List.copyOf(tasks);

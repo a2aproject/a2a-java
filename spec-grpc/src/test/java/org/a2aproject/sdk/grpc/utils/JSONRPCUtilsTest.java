@@ -39,6 +39,8 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigR
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.InvalidParamsError;
@@ -140,6 +142,37 @@ public class JSONRPCUtilsTest {
         GetTaskResponse roundTripped = assertInstanceOf(GetTaskResponse.class,
                 JSONRPCUtils.parseResponseBody(serialized, GET_TASK_METHOD));
         assertEquals(task, roundTripped.getResult());
+    }
+
+    @Test
+    public void testListTasksResponse_PageSizeLargerThanReturnedTasks() throws JsonProcessingException {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "tasks": [{
+                      "id": "task-1",
+                      "contextId": "context-1",
+                      "status": {
+                        "state": "TASK_STATE_COMPLETED"
+                      }
+                    }],
+                    "nextPageToken": "",
+                    "pageSize": 10,
+                    "totalSize": 1
+                  }
+                }
+                """;
+
+        ListTasksResponse response = assertInstanceOf(ListTasksResponse.class,
+                JSONRPCUtils.parseResponseBody(json, LIST_TASK_METHOD));
+        ListTasksResult result = response.getResult();
+        assertNotNull(result);
+        assertEquals(1, result.tasks().size());
+        assertEquals(10, result.pageSize());
+        assertEquals(1, result.totalSize());
+        assertFalse(result.hasMoreResults());
     }
 
     @Test
