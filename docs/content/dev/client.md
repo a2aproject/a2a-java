@@ -138,10 +138,9 @@ client.deleteTaskPushNotificationConfigurations(
 ### JSON-RPC with a Custom HTTP Client
 
 ```java
-// Use a custom JDK HTTP client
+// Native redirects must remain disabled when using followRedirects(true), so the SDK can apply RedirectHeaderPolicy.
 HttpClient jdkHttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(5))
-        .followRedirects(HttpClient.Redirect.NORMAL)
         .build();
 
 Client client = Client

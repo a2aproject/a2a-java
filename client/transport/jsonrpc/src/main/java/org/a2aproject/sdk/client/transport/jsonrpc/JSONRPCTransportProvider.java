@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.jsonrpc;
 
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportProvider;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -14,7 +15,8 @@ public class JSONRPCTransportProvider implements ClientTransportProvider<JSONRPC
     public JSONRPCTransport create(@Nullable JSONRPCTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         JSONRPCTransportConfig currentClientTransportConfig = clientTransportConfig;
         if (currentClientTransportConfig == null) {
-            currentClientTransportConfig = new JSONRPCTransportConfig(A2AHttpClientFactory.create());
+            currentClientTransportConfig = new JSONRPCTransportConfig(
+                    A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT));
         }
         return new JSONRPCTransport(currentClientTransportConfig.getHttpClient(), agentCard, agentInterface, currentClientTransportConfig.getInterceptors());
     }

@@ -41,10 +41,10 @@ import org.a2aproject.sdk.spec.A2AClientHTTPError;
  *
  * <p><b>Security Note:</b> The default client does not follow HTTP redirects
  * automatically to prevent credential leakage to third-party origins. To enable
- * redirect following for a POST request, supply a redirect-capable {@link HttpClient}
- * via {@link #JdkA2AHttpClient(HttpClient)} <em>and</em> call
+ * one-hop redirect following for a POST request, call
  * {@link org.a2aproject.sdk.client.http.A2AHttpClient.PostBuilder#followRedirects(boolean)
- * followRedirects(true)} on the builder. Both steps are required.
+ * followRedirects(true)} on the builder. Redirect headers are filtered by
+ * {@link RedirectHeaderPolicy}.
  *
  * <p><b>{@code Host} header limitation:</b> the underlying JDK {@link HttpClient}
  * rejects {@code addHeader("Host", ...)} with an {@code IllegalArgumentException}
@@ -72,7 +72,9 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
     private final HttpClient httpClient;
     private final SSEParserConfig sseParserConfig;
+    private final RedirectHeaderPolicy redirectHeaderPolicy;
     private volatile @Nullable HttpClient noRedirectClient;
+    private volatile @Nullable HttpClient credentialFreeNoRedirectClient;
 
     /**
      * Creates a new JDK-based HTTP client with secure defaults.
@@ -83,18 +85,33 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      *   <li>No automatic redirect following (security hardening to prevent credential leakage)</li>
      * </ul>
      *
-     * <p>To enable redirect following for POST requests, use
-     * {@link #JdkA2AHttpClient(HttpClient)} with a redirect-capable {@link HttpClient}
-     * <em>and</em> call {@link PostBuilder#followRedirects(boolean) followRedirects(true)}
-     * on each {@link PostBuilder}. Both steps are required: the builder flag selects
-     * which underlying client is used; supplying a redirect-capable client alone has
-     * no effect if the flag is not set.
+     * <p>To enable redirect following for POST requests, call
+     * {@link PostBuilder#followRedirects(boolean) followRedirects(true)} on each builder.
      */
     public JdkA2AHttpClient() {
-        this(HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NEVER)
-                .build(), SSEParserConfig.DEFAULT);
+        this(createDefaultHttpClient(), SSEParserConfig.DEFAULT);
+    }
+
+    /**
+     * Creates a new JDK HTTP client with a custom redirect header policy.
+     *
+     * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+     * @return a client with secure transport defaults and the supplied redirect policy
+     */
+    public static JdkA2AHttpClient withRedirectHeaderPolicy(RedirectHeaderPolicy redirectHeaderPolicy) {
+        return withConfiguration(SSEParserConfig.DEFAULT, redirectHeaderPolicy);
+    }
+
+    /**
+     * Creates a JDK HTTP client with a caller-supplied transport and redirect header policy.
+     *
+     * @param httpClient the JDK HTTP client to delegate requests to
+     * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+     * @return a client using the supplied transport and redirect policy
+     */
+    public static JdkA2AHttpClient withRedirectHeaderPolicy(
+            HttpClient httpClient, RedirectHeaderPolicy redirectHeaderPolicy) {
+        return new JdkA2AHttpClient(httpClient, SSEParserConfig.DEFAULT, redirectHeaderPolicy);
     }
 
     /**
@@ -107,19 +124,30 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      * @throws IllegalArgumentException if {@code sseParserConfig} is {@code null}
      */
     public static JdkA2AHttpClient withSseConfig(SSEParserConfig sseParserConfig) {
-        return new JdkA2AHttpClient(
-                HttpClient.newBuilder()
-                        .version(HttpClient.Version.HTTP_2)
-                        .followRedirects(HttpClient.Redirect.NEVER)
-                        .build(),
-                sseParserConfig);
+        return withConfiguration(sseParserConfig, RedirectHeaderPolicy.DEFAULT);
+    }
+
+    /** Creates a default JDK client with custom SSE and redirect settings. */
+    public static JdkA2AHttpClient withConfiguration(
+            SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
+        return new JdkA2AHttpClient(createDefaultHttpClient(), sseParserConfig, redirectHeaderPolicy);
+    }
+
+    private static HttpClient createDefaultHttpClient() {
+        return HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .build();
     }
 
     /**
      * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}.
      *
      * <p>This constructor allows full control over the {@link HttpClient} configuration.
-     * The caller is responsible for ensuring the client is configured securely.
+     * The caller is responsible for ensuring the client is configured securely. In particular,
+     * when enabling POST redirect following, the supplied client must use
+     * {@link HttpClient.Redirect#NEVER}; the SDK applies its redirect header policy before
+     * issuing the follow-up request.
      *
      * <p><strong>POST redirect opt-in requires two steps:</strong> this client is only
      * used for a POST request when {@link PostBuilder#followRedirects(boolean)
@@ -143,8 +171,27 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      * @throws IllegalArgumentException if {@code httpClient} or {@code sseParserConfig} is {@code null}
      */
     public JdkA2AHttpClient(HttpClient httpClient, SSEParserConfig sseParserConfig) {
+        this(httpClient, sseParserConfig, RedirectHeaderPolicy.DEFAULT);
+    }
+
+    /**
+     * Creates a new JDK HTTP client with caller-supplied transport and redirect policies.
+     *
+     * <p>When {@link PostBuilder#followRedirects(boolean) followRedirects(true)} is used, the
+     * supplied {@code httpClient} must be configured with {@link HttpClient.Redirect#NEVER}.
+     * This lets the SDK apply the redirect header policy before issuing the follow-up request.
+     *
+     * @param httpClient the JDK HTTP client to delegate requests to
+     * @param sseParserConfig the SSE parser configuration
+     * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
+     */
+    public JdkA2AHttpClient(
+            HttpClient httpClient,
+            SSEParserConfig sseParserConfig,
+            RedirectHeaderPolicy redirectHeaderPolicy) {
         this.httpClient = checkNotNullParam("httpClient", httpClient);
         this.sseParserConfig = checkNotNullParam("sseParserConfig", sseParserConfig);
+        this.redirectHeaderPolicy = checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
     }
 
     @Override
@@ -172,8 +219,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     }
 
     private abstract class JdkBuilder<T extends Builder<T>> implements Builder<T> {
-        private String url = "";
-        private Map<String, String> headers = new HashMap<>();
+        protected String url = "";
+        protected Map<String, String> headers = new HashMap<>();
 
         @Override
         public T url(String url) {
@@ -203,9 +250,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         }
 
         protected HttpRequest.Builder createRequestBuilder() throws IOException {
-            HttpRequest.Builder builder = HttpRequest.newBuilder()
-                    .uri(URI.create(url));
-            for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
+            return createRequestBuilder(URI.create(url), headers);
+        }
+
+        protected HttpRequest.Builder createRequestBuilder(
+                URI requestUri, Map<String, String> requestHeaders) {
+            HttpRequest.Builder builder = HttpRequest.newBuilder().uri(requestUri);
+            for (Map.Entry<String, String> headerEntry : requestHeaders.entrySet()) {
                 builder.header(headerEntry.getKey(), headerEntry.getValue());
             }
             return builder;
@@ -418,15 +469,44 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             synchronized (this) {
                 local = noRedirectClient;
                 if (local == null) {
-                    local = HttpClient.newBuilder()
-                            .version(HttpClient.Version.HTTP_2)
-                            .followRedirects(HttpClient.Redirect.NEVER)
-                            .build();
+                    local = createNoRedirectClient(true);
                     noRedirectClient = local;
                 }
             }
         }
         return local;
+    }
+
+    private HttpClient getCredentialFreeNoRedirectClient() {
+        HttpClient local = credentialFreeNoRedirectClient;
+        if (local == null) {
+            synchronized (this) {
+                local = credentialFreeNoRedirectClient;
+                if (local == null) {
+                    local = createNoRedirectClient(false);
+                    credentialFreeNoRedirectClient = local;
+                }
+            }
+        }
+        return local;
+    }
+
+    private HttpClient createNoRedirectClient(boolean includeCredentials) {
+        HttpClient.Builder builder = HttpClient.newBuilder()
+                .version(httpClient.version())
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .sslContext(httpClient.sslContext())
+                .sslParameters(httpClient.sslParameters());
+        httpClient.connectTimeout().ifPresent(builder::connectTimeout);
+        httpClient.proxy().ifPresent(builder::proxy);
+        httpClient.executor().ifPresent(builder::executor);
+        if (includeCredentials) {
+            httpClient.cookieHandler().ifPresent(builder::cookieHandler);
+            httpClient.authenticator().ifPresent(builder::authenticator);
+        }
+        // The Java 17 HttpClient API does not expose a configured local address,
+        // so a source-address binding cannot be preserved on cloned clients.
+        return builder.build();
     }
 
     private class JdkPostBuilder extends JdkBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
@@ -454,16 +534,42 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return builder;
         }
 
-        private HttpClient resolveClient() {
+        private HttpClient resolveClient() throws IOException {
+            if (followRedirects && httpClient.followRedirects() != HttpClient.Redirect.NEVER) {
+                throw new IOException(
+                        "The supplied HttpClient must disable native redirects when followRedirects(true) is used");
+            }
             return followRedirects ? httpClient : getNoRedirectClient();
+        }
+
+        private HttpRequest createRedirectRequest(RedirectHeaderPolicy.RedirectedRequest redirect) {
+            HttpRequest.Builder builder = createRequestBuilder(redirect.target(), redirect.headers());
+            return redirect.redirectAsGet()
+                    ? builder.GET().build()
+                    : builder.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build();
         }
 
         @Override
         public A2AHttpResponse post() throws IOException, InterruptedException {
-            HttpRequest request = createRequestBuilder(false)
-                    .build();
+            HttpRequest request = createRequestBuilder(false).build();
             HttpResponse<String> response =
                     resolveClient().send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+            if (followRedirects) {
+                String location = response.headers().firstValue("Location").orElse(null);
+                RedirectHeaderPolicy.RedirectedRequest redirect = redirectHeaderPolicy
+                        .redirectedRequest(request.uri(), response.statusCode(), location, headers)
+                        .orElse(null);
+                if (redirect != null) {
+                    // A caller-supplied CookieHandler may add credentials after our explicit
+                    // header filtering. Do not use that client for a cross-origin follow-up.
+                    HttpClient redirectClient = RedirectHeaderPolicy.sameOrigin(request.uri(), redirect.target())
+                            ? resolveClient()
+                            : getCredentialFreeNoRedirectClient();
+                    response = redirectClient.send(
+                            createRedirectRequest(redirect), BodyHandlers.ofString(StandardCharsets.UTF_8));
+                }
+            }
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
                 throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,

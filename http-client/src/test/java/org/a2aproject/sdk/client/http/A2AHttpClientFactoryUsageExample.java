@@ -75,7 +75,7 @@ public class A2AHttpClientFactoryUsageExample {
      */
     public void specificProviderUsage() throws IOException, InterruptedException {
         // Force the use of JDK client even if Vert.x is available
-        A2AHttpClient jdkClient = A2AHttpClientFactory.create("jdk");
+        A2AHttpClient jdkClient = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
         A2AHttpResponse response = jdkClient.createGet()
             .url("https://api.example.com/data")
             .get();
@@ -83,7 +83,8 @@ public class A2AHttpClientFactoryUsageExample {
         System.out.println("Using JDK client: " + response.status());
 
         // Or explicitly use Vert.x client
-        try (AutoCloseable vertxClient = (AutoCloseable) A2AHttpClientFactory.create("vertx")) {
+        try (AutoCloseable vertxClient = (AutoCloseable) A2AHttpClientFactory.create(
+                A2AHttpClientConfiguration.DEFAULT)) {
             A2AHttpResponse vertxResponse = ((A2AHttpClient) vertxClient).createGet()
                 .url("https://api.example.com/data")
                 .get();

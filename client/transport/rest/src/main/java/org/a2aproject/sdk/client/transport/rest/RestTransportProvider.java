@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.rest;
 
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportProvider;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -18,7 +19,7 @@ public class RestTransportProvider implements ClientTransportProvider<RestTransp
     public RestTransport create(RestTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         RestTransportConfig transportConfig = clientTransportConfig;
          if (transportConfig == null) {
-            transportConfig = new RestTransportConfig(A2AHttpClientFactory.create());
+            transportConfig = new RestTransportConfig(A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT));
         }
         return new RestTransport(transportConfig.getHttpClient(), agentCard, agentInterface, transportConfig.getInterceptors());
     }

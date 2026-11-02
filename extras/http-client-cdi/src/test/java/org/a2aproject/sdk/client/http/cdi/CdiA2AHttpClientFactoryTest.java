@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,12 +86,14 @@ public class CdiA2AHttpClientFactoryTest {
         @Test
         public void testCreateExcludingCdiSkipsTheCdiBeanAndFallsBack() {
             // Regression guard for the recursive CDI self-delegation bug: a CDI producer that
-            // produces an A2AHttpClient must call createExcluding("cdi") so the factory does not
+            // produces an A2AHttpClient must exclude "cdi" so the factory does not
             // re-enter the container and return the proxy being constructed as its own delegate.
-            A2AHttpClient client = A2AHttpClientFactory.createExcluding("cdi");
+            A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
+                    .excludedProviderNames(List.of("cdi"))
+                    .build());
             assertNotNull(client);
             assertFalse(client instanceof DummyA2AHttpClient,
-                    "createExcluding('cdi') must not return the CDI-registered bean");
+                    "Excluding 'cdi' must not return the CDI-registered bean");
         }
     }
 

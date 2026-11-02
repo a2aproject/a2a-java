@@ -43,27 +43,50 @@ Additionally, API keys are only injected when the security scheme explicitly spe
 
 ## HTTP Redirect Handling
 
-SDK-managed HTTP clients do not follow redirects automatically by default. This prevents credentials from being inadvertently forwarded to third-party origins during redirect chains.
+SDK-managed HTTP clients do not follow redirects automatically by default. When explicitly enabled
+on a synchronous POST builder with `followRedirects(true)`, they follow at most one HTTP(S)
+redirect and apply the shared `RedirectHeaderPolicy`. JDK and Vert.x clients follow cross-origin
+301, 302, and 303 redirects as GET requests with only the default safe headers, including
+`A2A-Version` and `A2A-Extensions`, unless additional headers are configured for that exact target
+origin. No client follows a cross-origin 307 or 308 redirect, so the original POST body is never
+forwarded to another origin. HTTPS-to-HTTP redirects are not followed; the client returns the
+original redirect response. Redirect following does not apply to
+`postAsyncSSE()`.
 
 ### JDK HTTP Client
 
-The default `JdkA2AHttpClient` is configured with `HttpClient.Redirect.NEVER`. If your application requires redirect following, provide a custom `HttpClient` instance:
+The default `JdkA2AHttpClient` uses `HttpClient.Redirect.NEVER`. Native JDK redirect following
+must remain disabled so the SDK can apply its redirect policy. Enable the SDK-managed one-hop
+redirect on an individual synchronous `post()` request:
 
 ```java
-HttpClient customClient = HttpClient.newBuilder()
-    .followRedirects(HttpClient.Redirect.NORMAL)
-    .build();
-
-JdkA2AHttpClient client = new JdkA2AHttpClient(customClient);
+JdkA2AHttpClient client = new JdkA2AHttpClient();
+client.createPost()
+    .url("https://agent.example/rpc")
+    .followRedirects(true)
+    .body("{}")
+    .post();
 ```
+
+When supplying your own `HttpClient`, configure `HttpClient.Redirect.NEVER` before using
+`followRedirects(true)`. The SDK rejects native redirect policies for that request with an
+`IOException`; native handling would bypass the SDK redirect policy.
 
 ### Vert.x HTTP Client
 
-The default `VertxA2AHttpClient` is configured with `setFollowRedirects(false)`. If redirect following is needed, create a custom `WebClient` with the desired policy and pass the underlying `Vertx` instance to the constructor.
+The default `VertxA2AHttpClient` is configured with `setFollowRedirects(false)`. Use
+`followRedirects(true)` on a synchronous `post()` builder to enable the same SDK-managed one-hop
+redirect policy. `postAsyncSSE()` does not follow redirects.
 
 ### Android HTTP Client
 
-The `AndroidA2AHttpClient` disables automatic redirect following by calling `setInstanceFollowRedirects(false)` on all `HttpURLConnection` instances. Applications requiring redirect handling must implement it manually.
+The `AndroidA2AHttpClient` disables automatic redirect following by calling
+`setInstanceFollowRedirects(false)` on all `HttpURLConnection` instances. Use
+`followRedirects(true)` on a synchronous `post()` builder to enable same-origin one-hop
+redirects. Android always returns the original redirect response for a cross-origin target:
+`HttpURLConnection` cannot isolate process-wide `CookieHandler` or `Authenticator` state for an
+individual follow-up request, and those globals can change concurrently.
+`postAsyncSSE()` does not follow redirects.
 
 ## Best Practices
 
@@ -71,7 +94,7 @@ The `AndroidA2AHttpClient` disables automatic redirect following by calling `set
 
 2. **Validate Agent Cards**: Before connecting to an agent, review its security schemes to ensure they use appropriate authentication methods and header names.
 
-3. **Handle Redirects Carefully**: If your application requires redirect following, implement it with caution and ensure credentials are not forwarded to untrusted origins.
+3. **Handle Redirects Carefully**: Enable SDK-managed redirects only when needed. A custom `RedirectHeaderPolicy` requires explicit trusted target origins before forwarding additional headers; use HTTPS origins for credentials.
 
 4. **Keep Dependencies Updated**: Regularly update the SDK and its dependencies to receive the latest security patches.
 

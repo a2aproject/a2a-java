@@ -9,6 +9,8 @@ public class JdkA2AHttpClientSSETest extends AbstractA2AHttpClientSSETest {
 
     @Override
     protected A2AHttpClient createClient(SSEParserConfig sseParserConfig) {
-        return JdkA2AHttpClient.withSseConfig(sseParserConfig);
+        return A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
+                .sseParserConfig(sseParserConfig)
+                .build());
     }
 }

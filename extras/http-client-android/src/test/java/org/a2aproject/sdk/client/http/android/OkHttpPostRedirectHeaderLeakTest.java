@@ -26,7 +26,7 @@ import org.mockserver.integration.ClientAndServer;
  * <p>Android's HTTP stack is OkHttp. Unlike the JDK's {@link java.net.HttpURLConnection},
  * OkHttp follows 302 redirects on POST and forwards nonstandard request headers
  * to the redirect target, even across authorities. The standard {@code Authorization}
- * header is stripped on cross-authority redirects, but all other headers survive.
+ * header is stripped on cross-origin redirects, but all other headers survive.
  * This test uses OkHttp directly to validate that assumption without requiring a
  * real Android runtime.
  *
@@ -57,7 +57,7 @@ public class OkHttpPostRedirectHeaderLeakTest {
 
     @ParameterizedTest
     @MethodSource("authInterceptorNonstandardHeaders")
-    public void okHttpLeaksNonstandardHeaderOnCrossAuthorityPostRedirect(String headerName)
+    public void okHttpLeaksNonstandardHeaderOnCrossOriginPostRedirect(String headerName)
             throws Exception {
         startRedirectPair();
 
@@ -81,7 +81,7 @@ public class OkHttpPostRedirectHeaderLeakTest {
                 request().withPath("/collect"));
         assertEquals(1, recorded.length);
         assertNotEquals("", recorded[0].getFirstHeader(headerName),
-                headerName + " must survive cross-authority redirect in OkHttp — "
+                headerName + " must survive cross-origin redirect in OkHttp — "
                         + "this is why PostBuilder must default to followRedirects=false");
         assertEquals("FULCRUM-SYNTHETIC-LEAK", recorded[0].getFirstHeader(headerName));
     }
@@ -135,7 +135,7 @@ public class OkHttpPostRedirectHeaderLeakTest {
         assertEquals(1, recorded.length);
 
         assertEquals("", recorded[0].getFirstHeader("Authorization"),
-                "OkHttp strips Authorization on cross-authority redirect");
+                "OkHttp strips Authorization on cross-origin redirect");
 
         assertEquals("FULCRUM-SYNTHETIC-APIKEY", recorded[0].getFirstHeader("X-API-Key"));
         assertEquals("FULCRUM-SYNTHETIC-APIKEY2", recorded[0].getFirstHeader("API-Key"));

@@ -55,11 +55,15 @@ For non-Quarkus environments, also add `vertx-web-client`:
 
 The `VertxA2AHttpClientProvider` has **priority 100**. The SDK's `A2AHttpClientFactory` discovers all registered providers via `ServiceLoader`, sorts them by descending priority, and tries each in order, falling back to the next one on failure.
 
-To force a specific provider by name (useful in tests), use `A2AHttpClientFactory.create(String providerName)`:
+Use `A2AHttpClientFactory.create(A2AHttpClientConfiguration)` for both the default client and
+custom provider selection. To force the JDK provider, exclude the other built-in providers:
 
 ```java
 // Force the JDK client regardless of what else is on the classpath
-try (A2AHttpClient client = A2AHttpClientFactory.create("jdk")) {
+try (A2AHttpClient client = A2AHttpClientFactory.create(
+        A2AHttpClientConfiguration.builder()
+            .excludedProviderNames(List.of("cdi", "android", "vertx"))
+            .build())) {
     // ...
 }
 ```
@@ -79,12 +83,53 @@ Client client = Client.builder(card)
 
 If Vert.x classes are not on the classpath, the provider returns priority `-1` and the SDK falls back to the next available provider.
 
+## Configuring an A2A HTTP Client
+
+Use `A2AHttpClientConfiguration` to select providers and configure optional SSE parsing and
+redirect-header settings in one place. Providers that do not support a requested setting are
+skipped, so configuration is never silently ignored.
+
+```java
+import java.net.URI;
+import java.util.List;
+import java.util.Set;
+
+import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
+import org.a2aproject.sdk.client.http.SSEParserConfig;
+
+SSEParserConfig sseConfig = SSEParserConfig.builder()
+    .maxLineLength(64 * 1024)
+    .build();
+
+RedirectHeaderPolicy redirectPolicy = new RedirectHeaderPolicy(
+    Set.of("X-Trusted-Header"),
+    Set.of(URI.create("https://trusted-agent.example")));
+
+A2AHttpClientConfiguration configuration = A2AHttpClientConfiguration.builder()
+    .excludedProviderNames(List.of("cdi"))
+    .sseParserConfig(sseConfig)
+    .redirectHeaderPolicy(redirectPolicy)
+    .build();
+
+A2AHttpClient client = A2AHttpClientFactory.create(configuration);
+```
+
+The additional header is sent only when the redirect target has the trusted origin's scheme,
+host, and port. Other cross-origin redirects receive only the default safe headers. Configure
+trusted origins with HTTPS when forwarding credentials or other sensitive headers.
+
+For default provider selection without extra settings, use
+`A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)`.
+
 ### Usage Examples
 
 #### GET Request
 
 ```java
-try (A2AHttpClient client = A2AHttpClientFactory.create()) {
+try (A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)) {
     A2AHttpResponse response = client.createGet()
         .url("https://api.example.com/data")
         .addHeader("Authorization", "Bearer token")
@@ -99,7 +144,7 @@ try (A2AHttpClient client = A2AHttpClientFactory.create()) {
 #### POST Request with JSON Body
 
 ```java
-try (A2AHttpClient client = A2AHttpClientFactory.create()) {
+try (A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)) {
     A2AHttpResponse response = client.createPost()
         .url("https://api.example.com/submit")
         .addHeader("Content-Type", "application/json")
@@ -113,7 +158,7 @@ try (A2AHttpClient client = A2AHttpClientFactory.create()) {
 #### Server-Sent Events (SSE) Streaming
 
 ```java
-try (A2AHttpClient client = A2AHttpClientFactory.create()) {
+try (A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)) {
     CompletableFuture<Void> future = client.createGet()
         .url("https://api.example.com/stream")
         .getAsyncSSE(

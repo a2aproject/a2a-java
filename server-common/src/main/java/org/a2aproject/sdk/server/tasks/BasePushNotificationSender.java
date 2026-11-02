@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
@@ -91,7 +92,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     public BasePushNotificationSender(PushNotificationConfigStore configStore,
                                        PushNotificationUrlValidator urlValidator) {
-        this.httpClient = A2AHttpClientFactory.create();
+        this.httpClient = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
         this.configStore = configStore;
         this.formattersByVersion = Map.of();
         this.urlValidator = urlValidator;
@@ -107,7 +108,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
      *       application's client with trace-context injection)</li>
      *   <li>An unqualified {@link A2AHttpClient} bean provided by the
      *       application (custom mTLS, proxy, authentication, etc.)</li>
-     *   <li>{@link A2AHttpClientFactory#create()} as last resort</li>
+     *   <li>{@link A2AHttpClientFactory#create(A2AHttpClientConfiguration)} as last resort</li>
      * </ol>
      *
      * <p>The dispatch executor is resolved in order of preference:
@@ -169,7 +170,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
         if (plain.isResolvable()) {
             return plain.get();
         }
-        return A2AHttpClientFactory.create();
+        return A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
     }
 
     private static Executor resolveExecutor(Instance<Executor> instrumented,

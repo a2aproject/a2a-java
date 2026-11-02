@@ -7,6 +7,7 @@ import org.mockserver.integration.ClientAndServer;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -46,11 +47,15 @@ import static org.mockserver.model.HttpResponse.response;
 public class JdkA2AHttpClientTest {
 
     private ClientAndServer server;
+    private ClientAndServer collector;
 
     @AfterEach
     public void tearDown() {
         if (server != null) {
             server.stop();
+        }
+        if (collector != null) {
+            collector.stop();
         }
     }
 
@@ -147,6 +152,102 @@ public class JdkA2AHttpClientTest {
 
         assertEquals(302, response.status(),
                 "With followRedirects(false), the 302 should be returned as-is");
+    }
+
+    @Test
+    public void testPostWithoutRedirectsPreservesSuppliedCookieHandler() throws Exception {
+        server = ClientAndServer.startClientAndServer(0);
+        int port = server.getLocalPort();
+        server.when(request().withMethod("POST").withPath("/post"))
+                .respond(response().withStatusCode(200));
+
+        CookieManager cookieManager = new CookieManager();
+        URI uri = URI.create("http://localhost:" + port + "/post");
+        cookieManager.put(uri, Map.of("Set-Cookie", List.of("session=secret; Path=/")));
+        HttpClient suppliedClient = HttpClient.newBuilder()
+                .cookieHandler(cookieManager)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+
+        A2AHttpResponse result = new JdkA2AHttpClient(suppliedClient).createPost()
+                .url(uri.toString())
+                .body("{}")
+                .followRedirects(false)
+                .post();
+
+        assertEquals(200, result.status());
+        org.mockserver.model.HttpRequest[] requests = server.retrieveRecordedRequests(
+                request().withMethod("POST").withPath("/post"));
+        assertEquals(1, requests.length);
+        assertEquals("session=secret", requests[0].getFirstHeader("Cookie"));
+    }
+
+    @Test
+    public void testCrossOriginRedirectDoesNotUseSuppliedCookieHandler() throws Exception {
+        server = ClientAndServer.startClientAndServer(0);
+        collector = ClientAndServer.startClientAndServer(0);
+        int redirectPort = server.getLocalPort();
+        server.when(request().withMethod("POST").withPath("/redirect"))
+                .respond(response()
+                        .withStatusCode(302)
+                        .withHeader("Location", "http://127.0.0.1:" + collector.getLocalPort() + "/target"));
+        collector.when(request().withMethod("GET").withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        CookieManager cookieManager = new CookieManager();
+        cookieManager.put(
+                URI.create("http://127.0.0.1:" + redirectPort + "/redirect"),
+                Map.of("Set-Cookie", List.of("session=secret; Path=/")));
+        URI targetUri = URI.create("http://127.0.0.1:" + collector.getLocalPort() + "/target");
+        assertEquals(List.of("session=secret"), cookieManager.get(targetUri, Map.of()).get("Cookie"),
+                "The supplied CookieHandler must be capable of injecting the cross-port cookie");
+        HttpClient suppliedClient = HttpClient.newBuilder()
+                .cookieHandler(cookieManager)
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .build();
+
+        A2AHttpResponse result = new JdkA2AHttpClient(suppliedClient).createPost()
+                .url("http://127.0.0.1:" + redirectPort + "/redirect")
+                .body("{}")
+                .followRedirects(true)
+                .post();
+
+        assertEquals(200, result.status());
+        org.mockserver.model.HttpRequest[] requests = collector.retrieveRecordedRequests(
+                request().withMethod("GET").withPath("/target"));
+        assertEquals(1, requests.length);
+        String cookie = requests[0].getFirstHeader("Cookie");
+        assertTrue(cookie == null || cookie.isEmpty(),
+                "Cross-origin redirect must not allow a supplied CookieHandler to inject cookies");
+    }
+
+    @Test
+    public void testCrossOriginRedirectPreservesSuppliedProxySelector() throws Exception {
+        server = ClientAndServer.startClientAndServer(0);
+        collector = ClientAndServer.startClientAndServer(0);
+        int redirectPort = server.getLocalPort();
+        server.when(request().withMethod("POST").withPath("/redirect"))
+                .respond(response()
+                        .withStatusCode(302)
+                        .withHeader("Location", "http://127.0.0.1:" + collector.getLocalPort() + "/target"));
+        collector.when(request().withMethod("GET").withPath("/target"))
+                .respond(response().withStatusCode(200).withBody("redirected"));
+
+        TrackingProxySelector proxySelector = new TrackingProxySelector();
+        HttpClient suppliedClient = HttpClient.newBuilder()
+                .proxy(proxySelector)
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .build();
+
+        A2AHttpResponse result = new JdkA2AHttpClient(suppliedClient).createPost()
+                .url("http://127.0.0.1:" + redirectPort + "/redirect")
+                .body("{}")
+                .followRedirects(true)
+                .post();
+
+        assertEquals(200, result.status());
+        assertEquals(2, proxySelector.selectCount.get(),
+                "Supplied ProxySelector must be used for both redirect hops");
     }
 
     @Test

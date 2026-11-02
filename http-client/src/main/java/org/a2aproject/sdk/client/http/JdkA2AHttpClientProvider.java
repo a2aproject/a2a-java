@@ -24,7 +24,19 @@ public final class JdkA2AHttpClientProvider implements A2AHttpClientProvider {
     }
 
     @Override
+    public A2AHttpClient create(A2AHttpClientConfiguration configuration) {
+        return JdkA2AHttpClient.withConfiguration(
+                configuration.sseParserConfigOrDefault(),
+                configuration.redirectHeaderPolicyOrDefault());
+    }
+
+    @Override
     public boolean supportsSseConfig() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsRedirectHeaderPolicy() {
         return true;
     }
 
