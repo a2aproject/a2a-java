@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.a2aproject.sdk.grpc.SendMessageResponse;
@@ -166,7 +167,7 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(CreateTaskPushNotificationConfigRequest.class, request);
         CreateTaskPushNotificationConfigRequest setRequest = (CreateTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", setRequest.getJsonrpc());
-        assertEquals(1, setRequest.getId());
+        assertEquals("1", setRequest.getId());
         assertEquals("CreateTaskPushNotificationConfig", setRequest.getMethod());
 
         TaskPushNotificationConfig config = setRequest.getParams();
@@ -195,7 +196,7 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(GetTaskPushNotificationConfigRequest.class, request);
         GetTaskPushNotificationConfigRequest getRequest = (GetTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", getRequest.getJsonrpc());
-        assertEquals(2, getRequest.getId());
+        assertEquals("2", getRequest.getId());
         assertEquals("GetTaskPushNotificationConfig", getRequest.getMethod());
         assertNotNull(getRequest.getParams());
         assertEquals("task-123", getRequest.getParams().taskId());
@@ -232,7 +233,7 @@ public class JSONRPCUtilsTest {
             InvalidParamsJsonMappingException.class,
             () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest, null)
         );
-        assertEquals(3, exception.getId());
+        assertEquals("3", exception.getId());
     }
 
     @ParameterizedTest
@@ -359,7 +360,7 @@ public class JSONRPCUtilsTest {
             InvalidParamsJsonMappingException.class,
             () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
-        assertEquals(4, exception.getId());
+        assertEquals("4", exception.getId());
         assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.TaskPushNotificationConfig"), exception.getMessage());
     }
 
@@ -388,7 +389,7 @@ public class JSONRPCUtilsTest {
 
         try {
             A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
-            assertEquals(1, request.getId());
+            assertEquals("1", request.getId());
         } catch (JsonProcessingException e) {
             fail(e);
         }
@@ -396,7 +397,7 @@ public class JSONRPCUtilsTest {
                 InvalidParamsJsonMappingException.class,
                 () -> JSONRPCUtils.parseRequestBody(invalidRequest, null)
         );
-        assertEquals(2, exception.getId());
+        assertEquals("2", exception.getId());
     }
 
     @Test
@@ -425,7 +426,7 @@ public class JSONRPCUtilsTest {
                 InvalidParamsJsonMappingException.class,
                 () -> JSONRPCUtils.parseRequestBody(missingRoleMessage, null)
         );
-        assertEquals(18, exception.getId());
+        assertEquals("18", exception.getId());
     }
 
     @Test
@@ -583,7 +584,7 @@ public class JSONRPCUtilsTest {
             (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
-        assertEquals(5, response.getId());
+        assertEquals("5", response.getId());
         assertNotNull(response.getError());
         assertInstanceOf(InvalidParamsError.class, response.getError());
         assertEquals(-32602, response.getError().getCode());
@@ -816,6 +817,49 @@ public class JSONRPCUtilsTest {
         InvalidParamsError responseError = assertThrows(InvalidParamsError.class,
                 () -> ProtoUtils.FromProto.message(org.a2aproject.sdk.grpc.Message.getDefaultInstance()));
         assertEquals("Invalid parameters", responseError.getMessage());
+    }
+
+    // Regression tests for issue #1253: getAndValidateId threw and caught NumberFormatException
+    // on every SSE event when the request ID was a UUID string (the client default).
+
+    @Test
+    public void testGetAndValidateId_UuidStringId_ReturnsString() throws Exception {
+        // UUID string IDs are the client default. The fix checks the primitive type first
+        // so no exception is thrown, and the value is returned as-is.
+        String uuid = "550e8400-e29b-41d4-a716-446655440000";
+        JsonObject json = JsonParser.parseString("{\"id\": \"" + uuid + "\"}").getAsJsonObject();
+        Object id = JSONRPCUtils.getAndValidateId(json);
+        assertInstanceOf(String.class, id, "UUID string ID must be returned as String");
+        assertEquals(uuid, id);
+    }
+
+    @Test
+    public void testGetAndValidateId_NumericStringId_ReturnsString() throws Exception {
+        // String primitives are never parsed as integers, even if they look numeric.
+        // This avoids NumberFormatException overflow for values outside Integer range.
+        JsonObject json = JsonParser.parseString("{\"id\": \"123\"}").getAsJsonObject();
+        Object id = JSONRPCUtils.getAndValidateId(json);
+        assertInstanceOf(String.class, id, "Numeric string ID must be returned as String");
+        assertEquals("123", id);
+    }
+
+    @Test
+    public void testGetAndValidateId_NumericStringIdOutsideIntRange_ReturnsString() throws Exception {
+        // Large numeric strings previously caused an uncaught NumberFormatException
+        // due to integer overflow after the pattern match. Now returned safely as String.
+        JsonObject json = JsonParser.parseString("{\"id\": \"2147483648\"}").getAsJsonObject();
+        Object id = JSONRPCUtils.getAndValidateId(json);
+        assertInstanceOf(String.class, id, "Out-of-range numeric string ID must be returned as String");
+        assertEquals("2147483648", id);
+    }
+
+    @Test
+    public void testGetAndValidateId_NumericId_ReturnsInteger() throws Exception {
+        // JSON number literals (not strings) are returned as Integer.
+        JsonObject json = JsonParser.parseString("{\"id\": 42}").getAsJsonObject();
+        Object id = JSONRPCUtils.getAndValidateId(json);
+        assertInstanceOf(Integer.class, id, "JSON number ID must be returned as Integer");
+        assertEquals(42, id);
     }
 
 }

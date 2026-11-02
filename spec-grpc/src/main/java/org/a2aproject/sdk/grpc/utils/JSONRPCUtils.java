@@ -23,6 +23,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -550,11 +551,12 @@ public class JSONRPCUtils {
         Object id = null;
         if (jsonRpc.has("id")) {
             if (jsonRpc.get("id").isJsonPrimitive()) {
-                try {
-                    id = jsonRpc.get("id").getAsInt();
-                } catch (UnsupportedOperationException | NumberFormatException | IllegalStateException e) {
-                    id = jsonRpc.get("id").getAsString();
-                }
+                JsonPrimitive primitive = jsonRpc.getAsJsonPrimitive("id");
+                // JSON number literals (e.g. 123) are returned as Integer. String primitives
+                // (UUIDs, numeric strings like "123") are returned as String without parsing.
+                // This avoids a thrown-and-caught NumberFormatException on every SSE event
+                // when the client uses a UUID as the request ID (the default).
+                id = primitive.isNumber() ? primitive.getAsInt() : primitive.getAsString();
             } else {
                 throw new JsonMappingException(null, "Invalid 'id' type: " + jsonRpc.get("id").getClass().getSimpleName()
                         + ". ID must be a JSON string or number, not an object or array.");
