@@ -14,6 +14,12 @@
     <artifactId>a2a-java-queue-manager-replicated-tests-multi-instance-tests</artifactId>
     <name>Java A2A Extras: Replicated Queue Manager Tests - Multi Instance Tests</name>
 
+    <properties>
+        <!-- Set -DskipDockerTests=true to skip these tests: they boot Quarkus Dev
+             Services (Redpanda via Testcontainers) and need a working Docker daemon. -->
+        <skipDockerTests>false</skipDockerTests>
+    </properties>
+
     <dependencies>
         <!-- A2A Client for testing -->
         <dependency>
@@ -82,6 +88,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- Ensure tests run with proper module path for Testcontainers -->
+                    <skipTests>${skipDockerTests}</skipTests>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                     </systemPropertyVariables>

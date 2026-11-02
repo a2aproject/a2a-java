@@ -13,6 +13,12 @@
     <artifactId>a2a-java-queue-manager-replicated-tests-single-instance</artifactId>
     <name>Java A2A Extras: Replicated Queue Manager Tests - Single Instance</name>
 
+    <properties>
+        <!-- Set -DskipDockerTests=true to skip these tests: they boot Quarkus Dev
+             Services (Redpanda via Testcontainers) and need a working Docker daemon. -->
+        <skipDockerTests>false</skipDockerTests>
+    </properties>
+
     <dependencies>
         <!-- Project Modules -->
         <dependency>
@@ -108,6 +114,12 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipDockerTests}</skipTests>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
