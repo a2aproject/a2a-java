@@ -15,8 +15,10 @@
 
     <properties>
         <!-- Set -DskipDockerTests=true to skip these tests: they boot Quarkus Dev
-             Services (Redpanda via Testcontainers) and need a working Docker daemon. -->
+             Services (Redpanda via Testcontainers) and need a working Docker daemon.
+             Aliasing skipTests keeps the standard -DskipTests flag working too. -->
         <skipDockerTests>false</skipDockerTests>
+        <skipTests>${skipDockerTests}</skipTests>
     </properties>
 
     <dependencies>
@@ -114,12 +116,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>${skipDockerTests}</skipTests>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
