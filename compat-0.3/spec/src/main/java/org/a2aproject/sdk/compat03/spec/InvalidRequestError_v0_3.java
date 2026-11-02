@@ -2,7 +2,6 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
 
-
 /**
  * JSON-RPC error indicating that the request payload is not a valid JSON-RPC Request object.
  * <p>
@@ -32,7 +31,7 @@ import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
  */
 public class InvalidRequestError_v0_3 extends JSONRPCError_v0_3 {
 
-    public final static Integer DEFAULT_CODE = A2AErrorCodes_v0_3.INVALID_REQUEST_ERROR_CODE;
+    public static final Integer DEFAULT_CODE = A2AErrorCodes_v0_3.INVALID_REQUEST_ERROR_CODE;
 
     public InvalidRequestError_v0_3() {
         this(null, null, null);

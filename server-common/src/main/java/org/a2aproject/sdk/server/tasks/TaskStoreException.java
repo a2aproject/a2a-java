@@ -36,8 +36,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class TaskStoreException extends A2AServerException {
 
-    @Nullable
-    private final String taskId;
+    @Nullable private final String taskId;
 
     /**
      * Creates a new TaskStoreException with no message or cause.
@@ -96,7 +95,8 @@ public class TaskStoreException extends A2AServerException {
      * @param msg the exception message
      * @param cause the underlying cause
      */
-    public TaskStoreException(@Nullable final String taskId, final String msg, final Throwable cause) {
+    public TaskStoreException(
+            @Nullable final String taskId, final String msg, final Throwable cause) {
         super(msg, cause);
         this.taskId = taskId;
     }

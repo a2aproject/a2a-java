@@ -5,9 +5,8 @@ import static java.util.Collections.unmodifiableMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Represents a security requirement in the A2A Protocol.
@@ -88,8 +87,7 @@ public record SecurityRequirement(Map<String, List<String>> schemes) {
         /**
          * Creates a new Builder with an empty schemes map.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Adds a security scheme with its required scopes.

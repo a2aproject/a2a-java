@@ -9,27 +9,26 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.compat03.client.transport.jsonrpc.JsonStreamingMessages_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.junit.jupiter.api.Test;
 
@@ -39,15 +38,14 @@ public class SSEEventListener_v0_3_Test {
     public void testOnEventWithTaskResult() throws Exception {
         // Set up event handler
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> receivedEvent.set(event), error -> {});
 
         // Parse the task event JSON
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_TASK_EVENT.substring(
-                JsonStreamingMessages_v0_3.STREAMING_TASK_EVENT.indexOf("{"));
-        
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_TASK_EVENT.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_TASK_EVENT.indexOf("{"));
+
         // Call the onEvent method directly
         listener.onMessage(eventData, null);
 
@@ -64,15 +62,14 @@ public class SSEEventListener_v0_3_Test {
     public void testOnEventWithMessageResult() throws Exception {
         // Set up event handler
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> receivedEvent.set(event), error -> {});
 
         // Parse the message event JSON
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_MESSAGE_EVENT.substring(
-                JsonStreamingMessages_v0_3.STREAMING_MESSAGE_EVENT.indexOf("{"));
-        
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_MESSAGE_EVENT.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_MESSAGE_EVENT.indexOf("{"));
+
         // Call onEvent method
         listener.onMessage(eventData, null);
 
@@ -92,14 +89,13 @@ public class SSEEventListener_v0_3_Test {
     public void testOnEventWithTaskStatusUpdateEventEvent() throws Exception {
         // Set up event handler
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> receivedEvent.set(event), error -> {});
 
         // Parse the message event JSON
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT.substring(
-                JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT.indexOf("{"));
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT.indexOf("{"));
 
         // Call onEvent method
         listener.onMessage(eventData, null);
@@ -107,7 +103,8 @@ public class SSEEventListener_v0_3_Test {
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof TaskStatusUpdateEvent_v0_3);
-        TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent = (TaskStatusUpdateEvent_v0_3) receivedEvent.get();
+        TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent =
+                (TaskStatusUpdateEvent_v0_3) receivedEvent.get();
         assertEquals("1", taskStatusUpdateEvent.taskId());
         assertEquals("2", taskStatusUpdateEvent.contextId());
         assertFalse(taskStatusUpdateEvent.isFinal());
@@ -118,14 +115,13 @@ public class SSEEventListener_v0_3_Test {
     public void testOnEventWithTaskArtifactUpdateEventEvent() throws Exception {
         // Set up event handler
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> receivedEvent.set(event), error -> {});
 
         // Parse the message event JSON
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_ARTIFACT_UPDATE_EVENT.substring(
-                JsonStreamingMessages_v0_3.STREAMING_ARTIFACT_UPDATE_EVENT.indexOf("{"));
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_ARTIFACT_UPDATE_EVENT.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_ARTIFACT_UPDATE_EVENT.indexOf("{"));
 
         // Call onEvent method
         listener.onMessage(eventData, null);
@@ -134,7 +130,8 @@ public class SSEEventListener_v0_3_Test {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof TaskArtifactUpdateEvent_v0_3);
 
-        TaskArtifactUpdateEvent_v0_3 taskArtifactUpdateEvent = (TaskArtifactUpdateEvent_v0_3) receivedEvent.get();
+        TaskArtifactUpdateEvent_v0_3 taskArtifactUpdateEvent =
+                (TaskArtifactUpdateEvent_v0_3) receivedEvent.get();
         assertEquals("1", taskArtifactUpdateEvent.taskId());
         assertEquals("2", taskArtifactUpdateEvent.contextId());
         assertFalse(taskArtifactUpdateEvent.append());
@@ -143,22 +140,23 @@ public class SSEEventListener_v0_3_Test {
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals(1, artifact.parts().size());
         assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) artifact.parts().get(0)).kind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) artifact.parts().get(0)).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart_v0_3) artifact.parts().get(0)).text());
     }
 
     @Test
     public void testOnEventWithError() throws Exception {
         // Set up event handler
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> receivedError.set(error)
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> {}, error -> receivedError.set(error));
 
         // Parse the error event JSON
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_ERROR_EVENT.substring(
-                JsonStreamingMessages_v0_3.STREAMING_ERROR_EVENT.indexOf("{"));
-        
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_ERROR_EVENT.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_ERROR_EVENT.indexOf("{"));
+
         // Call onEvent method
         listener.onMessage(eventData, null);
 
@@ -174,10 +172,8 @@ public class SSEEventListener_v0_3_Test {
     @Test
     public void testOnFailure() {
         AtomicBoolean failureHandlerCalled = new AtomicBoolean(false);
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> failureHandlerCalled.set(true)
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> {}, error -> failureHandlerCalled.set(true));
 
         // Simulate a failure
         CancelCapturingFuture future = new CancelCapturingFuture();
@@ -191,35 +187,32 @@ public class SSEEventListener_v0_3_Test {
 
     @Test
     public void testFinalTaskStatusUpdateEventCancels() {
-        TaskStatusUpdateEvent_v0_3 tsue = new TaskStatusUpdateEvent_v0_3.Builder()
-                .taskId("1234")
-                .contextId("xyz")
-                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
-                .isFinal(true)
-                .build();
+        TaskStatusUpdateEvent_v0_3 tsue =
+                new TaskStatusUpdateEvent_v0_3.Builder()
+                        .taskId("1234")
+                        .contextId("xyz")
+                        .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                        .isFinal(true)
+                        .build();
 
         // Set up event handler
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
-
-
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> receivedEvent.set(event), error -> {});
     }
 
     @Test
     public void testOnEventWithFinalTaskStatusUpdateEventEventCancels() throws Exception {
         // Set up event handler
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(event -> receivedEvent.set(event), error -> {});
 
         // Parse the message event JSON
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(
-                JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.indexOf("{"));
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.indexOf(
+                                "{"));
 
         // Call onEvent method
         CancelCapturingFuture future = new CancelCapturingFuture();
@@ -228,7 +221,8 @@ public class SSEEventListener_v0_3_Test {
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof TaskStatusUpdateEvent_v0_3);
-        TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent = (TaskStatusUpdateEvent_v0_3) receivedEvent.get();
+        TaskStatusUpdateEvent_v0_3 taskStatusUpdateEvent =
+                (TaskStatusUpdateEvent_v0_3) receivedEvent.get();
         assertEquals("1", taskStatusUpdateEvent.taskId());
         assertEquals("2", taskStatusUpdateEvent.contextId());
         assertTrue(taskStatusUpdateEvent.isFinal());
@@ -237,15 +231,17 @@ public class SSEEventListener_v0_3_Test {
         assertTrue(future.cancelHandlerCalled);
     }
 
-
-
     @Test
     public void testOnCompleteThenOnErrorDeliversSingleTerminalCallback() {
         AtomicInteger terminalCount = new AtomicInteger(0);
         AtomicReference<Throwable> lastArg = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(
+                        event -> {},
+                        error -> {
+                            terminalCount.incrementAndGet();
+                            lastArg.set(error);
+                        });
 
         listener.onComplete();
         listener.onError(new RuntimeException("late error"), new CancelCapturingFuture());
@@ -258,9 +254,13 @@ public class SSEEventListener_v0_3_Test {
     public void testOnErrorThenOnCompleteDeliversSingleTerminalCallback() {
         AtomicInteger terminalCount = new AtomicInteger(0);
         AtomicReference<Throwable> lastArg = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(
+                        event -> {},
+                        error -> {
+                            terminalCount.incrementAndGet();
+                            lastArg.set(error);
+                        });
 
         RuntimeException boom = new RuntimeException("first error");
         listener.onError(boom, new CancelCapturingFuture());
@@ -274,9 +274,13 @@ public class SSEEventListener_v0_3_Test {
     public void testRepeatedOnCompleteDeliversSingleTerminalCallback() {
         AtomicInteger terminalCount = new AtomicInteger(0);
         AtomicReference<Throwable> lastArg = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(
+                        event -> {},
+                        error -> {
+                            terminalCount.incrementAndGet();
+                            lastArg.set(error);
+                        });
 
         listener.onComplete();
         listener.onComplete();
@@ -289,9 +293,13 @@ public class SSEEventListener_v0_3_Test {
     public void testConcurrentTerminalSignalsDeliverExactlyOneCallback() throws Exception {
         AtomicInteger terminalCount = new AtomicInteger(0);
         AtomicReference<Throwable> lastArg = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> { terminalCount.incrementAndGet(); lastArg.set(error); });
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(
+                        event -> {},
+                        error -> {
+                            terminalCount.incrementAndGet();
+                            lastArg.set(error);
+                        });
 
         int threads = 32;
         ExecutorService pool = Executors.newFixedThreadPool(threads);
@@ -299,20 +307,22 @@ public class SSEEventListener_v0_3_Test {
         CountDownLatch done = new CountDownLatch(threads);
         for (int i = 0; i < threads; i++) {
             final boolean complete = (i % 2 == 0);
-            pool.submit(() -> {
-                try {
-                    start.await();
-                    if (complete) {
-                        listener.onComplete();
-                    } else {
-                        listener.onError(new RuntimeException("race"), new CancelCapturingFuture());
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    done.countDown();
-                }
-            });
+            pool.submit(
+                    () -> {
+                        try {
+                            start.await();
+                            if (complete) {
+                                listener.onComplete();
+                            } else {
+                                listener.onError(
+                                        new RuntimeException("race"), new CancelCapturingFuture());
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } finally {
+                            done.countDown();
+                        }
+                    });
         }
         start.countDown();
         assertTrue(done.await(10, TimeUnit.SECONDS));
@@ -325,15 +335,18 @@ public class SSEEventListener_v0_3_Test {
     public void testFinalEventThenOnErrorDeliversNormalCompletionOnly() {
         AtomicInteger terminalCount = new AtomicInteger(0);
         AtomicReference<Throwable> terminalError = new AtomicReference<>();
-        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
-                event -> {},
-                error -> {
-                    terminalCount.incrementAndGet();
-                    terminalError.set(error);
-                });
+        SSEEventListener_v0_3 listener =
+                new SSEEventListener_v0_3(
+                        event -> {},
+                        error -> {
+                            terminalCount.incrementAndGet();
+                            terminalError.set(error);
+                        });
 
-        String eventData = JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(
-                JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.indexOf("{"));
+        String eventData =
+                JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(
+                        JsonStreamingMessages_v0_3.STREAMING_STATUS_UPDATE_EVENT_FINAL.indexOf(
+                                "{"));
         CancelCapturingFuture future = new CancelCapturingFuture();
         listener.onMessage(eventData, future);
         listener.onError(new RuntimeException("cancelled after final event"), future);
@@ -346,8 +359,7 @@ public class SSEEventListener_v0_3_Test {
     private static class CancelCapturingFuture implements Future<Void> {
         private boolean cancelHandlerCalled;
 
-        public CancelCapturingFuture() {
-        }
+        public CancelCapturingFuture() {}
 
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
@@ -371,7 +383,8 @@ public class SSEEventListener_v0_3_Test {
         }
 
         @Override
-        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public Void get(long timeout, TimeUnit unit)
+                throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }

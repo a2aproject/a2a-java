@@ -4,7 +4,9 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransportConfigBuilder_v0_3;
 
-public class JSONRPCTransportConfigBuilder_v0_3 extends ClientTransportConfigBuilder_v0_3<JSONRPCTransportConfig_v0_3, JSONRPCTransportConfigBuilder_v0_3> {
+public class JSONRPCTransportConfigBuilder_v0_3
+        extends ClientTransportConfigBuilder_v0_3<
+                JSONRPCTransportConfig_v0_3, JSONRPCTransportConfigBuilder_v0_3> {
 
     private A2AHttpClient httpClient;
 

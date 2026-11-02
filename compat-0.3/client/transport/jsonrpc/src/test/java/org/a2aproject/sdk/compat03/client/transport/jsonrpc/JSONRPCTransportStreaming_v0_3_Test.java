@@ -17,18 +17,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,22 +52,25 @@ public class JSONRPCTransportStreaming_v0_3_Test {
     public void testSendStreamingMessageParams() {
         // The goal here is just to verify the correct parameters are being used
         // This is a unit test of the parameter construction, not the streaming itself
-        Message_v0_3 message = new Message_v0_3.Builder()
-                .role(Message_v0_3.Role.USER)
-                .parts(Collections.singletonList(new TextPart_v0_3("test message")))
-                .contextId("context-test")
-                .messageId("message-test")
-                .build();
+        Message_v0_3 message =
+                new Message_v0_3.Builder()
+                        .role(Message_v0_3.Role.USER)
+                        .parts(Collections.singletonList(new TextPart_v0_3("test message")))
+                        .contextId("context-test")
+                        .messageId("message-test")
+                        .build();
 
-        MessageSendConfiguration_v0_3 configuration = new MessageSendConfiguration_v0_3.Builder()
-                .acceptedOutputModes(List.of("text"))
-                .blocking(false)
-                .build();
+        MessageSendConfiguration_v0_3 configuration =
+                new MessageSendConfiguration_v0_3.Builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .blocking(false)
+                        .build();
 
-        MessageSendParams_v0_3 params = new MessageSendParams_v0_3.Builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        MessageSendParams_v0_3 params =
+                new MessageSendParams_v0_3.Builder()
+                        .message(message)
+                        .configuration(configuration)
+                        .build();
 
         assertNotNull(params);
         assertEquals(message, params.message());
@@ -80,42 +81,47 @@ public class JSONRPCTransportStreaming_v0_3_Test {
 
     @Test
     public void testA2AClientSendStreamingMessage() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_STREAMING_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE));
 
         JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
-        Message_v0_3 message = new Message_v0_3.Builder()
-                .role(Message_v0_3.Role.USER)
-                .parts(Collections.singletonList(new TextPart_v0_3("tell me some jokes")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build();
-        MessageSendConfiguration_v0_3 configuration = new MessageSendConfiguration_v0_3.Builder()
-                .acceptedOutputModes(List.of("text"))
-                .blocking(false)
-                .build();
-        MessageSendParams_v0_3 params = new MessageSendParams_v0_3.Builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message_v0_3 message =
+                new Message_v0_3.Builder()
+                        .role(Message_v0_3.Role.USER)
+                        .parts(Collections.singletonList(new TextPart_v0_3("tell me some jokes")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .build();
+        MessageSendConfiguration_v0_3 configuration =
+                new MessageSendConfiguration_v0_3.Builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .blocking(false)
+                        .build();
+        MessageSendParams_v0_3 params =
+                new MessageSendParams_v0_3.Builder()
+                        .message(message)
+                        .configuration(configuration)
+                        .build();
 
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
-        Consumer<StreamingEventKind_v0_3> eventHandler = event -> {
-            receivedEvent.set(event);
-            latch.countDown();
-        };
+        Consumer<StreamingEventKind_v0_3> eventHandler =
+                event -> {
+                    receivedEvent.set(event);
+                    latch.countDown();
+                };
         Consumer<Throwable> errorHandler = error -> {};
         client.sendMessageStreaming(params, eventHandler, errorHandler, null);
 
@@ -126,36 +132,39 @@ public class JSONRPCTransportStreaming_v0_3_Test {
 
     @Test
     public void testA2AClientResubscribeToTask() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(TASK_RESUBSCRIPTION_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                TASK_RESUBSCRIPTION_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
-                );
+                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE));
 
         JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
         TaskIdParams_v0_3 taskIdParams = new TaskIdParams_v0_3("task-1234");
 
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
-        Consumer<StreamingEventKind_v0_3> eventHandler = event -> {
-            receivedEvent.set(event);
-            latch.countDown();
-        };
+        Consumer<StreamingEventKind_v0_3> eventHandler =
+                event -> {
+                    receivedEvent.set(event);
+                    latch.countDown();
+                };
         Consumer<Throwable> errorHandler = error -> {};
         client.resubscribe(taskIdParams, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);
 
-        StreamingEventKind_v0_3 eventKind = receivedEvent.get();;
+        StreamingEventKind_v0_3 eventKind = receivedEvent.get();
+        ;
         assertNotNull(eventKind);
         assertInstanceOf(Task_v0_3.class, eventKind);
         Task_v0_3 task = (Task_v0_3) eventKind;
@@ -169,6 +178,8 @@ public class JSONRPCTransportStreaming_v0_3_Test {
         assertEquals("joke", artifact.name());
         Part_v0_3<?> part = artifact.parts().get(0);
         assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart_v0_3) part).text());
     }
-} 
+}

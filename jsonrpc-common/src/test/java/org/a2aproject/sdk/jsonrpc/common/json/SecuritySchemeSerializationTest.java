@@ -1,9 +1,9 @@
 package org.a2aproject.sdk.jsonrpc.common.json;
 
+import static java.lang.String.format;
 import static org.a2aproject.sdk.spec.APIKeySecurityScheme.Location.COOKIE;
 import static org.a2aproject.sdk.spec.APIKeySecurityScheme.Location.HEADER;
 import static org.a2aproject.sdk.spec.APIKeySecurityScheme.Location.QUERY;
-import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,14 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
 import org.a2aproject.sdk.spec.APIKeySecurityScheme;
 import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
 import org.a2aproject.sdk.spec.MutualTLSSecurityScheme;
 import org.a2aproject.sdk.spec.OpenIdConnectSecurityScheme;
 import org.a2aproject.sdk.spec.SecurityScheme;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for SecurityScheme serialization and deserialization using Gson.
@@ -27,23 +25,26 @@ class SecuritySchemeSerializationTest {
 
     @Test
     void testHTTPAuthSecuritySchemeSerialization() throws JsonProcessingException {
-        SecurityScheme scheme = HTTPAuthSecurityScheme.builder()
-                .scheme("basic")
-                .description("Basic HTTP authentication")
-                .build();
+        SecurityScheme scheme =
+                HTTPAuthSecurityScheme.builder()
+                        .scheme("basic")
+                        .description("Basic HTTP authentication")
+                        .build();
 
-        doTestSecuritySchemeSerialization(scheme, HTTPAuthSecurityScheme.TYPE, Map.of("scheme", "basic"));
-
+        doTestSecuritySchemeSerialization(
+                scheme, HTTPAuthSecurityScheme.TYPE, Map.of("scheme", "basic"));
     }
 
     @Test
     void testHTTPAuthSecuritySchemeDeserialization() throws JsonProcessingException {
-        String json = """
+        String json =
+                """
                 {
                   "httpAuthSecurityScheme" : {
                     "scheme": "basic"
                   }
-                }""";
+                }\
+                """;
         SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
         assertInstanceOf(HTTPAuthSecurityScheme.class, securityScheme);
         HTTPAuthSecurityScheme scheme = (HTTPAuthSecurityScheme) securityScheme;
@@ -53,28 +54,38 @@ class SecuritySchemeSerializationTest {
 
     @Test
     void testHTTPAuthSecuritySchemeWithBearerFormatSerialization() throws JsonProcessingException {
-        SecurityScheme scheme = HTTPAuthSecurityScheme.builder()
-                .scheme("bearer")
-                .bearerFormat("JWT")
-                .description("JWT bearer token authentication")
-                .build();
+        SecurityScheme scheme =
+                HTTPAuthSecurityScheme.builder()
+                        .scheme("bearer")
+                        .bearerFormat("JWT")
+                        .description("JWT bearer token authentication")
+                        .build();
 
-        doTestSecuritySchemeSerialization(scheme, HTTPAuthSecurityScheme.TYPE,
-                Map.of("scheme", "bearer",
-                        "bearerFormat", "JWT",
-                        "description", "JWT bearer token authentication"));
+        doTestSecuritySchemeSerialization(
+                scheme,
+                HTTPAuthSecurityScheme.TYPE,
+                Map.of(
+                        "scheme",
+                        "bearer",
+                        "bearerFormat",
+                        "JWT",
+                        "description",
+                        "JWT bearer token authentication"));
     }
 
     @Test
-    void testHTTPAuthSecuritySchemeWithBearerFormatDeserialization() throws JsonProcessingException {
-        String json = """
+    void testHTTPAuthSecuritySchemeWithBearerFormatDeserialization()
+            throws JsonProcessingException {
+        String json =
+                """
                 {
                   "httpAuthSecurityScheme" : {
                     "scheme": "bearer",
                     "bearerFormat": "JWT",
                     "description": "JWT authentication"
                   }
-                }""";
+                }\
+                """;
         SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
         assertInstanceOf(HTTPAuthSecurityScheme.class, securityScheme);
         HTTPAuthSecurityScheme scheme = (HTTPAuthSecurityScheme) securityScheme;
@@ -83,27 +94,25 @@ class SecuritySchemeSerializationTest {
         assertEquals("JWT authentication", scheme.description());
     }
 
-
     @Test
     void testAPIKeySecuritySchemeSerialization() throws JsonProcessingException {
-        SecurityScheme scheme = APIKeySecurityScheme.builder()
-                .location(HEADER)
-                .name("bar")
-                .build();
+        SecurityScheme scheme = APIKeySecurityScheme.builder().location(HEADER).name("bar").build();
 
-        doTestSecuritySchemeSerialization(scheme, APIKeySecurityScheme.TYPE, Map.of("location", "header",
-                "name", "bar"));
+        doTestSecuritySchemeSerialization(
+                scheme, APIKeySecurityScheme.TYPE, Map.of("location", "header", "name", "bar"));
     }
 
     @Test
     void testAPIKeySecuritySchemeDeserialization() throws JsonProcessingException {
-        String json = """
+        String json =
+                """
                 {
                   "apiKeySecurityScheme" : {
                     "location": "cookie",
                     "name": "bar"
                   }
-                }""";
+                }\
+                """;
         SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
         assertInstanceOf(APIKeySecurityScheme.class, securityScheme);
         APIKeySecurityScheme scheme = (APIKeySecurityScheme) securityScheme;
@@ -113,63 +122,84 @@ class SecuritySchemeSerializationTest {
 
     @Test
     void testAPIKeySecuritySchemeWithDescriptionSerialization() throws JsonProcessingException {
-        SecurityScheme scheme = APIKeySecurityScheme.builder()
-                .location(QUERY)
-                .name("api_key")
-                .description("API key authentication via query parameter")
-                .build();
+        SecurityScheme scheme =
+                APIKeySecurityScheme.builder()
+                        .location(QUERY)
+                        .name("api_key")
+                        .description("API key authentication via query parameter")
+                        .build();
 
-        doTestSecuritySchemeSerialization(scheme, APIKeySecurityScheme.TYPE,
-                Map.of("location", "query",
-                        "name", "api_key",
-                        "description", "API key authentication via query parameter"));
+        doTestSecuritySchemeSerialization(
+                scheme,
+                APIKeySecurityScheme.TYPE,
+                Map.of(
+                        "location",
+                        "query",
+                        "name",
+                        "api_key",
+                        "description",
+                        "API key authentication via query parameter"));
     }
 
     @Test
     void testOpenIdConnectSecuritySchemeSerialization() throws JsonProcessingException {
-        SecurityScheme scheme = OpenIdConnectSecurityScheme.builder()
-                .openIdConnectUrl("https://example.com/.well-known/openid-configuration")
-                .description("OpenID Connect authentication")
-                .build();
+        SecurityScheme scheme =
+                OpenIdConnectSecurityScheme.builder()
+                        .openIdConnectUrl("https://example.com/.well-known/openid-configuration")
+                        .description("OpenID Connect authentication")
+                        .build();
 
-        doTestSecuritySchemeSerialization(scheme, OpenIdConnectSecurityScheme.TYPE,
-                Map.of("openIdConnectUrl", "https://example.com/.well-known/openid-configuration",
-                        "description", "OpenID Connect authentication"));
+        doTestSecuritySchemeSerialization(
+                scheme,
+                OpenIdConnectSecurityScheme.TYPE,
+                Map.of(
+                        "openIdConnectUrl",
+                        "https://example.com/.well-known/openid-configuration",
+                        "description",
+                        "OpenID Connect authentication"));
     }
 
     @Test
     void testOpenIdConnectSecuritySchemeDeserialization() throws JsonProcessingException {
-        String json = """
+        String json =
+                """
                 {
                   "openIdConnectSecurityScheme" : {
                     "openIdConnectUrl": "https://example.com/.well-known/openid-configuration",
                     "description": "OIDC authentication"
                   }
-                }""";
+                }\
+                """;
 
         SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
         assertInstanceOf(OpenIdConnectSecurityScheme.class, securityScheme);
         OpenIdConnectSecurityScheme scheme = (OpenIdConnectSecurityScheme) securityScheme;
-        assertEquals("https://example.com/.well-known/openid-configuration", scheme.openIdConnectUrl());
+        assertEquals(
+                "https://example.com/.well-known/openid-configuration", scheme.openIdConnectUrl());
         assertEquals("OIDC authentication", scheme.description());
     }
 
     @Test
     void testMutualTLSSecuritySchemeSerialization() throws JsonProcessingException {
-        SecurityScheme scheme = new MutualTLSSecurityScheme("Client certificate authentication required");
+        SecurityScheme scheme =
+                new MutualTLSSecurityScheme("Client certificate authentication required");
 
-        doTestSecuritySchemeSerialization(scheme, MutualTLSSecurityScheme.TYPE,
+        doTestSecuritySchemeSerialization(
+                scheme,
+                MutualTLSSecurityScheme.TYPE,
                 Map.of("description", "Client certificate authentication required"));
     }
 
     @Test
     void testMutualTLSSecuritySchemeDeserialization() throws JsonProcessingException {
-        String json = """
+        String json =
+                """
                 {
                   "mtlsSecurityScheme" : {
                     "description": "mTLS authentication"
                   }
-                }""";
+                }\
+                """;
 
         SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
         assertInstanceOf(MutualTLSSecurityScheme.class, securityScheme);
@@ -178,12 +208,15 @@ class SecuritySchemeSerializationTest {
     }
 
     @Test
-    void testMutualTLSSecuritySchemeWithNullDescriptionDeserialization() throws JsonProcessingException {
-        String json = """
+    void testMutualTLSSecuritySchemeWithNullDescriptionDeserialization()
+            throws JsonProcessingException {
+        String json =
+                """
                 {
                   "mtlsSecurityScheme" : {
                   }
-                }""";
+                }\
+                """;
 
         SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
         assertInstanceOf(MutualTLSSecurityScheme.class, securityScheme);
@@ -191,7 +224,9 @@ class SecuritySchemeSerializationTest {
         assertNull(scheme.description());
     }
 
-    void doTestSecuritySchemeSerialization(SecurityScheme scheme, String schemeType, Map<String, String> expectedFields) throws JsonProcessingException {
+    void doTestSecuritySchemeSerialization(
+            SecurityScheme scheme, String schemeType, Map<String, String> expectedFields)
+            throws JsonProcessingException {
         // Serialize to JSON
         String json = JsonUtil.toJson(scheme);
 

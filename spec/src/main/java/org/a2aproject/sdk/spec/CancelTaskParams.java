@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -62,8 +61,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the id.
@@ -105,11 +103,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
          * @throws IllegalArgumentException if id is null
          */
         public CancelTaskParams build() {
-            return new CancelTaskParams(
-                Assert.checkNotNullParam("id", id),
-                tenant,
-                metadata
-            );
+            return new CancelTaskParams(Assert.checkNotNullParam("id", id), tenant, metadata);
         }
     }
 }

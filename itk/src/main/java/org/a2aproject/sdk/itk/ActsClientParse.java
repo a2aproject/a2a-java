@@ -1,5 +1,8 @@
 package org.a2aproject.sdk.itk;
 
+import com.google.gson.Gson;
+import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.util.JsonFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,11 +10,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import com.google.gson.Gson;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.util.JsonFormat;
-
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
@@ -80,13 +78,17 @@ final class ActsClientParse {
      * without it a capability the client correctly parsed as {@code false} vanishes from the
      * rendering, and CLIENT-CAP-001 asserts on exactly that.
      */
-    private static final JsonFormat.Printer PRINTER = JsonFormat.printer().alwaysPrintFieldsWithNoPresence();
+    private static final JsonFormat.Printer PRINTER =
+            JsonFormat.printer().alwaysPrintFieldsWithNoPresence();
 
     void run(RequestContext context, AgentEmitter emitter) {
         Map<String, Object> request = requestIn(context.getMessage());
         if (request == null) {
-            emitter.updateStatus(TaskState.TASK_STATE_FAILED, emitter.newAgentMessage(
-                    List.of(new TextPart(BEHAVIOR + " needs {operation, wire_payload}")), null));
+            emitter.updateStatus(
+                    TaskState.TASK_STATE_FAILED,
+                    emitter.newAgentMessage(
+                            List.of(new TextPart(BEHAVIOR + " needs {operation, wire_payload}")),
+                            null));
             return;
         }
 
@@ -96,7 +98,8 @@ final class ActsClientParse {
 
         Map<String, Object> parsed = parse(operation, payload);
         emitter.addArtifact(List.of(new DataPart(parsed)), null, BEHAVIOR, null);
-        emitter.updateStatus(TaskState.TASK_STATE_COMPLETED,
+        emitter.updateStatus(
+                TaskState.TASK_STATE_COMPLETED,
                 emitter.newAgentMessage(List.of(new TextPart(operation + " parsed")), null));
     }
 
@@ -106,7 +109,8 @@ final class ActsClientParse {
             return null;
         }
         for (Part<?> part : message.parts()) {
-            if (part instanceof DataPart dataPart && dataPart.data() instanceof Map<?, ?> data
+            if (part instanceof DataPart dataPart
+                    && dataPart.data() instanceof Map<?, ?> data
                     && data.get("operation") instanceof String) {
                 return (Map<String, Object>) data;
             }
@@ -146,8 +150,10 @@ final class ActsClientParse {
                 // corpus writes them — correctly, since a card is fetched over plain HTTP on every
                 // binding, so there is no envelope to unwrap.
                 case "get_agent_card" -> wire(ProtoUtils.ToProto.agentCard(parseCard(payload)));
-                case "get_extended_agent_card" -> wire(ProtoUtils.ToProto.agentCard(parseExtendedCard(payload)));
-                case "send_message" -> wire(ProtoUtils.ToProto.taskOrMessage(parseSendMessage(payload)));
+                case "get_extended_agent_card" ->
+                        wire(ProtoUtils.ToProto.agentCard(parseExtendedCard(payload)));
+                case "send_message" ->
+                        wire(ProtoUtils.ToProto.taskOrMessage(parseSendMessage(payload)));
                 case "get_task" -> wire(ProtoUtils.ToProto.task(parseGetTask(payload)));
                 default -> error("unsupported client operation \"" + operation + "\"", null);
             };
@@ -204,8 +210,10 @@ final class ActsClientParse {
     private Client client(String payload, AtomicReference<ClientEvent> captured) throws Exception {
         return Client.builder(syntheticCard())
                 .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(JSONRPCTransport.class,
-                        new JSONRPCTransportConfigBuilder().httpClient(new FixedHttpClient(payload)))
+                .withTransport(
+                        JSONRPCTransport.class,
+                        new JSONRPCTransportConfigBuilder()
+                                .httpClient(new FixedHttpClient(payload)))
                 .addConsumer((event, card) -> captured.set(event))
                 .build();
     }
@@ -226,7 +234,9 @@ final class ActsClientParse {
     private boolean isEnveloped(String payload) {
         Map<String, Object> body = envelopeOf(payload);
         return body != null
-                && (body.containsKey("jsonrpc") || body.containsKey("result") || body.containsKey("error"));
+                && (body.containsKey("jsonrpc")
+                        || body.containsKey("result")
+                        || body.containsKey("error"));
     }
 
     @SuppressWarnings("unchecked")
@@ -349,7 +359,8 @@ final class ActsClientParse {
 
         /** No §10 payload is a stream; a client that asks for one has taken a path the test did not intend. */
         private CompletableFuture<Void> unsupportedStream(Consumer<Throwable> errorConsumer) {
-            IllegalStateException failure = new IllegalStateException("ACTS client parse serves no stream");
+            IllegalStateException failure =
+                    new IllegalStateException("ACTS client parse serves no stream");
             errorConsumer.accept(failure);
             return CompletableFuture.failedFuture(failure);
         }
@@ -376,9 +387,10 @@ final class ActsClientParse {
             }
 
             @Override
-            public CompletableFuture<Void> getAsyncSSE(Consumer<ServerSentEvent> messageConsumer,
-                                                       Consumer<Throwable> errorConsumer,
-                                                       Runnable completeRunnable) {
+            public CompletableFuture<Void> getAsyncSSE(
+                    Consumer<ServerSentEvent> messageConsumer,
+                    Consumer<Throwable> errorConsumer,
+                    Runnable completeRunnable) {
                 return unsupportedStream(errorConsumer);
             }
         }
@@ -413,9 +425,10 @@ final class ActsClientParse {
             }
 
             @Override
-            public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer,
-                                                        Consumer<Throwable> errorConsumer,
-                                                        Runnable completeRunnable) {
+            public CompletableFuture<Void> postAsyncSSE(
+                    Consumer<ServerSentEvent> messageConsumer,
+                    Consumer<Throwable> errorConsumer,
+                    Runnable completeRunnable) {
                 return unsupportedStream(errorConsumer);
             }
         }

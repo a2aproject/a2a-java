@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.server.rest.quarkus;
 
-import org.a2aproject.sdk.server.ServerCallContext;
 import io.vertx.ext.web.RoutingContext;
+import org.a2aproject.sdk.server.ServerCallContext;
 
 /**
  * Factory interface for creating ServerCallContext from a Vert.x RoutingContext.

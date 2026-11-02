@@ -9,8 +9,7 @@ public class A2AException_v0_3 extends RuntimeException {
      * Constructs a new {@code A2AException} instance. The message is left blank ({@code null}), and no
      * cause is specified.
      */
-    public A2AException_v0_3() {
-    }
+    public A2AException_v0_3() {}
 
     /**
      * Constructs a new {@code A2AException} instance with an initial message. No cause is specified.

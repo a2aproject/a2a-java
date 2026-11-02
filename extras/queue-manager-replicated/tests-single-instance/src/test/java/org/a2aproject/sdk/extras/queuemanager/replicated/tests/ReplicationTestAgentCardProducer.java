@@ -1,17 +1,14 @@
 package org.a2aproject.sdk.extras.queuemanager.replicated.tests;
 
-
-import java.util.List;
-
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
+import java.util.List;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
  * Produces the AgentCard for replicated queue manager integration tests.
@@ -28,15 +25,16 @@ public class ReplicationTestAgentCardProducer {
                 .description("Test agent for replicated queue manager integration testing")
                 .version("1.0.0")
                 .documentationUrl("http://localhost:8081/docs")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
+                .capabilities(
+                        AgentCapabilities.builder().streaming(true).pushNotifications(true).build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .supportedInterfaces(List.of(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")))
+                .supportedInterfaces(
+                        List.of(
+                                new AgentInterface(
+                                        TransportProtocol.JSONRPC.asString(),
+                                        "http://localhost:8081")))
                 .build();
     }
 }

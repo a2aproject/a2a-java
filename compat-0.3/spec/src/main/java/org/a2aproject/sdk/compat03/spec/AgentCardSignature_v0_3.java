@@ -2,15 +2,16 @@ package org.a2aproject.sdk.compat03.spec;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * Represents a JWS signature of an AgentCard.
  * This follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
  */
-public record AgentCardSignature_v0_3(Map<String, Object> header, @SerializedName("protected")String protectedHeader,
-                                      String signature) {
+public record AgentCardSignature_v0_3(
+        Map<String, Object> header,
+        @SerializedName("protected") String protectedHeader,
+        String signature) {
 
     public AgentCardSignature_v0_3 {
         Assert.checkNotNullParam("protectedHeader", protectedHeader);

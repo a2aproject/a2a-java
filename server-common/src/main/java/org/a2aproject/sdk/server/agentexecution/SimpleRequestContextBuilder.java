@@ -2,7 +2,6 @@ package org.a2aproject.sdk.server.agentexecution;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -20,7 +19,9 @@ public class SimpleRequestContextBuilder extends RequestContext.Builder {
     private final boolean shouldPopulateReferredTasks;
     private final @Nullable TaskAuthorizationProvider authorizationProvider;
 
-    public SimpleRequestContextBuilder(TaskStore taskStore, boolean shouldPopulateReferredTasks,
+    public SimpleRequestContextBuilder(
+            TaskStore taskStore,
+            boolean shouldPopulateReferredTasks,
             @Nullable TaskAuthorizationProvider authorizationProvider) {
         this.taskStore = taskStore;
         this.shouldPopulateReferredTasks = shouldPopulateReferredTasks;
@@ -30,14 +31,17 @@ public class SimpleRequestContextBuilder extends RequestContext.Builder {
     @Override
     public RequestContext build() {
         List<Task> relatedTasks = null;
-        if (taskStore != null && shouldPopulateReferredTasks && getParams() != null
+        if (taskStore != null
+                && shouldPopulateReferredTasks
+                && getParams() != null
                 && getParams().message().referenceTaskIds() != null) {
             relatedTasks = new ArrayList<>();
             ServerCallContext callContext = getServerCallContext();
             for (String taskId : getParams().message().referenceTaskIds()) {
                 if (authorizationProvider != null) {
                     if (callContext == null
-                            || !authorizationProvider.checkRead(callContext, taskId, TaskOperation.MESSAGE_SEND)) {
+                            || !authorizationProvider.checkRead(
+                                    callContext, taskId, TaskOperation.MESSAGE_SEND)) {
                         throw new TaskNotFoundError();
                     }
                 }

@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.compat03.conversion;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
@@ -17,7 +16,8 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class PushNotificationPayloadFormatter_v0_3 implements PushNotificationPayloadFormatter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PushNotificationPayloadFormatter_v0_3.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PushNotificationPayloadFormatter_v0_3.class);
 
     @Override
     public String targetVersion() {

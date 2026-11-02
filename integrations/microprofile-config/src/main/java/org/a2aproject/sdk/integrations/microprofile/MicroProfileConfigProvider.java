@@ -1,12 +1,10 @@
 package org.a2aproject.sdk.integrations.microprofile;
 
-import java.util.Optional;
-
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
-import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
-
+import java.util.Optional;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
 import org.eclipse.microprofile.config.Config;
@@ -41,11 +39,9 @@ public class MicroProfileConfigProvider implements A2AConfigProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroProfileConfigProvider.class);
 
-    @Inject
-    Config mpConfig;
+    @Inject Config mpConfig;
 
-    @Inject
-    DefaultValuesConfigProvider defaultValues;
+    @Inject DefaultValuesConfigProvider defaultValues;
 
     @Override
     public String getValue(String name) {
@@ -57,7 +53,8 @@ public class MicroProfileConfigProvider implements A2AConfigProvider {
 
         // Fallback to defaults
         String defaultValue = defaultValues.getValue(name);
-        LOGGER.trace("Config value '{}' = '{}' (from DefaultValuesConfigProvider)", name, defaultValue);
+        LOGGER.trace(
+                "Config value '{}' = '{}' (from DefaultValuesConfigProvider)", name, defaultValue);
         return defaultValue;
     }
 
@@ -65,14 +62,19 @@ public class MicroProfileConfigProvider implements A2AConfigProvider {
     public Optional<String> getOptionalValue(String name) {
         Optional<String> value = mpConfig.getOptionalValue(name, String.class);
         if (value.isPresent()) {
-            LOGGER.trace("Optional config value '{}' = '{}' (from MicroProfile Config)", name, value.get());
+            LOGGER.trace(
+                    "Optional config value '{}' = '{}' (from MicroProfile Config)",
+                    name,
+                    value.get());
             return value;
         }
 
         // Fallback to defaults
         Optional<String> defaultValue = defaultValues.getOptionalValue(name);
-        LOGGER.trace("Optional config value '{}' = '{}' (from DefaultValuesConfigProvider)",
-                name, defaultValue.orElse("<absent>"));
+        LOGGER.trace(
+                "Optional config value '{}' = '{}' (from DefaultValuesConfigProvider)",
+                name,
+                defaultValue.orElse("<absent>"));
         return defaultValue;
     }
 }

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
@@ -41,7 +40,9 @@ public abstract class AbstractClient implements AutoCloseable {
         this(consumers, null);
     }
 
-    public AbstractClient(@NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
+    public AbstractClient(
+            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler) {
         checkNotNullParam("consumers", consumers);
         this.consumers = consumers;
         this.streamingErrorHandler = streamingErrorHandler;
@@ -76,8 +77,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public void sendMessage(@NonNull Message request,
-                            @Nullable ClientCallContext context) throws A2AClientException {
+    public void sendMessage(@NonNull Message request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         sendMessage(request, consumers, streamingErrorHandler, context);
     }
 
@@ -95,9 +96,11 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public void sendMessage(@NonNull Message request,
-                            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            @Nullable Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+    public void sendMessage(
+            @NonNull Message request,
+            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler)
+            throws A2AClientException {
         sendMessage(request, consumers, streamingErrorHandler, null);
     }
 
@@ -116,10 +119,12 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(@NonNull Message request,
-                                     @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                     @Nullable Consumer<Throwable> streamingErrorHandler,
-                                     @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract void sendMessage(
+            @NonNull Message request,
+            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler,
+            @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -135,9 +140,11 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param metadata the optional metadata to include when sending the message
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public void sendMessage(@NonNull Message request,
-                            @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
-                            @Nullable Map<String, Object> metadata) throws A2AClientException {
+    public void sendMessage(
+            @NonNull Message request,
+            @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
+            @Nullable Map<String, Object> metadata)
+            throws A2AClientException {
         sendMessage(request, pushNotificationConfiguration, metadata, null);
     }
 
@@ -156,10 +163,12 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(@NonNull Message request,
-                                     @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
-                                     @Nullable Map<String, Object> metadata,
-                                     @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract void sendMessage(
+            @NonNull Message request,
+            @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
+            @Nullable Map<String, Object> metadata,
+            @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -176,10 +185,12 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(@NonNull MessageSendParams params,
-                                     @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                     @Nullable Consumer<Throwable> streamingErrorHandler,
-                                     @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract void sendMessage(
+            @NonNull MessageSendParams params,
+            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler,
+            @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the current state and history of a specific task.
@@ -200,7 +211,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the task
      * @throws A2AClientException if retrieving the task fails for any reason
      */
-    public abstract Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract Task getTask(TaskQueryParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * List tasks with optional filtering and pagination.
@@ -221,7 +233,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the list tasks result containing tasks and pagination information
      * @throws A2AClientException if listing tasks fails for any reason
      */
-    public abstract ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract ListTasksResult listTasks(
+            ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Request the agent to cancel a specific task.
@@ -242,7 +255,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    public abstract Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Create or update the push notification configuration for a specific task.
@@ -265,8 +279,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if setting the task push notification configuration fails for any reason
      */
     public abstract TaskPushNotificationConfig createTaskPushNotificationConfiguration(
-            TaskPushNotificationConfig request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            TaskPushNotificationConfig request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the push notification configuration for a specific task.
@@ -289,8 +303,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if getting the task push notification config fails for any reason
      */
     public abstract TaskPushNotificationConfig getTaskPushNotificationConfiguration(
-            GetTaskPushNotificationConfigParams request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the list of push notification configurations for a specific task with pagination support.
@@ -313,8 +327,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
     public abstract ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigsParams request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Delete the list of push notification configurations for a specific task.
@@ -335,8 +349,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if deleting the task push notification configs fails for any reason
      */
     public abstract void deleteTaskPushNotificationConfigurations(
-            DeleteTaskPushNotificationConfigParams request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Subscribe to a task's event stream.
@@ -363,8 +377,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void subscribeToTask(@NonNull TaskIdParams request,
-                            @Nullable ClientCallContext context) throws A2AClientException {
+    public void subscribeToTask(@NonNull TaskIdParams request, @Nullable ClientCallContext context)
+            throws A2AClientException {
         subscribeToTask(request, consumers, streamingErrorHandler, context);
     }
 
@@ -380,9 +394,11 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void subscribeToTask(@NonNull TaskIdParams request,
-                            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            @Nullable Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+    public void subscribeToTask(
+            @NonNull TaskIdParams request,
+            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler)
+            throws A2AClientException {
         subscribeToTask(request, consumers, streamingErrorHandler, null);
     }
 
@@ -399,10 +415,12 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public abstract void subscribeToTask(@NonNull TaskIdParams request,
-                                     @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                     @Nullable Consumer<Throwable> streamingErrorHandler,
-                                     @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract void subscribeToTask(
+            @NonNull TaskIdParams request,
+            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+            @Nullable Consumer<Throwable> streamingErrorHandler,
+            @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the extended AgentCard.
@@ -432,7 +450,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the extended AgentCard
      * @throws A2AClientException if retrieving the extended agent card fails for any reason
      */
-    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context)
+            throws A2AClientException {
         return getExtendedAgentCard(null, context);
     }
 
@@ -444,8 +463,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the extended AgentCard
      * @throws A2AClientException if retrieving the extended agent card fails for any reason
      */
-    public abstract AgentCard getExtendedAgentCard(@Nullable String tenant,
-                                                   @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract AgentCard getExtendedAgentCard(
+            @Nullable String tenant, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.
@@ -460,5 +479,4 @@ public abstract class AbstractClient implements AutoCloseable {
     public @Nullable Consumer<Throwable> getStreamingErrorHandler() {
         return streamingErrorHandler;
     }
-
 }

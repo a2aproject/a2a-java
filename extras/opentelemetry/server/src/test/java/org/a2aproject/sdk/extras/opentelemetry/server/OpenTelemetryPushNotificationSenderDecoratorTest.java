@@ -41,20 +41,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetryPushNotificationSenderDecoratorTest {
 
-    @Mock
-    private PushNotificationSender delegate;
+    @Mock private PushNotificationSender delegate;
 
-    @Mock
-    private Tracer tracer;
+    @Mock private Tracer tracer;
 
-    @Mock
-    private SpanBuilder spanBuilder;
+    @Mock private SpanBuilder spanBuilder;
 
-    @Mock
-    private Span span;
+    @Mock private Span span;
 
-    @Mock
-    private Scope scope;
+    @Mock private Scope scope;
 
     private OpenTelemetryPushNotificationSenderDecorator decorator;
 
@@ -72,18 +67,20 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
     @Test
     void sendNotification_createsSpanWithTaskIdFromSnapshot() {
         when(delegate.sendNotification(any(), any())).thenReturn(true);
-        Task taskSnapshot = Task.builder()
-                .id("task-1")
-                .contextId("ctx-1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .history(Collections.emptyList())
-                .artifacts(Collections.emptyList())
-                .build();
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("task-1")
-                .contextId("ctx-1")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        Task taskSnapshot =
+                Task.builder()
+                        .id("task-1")
+                        .contextId("ctx-1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .history(Collections.emptyList())
+                        .artifacts(Collections.emptyList())
+                        .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-1")
+                        .contextId("ctx-1")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
         decorator.sendNotification(event, taskSnapshot);
 
@@ -100,12 +97,14 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
     @Test
     void sendNotification_createsSpanWithTaskIdFromEvent() {
         when(delegate.sendNotification(any(), any())).thenReturn(true);
-        org.a2aproject.sdk.spec.Artifact artifact = org.a2aproject.sdk.spec.Artifact.builder()
-                .artifactId("artifact-id")
-                .parts(List.of(new org.a2aproject.sdk.spec.TextPart("result")))
-                .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent(
-                "task-event-1", artifact, "ctx-event-1", null, null, null);
+        org.a2aproject.sdk.spec.Artifact artifact =
+                org.a2aproject.sdk.spec.Artifact.builder()
+                        .artifactId("artifact-id")
+                        .parts(List.of(new org.a2aproject.sdk.spec.TextPart("result")))
+                        .build();
+        TaskArtifactUpdateEvent event =
+                new TaskArtifactUpdateEvent(
+                        "task-event-1", artifact, "ctx-event-1", null, null, null);
 
         decorator.sendNotification(event, null);
 
@@ -118,11 +117,12 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
 
     @Test
     void sendNotification_setsErrorStatusOnDeliveryFailure() {
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("task-fail")
-                .contextId("ctx-fail")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-fail")
+                        .contextId("ctx-fail")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
         when(delegate.sendNotification(any(), any())).thenReturn(false);
 
         boolean result = decorator.sendNotification(event, null);
@@ -135,11 +135,12 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
 
     @Test
     void sendNotification_setsErrorStatusOnException() {
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("task-err")
-                .contextId("ctx-err")
-                .status(new TaskStatus(TaskState.TASK_STATE_FAILED))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-err")
+                        .contextId("ctx-err")
+                        .status(new TaskStatus(TaskState.TASK_STATE_FAILED))
+                        .build();
         RuntimeException ex = new RuntimeException("webhook unreachable");
         doThrow(ex).when(delegate).sendNotification(any(), any());
 
@@ -153,11 +154,12 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
     @Test
     void sendNotification_setsEventKindAttribute() {
         when(delegate.sendNotification(any(), any())).thenReturn(true);
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("task-kind")
-                .contextId("ctx-kind")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-kind")
+                        .contextId("ctx-kind")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .build();
 
         decorator.sendNotification(event, null);
 
@@ -169,11 +171,12 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
         when(delegate.sendNotification(any(), any())).thenReturn(true);
         OpenTelemetryPushNotificationSenderDecorator decoratorWithExtract =
                 new TestablePushNotificationSenderDecorator(delegate, tracer, true);
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("task-resp")
-                .contextId("ctx-resp")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-resp")
+                        .contextId("ctx-resp")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
         decoratorWithExtract.sendNotification(event, null);
 
@@ -183,11 +186,12 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
     @Test
     void sendNotification_noResponseAttributeWhenDisabled() {
         when(delegate.sendNotification(any(), any())).thenReturn(true);
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId("task-noresp")
-                .contextId("ctx-noresp")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("task-noresp")
+                        .contextId("ctx-noresp")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
 
         // decorator is constructed with extractResponse=false (setUp default)
         decorator.sendNotification(event, null);
@@ -195,13 +199,14 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
         verify(spanBuilder, never()).setAttribute(eq(GENAI_RESPONSE), anyString());
     }
 
-    static class TestablePushNotificationSenderDecorator extends OpenTelemetryPushNotificationSenderDecorator {
+    static class TestablePushNotificationSenderDecorator
+            extends OpenTelemetryPushNotificationSenderDecorator {
         TestablePushNotificationSenderDecorator(PushNotificationSender delegate, Tracer tracer) {
             super(delegate, tracer, false);
         }
 
-        TestablePushNotificationSenderDecorator(PushNotificationSender delegate, Tracer tracer,
-                                                 boolean extractResponse) {
+        TestablePushNotificationSenderDecorator(
+                PushNotificationSender delegate, Tracer tracer, boolean extractResponse) {
             super(delegate, tracer, extractResponse);
         }
     }

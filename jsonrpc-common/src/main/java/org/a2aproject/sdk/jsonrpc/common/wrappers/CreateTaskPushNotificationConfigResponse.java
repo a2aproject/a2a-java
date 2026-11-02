@@ -19,11 +19,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  * @see PushNotificationNotSupportedError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class CreateTaskPushNotificationConfigResponse extends A2AResponse<TaskPushNotificationConfig> {
+public final class CreateTaskPushNotificationConfigResponse
+        extends A2AResponse<TaskPushNotificationConfig> {
 
-    private CreateTaskPushNotificationConfigResponse() {
-    }
-
+    private CreateTaskPushNotificationConfigResponse() {}
 
     /**
      * Constructs response with all parameters.
@@ -33,7 +32,8 @@ public final class CreateTaskPushNotificationConfigResponse extends A2AResponse<
      * @param result the push notification configuration
      * @param error the error (if any)
      */
-    public CreateTaskPushNotificationConfigResponse(String jsonrpc, Object id, TaskPushNotificationConfig result, A2AError error) {
+    public CreateTaskPushNotificationConfigResponse(
+            String jsonrpc, Object id, TaskPushNotificationConfig result, A2AError error) {
         super(jsonrpc, id, result, error, TaskPushNotificationConfig.class);
     }
 

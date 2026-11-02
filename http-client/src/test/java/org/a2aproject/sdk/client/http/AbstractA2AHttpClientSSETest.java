@@ -9,13 +9,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-import org.a2aproject.sdk.common.A2AErrorMessages;
-import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockserver.integration.ClientAndServer;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +16,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.a2aproject.sdk.common.A2AErrorMessages;
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockserver.integration.ClientAndServer;
 
 public abstract class AbstractA2AHttpClientSSETest {
 
@@ -61,10 +60,11 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testGetAsyncSSE() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: event1\n\ndata: event2\n\ndata: event3\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: event1\n\ndata: event2\n\ndata: event3\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<String> events = new ArrayList<>();
@@ -72,11 +72,7 @@ public abstract class AbstractA2AHttpClientSSETest {
 
         client.createGet()
                 .url(getBaseUrl() + "/sse")
-                .getAsyncSSE(
-                        event -> events.add(event.data()),
-                        error::set,
-                        latch::countDown
-                );
+                .getAsyncSSE(event -> events.add(event.data()), error::set, latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS), "Expected completion handler to be called");
         assertNull(error.get(), "Expected no errors");
@@ -89,14 +85,16 @@ public abstract class AbstractA2AHttpClientSSETest {
     @Test
     public void testPostAsyncSSE() throws Exception {
         mockServer
-                .when(request()
-                        .withMethod("POST")
-                        .withPath("/sse")
-                        .withBody("{\"subscribe\":true}"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: message1\n\ndata: message2\n\n"));
+                .when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/sse")
+                                .withBody("{\"subscribe\":true}"))
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: message1\n\ndata: message2\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<String> events = new ArrayList<>();
@@ -105,11 +103,7 @@ public abstract class AbstractA2AHttpClientSSETest {
         client.createPost()
                 .url(getBaseUrl() + "/sse")
                 .body("{\"subscribe\":true}")
-                .postAsyncSSE(
-                        event -> events.add(event.data()),
-                        error::set,
-                        latch::countDown
-                );
+                .postAsyncSSE(event -> events.add(event.data()), error::set, latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS), "Expected completion handler to be called");
         assertNull(error.get(), "Expected no errors");
@@ -122,10 +116,14 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testSSEDataPrefixStripping() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: content here\n\ndata:no space\n\ndata:  extra spaces  \n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(
+                                        "data: content here\n\n"
+                                                + "data:no space\n\n"
+                                                + "data:  extra spaces  \n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<String> events = new ArrayList<>();
@@ -133,18 +131,15 @@ public abstract class AbstractA2AHttpClientSSETest {
 
         client.createGet()
                 .url(getBaseUrl() + "/sse")
-                .getAsyncSSE(
-                        event -> events.add(event.data()),
-                        error::set,
-                        latch::countDown
-                );
+                .getAsyncSSE(event -> events.add(event.data()), error::set, latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertNull(error.get());
         assertTrue(events.contains("content here"), "Should have stripped 'data: ' prefix");
         assertTrue(events.contains("no space"), "Should handle 'data:' without space");
         // SSE spec: only first space after colon is removed, rest is preserved
-        assertTrue(events.contains(" extra spaces  "), "Should preserve whitespace after first space");
+        assertTrue(
+                events.contains(" extra spaces  "), "Should preserve whitespace after first space");
     }
 
     @Test
@@ -165,14 +160,14 @@ public abstract class AbstractA2AHttpClientSSETest {
                             error.set(e);
                             errorLatch.countDown();
                         },
-                        () -> completed.set(true)
-                );
+                        () -> completed.set(true));
 
         assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Expected error handler to be called");
         assertNotNull(error.get(), "Expected an error");
         assertTrue(error.get() instanceof IOException, "Expected IOException");
-        assertTrue(error.get().getMessage().contains(A2AErrorMessages.AUTHENTICATION_FAILED),
-            "Expected authentication error message but got: " + error.get().getMessage());
+        assertTrue(
+                error.get().getMessage().contains(A2AErrorMessages.AUTHENTICATION_FAILED),
+                "Expected authentication error message but got: " + error.get().getMessage());
         assertFalse(completed.get(), "Should not call completion handler on error");
     }
 
@@ -194,14 +189,14 @@ public abstract class AbstractA2AHttpClientSSETest {
                             error.set(e);
                             errorLatch.countDown();
                         },
-                        () -> completed.set(true)
-                );
+                        () -> completed.set(true));
 
         assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Expected error handler to be called");
         assertNotNull(error.get(), "Expected an error");
         assertTrue(error.get() instanceof IOException, "Expected IOException");
-        assertTrue(error.get().getMessage().contains(A2AErrorMessages.AUTHORIZATION_FAILED),
-            "Expected authorization error message but got: " + error.get().getMessage());
+        assertTrue(
+                error.get().getMessage().contains(A2AErrorMessages.AUTHORIZATION_FAILED),
+                "Expected authorization error message but got: " + error.get().getMessage());
         assertFalse(completed.get(), "Should not call completion handler on error");
     }
 
@@ -209,10 +204,15 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testSSEEmptyLinesIgnored() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: first\n\n\n\ndata: second\n\ndata: \n\ndata: third\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(
+                                        "data: first\n\n\n\n"
+                                                + "data: second\n\n"
+                                                + "data: \n\n"
+                                                + "data: third\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<String> events = new ArrayList<>();
@@ -220,11 +220,7 @@ public abstract class AbstractA2AHttpClientSSETest {
 
         client.createGet()
                 .url(getBaseUrl() + "/sse")
-                .getAsyncSSE(
-                        event -> events.add(event.data()),
-                        error::set,
-                        latch::countDown
-                );
+                .getAsyncSSE(event -> events.add(event.data()), error::set, latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertNull(error.get());
@@ -237,15 +233,17 @@ public abstract class AbstractA2AHttpClientSSETest {
     @Test
     public void testSSEHeaderPropagation() throws Exception {
         mockServer
-                .when(request()
-                        .withMethod("GET")
-                        .withPath("/sse")
-                        .withHeader("Accept", "text/event-stream")
-                        .withHeader("Authorization", "Bearer token"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: authenticated\n\n"));
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/sse")
+                                .withHeader("Accept", "text/event-stream")
+                                .withHeader("Authorization", "Bearer token"))
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: authenticated\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<String> events = new ArrayList<>();
@@ -254,11 +252,7 @@ public abstract class AbstractA2AHttpClientSSETest {
         client.createGet()
                 .url(getBaseUrl() + "/sse")
                 .addHeader("Authorization", "Bearer token")
-                .getAsyncSSE(
-                        event -> events.add(event.data()),
-                        error::set,
-                        latch::countDown
-                );
+                .getAsyncSSE(event -> events.add(event.data()), error::set, latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertNull(error.get());
@@ -269,10 +263,16 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testSSETypedEvents() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("event: update\ndata: payload1\n\nevent: delete\ndata: payload2\n\ndata: no-type\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(
+                                        "event: update\n"
+                                                + "data: payload1\n\n"
+                                                + "event: delete\n"
+                                                + "data: payload2\n\n"
+                                                + "data: no-type\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -289,17 +289,21 @@ public abstract class AbstractA2AHttpClientSSETest {
         assertEquals("payload1", events.get(0).data());
         assertEquals("delete", events.get(1).eventType());
         assertEquals("payload2", events.get(1).data());
-        assertEquals("message", events.get(2).eventType(), "Event without 'event:' field should default to 'message'");
+        assertEquals(
+                "message",
+                events.get(2).eventType(),
+                "Event without 'event:' field should default to 'message'");
     }
 
     @Test
     public void testSSEEventIdAndLastEventId() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("id: 42\ndata: identified\n\ndata: no-id\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("id: 42\ndata: identified\n\ndata: no-id\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -313,17 +317,21 @@ public abstract class AbstractA2AHttpClientSSETest {
         assertNull(error.get());
         assertEquals(2, events.size());
         assertEquals("42", events.get(0).id());
-        assertEquals("42", events.get(1).id(), "Event without 'id:' field inherits last event ID per SSE spec");
+        assertEquals(
+                "42",
+                events.get(1).id(),
+                "Event without 'id:' field inherits last event ID per SSE spec");
     }
 
     @Test
     public void testSSEMultiLineData() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: line1\ndata: line2\ndata: line3\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: line1\ndata: line2\ndata: line3\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -341,13 +349,15 @@ public abstract class AbstractA2AHttpClientSSETest {
 
     @Test
     public void testSSEStreamEndingWithoutTrailingEmptyLine() throws Exception {
-        // Stream ends mid-event with no terminal empty line — flush() must dispatch the buffered data
+        // Stream ends mid-event with no terminal empty line — flush() must dispatch the buffered
+        // data
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: flushed-event"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: flushed-event"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -367,10 +377,11 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testPostSSETypedEvents() throws Exception {
         mockServer
                 .when(request().withMethod("POST").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("event: result\nid: 99\ndata: done\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("event: result\nid: 99\ndata: done\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -391,23 +402,26 @@ public abstract class AbstractA2AHttpClientSSETest {
 
     @Test
     public void testCustomSSEParserConfigRejectsOversizedLine() throws Exception {
-        A2AHttpClient configClient = createClient(SSEParserConfig.builder().maxLineLength(50).build());
+        A2AHttpClient configClient =
+                createClient(SSEParserConfig.builder().maxLineLength(50).build());
         assumeTrue(configClient != null, "Implementation does not support SSEParserConfig");
 
         // 60-char payload exceeds the 50-char per-line limit
         String oversizedPayload = "x".repeat(60);
         mockServer
                 .when(request().withMethod("POST").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: " + oversizedPayload + "\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: " + oversizedPayload + "\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
 
-        configClient.createPost()
+        configClient
+                .createPost()
                 .url(getBaseUrl() + "/sse")
                 .body("{}")
                 .postAsyncSSE(
@@ -416,8 +430,7 @@ public abstract class AbstractA2AHttpClientSSETest {
                             error.set(e);
                             latch.countDown();
                         },
-                        latch::countDown
-                );
+                        latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertNotNull(error.get(), "Custom maxLineLength should reject oversized SSE line");
@@ -426,30 +439,29 @@ public abstract class AbstractA2AHttpClientSSETest {
 
     @Test
     public void testCustomSSEParserConfigAcceptsLineWithinLimit() throws Exception {
-        A2AHttpClient configClient = createClient(SSEParserConfig.builder().maxLineLength(200).build());
+        A2AHttpClient configClient =
+                createClient(SSEParserConfig.builder().maxLineLength(200).build());
         assumeTrue(configClient != null, "Implementation does not support SSEParserConfig");
 
         // 100-char payload is within the 200-char per-line limit
         String payload = "x".repeat(100);
         mockServer
                 .when(request().withMethod("POST").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: " + payload + "\n\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: " + payload + "\n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
 
-        configClient.createPost()
+        configClient
+                .createPost()
                 .url(getBaseUrl() + "/sse")
                 .body("{}")
-                .postAsyncSSE(
-                        events::add,
-                        error::set,
-                        latch::countDown
-                );
+                .postAsyncSSE(events::add, error::set, latch::countDown);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertNull(error.get(), "Payload within limit should not trigger an error");
@@ -461,10 +473,11 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testSSEWithCRLFLineEndings() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: first\r\n\r\ndata: second\r\n\r\n"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: first\r\n\r\ndata: second\r\n\r\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -485,10 +498,11 @@ public abstract class AbstractA2AHttpClientSSETest {
     public void testSSEWithBareCRLineEndings() throws Exception {
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: first\r\rdata: second\r\r"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: first\r\rdata: second\r\r"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -510,10 +524,11 @@ public abstract class AbstractA2AHttpClientSSETest {
         // Mix of LF, CRLF, and bare CR terminators
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: lf\n\ndata: crlf\r\n\r\ndata: cr\r\r"));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody("data: lf\n\ndata: crlf\r\n\r\ndata: cr\r\r"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
@@ -533,7 +548,8 @@ public abstract class AbstractA2AHttpClientSSETest {
 
     @Test
     public void testSSEOversizedLineRejectedBeforeMemoryExhaustion() throws Exception {
-        A2AHttpClient configClient = createClient(SSEParserConfig.builder().maxLineLength(50).build());
+        A2AHttpClient configClient =
+                createClient(SSEParserConfig.builder().maxLineLength(50).build());
         assumeTrue(configClient != null, "Implementation does not support SSEParserConfig");
 
         // Valid event followed by an oversized line in the same event block.
@@ -543,16 +559,18 @@ public abstract class AbstractA2AHttpClientSSETest {
 
         mockServer
                 .when(request().withMethod("GET").withPath("/sse"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "text/event-stream")
-                        .withBody(body));
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(body));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<ServerSentEvent> events = new ArrayList<>();
         List<Throwable> errors = new ArrayList<>();
 
-        configClient.createGet()
+        configClient
+                .createGet()
                 .url(getBaseUrl() + "/sse")
                 .getAsyncSSE(events::add, errors::add, latch::countDown);
 

@@ -1,12 +1,19 @@
 package org.a2aproject.sdk.transport.rest.handler;
 
+import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.server.AgentCardOperation.EXTENDED_CARD;
 import static org.a2aproject.sdk.server.AgentCardOperation.PUSH_NOTIFICATIONS;
 import static org.a2aproject.sdk.server.AgentCardOperation.STREAMING;
-
-import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -19,16 +26,6 @@ import java.util.concurrent.Flow;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
@@ -142,7 +139,8 @@ public class RestHandler {
     private RequestHandler requestHandler;
     private Executor executor;
     private final CachingAgentCardTransportValidator transportValidator =
-            new CachingAgentCardTransportValidator(AgentCardValidator::validateTransportConfiguration);
+            new CachingAgentCardTransportValidator(
+                    AgentCardValidator::validateTransportConfiguration);
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -166,12 +164,18 @@ public class RestHandler {
      * @param agentCardRouterInstance optional agent card router instance for multitenancy
      */
     @Inject
-    public RestHandler(@PublicAgentCard Instance<AgentCard> agentCardInstance,
+    public RestHandler(
+            @PublicAgentCard Instance<AgentCard> agentCardInstance,
             @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-            AgentCardCacheMetadata cacheMetadata, RequestHandler requestHandler, @Internal Executor executor,
+            AgentCardCacheMetadata cacheMetadata,
+            RequestHandler requestHandler,
+            @Internal Executor executor,
             @Any @Nullable Instance<AgentCardRouter> agentCardRouterInstance) {
-        this.agentCardResolver = AgentCardResolver.of(() -> CdiUtils.resolveDefault(agentCardInstance),
-                () -> CdiUtils.resolveDefault(extendedAgentCard), CdiUtils.getIfResolvable(agentCardRouterInstance));
+        this.agentCardResolver =
+                AgentCardResolver.of(
+                        () -> CdiUtils.resolveDefault(agentCardInstance),
+                        () -> CdiUtils.resolveDefault(extendedAgentCard),
+                        CdiUtils.getIfResolvable(agentCardRouterInstance));
         this.agentCardPolicy = new AgentCardRequestPolicy(agentCardResolver);
         this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
@@ -186,10 +190,18 @@ public class RestHandler {
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
-    public RestHandler(@Nullable AgentCard agentCard, AgentCardCacheMetadata cacheMetadata,
-            RequestHandler requestHandler, Executor executor) {
-        this(agentCard != null ? new FixedInstance<>(agentCard) : FixedInstance.empty(), FixedInstance.empty(),
-                cacheMetadata, requestHandler, executor, null);
+    public RestHandler(
+            @Nullable AgentCard agentCard,
+            AgentCardCacheMetadata cacheMetadata,
+            RequestHandler requestHandler,
+            Executor executor) {
+        this(
+                agentCard != null ? new FixedInstance<>(agentCard) : FixedInstance.empty(),
+                FixedInstance.empty(),
+                cacheMetadata,
+                requestHandler,
+                executor,
+                null);
     }
 
     /**
@@ -240,12 +252,19 @@ public class RestHandler {
      */
     public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
         try {
-            EffectiveAgentCard effectiveCard = preflight(tenant, context, AgentCardOperation.none());
-            org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+            EffectiveAgentCard effectiveCard =
+                    preflight(tenant, context, AgentCardOperation.none());
+            org.a2aproject.sdk.grpc.SendMessageRequest.Builder request =
+                    org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(Utils.defaultIfNull(effectiveCard.tenant(), ""));
-            EventKind result = requestHandler.onMessageSend(ProtoUtils.FromProto.messageSendParams(request), context);
-            return createSuccessResponse(200, org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder(ProtoUtils.ToProto.taskOrMessage(result)));
+            EventKind result =
+                    requestHandler.onMessageSend(
+                            ProtoUtils.FromProto.messageSendParams(request), context);
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder(
+                            ProtoUtils.ToProto.taskOrMessage(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -302,7 +321,8 @@ public class RestHandler {
      * @see RequestHandler#onMessageSendStream(org.a2aproject.sdk.spec.MessageSendParams, ServerCallContext)
      * @see HTTPRestStreamingResponse
      */
-    public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
+    public HTTPRestResponse sendStreamingMessage(
+            ServerCallContext context, String tenant, String body) {
         try {
             EffectiveAgentCard effectiveCard;
             try {
@@ -310,21 +330,27 @@ public class RestHandler {
             } catch (UnsupportedOperationError e) {
                 return createErrorResponse(e);
             }
-            org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+            org.a2aproject.sdk.grpc.SendMessageRequest.Builder request =
+                    org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(Utils.defaultIfNull(effectiveCard.tenant(), ""));
             MessageSendParams params = ProtoUtils.FromProto.messageSendParams(request);
             try {
-                requestHandler.authorizeTaskAccess(params.message().taskId(), context, TaskOperation.MESSAGE_SEND_STREAM);
+                requestHandler.authorizeTaskAccess(
+                        params.message().taskId(), context, TaskOperation.MESSAGE_SEND_STREAM);
             } catch (A2AError e) {
                 return createErrorResponse(e);
             }
-            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(params, context);
+            Flow.Publisher<StreamingEventKind> publisher =
+                    requestHandler.onMessageSendStream(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(internalError(throwable)).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(
+                            new HTTPRestErrorResponse(internalError(throwable)).toJson()));
         }
     }
 
@@ -352,18 +378,27 @@ public class RestHandler {
      * @see org.a2aproject.sdk.server.agentexecution.AgentExecutor#cancel
      */
     @SuppressWarnings("unchecked")
-    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, @Nullable String taskId) {
+    public HTTPRestResponse cancelTask(
+            ServerCallContext context, String tenant, String body, @Nullable String taskId) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
         }
         try {
-            EffectiveAgentCard effectiveCard = preflight(tenant, context, AgentCardOperation.none());
+            EffectiveAgentCard effectiveCard =
+                    preflight(tenant, context, AgentCardOperation.none());
             Map<String, Object> metadata = JsonUtil.readMetadata(body);
-            CancelTaskParams params = CancelTaskParams.builder().id(requiredTaskId).tenant(effectiveCard.tenant()).metadata(metadata).build();
+            CancelTaskParams params =
+                    CancelTaskParams.builder()
+                            .id(requiredTaskId)
+                            .tenant(effectiveCard.tenant())
+                            .metadata(metadata)
+                            .build();
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
-                return createSuccessResponse(200, org.a2aproject.sdk.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
+                return createSuccessResponse(
+                        200,
+                        org.a2aproject.sdk.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
             }
             throw new UnsupportedOperationError();
         } catch (A2AError e) {
@@ -382,24 +417,37 @@ public class RestHandler {
      * @param taskId the ID of the task
      * @return the HTTP response containing the created configuration
      */
-    public HTTPRestResponse createTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String body, @Nullable String taskId) {
+    public HTTPRestResponse createTaskPushNotificationConfiguration(
+            ServerCallContext context, String tenant, String body, @Nullable String taskId) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
         }
         try {
             EffectiveAgentCard effectiveCard = preflight(tenant, context, PUSH_NOTIFICATIONS);
-            org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
+            org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder =
+                    org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
             parseRequestBody(body, builder);
 
             String taskIdFromBody = builder.getTaskId();
             if (!taskIdFromBody.isEmpty() && !taskIdFromBody.equals(requiredTaskId)) {
-                throw new InvalidParamsError("Task ID in request body (" + taskIdFromBody + ") does not match task ID in URL path (" + requiredTaskId + ").");
+                throw new InvalidParamsError(
+                        "Task ID in request body ("
+                                + taskIdFromBody
+                                + ") does not match task ID in URL path ("
+                                + requiredTaskId
+                                + ").");
             }
             builder.setTenant(Utils.defaultIfNull(effectiveCard.tenant(), ""));
             builder.setTaskId(requiredTaskId);
-            TaskPushNotificationConfig result = requestHandler.onCreateTaskPushNotificationConfig(ProtoUtils.FromProto.createTaskPushNotificationConfig(builder), context);
-            return createSuccessResponse(201, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
+            TaskPushNotificationConfig result =
+                    requestHandler.onCreateTaskPushNotificationConfig(
+                            ProtoUtils.FromProto.createTaskPushNotificationConfig(builder),
+                            context);
+            return createSuccessResponse(
+                    201,
+                    org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder(
+                            ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -439,7 +487,8 @@ public class RestHandler {
      * @see RequestHandler#onSubscribeToTask(TaskIdParams, ServerCallContext)
      * @see #sendStreamingMessage(ServerCallContext, String, String)
      */
-    public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, @Nullable String taskId) {
+    public HTTPRestResponse subscribeToTask(
+            ServerCallContext context, String tenant, @Nullable String taskId) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
@@ -451,18 +500,27 @@ public class RestHandler {
             } catch (UnsupportedOperationError e) {
                 return createErrorResponse(e);
             }
-            TaskIdParams params = TaskIdParams.builder().id(requiredTaskId).tenant(effectiveCard.tenant()).build();
+            TaskIdParams params =
+                    TaskIdParams.builder()
+                            .id(requiredTaskId)
+                            .tenant(effectiveCard.tenant())
+                            .build();
             try {
-                requestHandler.authorizeTaskAccess(params.id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
+                requestHandler.authorizeTaskAccess(
+                        params.id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
             } catch (A2AError e) {
                 return createErrorResponse(e);
             }
-            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onSubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> publisher =
+                    requestHandler.onSubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(internalError(throwable)).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(
+                            new HTTPRestErrorResponse(internalError(throwable)).toJson()));
         }
     }
 
@@ -475,7 +533,11 @@ public class RestHandler {
      * @param historyLength the maximum number of history entries to include
      * @return the HTTP response containing the task
      */
-    public HTTPRestResponse getTask(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String historyLength) {
+    public HTTPRestResponse getTask(
+            ServerCallContext context,
+            String tenant,
+            @Nullable String taskId,
+            @Nullable String historyLength) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
@@ -489,11 +551,16 @@ public class RestHandler {
             return createErrorResponse(new InvalidParamsError("bad historyLength"));
         }
         try {
-            EffectiveAgentCard effectiveCard = preflight(tenant, context, AgentCardOperation.none());
-            TaskQueryParams params = new TaskQueryParams(requiredTaskId, parsedHistoryLength, effectiveCard.tenant());
+            EffectiveAgentCard effectiveCard =
+                    preflight(tenant, context, AgentCardOperation.none());
+            TaskQueryParams params =
+                    new TaskQueryParams(
+                            requiredTaskId, parsedHistoryLength, effectiveCard.tenant());
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
-                return createSuccessResponse(200, org.a2aproject.sdk.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
+                return createSuccessResponse(
+                        200,
+                        org.a2aproject.sdk.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
             }
             throw new TaskNotFoundError();
         } catch (IllegalArgumentException e) {
@@ -545,10 +612,15 @@ public class RestHandler {
      * @see RequestHandler#onListTasks(ListTasksParams, ServerCallContext)
      * @see TaskState
      */
-    public HTTPRestResponse listTasks(ServerCallContext context, String tenant,
-            @Nullable String contextId, @Nullable String status,
-            @Nullable String pageSize, @Nullable String pageToken,
-            @Nullable String historyLength, @Nullable String statusTimestampAfter,
+    public HTTPRestResponse listTasks(
+            ServerCallContext context,
+            String tenant,
+            @Nullable String contextId,
+            @Nullable String status,
+            @Nullable String pageSize,
+            @Nullable String pageToken,
+            @Nullable String historyLength,
+            @Nullable String statusTimestampAfter,
             @Nullable String includeArtifacts) {
         Integer parsedPageSize = null;
         Integer parsedHistoryLength = null;
@@ -567,12 +639,15 @@ public class RestHandler {
                 parsedIncludeArtifacts = Boolean.valueOf(includeArtifacts);
             }
         } catch (NumberFormatException e) {
-            return createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
+            return createErrorResponse(
+                    new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {
-            return createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+            return createErrorResponse(
+                    new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
         }
         try {
-            EffectiveAgentCard effectiveCard = preflight(tenant, context, AgentCardOperation.none());
+            EffectiveAgentCard effectiveCard =
+                    preflight(tenant, context, AgentCardOperation.none());
             // Build params
             ListTasksParams.Builder paramsBuilder = ListTasksParams.builder();
             if (contextId != null) {
@@ -584,9 +659,10 @@ public class RestHandler {
                 try {
                     taskState = TaskState.valueOf(status);
                 } catch (IllegalArgumentException e) {
-                    String validStates = Arrays.stream(TaskState.values())
-                            .map(TaskState::name)
-                            .collect(Collectors.joining(", "));
+                    String validStates =
+                            Arrays.stream(TaskState.values())
+                                    .map(TaskState::name)
+                                    .collect(Collectors.joining(", "));
                     Map<String, Object> errorData = new HashMap<>();
                     errorData.put("parameter", "status");
                     errorData.put("reason", "Must be one of: " + validStates);
@@ -621,7 +697,10 @@ public class RestHandler {
             ListTasksParams params = paramsBuilder.build();
 
             ListTasksResult result = requestHandler.onListTasks(params, context);
-            return createSuccessResponse(200, org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder(ProtoUtils.ToProto.listTasksResult(result)));
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder(
+                            ProtoUtils.ToProto.listTasksResult(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -638,7 +717,11 @@ public class RestHandler {
      * @param configId the ID of the configuration to retrieve
      * @return the HTTP response containing the configuration
      */
-    public HTTPRestResponse getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String configId) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(
+            ServerCallContext context,
+            String tenant,
+            @Nullable String taskId,
+            @Nullable String configId) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
@@ -649,9 +732,15 @@ public class RestHandler {
         }
         try {
             EffectiveAgentCard effectiveCard = preflight(tenant, context, PUSH_NOTIFICATIONS);
-            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(requiredTaskId, requiredConfigId, effectiveCard.tenant());
-            TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
-            return createSuccessResponse(200, org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
+            GetTaskPushNotificationConfigParams params =
+                    new GetTaskPushNotificationConfigParams(
+                            requiredTaskId, requiredConfigId, effectiveCard.tenant());
+            TaskPushNotificationConfig config =
+                    requestHandler.onGetTaskPushNotificationConfig(params, context);
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder(
+                            ProtoUtils.ToProto.taskPushNotificationConfig(config)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -669,7 +758,12 @@ public class RestHandler {
      * @param pageToken the token for pagination
      * @return the HTTP response containing the list of configurations
      */
-    public HTTPRestResponse listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String pageSize, @Nullable String pageToken) {
+    public HTTPRestResponse listTaskPushNotificationConfigurations(
+            ServerCallContext context,
+            String tenant,
+            @Nullable String taskId,
+            @Nullable String pageSize,
+            @Nullable String pageToken) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
@@ -685,9 +779,18 @@ public class RestHandler {
         String normalizedPageToken = Utils.defaultIfNull(pageToken, "");
         try {
             EffectiveAgentCard effectiveCard = preflight(tenant, context, PUSH_NOTIFICATIONS);
-            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(requiredTaskId, parsedPageSize, normalizedPageToken, effectiveCard.tenant());
-            ListTaskPushNotificationConfigsResult result = requestHandler.onListTaskPushNotificationConfigs(params, context);
-            return createSuccessResponse(200, org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(result)));
+            ListTaskPushNotificationConfigsParams params =
+                    new ListTaskPushNotificationConfigsParams(
+                            requiredTaskId,
+                            parsedPageSize,
+                            normalizedPageToken,
+                            effectiveCard.tenant());
+            ListTaskPushNotificationConfigsResult result =
+                    requestHandler.onListTaskPushNotificationConfigs(params, context);
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(
+                            ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -704,7 +807,11 @@ public class RestHandler {
      * @param configId the ID of the configuration to delete
      * @return the HTTP response with no content on success
      */
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, @Nullable String taskId, @Nullable String configId) {
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(
+            ServerCallContext context,
+            String tenant,
+            @Nullable String taskId,
+            @Nullable String configId) {
         String requiredTaskId = requireNonBlankParam(taskId);
         if (requiredTaskId == null) {
             return createErrorResponse(new InvalidParamsError("bad task id"));
@@ -715,7 +822,9 @@ public class RestHandler {
         }
         try {
             EffectiveAgentCard effectiveCard = preflight(tenant, context, PUSH_NOTIFICATIONS);
-            DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(requiredTaskId, requiredConfigId, effectiveCard.tenant());
+            DeleteTaskPushNotificationConfigParams params =
+                    new DeleteTaskPushNotificationConfigParams(
+                            requiredTaskId, requiredConfigId, effectiveCard.tenant());
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
             return new HTTPRestResponse(204, APPLICATION_JSON, "");
         } catch (A2AError e) {
@@ -737,7 +846,8 @@ public class RestHandler {
      * @return the selected card and canonical tenant
      * @throws A2AError if request preflight fails
      */
-    private EffectiveAgentCard preflight(@Nullable String tenant, ServerCallContext context, AgentCardOperation operation) {
+    private EffectiveAgentCard preflight(
+            @Nullable String tenant, ServerCallContext context, AgentCardOperation operation) {
         try {
             return agentCardPolicy.preflight(tenant, context, transportValidator, operation);
         } catch (TenantNotFoundException ex) {
@@ -752,7 +862,8 @@ public class RestHandler {
         return value;
     }
 
-    private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder) throws A2AError {
+    private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder)
+            throws A2AError {
         try {
             if (body == null || body.trim().isEmpty()) {
                 throw new InvalidRequestError("Request body is required");
@@ -760,7 +871,9 @@ public class RestHandler {
             validate(body);
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Error parsing JSON request body (length={0})",
                     body != null ? body.length() : 0);
             LOGGER.log(Level.SEVERE, "Parse error details", e);
             throw new InvalidParamsError("Failed to parse request body: " + e.getMessage());
@@ -775,10 +888,13 @@ public class RestHandler {
         }
     }
 
-    private HTTPRestResponse createSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
+    private HTTPRestResponse createSuccessResponse(
+            int statusCode, com.google.protobuf.Message.Builder builder) {
         try {
             // Include default value fields to ensure empty arrays, zeros, etc. are present in JSON
-            String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
+            String jsonBody =
+                    ProtoJsonUtils.toJson(
+                            JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
             return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.SEVERE, "Failed to serialize response", e);
@@ -818,72 +934,134 @@ public class RestHandler {
         return new InternalError("Internal error");
     }
 
-    private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind> publisher) {
+    private HTTPRestStreamingResponse createStreamingResponse(
+            Flow.Publisher<StreamingEventKind> publisher) {
         return new HTTPRestStreamingResponse(convertToSendStreamingMessageResponse(publisher));
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
     private Flow.Publisher<String> convertToSendStreamingMessageResponse(
             Flow.Publisher<StreamingEventKind> publisher) {
-        // We can't use the normal convertingProcessor since that propagates any errors as an error handled
+        // We can't use the normal convertingProcessor since that propagates any errors as an error
+        // handled
         // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
-        LOGGER.log(Level.FINE, "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
-        return ZeroPublisher.create(createTubeConfig(), tube -> {
-            LOGGER.log(Level.FINE, "REST: ZeroPublisher tube created, starting CompletableFuture.runAsync");
-            CompletableFuture.runAsync(() -> {
-                LOGGER.log(Level.FINE, "REST: Inside CompletableFuture, subscribing to EventKind publisher");
-                publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
-                    Flow.@Nullable Subscription subscription;
+        LOGGER.log(
+                Level.FINE,
+                "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
+        return ZeroPublisher.create(
+                createTubeConfig(),
+                tube -> {
+                    LOGGER.log(
+                            Level.FINE,
+                            "REST: ZeroPublisher tube created, starting"
+                                    + " CompletableFuture.runAsync");
+                    CompletableFuture.runAsync(
+                            () -> {
+                                LOGGER.log(
+                                        Level.FINE,
+                                        "REST: Inside CompletableFuture, subscribing to EventKind"
+                                                + " publisher");
+                                publisher.subscribe(
+                                        new Flow.Subscriber<StreamingEventKind>() {
+                                            Flow.@Nullable Subscription subscription;
 
-                    @Override
-                    public void onSubscribe(Flow.Subscription subscription) {
-                        LOGGER.log(Level.FINE, "REST: onSubscribe called, storing subscription and requesting first event");
-                        this.subscription = subscription;
-                        subscription.request(1);
-                    }
+                                            @Override
+                                            public void onSubscribe(
+                                                    Flow.Subscription subscription) {
+                                                LOGGER.log(
+                                                        Level.FINE,
+                                                        "REST: onSubscribe called, storing"
+                                                            + " subscription and requesting first"
+                                                            + " event");
+                                                this.subscription = subscription;
+                                                subscription.request(1);
+                                            }
 
-                    @Override
-                    public void onNext(StreamingEventKind item) {
-                        LOGGER.log(Level.FINE, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
-                        try {
-                            String payload = ProtoJsonUtils.toJson(
-                                    JsonFormat.printer().omittingInsignificantWhitespace(), ProtoUtils.ToProto.taskOrMessageStream(item));
-                            LOGGER.log(Level.FINE, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
-                            tube.send(payload);
-                            LOGGER.log(Level.FINE, "REST: tube.send() completed, requesting next event from EventConsumer");
-                            // Request next event from EventConsumer (Chain 1: EventConsumer → RestHandler)
-                            // This is safe because ZeroPublisher buffers items
-                            // Chain 2 (ZeroPublisher → MultiSseSupport) controls actual delivery via request(1) in onWriteDone()
-                            if (subscription != null) {
-                                subscription.request(1);
-                            } else {
-                                LOGGER.log(Level.WARNING, "REST: subscription is null in onNext!");
-                            }
-                        } catch (InvalidProtocolBufferException ex) {
-                            LOGGER.log(Level.SEVERE, "REST: JSON conversion failed", ex);
-                            onError(ex);
-                        }
-                    }
+                                            @Override
+                                            public void onNext(StreamingEventKind item) {
+                                                LOGGER.log(
+                                                        Level.FINE,
+                                                        "REST: onNext called with event: {0}",
+                                                        item.getClass().getSimpleName());
+                                                try {
+                                                    String payload =
+                                                            ProtoJsonUtils.toJson(
+                                                                    JsonFormat.printer()
+                                                                            .omittingInsignificantWhitespace(),
+                                                                    ProtoUtils.ToProto
+                                                                            .taskOrMessageStream(
+                                                                                    item));
+                                                    LOGGER.log(
+                                                            Level.FINE,
+                                                            "REST: Converted to JSON, sending via"
+                                                                    + " tube: {0}",
+                                                            payload.substring(
+                                                                    0,
+                                                                    Math.min(
+                                                                            100,
+                                                                            payload.length())));
+                                                    tube.send(payload);
+                                                    LOGGER.log(
+                                                            Level.FINE,
+                                                            "REST: tube.send() completed,"
+                                                                    + " requesting next event from"
+                                                                    + " EventConsumer");
+                                                    // Request next event from EventConsumer (Chain
+                                                    // 1: EventConsumer → RestHandler)
+                                                    // This is safe because ZeroPublisher buffers
+                                                    // items
+                                                    // Chain 2 (ZeroPublisher → MultiSseSupport)
+                                                    // controls actual delivery via request(1) in
+                                                    // onWriteDone()
+                                                    if (subscription != null) {
+                                                        subscription.request(1);
+                                                    } else {
+                                                        LOGGER.log(
+                                                                Level.WARNING,
+                                                                "REST: subscription is null in"
+                                                                        + " onNext!");
+                                                    }
+                                                } catch (InvalidProtocolBufferException ex) {
+                                                    LOGGER.log(
+                                                            Level.SEVERE,
+                                                            "REST: JSON conversion failed",
+                                                            ex);
+                                                    onError(ex);
+                                                }
+                                            }
 
-                    @Override
-                    public void onError(Throwable throwable) {
-                        LOGGER.log(Level.SEVERE, "REST: onError called", throwable);
-                        if (throwable instanceof A2AError jsonrpcError) {
-                            tube.send(new HTTPRestErrorResponse(jsonrpcError).toJson());
-                        } else {
-                            tube.send(new HTTPRestErrorResponse(internalError(throwable)).toJson());
-                        }
-                        onComplete();
-                    }
+                                            @Override
+                                            public void onError(Throwable throwable) {
+                                                LOGGER.log(
+                                                        Level.SEVERE,
+                                                        "REST: onError called",
+                                                        throwable);
+                                                if (throwable instanceof A2AError jsonrpcError) {
+                                                    tube.send(
+                                                            new HTTPRestErrorResponse(jsonrpcError)
+                                                                    .toJson());
+                                                } else {
+                                                    tube.send(
+                                                            new HTTPRestErrorResponse(
+                                                                            internalError(
+                                                                                    throwable))
+                                                                    .toJson());
+                                                }
+                                                onComplete();
+                                            }
 
-                    @Override
-                    public void onComplete() {
-                        LOGGER.log(Level.FINE, "REST: onComplete called, calling tube.complete()");
-                        tube.complete();
-                    }
+                                            @Override
+                                            public void onComplete() {
+                                                LOGGER.log(
+                                                        Level.FINE,
+                                                        "REST: onComplete called, calling"
+                                                                + " tube.complete()");
+                                                tube.complete();
+                                            }
+                                        });
+                            },
+                            executor);
                 });
-            }, executor);
-        });
     }
 
     /**
@@ -922,14 +1100,16 @@ public class RestHandler {
      * @see #getAgentCard()
      * @see AgentCard
      */
-    public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, @Nullable String tenant) {
+    public HTTPRestResponse getExtendedAgentCard(
+            ServerCallContext context, @Nullable String tenant) {
         try {
             Utils.validateTenant(tenant);
-            EffectiveAgentCard effectiveCard = preflight(tenant, context,
-                    EXTENDED_CARD);
-            AgentCard extCard = agentCardResolver.resolveExtendedDiscoveryCard(effectiveCard.tenant());
+            EffectiveAgentCard effectiveCard = preflight(tenant, context, EXTENDED_CARD);
+            AgentCard extCard =
+                    agentCardResolver.resolveExtendedDiscoveryCard(effectiveCard.tenant());
             if (extCard == null) {
-                throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
+                throw new ExtendedAgentCardNotConfiguredError(
+                        null, "Extended Card not configured", null);
             }
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extCard));
         } catch (A2AError e) {
@@ -997,7 +1177,9 @@ public class RestHandler {
                 return new HTTPRestResponse(404, "text/plain", "Public agent card not configured");
             }
             transportValidator.validate(card);
-            return new HTTPRestResponse(200, APPLICATION_JSON,
+            return new HTTPRestResponse(
+                    200,
+                    APPLICATION_JSON,
                     JsonUtil.toJson(card),
                     cacheMetadata.getHttpHeadersMap());
         } catch (TenantNotFoundException e) {
@@ -1036,7 +1218,8 @@ public class RestHandler {
          * @param body the response body
          * @param headers additional HTTP headers
          */
-        public HTTPRestResponse(int statusCode, String contentType, String body, Map<String, String> headers) {
+        public HTTPRestResponse(
+                int statusCode, String contentType, String body, Map<String, String> headers) {
             this.statusCode = statusCode;
             this.contentType = contentType;
             this.body = body;
@@ -1081,7 +1264,16 @@ public class RestHandler {
 
         @Override
         public String toString() {
-            return "HTTPRestResponse{" + "statusCode=" + statusCode + ", contentType=" + contentType + ", body=" + body + ", headers=" + headers + '}';
+            return "HTTPRestResponse{"
+                    + "statusCode="
+                    + statusCode
+                    + ", contentType="
+                    + contentType
+                    + ", body="
+                    + body
+                    + ", headers="
+                    + headers
+                    + '}';
         }
     }
 
@@ -1141,11 +1333,15 @@ public class RestHandler {
         private HTTPRestErrorResponse(A2AError a2aError) {
             A2AErrorCodes errorCode = A2AErrorCodes.fromCode(a2aError.getCode());
             int httpCode = mapErrorToHttpStatus(a2aError);
-            String status = errorCode != null
-                    ? errorCode.grpcStatus()
-                    : A2AErrorCodes.INTERNAL.grpcStatus();
+            String status =
+                    errorCode != null
+                            ? errorCode.grpcStatus()
+                            : A2AErrorCodes.INTERNAL.grpcStatus();
             String reason = errorCode != null ? errorCode.name() : "INTERNAL";
-            String message = a2aError.getMessage() == null ? a2aError.getClass().getName() : a2aError.getMessage();
+            String message =
+                    a2aError.getMessage() == null
+                            ? a2aError.getClass().getName()
+                            : a2aError.getMessage();
 
             ErrorDetail detail = ErrorDetail.of(reason, a2aError.getDetails());
             this.error = new ErrorBody(httpCode, status, message, List.of(detail));
@@ -1156,7 +1352,8 @@ public class RestHandler {
                 return JsonUtil.toJson(this);
             } catch (JsonProcessingException ex) {
                 LOGGER.log(Level.SEVERE, "Failed to serialize HTTPRestErrorResponse to JSON", ex);
-                return "{\"error\":{\"code\":500,\"status\":\"INTERNAL\",\"message\":\"Internal Server Error\",\"details\":[]}}";
+                return "{\"error\":{\"code\":500,\"status\":\"INTERNAL\",\"message\":\"Internal"
+                        + " Server Error\",\"details\":[]}}";
             }
         }
 
@@ -1165,6 +1362,7 @@ public class RestHandler {
             return "HTTPRestErrorResponse{error=" + error + '}';
         }
 
-        private record ErrorBody(int code, String status, String message, List<ErrorDetail> details) {}
+        private record ErrorBody(
+                int code, String status, String message, List<ErrorDetail> details) {}
     }
 }

@@ -117,20 +117,26 @@ public class SseFormatter {
         } else if (response instanceof ListTasksResponse r) {
             return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.listTasksResult(r.getResult());
         } else if (response instanceof CreateTaskPushNotificationConfigResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto
+                    .createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto
+                    .getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof ListTaskPushNotificationConfigsResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto
+                    .listTaskPushNotificationConfigsResponse(r.getResult());
         } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
             return com.google.protobuf.Empty.getDefaultInstance();
         } else if (response instanceof GetExtendedAgentCardResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.getExtendedCardResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.getExtendedCardResponse(
+                    r.getResult());
         } else if (response instanceof SendStreamingMessageResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.taskOrMessageStream(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.taskOrMessageStream(
+                    r.getResult());
         } else {
-            throw new IllegalArgumentException("Unknown response type: " + response.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Unknown response type: " + response.getClass().getName());
         }
     }
 }

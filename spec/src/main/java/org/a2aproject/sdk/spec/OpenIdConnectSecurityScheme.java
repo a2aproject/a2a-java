@@ -29,7 +29,8 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://openid.net/specs/openid-connect-discovery-1_0.html">OpenID Connect Discovery</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record OpenIdConnectSecurityScheme(String openIdConnectUrl, @Nullable String description) implements SecurityScheme {
+public record OpenIdConnectSecurityScheme(String openIdConnectUrl, @Nullable String description)
+        implements SecurityScheme {
 
     /**
      * The type identifier for OpenID Connect security schemes: "openIdConnect".
@@ -74,8 +75,7 @@ public record OpenIdConnectSecurityScheme(String openIdConnectUrl, @Nullable Str
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the OpenID Connect Discovery URL.
@@ -106,7 +106,8 @@ public record OpenIdConnectSecurityScheme(String openIdConnectUrl, @Nullable Str
          * @throws IllegalArgumentException if openIdConnectUrl is null
          */
         public OpenIdConnectSecurityScheme build() {
-            return new OpenIdConnectSecurityScheme(Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl), description);
+            return new OpenIdConnectSecurityScheme(
+                    Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl), description);
         }
     }
 }

@@ -25,8 +25,7 @@ public class A2AClientError extends RuntimeException {
     /**
      * Constructs a new A2AClientError with no detail message.
      */
-    public A2AClientError() {
-    }
+    public A2AClientError() {}
 
     /**
      * Constructs a new A2AClientError with the specified detail message.

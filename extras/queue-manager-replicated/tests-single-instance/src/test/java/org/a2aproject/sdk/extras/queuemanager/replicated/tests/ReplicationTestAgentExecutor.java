@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.extras.queuemanager.replicated.tests;
 
-import java.util.List;
-
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
+import java.util.List;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
@@ -13,7 +12,6 @@ import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
-import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
  * Test AgentExecutor for replicated queue manager integration testing.

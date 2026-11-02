@@ -7,5 +7,4 @@ import io.quarkus.test.junit.QuarkusTest;
  * Runs in JVM mode with @QuarkusTest annotation.
  */
 @QuarkusTest
-class OpenTelemetryA2ATest extends OpenTelemetryA2ABaseTest {
-}
+class OpenTelemetryA2ATest extends OpenTelemetryA2ABaseTest {}

@@ -3,7 +3,6 @@ package org.a2aproject.sdk.compat03.spec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
@@ -11,12 +10,25 @@ import org.a2aproject.sdk.util.Assert;
  * metadata including the agent's identity, capabilities, skills, supported
  * communication methods, and security requirements.
  */
-public record AgentCard_v0_3(String name, String description, String url, AgentProvider_v0_3 provider,
-                             String version, String documentationUrl, AgentCapabilities_v0_3 capabilities,
-                             List<String> defaultInputModes, List<String> defaultOutputModes, List<AgentSkill_v0_3> skills,
-                             boolean supportsAuthenticatedExtendedCard, Map<String, SecurityScheme_v0_3> securitySchemes,
-                             List<Map<String, List<String>>> security, String iconUrl, List<AgentInterface_v0_3> additionalInterfaces,
-                             String preferredTransport, String protocolVersion, List<AgentCardSignature_v0_3> signatures) {
+public record AgentCard_v0_3(
+        String name,
+        String description,
+        String url,
+        AgentProvider_v0_3 provider,
+        String version,
+        String documentationUrl,
+        AgentCapabilities_v0_3 capabilities,
+        List<String> defaultInputModes,
+        List<String> defaultOutputModes,
+        List<AgentSkill_v0_3> skills,
+        boolean supportsAuthenticatedExtendedCard,
+        Map<String, SecurityScheme_v0_3> securitySchemes,
+        List<Map<String, List<String>>> security,
+        String iconUrl,
+        List<AgentInterface_v0_3> additionalInterfaces,
+        String preferredTransport,
+        String protocolVersion,
+        List<AgentCardSignature_v0_3> signatures) {
 
     private static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
     private static final TransportProtocol_v0_3 DEFAULT_TRANSPORT = TransportProtocol_v0_3.JSONRPC;
@@ -61,9 +73,7 @@ public record AgentCard_v0_3(String name, String description, String url, AgentP
         /**
          * Creates a new Builder.
          */
-        public Builder() {
-
-        }
+        public Builder() {}
 
         /**
          * Creates a new Builder as a copy of an existing AgentCard.
@@ -78,14 +88,22 @@ public record AgentCard_v0_3(String name, String description, String url, AgentP
             this.version = card.version;
             this.documentationUrl = card.documentationUrl;
             this.capabilities = card.capabilities;
-            this.defaultInputModes = card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : null;
-            this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
+            this.defaultInputModes =
+                    card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : null;
+            this.defaultOutputModes =
+                    card.defaultOutputModes != null
+                            ? new ArrayList<>(card.defaultOutputModes)
+                            : null;
             this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
             this.supportsAuthenticatedExtendedCard = card.supportsAuthenticatedExtendedCard;
-            this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
+            this.securitySchemes =
+                    card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
             this.security = card.security != null ? new ArrayList<>(card.security) : null;
             this.iconUrl = card.iconUrl;
-            this.additionalInterfaces = card.additionalInterfaces != null ? new ArrayList<>(card.additionalInterfaces) : null;
+            this.additionalInterfaces =
+                    card.additionalInterfaces != null
+                            ? new ArrayList<>(card.additionalInterfaces)
+                            : null;
             this.preferredTransport = card.preferredTransport;
             this.protocolVersion = card.protocolVersion;
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
@@ -141,7 +159,8 @@ public record AgentCard_v0_3(String name, String description, String url, AgentP
             return this;
         }
 
-        public Builder supportsAuthenticatedExtendedCard(boolean supportsAuthenticatedExtendedCard) {
+        public Builder supportsAuthenticatedExtendedCard(
+                boolean supportsAuthenticatedExtendedCard) {
             this.supportsAuthenticatedExtendedCard = supportsAuthenticatedExtendedCard;
             return this;
         }
@@ -190,10 +209,25 @@ public record AgentCard_v0_3(String name, String description, String url, AgentP
                 additionalInterfaces = new ArrayList<>();
                 additionalInterfaces.add(new AgentInterface_v0_3(preferredTransport, url));
             }
-            return new AgentCard_v0_3(name, description, url, provider, version, documentationUrl,
-                    capabilities, defaultInputModes, defaultOutputModes, skills,
-                    supportsAuthenticatedExtendedCard, securitySchemes, security, iconUrl,
-                    additionalInterfaces, preferredTransport, protocolVersion, signatures);
+            return new AgentCard_v0_3(
+                    name,
+                    description,
+                    url,
+                    provider,
+                    version,
+                    documentationUrl,
+                    capabilities,
+                    defaultInputModes,
+                    defaultOutputModes,
+                    skills,
+                    supportsAuthenticatedExtendedCard,
+                    securitySchemes,
+                    security,
+                    iconUrl,
+                    additionalInterfaces,
+                    preferredTransport,
+                    protocolVersion,
+                    signatures);
         }
     }
 }

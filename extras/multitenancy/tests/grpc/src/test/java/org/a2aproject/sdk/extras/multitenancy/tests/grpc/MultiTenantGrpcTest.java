@@ -1,12 +1,11 @@
 package org.a2aproject.sdk.extras.multitenancy.tests.grpc;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.quarkus.test.junit.QuarkusTest;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
@@ -37,11 +36,18 @@ public class MultiTenantGrpcTest extends AbstractMultiTenantServerTest {
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
-            ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-            channels.add(channel);
-            return channel;
-        }));
+        builder.withTransport(
+                GrpcTransport.class,
+                new GrpcTransportConfigBuilder()
+                        .channelFactory(
+                                target -> {
+                                    ManagedChannel channel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    channels.add(channel);
+                                    return channel;
+                                }));
     }
 
     @AfterAll

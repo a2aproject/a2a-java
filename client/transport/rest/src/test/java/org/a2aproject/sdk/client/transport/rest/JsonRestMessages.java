@@ -6,7 +6,8 @@ package org.a2aproject.sdk.client.transport.rest;
  */
 public class JsonRestMessages {
 
-    static final String SEND_MESSAGE_TEST_REQUEST = """
+    static final String SEND_MESSAGE_TEST_REQUEST =
+            """
             {
               "message":
                 {
@@ -19,9 +20,11 @@ public class JsonRestMessages {
                   "metadata": {
                   }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_RESPONSE =
+            """
             {
               "task": {
                 "id": "9b511af4-b27c-47fa-aecf-2a93c08a44f8",
@@ -44,14 +47,18 @@ public class JsonRestMessages {
                   }
                 ]
               }
-            }""";
+            }\
+            """;
 
-    static final String CANCEL_TASK_TEST_REQUEST = """
+    static final String CANCEL_TASK_TEST_REQUEST =
+            """
             {
               "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
-            }""";
+            }\
+            """;
 
-    static final String CANCEL_TASK_TEST_RESPONSE = """
+    static final String CANCEL_TASK_TEST_RESPONSE =
+            """
             {
                 "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
@@ -59,9 +66,11 @@ public class JsonRestMessages {
                   "state": "TASK_STATE_CANCELED"
                 },
                 "metadata": {}
-            }""";
+            }\
+            """;
 
-    static final String GET_TASK_TEST_RESPONSE = """
+    static final String GET_TASK_TEST_RESPONSE =
+            """
             {
               "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
@@ -102,7 +111,8 @@ public class JsonRestMessages {
             }
             """;
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -166,9 +176,11 @@ public class JsonRestMessages {
                 ],
                 "supportsExtendedAgentCard": false,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 
-    static final String AGENT_CARD_SUPPORTS_EXTENDED = """
+    static final String AGENT_CARD_SUPPORTS_EXTENDED =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -232,9 +244,11 @@ public class JsonRestMessages {
                 ],
                 "supportsExtendedAgentCard": true,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 
-    static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
+    static final String AUTHENTICATION_EXTENDED_AGENT_CARD =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
                 "description": "Extended description",
@@ -304,9 +318,11 @@ public class JsonRestMessages {
                 ],
                 "supportsExtendedAgentCard": true,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
               "id": "10",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
@@ -314,8 +330,10 @@ public class JsonRestMessages {
               "authentication": {
                 "scheme": "jwt"
               }
-            }""";
-    static final String LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+            }\
+            """;
+    static final String LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
               "configs":[
                 {
@@ -332,10 +350,11 @@ public class JsonRestMessages {
                   "url": "https://test.com/callback"
                 }
               ]
-            }""";
+            }\
+            """;
 
-
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST =
+            """
             {
               "id": "default-config-id",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
@@ -343,9 +362,11 @@ public class JsonRestMessages {
               "authentication": {
                 "scheme": "jwt"
               }
-            }""";
+            }\
+            """;
 
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
               "id": "10",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
@@ -353,10 +374,11 @@ public class JsonRestMessages {
               "authentication": {
                 "scheme": "jwt"
               }
-            }""";
+            }\
+            """;
 
-
-    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
+    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST =
+            """
             {
               "message": {
                 "role": "ROLE_USER",
@@ -371,24 +393,34 @@ public class JsonRestMessages {
               "configuration": {
                 "acceptedOutputModes": ["text"]
               }
-            }""";
-    static final String SEND_MESSAGE_STREAMING_TEST_RESPONSE
-            = "event: message\n"
-            + "data: {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why did the chicken cross the road? To get to the other side!\"}]}],\"metadata\":{}}}\n\n";
+            }\
+            """;
+    static final String SEND_MESSAGE_STREAMING_TEST_RESPONSE =
+            "event: message\n"
+                + "data:"
+                + " {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why"
+                + " did the chicken cross the road? To get to the other"
+                + " side!\"}]}],\"metadata\":{}}}\n\n";
 
-    static final String TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE
-            = "event: message\n"
-            + "data: {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_COMPLETED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why did the chicken cross the road? To get to the other side!\"}]}],\"metadata\":{}}}\n\n";
-    public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
+    static final String TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE =
+            "event: message\n"
+                + "data:"
+                + " {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_COMPLETED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why"
+                + " did the chicken cross the road? To get to the other"
+                + " side!\"}]}],\"metadata\":{}}}\n\n";
+    public static final String TASK_RESUBSCRIPTION_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "SubscribeToTask",
              "params": {
                 "id": "task-1234"
              }
-            }""";
+            }\
+            """;
 
-    static final String LIST_TASKS_TEST_RESPONSE = """
+    static final String LIST_TASKS_TEST_RESPONSE =
+            """
             {
               "tasks": [
                 {
@@ -402,5 +434,6 @@ public class JsonRestMessages {
               ],
               "totalSize": 1,
               "nextPageToken": ""
-            }""";
+            }\
+            """;
 }

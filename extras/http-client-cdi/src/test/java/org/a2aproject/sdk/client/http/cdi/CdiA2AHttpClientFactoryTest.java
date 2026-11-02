@@ -24,20 +24,31 @@ import org.junit.jupiter.api.Test;
 public class CdiA2AHttpClientFactoryTest {
 
     private static void assertCdiProviderSkippedLogged(List<LogRecord> records, String context) {
-        assertTrue(records.stream()
-                .anyMatch(r -> r.getLevel() == Level.WARNING
-                        && r.getMessage().equals("Provider cdi skipped")),
+        assertTrue(
+                records.stream()
+                        .anyMatch(
+                                r ->
+                                        r.getLevel() == Level.WARNING
+                                                && r.getMessage().equals("Provider cdi skipped")),
                 "Expected WARNING 'Provider cdi skipped' " + context);
     }
 
     private static List<LogRecord> captureFactoryWarnings(Runnable action) {
         Logger logger = Logger.getLogger(A2AHttpClientFactory.class.getName());
         List<LogRecord> records = new ArrayList<>();
-        Handler captureHandler = new Handler() {
-            @Override public void publish(LogRecord r) { records.add(r); }
-            @Override public void flush() {}
-            @Override public void close() {}
-        };
+        Handler captureHandler =
+                new Handler() {
+                    @Override
+                    public void publish(LogRecord r) {
+                        records.add(r);
+                    }
+
+                    @Override
+                    public void flush() {}
+
+                    @Override
+                    public void close() {}
+                };
         Level saved = logger.getLevel();
         logger.setLevel(Level.WARNING);
         logger.addHandler(captureHandler);
@@ -57,10 +68,11 @@ public class CdiA2AHttpClientFactoryTest {
 
         @BeforeEach
         void startContainer() {
-            container = SeContainerInitializer.newInstance()
-                    .disableDiscovery()
-                    .addBeanClasses(DummyA2AHttpClient.class)
-                    .initialize();
+            container =
+                    SeContainerInitializer.newInstance()
+                            .disableDiscovery()
+                            .addBeanClasses(DummyA2AHttpClient.class)
+                            .initialize();
         }
 
         @AfterEach
@@ -72,14 +84,17 @@ public class CdiA2AHttpClientFactoryTest {
         public void testCreateUsesCdiBeanAtPriority200() {
             A2AHttpClient result = A2AHttpClientFactory.create();
             assertNotNull(result);
-            assertInstanceOf(DummyA2AHttpClient.class, result,
+            assertInstanceOf(
+                    DummyA2AHttpClient.class,
+                    result,
                     "Factory should return CDI-provided client (priority 200) over JDK/Vert.x");
         }
 
         @Test
         public void testCreateDoesNotLogWarningWhenCdiSucceeds() {
             List<LogRecord> records = captureFactoryWarnings(A2AHttpClientFactory::create);
-            assertFalse(records.stream().anyMatch(r -> r.getLevel() == Level.WARNING),
+            assertFalse(
+                    records.stream().anyMatch(r -> r.getLevel() == Level.WARNING),
                     "No warning should be logged when CDI provider succeeds");
         }
 
@@ -88,11 +103,14 @@ public class CdiA2AHttpClientFactoryTest {
             // Regression guard for the recursive CDI self-delegation bug: a CDI producer that
             // produces an A2AHttpClient must exclude "cdi" so the factory does not
             // re-enter the container and return the proxy being constructed as its own delegate.
-            A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
-                    .excludedProviderNames(List.of("cdi"))
-                    .build());
+            A2AHttpClient client =
+                    A2AHttpClientFactory.create(
+                            A2AHttpClientConfiguration.builder()
+                                    .excludedProviderNames(List.of("cdi"))
+                                    .build());
             assertNotNull(client);
-            assertFalse(client instanceof DummyA2AHttpClient,
+            assertFalse(
+                    client instanceof DummyA2AHttpClient,
                     "Excluding 'cdi' must not return the CDI-registered bean");
         }
     }
@@ -104,10 +122,11 @@ public class CdiA2AHttpClientFactoryTest {
 
         @BeforeEach
         void startContainer() {
-            container = SeContainerInitializer.newInstance()
-                    .disableDiscovery()
-                    .addBeanClasses(FillerBean.class)
-                    .initialize();
+            container =
+                    SeContainerInitializer.newInstance()
+                            .disableDiscovery()
+                            .addBeanClasses(FillerBean.class)
+                            .initialize();
         }
 
         @AfterEach
@@ -119,7 +138,8 @@ public class CdiA2AHttpClientFactoryTest {
         public void testCreateFallsBackWhenNoBeanRegistered() {
             A2AHttpClient client = A2AHttpClientFactory.create();
             assertNotNull(client, "Factory should fall back when CDI has no A2AHttpClient bean");
-            assertFalse(client instanceof DummyA2AHttpClient,
+            assertFalse(
+                    client instanceof DummyA2AHttpClient,
                     "Fallback client must not be the CDI bean");
         }
 
@@ -137,10 +157,12 @@ public class CdiA2AHttpClientFactoryTest {
 
         @BeforeEach
         void startContainer() {
-            container = SeContainerInitializer.newInstance()
-                    .disableDiscovery()
-                    .addBeanClasses(DummyA2AHttpClient.class, AnotherDummyA2AHttpClient.class)
-                    .initialize();
+            container =
+                    SeContainerInitializer.newInstance()
+                            .disableDiscovery()
+                            .addBeanClasses(
+                                    DummyA2AHttpClient.class, AnotherDummyA2AHttpClient.class)
+                            .initialize();
         }
 
         @AfterEach
@@ -152,7 +174,9 @@ public class CdiA2AHttpClientFactoryTest {
         public void testCreateFallsBackWhenBeansAreAmbiguous() {
             A2AHttpClient client = A2AHttpClientFactory.create();
             assertNotNull(client, "Factory should fall back when CDI resolution is ambiguous");
-            assertFalse(client instanceof DummyA2AHttpClient || client instanceof AnotherDummyA2AHttpClient,
+            assertFalse(
+                    client instanceof DummyA2AHttpClient
+                            || client instanceof AnotherDummyA2AHttpClient,
                     "Fallback client must not be any of the ambiguous CDI beans");
         }
 
@@ -169,7 +193,8 @@ public class CdiA2AHttpClientFactoryTest {
         @Test
         public void testCreateFallsBackWhenNoCdiContainer() {
             A2AHttpClient client = A2AHttpClientFactory.create();
-            assertNotNull(client, "Factory should fall back to next provider when CDI is unavailable");
+            assertNotNull(
+                    client, "Factory should fall back to next provider when CDI is unavailable");
         }
 
         @Test

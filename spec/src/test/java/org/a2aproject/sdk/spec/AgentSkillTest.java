@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 class AgentSkillTest {
@@ -21,15 +20,16 @@ class AgentSkillTest {
         List<String> outputModes = new ArrayList<>();
         outputModes.add("text");
 
-        AgentSkill skill = new AgentSkill(
-                "weather_query",
-                "Weather Queries",
-                "Get weather information",
-                tags,
-                examples,
-                inputModes,
-                outputModes,
-                null);
+        AgentSkill skill =
+                new AgentSkill(
+                        "weather_query",
+                        "Weather Queries",
+                        "Get weather information",
+                        tags,
+                        examples,
+                        inputModes,
+                        outputModes,
+                        null);
 
         tags.add("mutated");
         examples.add("mutated");

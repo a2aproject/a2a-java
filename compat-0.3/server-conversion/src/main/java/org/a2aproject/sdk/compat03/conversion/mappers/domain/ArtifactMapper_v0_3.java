@@ -2,9 +2,8 @@ package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.spec.Artifact;
@@ -19,7 +18,9 @@ import org.mapstruct.Mapper;
  * <p>
  * The conversion primarily involves converting the nested {@link Part} list using {@link PartMapper_v0_3}.
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {PartMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {PartMapper_v0_3.class})
 public interface ArtifactMapper_v0_3 {
 
     /**
@@ -40,18 +41,18 @@ public interface ArtifactMapper_v0_3 {
             return null;
         }
 
-        List<Part<?>> parts = v03.parts().stream()
-            .map(PartMapper_v0_3.INSTANCE::toV10)
-            .collect(Collectors.toList());
+        List<Part<?>> parts =
+                v03.parts().stream()
+                        .map(PartMapper_v0_3.INSTANCE::toV10)
+                        .collect(Collectors.toList());
 
         return new Artifact(
-            v03.artifactId(),
-            v03.name(),
-            v03.description(),
-            parts,
-            v03.metadata(),
-            v03.extensions()
-        );
+                v03.artifactId(),
+                v03.name(),
+                v03.description(),
+                parts,
+                v03.metadata(),
+                v03.extensions());
     }
 
     /**
@@ -67,17 +68,17 @@ public interface ArtifactMapper_v0_3 {
             return null;
         }
 
-        List<Part_v0_3<?>> parts = v10.parts().stream()
-            .map(PartMapper_v0_3.INSTANCE::fromV10)
-            .collect(Collectors.toList());
+        List<Part_v0_3<?>> parts =
+                v10.parts().stream()
+                        .map(PartMapper_v0_3.INSTANCE::fromV10)
+                        .collect(Collectors.toList());
 
         return new Artifact_v0_3(
-            v10.artifactId(),
-            v10.name(),
-            v10.description(),
-            parts,
-            v10.metadata(),
-            v10.extensions()
-        );
+                v10.artifactId(),
+                v10.name(),
+                v10.description(),
+                parts,
+                v10.metadata(),
+                v10.extensions());
     }
 }

@@ -1,5 +1,12 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_CLIENT_OPERATION_DURATION;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_STREAMING_DURATION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -8,31 +15,19 @@ import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_CLIENT_OPERATION_DURATION;
-import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_STREAMING_DURATION;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class A2ATestRoutesTest {
 
-    @Mock
-    private MetricData metricData;
-    @Mock
-    private HistogramData histogramData;
-    @Mock
-    private HistogramPointData point1;
-    @Mock
-    private HistogramPointData point2;
+    @Mock private MetricData metricData;
+    @Mock private HistogramData histogramData;
+    @Mock private HistogramPointData point1;
+    @Mock private HistogramPointData point2;
 
     private final A2ATestRoutes routes = new A2ATestRoutes();
 

@@ -5,8 +5,7 @@ import org.jspecify.annotations.Nullable;
 /** Parameter validation utilities. */
 public final class Assert {
 
-    private Assert() {
-    }
+    private Assert() {}
 
     /**
      * Checks whether the value is {@code null}, empty, or blank.
@@ -27,7 +26,8 @@ public final class Assert {
      * @return the value that was passed in
      * @throws IllegalArgumentException if the value is {@code null}
      */
-    public static <T> @NotNull T checkNotNullParam(String name, @Nullable T value) throws IllegalArgumentException {
+    public static <T> @NotNull T checkNotNullParam(String name, @Nullable T value)
+            throws IllegalArgumentException {
         checkNotNullParamChecked("name", name);
         if (value == null) {
             throw new IllegalArgumentException("Parameter '" + name + "' may not be null");
@@ -48,9 +48,8 @@ public final class Assert {
      * @throws IllegalArgumentException if the value is not a valid JSON-RPC id type
      */
     public static void isValidJsonRpcId(@Nullable Object value) {
-        if (! (value == null || value instanceof String || value instanceof Number)) {
+        if (!(value == null || value instanceof String || value instanceof Number)) {
             throw new IllegalArgumentException("JSON-RPC id must be null, a String, or a Number");
         }
     }
-
 }

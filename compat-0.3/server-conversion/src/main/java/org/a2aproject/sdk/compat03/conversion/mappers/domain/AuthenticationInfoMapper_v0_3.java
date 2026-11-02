@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
 import java.util.List;
-
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.AuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
@@ -33,7 +32,8 @@ public interface AuthenticationInfoMapper_v0_3 {
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    AuthenticationInfoMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(AuthenticationInfoMapper_v0_3.class);
+    AuthenticationInfoMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(AuthenticationInfoMapper_v0_3.class);
 
     /**
      * Converts v0.3 AuthenticationInfo to v1.0 AuthenticationInfo.
@@ -49,9 +49,8 @@ public interface AuthenticationInfoMapper_v0_3 {
             return null;
         }
 
-        String scheme = (v03.schemes() != null && !v03.schemes().isEmpty())
-            ? v03.schemes().get(0)
-            : "";
+        String scheme =
+                (v03.schemes() != null && !v03.schemes().isEmpty()) ? v03.schemes().get(0) : "";
 
         return new AuthenticationInfo(scheme, v03.credentials());
     }
@@ -71,9 +70,8 @@ public interface AuthenticationInfoMapper_v0_3 {
             return null;
         }
 
-        String scheme = (v03.schemes() != null && !v03.schemes().isEmpty())
-            ? v03.schemes().get(0)
-            : "";
+        String scheme =
+                (v03.schemes() != null && !v03.schemes().isEmpty()) ? v03.schemes().get(0) : "";
 
         return new AuthenticationInfo(scheme, v03.credentials());
     }
@@ -91,10 +89,7 @@ public interface AuthenticationInfoMapper_v0_3 {
             return null;
         }
 
-        return new AuthenticationInfo_v0_3(
-            List.of(v10.scheme()),
-            v10.credentials()
-        );
+        return new AuthenticationInfo_v0_3(List.of(v10.scheme()), v10.credentials());
     }
 
     /**
@@ -112,8 +107,6 @@ public interface AuthenticationInfoMapper_v0_3 {
         }
 
         return new PushNotificationAuthenticationInfo_v0_3(
-            List.of(v10.scheme()),
-            v10.credentials()
-        );
+                List.of(v10.scheme()), v10.credentials());
     }
 }

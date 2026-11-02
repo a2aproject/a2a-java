@@ -1,9 +1,9 @@
 package org.a2aproject.sdk.grpc.mapper;
 
-import java.util.Base64;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Value;
+import java.util.Base64;
+import java.util.Map;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.FileContent;
 import org.a2aproject.sdk.spec.FilePart;
@@ -12,7 +12,6 @@ import org.a2aproject.sdk.spec.FileWithUri;
 import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
-import java.util.Map;
 import org.mapstruct.Mapper;
 
 /**
@@ -29,7 +28,9 @@ import org.mapstruct.Mapper;
  * <b>Manual Implementation Required:</b> Must use manual instanceof dispatch to handle protobuf oneof pattern,
  * as MapStruct's @SubclassMapping maps to different target types, not different fields of the same type.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {A2ACommonFieldMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {A2ACommonFieldMapper.class})
 public interface PartMapper {
 
     PartMapper INSTANCE = A2AMappers.getMapper(PartMapper.class);
@@ -53,7 +54,8 @@ public interface PartMapper {
 
             if (fileContent instanceof FileWithBytes fileWithBytes) {
                 // Map to raw (bytes), filename, and media_type
-                builder.setRaw(ByteString.copyFrom(Base64.getDecoder().decode(fileWithBytes.bytes())));
+                builder.setRaw(
+                        ByteString.copyFrom(Base64.getDecoder().decode(fileWithBytes.bytes())));
                 if (fileWithBytes.name() != null) {
                     builder.setFilename(fileWithBytes.name());
                 }
@@ -89,7 +91,8 @@ public interface PartMapper {
         if (proto == null) {
             return null;
         }
-        Map<String, Object> metadata = A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata());
+        Map<String, Object> metadata =
+                A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata());
         if (proto.hasText()) {
             return new TextPart(proto.getText(), metadata);
         } else if (proto.hasRaw()) {

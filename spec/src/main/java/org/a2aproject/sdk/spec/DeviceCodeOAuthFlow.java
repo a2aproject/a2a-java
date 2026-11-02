@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Configuration details for the OAuth 2.0 Device Code flow (RFC 8628).
@@ -19,7 +18,11 @@ import org.a2aproject.sdk.spec.util.CollectionCopies;
  * @see OAuth2SecurityScheme for the security scheme using these flows
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record DeviceCodeOAuthFlow(String deviceAuthorizationUrl, String tokenUrl, String refreshUrl, Map<String, String> scopes) {
+public record DeviceCodeOAuthFlow(
+        String deviceAuthorizationUrl,
+        String tokenUrl,
+        String refreshUrl,
+        Map<String, String> scopes) {
 
     /**
      * Compact constructor that validates required fields.

@@ -25,5 +25,4 @@ package org.a2aproject.sdk.spec;
  * @see StreamingEventKind
  * @see UpdateEvent
  */
-public interface Event {
-}
+public interface Event {}

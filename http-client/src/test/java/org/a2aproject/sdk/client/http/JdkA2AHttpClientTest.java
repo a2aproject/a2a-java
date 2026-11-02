@@ -1,8 +1,14 @@
 package org.a2aproject.sdk.client.http;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockserver.integration.ClientAndServer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
 import java.net.Authenticator;
@@ -33,16 +39,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.mockserver.integration.ClientAndServer;
 
 public class JdkA2AHttpClientTest {
 
@@ -67,9 +66,10 @@ public class JdkA2AHttpClientTest {
 
         JdkA2AHttpClient client = new JdkA2AHttpClient();
 
-        A2AHttpResponse response = client.createGet()
-                .url("http://localhost:" + server.getLocalPort() + "/default")
-                .get();
+        A2AHttpResponse response =
+                client.createGet()
+                        .url("http://localhost:" + server.getLocalPort() + "/default")
+                        .get();
 
         assertEquals(200, response.status());
         assertEquals("ok", response.body());
@@ -85,15 +85,20 @@ public class JdkA2AHttpClientTest {
         //
         // Skip if the JVM running this test already allows a restricted "Host" header: in that
         // (documented, supported) configuration the JDK client legitimately accepts it instead.
-        assumeFalse(jdkAllowsRestrictedHostHeader(), "JVM allows a restricted Host header "
-                + "via jdk.httpclient.allowRestrictedHeaders; the JDK client no longer rejects it");
+        assumeFalse(
+                jdkAllowsRestrictedHostHeader(),
+                "JVM allows a restricted Host header via jdk.httpclient.allowRestrictedHeaders; the"
+                        + " JDK client no longer rejects it");
 
         JdkA2AHttpClient client = new JdkA2AHttpClient();
 
-        assertThrows(IllegalArgumentException.class, () -> client.createGet()
-                .url("http://localhost:1/unused")
-                .addHeader("Host", "custom.example.com")
-                .get());
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        client.createGet()
+                                .url("http://localhost:1/unused")
+                                .addHeader("Host", "custom.example.com")
+                                .get());
     }
 
     private static boolean jdkAllowsRestrictedHostHeader() {
@@ -110,25 +115,29 @@ public class JdkA2AHttpClientTest {
                 .respond(response().withStatusCode(200).withBody("ok"));
 
         TrackingProxySelector proxySelector = new TrackingProxySelector();
-        HttpClient providedClient = HttpClient.newBuilder()
-                .proxy(proxySelector)
-                .build();
+        HttpClient providedClient = HttpClient.newBuilder().proxy(proxySelector).build();
 
         JdkA2AHttpClient client = new JdkA2AHttpClient(providedClient);
 
-        A2AHttpResponse response = client.createGet()
-                .url("http://localhost:" + server.getLocalPort() + "/custom")
-                .get();
+        A2AHttpResponse response =
+                client.createGet()
+                        .url("http://localhost:" + server.getLocalPort() + "/custom")
+                        .get();
 
         assertEquals(200, response.status());
         assertEquals("ok", response.body());
-        assertEquals(1, proxySelector.selectCount.get(),
+        assertEquals(
+                1,
+                proxySelector.selectCount.get(),
                 "Provided HttpClient should be used for request execution");
     }
 
     @Test
     public void testConstructorRejectsNullHttpClient() {
-        assertThrows(IllegalArgumentException.class, () -> new JdkA2AHttpClient((java.net.http.HttpClient) null), "foo");
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new JdkA2AHttpClient((java.net.http.HttpClient) null),
+                "foo");
     }
 
     @Test
@@ -136,21 +145,25 @@ public class JdkA2AHttpClientTest {
         server = ClientAndServer.startClientAndServer(0);
         int port = server.getLocalPort();
         server.when(request().withMethod("POST").withPath("/redirect"))
-                .respond(response()
-                        .withStatusCode(302)
-                        .withHeader("Location", "http://localhost:" + port + "/target"));
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader("Location", "http://localhost:" + port + "/target"));
         server.when(request().withMethod("POST").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
         JdkA2AHttpClient client = new JdkA2AHttpClient();
 
-        A2AHttpResponse response = client.createPost()
-                .url("http://localhost:" + port + "/redirect")
-                .body("{}")
-                .followRedirects(false)
-                .post();
+        A2AHttpResponse response =
+                client.createPost()
+                        .url("http://localhost:" + port + "/redirect")
+                        .body("{}")
+                        .followRedirects(false)
+                        .post();
 
-        assertEquals(302, response.status(),
+        assertEquals(
+                302,
+                response.status(),
                 "With followRedirects(false), the 302 should be returned as-is");
     }
 
@@ -164,20 +177,23 @@ public class JdkA2AHttpClientTest {
         CookieManager cookieManager = new CookieManager();
         URI uri = URI.create("http://localhost:" + port + "/post");
         cookieManager.put(uri, Map.of("Set-Cookie", List.of("session=secret; Path=/")));
-        HttpClient suppliedClient = HttpClient.newBuilder()
-                .cookieHandler(cookieManager)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+        HttpClient suppliedClient =
+                HttpClient.newBuilder()
+                        .cookieHandler(cookieManager)
+                        .followRedirects(HttpClient.Redirect.NORMAL)
+                        .build();
 
-        A2AHttpResponse result = new JdkA2AHttpClient(suppliedClient).createPost()
-                .url(uri.toString())
-                .body("{}")
-                .followRedirects(false)
-                .post();
+        A2AHttpResponse result =
+                new JdkA2AHttpClient(suppliedClient)
+                        .createPost()
+                        .url(uri.toString())
+                        .body("{}")
+                        .followRedirects(false)
+                        .post();
 
         assertEquals(200, result.status());
-        org.mockserver.model.HttpRequest[] requests = server.retrieveRecordedRequests(
-                request().withMethod("POST").withPath("/post"));
+        org.mockserver.model.HttpRequest[] requests =
+                server.retrieveRecordedRequests(request().withMethod("POST").withPath("/post"));
         assertEquals(1, requests.length);
         assertEquals("session=secret", requests[0].getFirstHeader("Cookie"));
     }
@@ -188,10 +204,16 @@ public class JdkA2AHttpClientTest {
         collector = ClientAndServer.startClientAndServer(0);
         int redirectPort = server.getLocalPort();
         server.when(request().withMethod("POST").withPath("/redirect"))
-                .respond(response()
-                        .withStatusCode(302)
-                        .withHeader("Location", "http://127.0.0.1:" + collector.getLocalPort() + "/target"));
-        collector.when(request().withMethod("GET").withPath("/target"))
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://127.0.0.1:"
+                                                + collector.getLocalPort()
+                                                + "/target"));
+        collector
+                .when(request().withMethod("GET").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
         CookieManager cookieManager = new CookieManager();
@@ -199,25 +221,31 @@ public class JdkA2AHttpClientTest {
                 URI.create("http://127.0.0.1:" + redirectPort + "/redirect"),
                 Map.of("Set-Cookie", List.of("session=secret; Path=/")));
         URI targetUri = URI.create("http://127.0.0.1:" + collector.getLocalPort() + "/target");
-        assertEquals(List.of("session=secret"), cookieManager.get(targetUri, Map.of()).get("Cookie"),
+        assertEquals(
+                List.of("session=secret"),
+                cookieManager.get(targetUri, Map.of()).get("Cookie"),
                 "The supplied CookieHandler must be capable of injecting the cross-port cookie");
-        HttpClient suppliedClient = HttpClient.newBuilder()
-                .cookieHandler(cookieManager)
-                .followRedirects(HttpClient.Redirect.NEVER)
-                .build();
+        HttpClient suppliedClient =
+                HttpClient.newBuilder()
+                        .cookieHandler(cookieManager)
+                        .followRedirects(HttpClient.Redirect.NEVER)
+                        .build();
 
-        A2AHttpResponse result = new JdkA2AHttpClient(suppliedClient).createPost()
-                .url("http://127.0.0.1:" + redirectPort + "/redirect")
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                new JdkA2AHttpClient(suppliedClient)
+                        .createPost()
+                        .url("http://127.0.0.1:" + redirectPort + "/redirect")
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertEquals(200, result.status());
-        org.mockserver.model.HttpRequest[] requests = collector.retrieveRecordedRequests(
-                request().withMethod("GET").withPath("/target"));
+        org.mockserver.model.HttpRequest[] requests =
+                collector.retrieveRecordedRequests(request().withMethod("GET").withPath("/target"));
         assertEquals(1, requests.length);
         String cookie = requests[0].getFirstHeader("Cookie");
-        assertTrue(cookie == null || cookie.isEmpty(),
+        assertTrue(
+                cookie == null || cookie.isEmpty(),
                 "Cross-origin redirect must not allow a supplied CookieHandler to inject cookies");
     }
 
@@ -227,26 +255,37 @@ public class JdkA2AHttpClientTest {
         collector = ClientAndServer.startClientAndServer(0);
         int redirectPort = server.getLocalPort();
         server.when(request().withMethod("POST").withPath("/redirect"))
-                .respond(response()
-                        .withStatusCode(302)
-                        .withHeader("Location", "http://127.0.0.1:" + collector.getLocalPort() + "/target"));
-        collector.when(request().withMethod("GET").withPath("/target"))
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://127.0.0.1:"
+                                                + collector.getLocalPort()
+                                                + "/target"));
+        collector
+                .when(request().withMethod("GET").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
         TrackingProxySelector proxySelector = new TrackingProxySelector();
-        HttpClient suppliedClient = HttpClient.newBuilder()
-                .proxy(proxySelector)
-                .followRedirects(HttpClient.Redirect.NEVER)
-                .build();
+        HttpClient suppliedClient =
+                HttpClient.newBuilder()
+                        .proxy(proxySelector)
+                        .followRedirects(HttpClient.Redirect.NEVER)
+                        .build();
 
-        A2AHttpResponse result = new JdkA2AHttpClient(suppliedClient).createPost()
-                .url("http://127.0.0.1:" + redirectPort + "/redirect")
-                .body("{}")
-                .followRedirects(true)
-                .post();
+        A2AHttpResponse result =
+                new JdkA2AHttpClient(suppliedClient)
+                        .createPost()
+                        .url("http://127.0.0.1:" + redirectPort + "/redirect")
+                        .body("{}")
+                        .followRedirects(true)
+                        .post();
 
         assertEquals(200, result.status());
-        assertEquals(2, proxySelector.selectCount.get(),
+        assertEquals(
+                2,
+                proxySelector.selectCount.get(),
                 "Supplied ProxySelector must be used for both redirect hops");
     }
 
@@ -255,18 +294,22 @@ public class JdkA2AHttpClientTest {
         server = ClientAndServer.startClientAndServer(0);
 
         server.when(request().withMethod("GET").withPath("/redirect"))
-                .respond(response()
-                        .withStatusCode(302)
-                        .withHeader("Location", "http://localhost:" + server.getLocalPort() + "/target"));
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://localhost:" + server.getLocalPort() + "/target"));
 
         server.when(request().withMethod("GET").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
         JdkA2AHttpClient client = new JdkA2AHttpClient();
 
-        A2AHttpResponse response = client.createGet()
-                .url("http://localhost:" + server.getLocalPort() + "/redirect")
-                .get();
+        A2AHttpResponse response =
+                client.createGet()
+                        .url("http://localhost:" + server.getLocalPort() + "/redirect")
+                        .get();
 
         assertEquals(302, response.status());
         assertFalse(response.success());
@@ -275,28 +318,34 @@ public class JdkA2AHttpClientTest {
     }
 
     @Test
-    public void testGetNeverFollowsNativeRedirectsEvenWithRedirectFollowingClient() throws Exception {
+    public void testGetNeverFollowsNativeRedirectsEvenWithRedirectFollowingClient()
+            throws Exception {
         server = ClientAndServer.startClientAndServer(0);
 
         server.when(request().withMethod("GET").withPath("/redirect"))
-                .respond(response()
-                        .withStatusCode(302)
-                        .withHeader("Location", "http://localhost:" + server.getLocalPort() + "/target"));
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://localhost:" + server.getLocalPort() + "/target"));
 
         server.when(request().withMethod("GET").withPath("/target"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
 
-        HttpClient customClient = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+        HttpClient customClient =
+                HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
 
         JdkA2AHttpClient client = new JdkA2AHttpClient(customClient);
 
-        A2AHttpResponse response = client.createGet()
-                .url("http://localhost:" + server.getLocalPort() + "/redirect")
-                .get();
+        A2AHttpResponse response =
+                client.createGet()
+                        .url("http://localhost:" + server.getLocalPort() + "/redirect")
+                        .get();
 
-        assertEquals(302, response.status(),
+        assertEquals(
+                302,
+                response.status(),
                 "GET must not follow native redirects; the SDK always uses a no-redirect client");
     }
 
@@ -306,18 +355,19 @@ public class JdkA2AHttpClientTest {
         AtomicBoolean completed = new AtomicBoolean(false);
         CountDownLatch errorPathReached = new CountDownLatch(1);
 
-        HttpClient fakeClient = new StubHttpClient() {
-            @Override
-            public <T> CompletableFuture<HttpResponse<T>> sendAsync(
-                    HttpRequest request, HttpResponse.BodyHandler<T> handler) {
-                HttpResponse.BodySubscriber<T> bodySubscriber =
-                        handler.apply(new FakeResponseInfo(200, "text/plain"));
-                bodySubscriber.onSubscribe(new NoOpSubscription());
-                bodySubscriber.onError(new CancellationException());
-                errorPathReached.countDown();
-                return new CompletableFuture<>(); // never completes
-            }
-        };
+        HttpClient fakeClient =
+                new StubHttpClient() {
+                    @Override
+                    public <T> CompletableFuture<HttpResponse<T>> sendAsync(
+                            HttpRequest request, HttpResponse.BodyHandler<T> handler) {
+                        HttpResponse.BodySubscriber<T> bodySubscriber =
+                                handler.apply(new FakeResponseInfo(200, "text/plain"));
+                        bodySubscriber.onSubscribe(new NoOpSubscription());
+                        bodySubscriber.onError(new CancellationException());
+                        errorPathReached.countDown();
+                        return new CompletableFuture<>(); // never completes
+                    }
+                };
 
         new JdkA2AHttpClient(fakeClient)
                 .createGet()
@@ -325,7 +375,8 @@ public class JdkA2AHttpClientTest {
                 .getAsyncSSE(event -> {}, e -> capturedError.set(e), () -> completed.set(true));
 
         assertTrue(errorPathReached.await(5, TimeUnit.SECONDS));
-        assertNull(capturedError.get(), "CancellationException should not reach the error consumer");
+        assertNull(
+                capturedError.get(), "CancellationException should not reach the error consumer");
         assertFalse(completed.get(), "Complete handler must not be called after cancellation");
     }
 
@@ -334,23 +385,27 @@ public class JdkA2AHttpClientTest {
         AtomicReference<Throwable> capturedError = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean(false);
 
-        HttpClient fakeClient = new StubHttpClient() {
-            @Override
-            public <T> CompletableFuture<HttpResponse<T>> sendAsync(
-                    HttpRequest request, HttpResponse.BodyHandler<T> handler) {
-                CompletableFuture<HttpResponse<T>> future = new CompletableFuture<>();
-                future.completeExceptionally(new CancellationException());
-                return future;
-            }
-        };
+        HttpClient fakeClient =
+                new StubHttpClient() {
+                    @Override
+                    public <T> CompletableFuture<HttpResponse<T>> sendAsync(
+                            HttpRequest request, HttpResponse.BodyHandler<T> handler) {
+                        CompletableFuture<HttpResponse<T>> future = new CompletableFuture<>();
+                        future.completeExceptionally(new CancellationException());
+                        return future;
+                    }
+                };
 
-        CompletableFuture<Void> result = new JdkA2AHttpClient(fakeClient)
-                .createGet()
-                .url("http://example.com/sse")
-                .getAsyncSSE(event -> {}, e -> capturedError.set(e), () -> completed.set(true));
+        CompletableFuture<Void> result =
+                new JdkA2AHttpClient(fakeClient)
+                        .createGet()
+                        .url("http://example.com/sse")
+                        .getAsyncSSE(
+                                event -> {}, e -> capturedError.set(e), () -> completed.set(true));
 
         result.get(5, TimeUnit.SECONDS);
-        assertNull(capturedError.get(), "CancellationException should not reach the error consumer");
+        assertNull(
+                capturedError.get(), "CancellationException should not reach the error consumer");
         assertFalse(completed.get(), "Complete handler must not be called after cancellation");
     }
 
@@ -360,20 +415,27 @@ public class JdkA2AHttpClientTest {
         CountDownLatch errorLatch = new CountDownLatch(1);
         IOException expectedError = new IOException("connection refused");
 
-        HttpClient fakeClient = new StubHttpClient() {
-            @Override
-            public <T> CompletableFuture<HttpResponse<T>> sendAsync(
-                    HttpRequest request, HttpResponse.BodyHandler<T> handler) {
-                CompletableFuture<HttpResponse<T>> future = new CompletableFuture<>();
-                future.completeExceptionally(expectedError);
-                return future;
-            }
-        };
+        HttpClient fakeClient =
+                new StubHttpClient() {
+                    @Override
+                    public <T> CompletableFuture<HttpResponse<T>> sendAsync(
+                            HttpRequest request, HttpResponse.BodyHandler<T> handler) {
+                        CompletableFuture<HttpResponse<T>> future = new CompletableFuture<>();
+                        future.completeExceptionally(expectedError);
+                        return future;
+                    }
+                };
 
         new JdkA2AHttpClient(fakeClient)
                 .createGet()
                 .url("http://example.com/sse")
-                .getAsyncSSE(event -> {}, e -> { capturedError.set(e); errorLatch.countDown(); }, () -> {});
+                .getAsyncSSE(
+                        event -> {},
+                        e -> {
+                            capturedError.set(e);
+                            errorLatch.countDown();
+                        },
+                        () -> {});
 
         assertTrue(errorLatch.await(5, TimeUnit.SECONDS));
         assertNotNull(capturedError.get());
@@ -381,18 +443,68 @@ public class JdkA2AHttpClientTest {
     }
 
     private abstract static class StubHttpClient extends HttpClient {
-        @Override public Optional<CookieHandler> cookieHandler() { return Optional.empty(); }
-        @Override public Optional<Duration> connectTimeout() { return Optional.empty(); }
-        @Override public HttpClient.Redirect followRedirects() { return HttpClient.Redirect.NEVER; }
-        @Override public Optional<ProxySelector> proxy() { return Optional.empty(); }
-        @Override public SSLContext sslContext() { throw new UnsupportedOperationException(); }
-        @Override public SSLParameters sslParameters() { return new SSLParameters(); }
-        @Override public Optional<Authenticator> authenticator() { return Optional.empty(); }
-        @Override public HttpClient.Version version() { return HttpClient.Version.HTTP_1_1; }
-        @Override public Optional<Executor> executor() { return Optional.empty(); }
-        @Override public <T> HttpResponse<T> send(HttpRequest r, HttpResponse.BodyHandler<T> h) { throw new UnsupportedOperationException(); }
-        @Override public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest r, HttpResponse.BodyHandler<T> h, HttpResponse.PushPromiseHandler<T> p) { return sendAsync(r, h); }
-        @Override public WebSocket.Builder newWebSocketBuilder() { throw new UnsupportedOperationException(); }
+        @Override
+        public Optional<CookieHandler> cookieHandler() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Duration> connectTimeout() {
+            return Optional.empty();
+        }
+
+        @Override
+        public HttpClient.Redirect followRedirects() {
+            return HttpClient.Redirect.NEVER;
+        }
+
+        @Override
+        public Optional<ProxySelector> proxy() {
+            return Optional.empty();
+        }
+
+        @Override
+        public SSLContext sslContext() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public SSLParameters sslParameters() {
+            return new SSLParameters();
+        }
+
+        @Override
+        public Optional<Authenticator> authenticator() {
+            return Optional.empty();
+        }
+
+        @Override
+        public HttpClient.Version version() {
+            return HttpClient.Version.HTTP_1_1;
+        }
+
+        @Override
+        public Optional<Executor> executor() {
+            return Optional.empty();
+        }
+
+        @Override
+        public <T> HttpResponse<T> send(HttpRequest r, HttpResponse.BodyHandler<T> h) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> CompletableFuture<HttpResponse<T>> sendAsync(
+                HttpRequest r,
+                HttpResponse.BodyHandler<T> h,
+                HttpResponse.PushPromiseHandler<T> p) {
+            return sendAsync(r, h);
+        }
+
+        @Override
+        public WebSocket.Builder newWebSocketBuilder() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static final class FakeResponseInfo implements HttpResponse.ResponseInfo {
@@ -401,17 +513,32 @@ public class JdkA2AHttpClientTest {
 
         FakeResponseInfo(int statusCode, String contentType) {
             this.statusCode = statusCode;
-            this.headers = HttpHeaders.of(Map.of("Content-Type", List.of(contentType)), (k, v) -> true);
+            this.headers =
+                    HttpHeaders.of(Map.of("Content-Type", List.of(contentType)), (k, v) -> true);
         }
 
-        @Override public int statusCode() { return statusCode; }
-        @Override public HttpHeaders headers() { return headers; }
-        @Override public HttpClient.Version version() { return HttpClient.Version.HTTP_1_1; }
+        @Override
+        public int statusCode() {
+            return statusCode;
+        }
+
+        @Override
+        public HttpHeaders headers() {
+            return headers;
+        }
+
+        @Override
+        public HttpClient.Version version() {
+            return HttpClient.Version.HTTP_1_1;
+        }
     }
 
     private static final class NoOpSubscription implements Flow.Subscription {
-        @Override public void request(long n) {}
-        @Override public void cancel() {}
+        @Override
+        public void request(long n) {}
+
+        @Override
+        public void cancel() {}
     }
 
     private static final class TrackingProxySelector extends ProxySelector {

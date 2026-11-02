@@ -6,31 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.testing.StreamRecorder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
-import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
-import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-// gRPC test imports
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-import io.grpc.testing.StreamRecorder;
-
-// v0.3 gRPC proto imports
 import org.a2aproject.sdk.compat03.grpc.CancelTaskRequest;
 import org.a2aproject.sdk.compat03.grpc.GetTaskRequest;
 import org.a2aproject.sdk.compat03.grpc.Message;
@@ -42,6 +28,15 @@ import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.grpc.Task;
 import org.a2aproject.sdk.compat03.grpc.TaskState;
 import org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest;
+import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  * Test suite for v0.3 GrpcHandler with v1.0 backend.
@@ -57,16 +52,24 @@ import org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest;
 public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
 
     // gRPC Message fixture (protobuf format)
-    private static final Message GRPC_MESSAGE = Message.newBuilder()
-            .setTaskId(MINIMAL_TASK.id())
-            .setContextId(MINIMAL_TASK.contextId())
-            .setMessageId(MESSAGE.messageId())
-            .setRole(Role.ROLE_AGENT)
-            .addContent(Part.newBuilder().setText(((TextPart_v0_3) MESSAGE.parts().get(0)).text()).build())
-            .build();
+    private static final Message GRPC_MESSAGE =
+            Message.newBuilder()
+                    .setTaskId(MINIMAL_TASK.id())
+                    .setContextId(MINIMAL_TASK.contextId())
+                    .setMessageId(MESSAGE.messageId())
+                    .setRole(Role.ROLE_AGENT)
+                    .addContent(
+                            Part.newBuilder()
+                                    .setText(((TextPart_v0_3) MESSAGE.parts().get(0)).text())
+                                    .build())
+                    .build();
 
-    private final ServerCallContext callContext = new ServerCallContext(
-            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
+    private final ServerCallContext callContext =
+            new ServerCallContext(
+                    UnauthenticatedUser.INSTANCE,
+                    Map.of("foo", "bar"),
+                    new HashSet<>(),
+                    A2AProtocol_v0_3.PROTOCOL_VERSION);
 
     // ========================================
     // GetTask Tests
@@ -79,9 +82,8 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         // Save v0.3 task by converting to v1.0
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
-        GetTaskRequest request = GetTaskRequest.newBuilder()
-                .setName("tasks/" + MINIMAL_TASK.id())
-                .build();
+        GetTaskRequest request =
+                GetTaskRequest.newBuilder().setName("tasks/" + MINIMAL_TASK.id()).build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.getTask(request, streamRecorder);
@@ -99,9 +101,8 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     public void testOnGetTaskNotFound() throws Exception {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
 
-        GetTaskRequest request = GetTaskRequest.newBuilder()
-                .setName("tasks/" + MINIMAL_TASK.id())
-                .build();
+        GetTaskRequest request =
+                GetTaskRequest.newBuilder().setName("tasks/" + MINIMAL_TASK.id()).build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.getTask(request, streamRecorder);
@@ -122,13 +123,13 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to cancel the task
-        agentExecutorCancel = (context, emitter) -> {
-            emitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, emitter) -> {
+                    emitter.cancel();
+                };
 
-        CancelTaskRequest request = CancelTaskRequest.newBuilder()
-                .setName("tasks/" + MINIMAL_TASK.id())
-                .build();
+        CancelTaskRequest request =
+                CancelTaskRequest.newBuilder().setName("tasks/" + MINIMAL_TASK.id()).build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.cancelTask(request, streamRecorder);
@@ -151,13 +152,13 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to throw UnsupportedOperationError
-        agentExecutorCancel = (context, emitter) -> {
-            throw new org.a2aproject.sdk.spec.UnsupportedOperationError();
-        };
+        agentExecutorCancel =
+                (context, emitter) -> {
+                    throw new org.a2aproject.sdk.spec.UnsupportedOperationError();
+                };
 
-        CancelTaskRequest request = CancelTaskRequest.newBuilder()
-                .setName("tasks/" + MINIMAL_TASK.id())
-                .build();
+        CancelTaskRequest request =
+                CancelTaskRequest.newBuilder().setName("tasks/" + MINIMAL_TASK.id()).build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.cancelTask(request, streamRecorder);
@@ -170,9 +171,8 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     public void testOnCancelTaskNotFound() throws Exception {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
 
-        CancelTaskRequest request = CancelTaskRequest.newBuilder()
-                .setName("tasks/" + MINIMAL_TASK.id())
-                .build();
+        CancelTaskRequest request =
+                CancelTaskRequest.newBuilder().setName("tasks/" + MINIMAL_TASK.id()).build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.cancelTask(request, streamRecorder);
@@ -193,9 +193,10 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to echo the message back
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.emitEvent(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.emitEvent(context.getMessage());
+                };
 
         StreamRecorder<SendMessageResponse> streamRecorder = sendMessageRequest(handler);
 
@@ -216,9 +217,10 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to emit message
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.emitEvent(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.emitEvent(context.getMessage());
+                };
 
         StreamRecorder<SendMessageResponse> streamRecorder = sendMessageRequest(handler);
 
@@ -239,9 +241,10 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to throw error
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.emitEvent(new org.a2aproject.sdk.spec.UnsupportedOperationError());
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.emitEvent(new org.a2aproject.sdk.spec.UnsupportedOperationError());
+                };
 
         StreamRecorder<SendMessageResponse> streamRecorder = sendMessageRequest(handler);
 
@@ -260,9 +263,10 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to emit the message back (v1.0 context contains v1.0 Message)
-        agentExecutorExecute = (context, emitter) -> {
-            emitter.emitEvent(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, emitter) -> {
+                    emitter.emitEvent(context.getMessage());
+                };
 
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
 
@@ -285,7 +289,8 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                         .capabilities(new AgentCapabilities_v0_3(false, true, false, null))
                         .build();
 
-        TestGrpcHandler handler = new TestGrpcHandler(nonStreamingCard, convert03To10Handler, internalExecutor);
+        TestGrpcHandler handler =
+                new TestGrpcHandler(nonStreamingCard, convert03To10Handler, internalExecutor);
 
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
 
@@ -301,11 +306,11 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                         .capabilities(new AgentCapabilities_v0_3(false, true, false, null))
                         .build();
 
-        TestGrpcHandler handler = new TestGrpcHandler(nonStreamingCard, convert03To10Handler, internalExecutor);
+        TestGrpcHandler handler =
+                new TestGrpcHandler(nonStreamingCard, convert03To10Handler, internalExecutor);
 
-        TaskSubscriptionRequest request = TaskSubscriptionRequest.newBuilder()
-                .setName("tasks/" + MINIMAL_TASK.id())
-                .build();
+        TaskSubscriptionRequest request =
+                TaskSubscriptionRequest.newBuilder().setName("tasks/" + MINIMAL_TASK.id()).build();
 
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.taskSubscription(request, streamRecorder);
@@ -318,7 +323,8 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     @Test
     public void testOnMessageStreamInternalError() throws Exception {
         // Mock the Convert03To10RequestHandler to throw InternalError
-        Convert_v0_3_To10RequestHandler mockedHandler = Mockito.mock(Convert_v0_3_To10RequestHandler.class);
+        Convert_v0_3_To10RequestHandler mockedHandler =
+                Mockito.mock(Convert_v0_3_To10RequestHandler.class);
         Mockito.doThrow(new org.a2aproject.sdk.spec.InternalError("Internal Error"))
                 .when(mockedHandler)
                 .onMessageSendStream(
@@ -346,12 +352,14 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                 createTaskPushNotificationConfigRequest(handler, NAME);
 
         assertNull(streamRecorder.getError());
-        List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> result = streamRecorder.getValues();
+        List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> result =
+                streamRecorder.getValues();
         assertNotNull(result);
         assertEquals(1, result.size());
         org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig response = result.get(0);
         assertEquals(NAME, response.getName());
-        org.a2aproject.sdk.compat03.grpc.PushNotificationConfig responseConfig = response.getPushNotificationConfig();
+        org.a2aproject.sdk.compat03.grpc.PushNotificationConfig responseConfig =
+                response.getPushNotificationConfig();
         assertEquals("config456", responseConfig.getId());
         assertEquals("http://example.com", responseConfig.getUrl());
     }
@@ -360,9 +368,11 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     public void testGetPushNotificationConfigSuccess() throws Exception {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
 
-        agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    agentEmitter.emitEvent(
+                            context.getTask() != null ? context.getTask() : context.getMessage());
+                };
 
         String NAME = "tasks/" + MINIMAL_TASK.id() + "/pushNotificationConfigs/config456";
 
@@ -374,12 +384,14 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         // Then get the task push notification config
         streamRecorder = getTaskPushNotificationConfigRequest(handler, NAME);
         assertNull(streamRecorder.getError());
-        List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> result = streamRecorder.getValues();
+        List<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> result =
+                streamRecorder.getValues();
         assertNotNull(result);
         assertEquals(1, result.size());
         org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig response = result.get(0);
         assertEquals(NAME, response.getName());
-        org.a2aproject.sdk.compat03.grpc.PushNotificationConfig responseConfig = response.getPushNotificationConfig();
+        org.a2aproject.sdk.compat03.grpc.PushNotificationConfig responseConfig =
+                response.getPushNotificationConfig();
         assertEquals("config456", responseConfig.getId());
         assertEquals("http://example.com", responseConfig.getUrl());
     }
@@ -389,7 +401,8 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         AgentCard_v0_3 card = createAgentCard(true, false, false);
         TestGrpcHandler handler = new TestGrpcHandler(card, convert03To10Handler, internalExecutor);
 
-        String NAME = "tasks/" + MINIMAL_TASK.id() + "/pushNotificationConfigs/" + MINIMAL_TASK.id();
+        String NAME =
+                "tasks/" + MINIMAL_TASK.id() + "/pushNotificationConfigs/" + MINIMAL_TASK.id();
         StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> streamRecorder =
                 createTaskPushNotificationConfigRequest(handler, NAME);
 
@@ -406,9 +419,11 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         // Save task to v1.0 backend
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
-        String NAME = "tasks/" + MINIMAL_TASK.id() + "/pushNotificationConfigs/" + MINIMAL_TASK.id();
+        String NAME =
+                "tasks/" + MINIMAL_TASK.id() + "/pushNotificationConfigs/" + MINIMAL_TASK.id();
         org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest request =
-                org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder()
+                org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest
+                        .newBuilder()
                         .setName(NAME)
                         .build();
 
@@ -434,12 +449,14 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                         .setParent(PARENT)
                         .build();
 
-        StreamRecorder<org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
+        StreamRecorder<org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse>
+                streamRecorder = StreamRecorder.create();
         handler.listTaskPushNotificationConfig(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
 
         assertNull(streamRecorder.getError());
-        List<org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse> result = streamRecorder.getValues();
+        List<org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse> result =
+                streamRecorder.getValues();
         assertEquals(1, result.size());
     }
 
@@ -447,36 +464,39 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
     // Helper Methods
     // ========================================
 
-    private StreamRecorder<SendMessageResponse> sendMessageRequest(TestGrpcHandler handler) throws Exception {
-        SendMessageRequest request = SendMessageRequest.newBuilder()
-                .setRequest(GRPC_MESSAGE)
-                .build();
+    private StreamRecorder<SendMessageResponse> sendMessageRequest(TestGrpcHandler handler)
+            throws Exception {
+        SendMessageRequest request =
+                SendMessageRequest.newBuilder().setRequest(GRPC_MESSAGE).build();
         StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
         handler.sendMessage(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         return streamRecorder;
     }
 
-    private StreamRecorder<StreamResponse> sendStreamingMessageRequest(TestGrpcHandler handler) throws Exception {
-        SendMessageRequest request = SendMessageRequest.newBuilder()
-                .setRequest(GRPC_MESSAGE)
-                .build();
+    private StreamRecorder<StreamResponse> sendStreamingMessageRequest(TestGrpcHandler handler)
+            throws Exception {
+        SendMessageRequest request =
+                SendMessageRequest.newBuilder().setRequest(GRPC_MESSAGE).build();
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.sendStreamingMessage(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         return streamRecorder;
     }
 
-    private <V> void assertGrpcError(StreamRecorder<V> streamRecorder, Status.Code expectedStatusCode) {
+    private <V> void assertGrpcError(
+            StreamRecorder<V> streamRecorder, Status.Code expectedStatusCode) {
         Assertions.assertNotNull(streamRecorder.getError());
         Assertions.assertInstanceOf(StatusRuntimeException.class, streamRecorder.getError());
-        Assertions.assertEquals(expectedStatusCode, ((StatusRuntimeException) streamRecorder.getError()).getStatus().getCode());
+        Assertions.assertEquals(
+                expectedStatusCode,
+                ((StatusRuntimeException) streamRecorder.getError()).getStatus().getCode());
         Assertions.assertTrue(streamRecorder.getValues().isEmpty());
     }
 
-
-    private StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> createTaskPushNotificationConfigRequest(
-            TestGrpcHandler handler, String name) throws Exception {
+    private StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig>
+            createTaskPushNotificationConfigRequest(TestGrpcHandler handler, String name)
+                    throws Exception {
         // Save task to v1.0 backend
         taskStore.save(TaskMapper_v0_3.INSTANCE.toV10(MINIMAL_TASK), false);
 
@@ -492,28 +512,33 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                         .build();
 
         org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest setRequest =
-                org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.newBuilder()
+                org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest
+                        .newBuilder()
                         .setConfig(taskPushNotificationConfig)
                         .build();
 
-        StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> streamRecorder = StreamRecorder.create();
+        StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> streamRecorder =
+                StreamRecorder.create();
         handler.createTaskPushNotificationConfig(setRequest, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         return streamRecorder;
     }
 
-    private StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> getTaskPushNotificationConfigRequest(
-            TestGrpcHandler handler, String name) throws Exception {
+    private StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig>
+            getTaskPushNotificationConfigRequest(TestGrpcHandler handler, String name)
+                    throws Exception {
         org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequest request =
                 org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequest.newBuilder()
                         .setName(name)
                         .build();
 
-        StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> streamRecorder = StreamRecorder.create();
+        StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> streamRecorder =
+                StreamRecorder.create();
         handler.getTaskPushNotificationConfig(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         return streamRecorder;
     }
+
     // ========================================
     // Test Handler Implementation
     // ========================================
@@ -523,9 +548,10 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         private final Convert_v0_3_To10RequestHandler handler;
         private final java.util.concurrent.Executor executor;
 
-        TestGrpcHandler(AgentCard_v0_3 card,
-                        Convert_v0_3_To10RequestHandler handler,
-                        java.util.concurrent.Executor executor) {
+        TestGrpcHandler(
+                AgentCard_v0_3 card,
+                Convert_v0_3_To10RequestHandler handler,
+                java.util.concurrent.Executor executor) {
             this.card = card;
             this.handler = handler;
             this.executor = executor;
@@ -552,5 +578,4 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
             return executor;
         }
     }
-
 }

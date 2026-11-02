@@ -6,18 +6,22 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
-import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
-
-import org.a2aproject.sdk.server.ExtendedAgentCard;
-import org.a2aproject.sdk.server.PublicAgentCard;
-import org.a2aproject.sdk.server.ServerCallContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
@@ -34,25 +38,19 @@ import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
-import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
-import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
+import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.util.async.Internal;
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.A2AError;
-import jakarta.enterprise.inject.Instance;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
@@ -60,8 +58,7 @@ public class RestHandler_v0_3 {
 
     private static final Logger LOGGER = Logger.getLogger(RestHandler_v0_3.class.getName());
     private AgentCard_v0_3 agentCard;
-    private @Nullable
-    Instance<AgentCard_v0_3> extendedAgentCard;
+    private @Nullable Instance<AgentCard_v0_3> extendedAgentCard;
     private Convert_v0_3_To10RequestHandler requestHandler;
     private final Executor executor;
 
@@ -72,8 +69,11 @@ public class RestHandler_v0_3 {
     }
 
     @Inject
-    public RestHandler_v0_3(@PublicAgentCard AgentCard_v0_3 agentCard, @ExtendedAgentCard Instance<AgentCard_v0_3> extendedAgentCard,
-                            @Internal Executor executor, Convert_v0_3_To10RequestHandler requestHandler) {
+    public RestHandler_v0_3(
+            @PublicAgentCard AgentCard_v0_3 agentCard,
+            @ExtendedAgentCard Instance<AgentCard_v0_3> extendedAgentCard,
+            @Internal Executor executor,
+            Convert_v0_3_To10RequestHandler requestHandler) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
@@ -83,7 +83,10 @@ public class RestHandler_v0_3 {
         // AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
-    public RestHandler_v0_3(AgentCard_v0_3 agentCard, Executor executor, Convert_v0_3_To10RequestHandler requestHandler) {
+    public RestHandler_v0_3(
+            AgentCard_v0_3 agentCard,
+            Executor executor,
+            Convert_v0_3_To10RequestHandler requestHandler) {
         this.agentCard = agentCard;
         this.executor = executor;
         this.requestHandler = requestHandler;
@@ -91,10 +94,16 @@ public class RestHandler_v0_3 {
 
     public HTTPRestResponse sendMessage(String body, ServerCallContext context) {
         try {
-            org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder request =
+                    org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
-            EventKind_v0_3 result = requestHandler.onMessageSend(ProtoUtils_v0_3.FromProto.messageSendParams(request), context);
-            return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder(ProtoUtils_v0_3.ToProto.taskOrMessage(result)));
+            EventKind_v0_3 result =
+                    requestHandler.onMessageSend(
+                            ProtoUtils_v0_3.FromProto.messageSendParams(request), context);
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder(
+                            ProtoUtils_v0_3.ToProto.taskOrMessage(result)));
         } catch (A2AError e) {
             return createErrorResponse(ErrorConverter_v0_3.convertA2AError(e));
         } catch (JSONRPCError_v0_3 e) {
@@ -107,18 +116,30 @@ public class RestHandler_v0_3 {
     public HTTPRestResponse sendStreamingMessage(String body, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().streaming()) {
-                return createErrorResponse(new InvalidRequestError_v0_3("Streaming is not supported by the agent"));
+                return createErrorResponse(
+                        new InvalidRequestError_v0_3("Streaming is not supported by the agent"));
             }
-            org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder request =
+                    org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
-            Flow.Publisher<StreamingEventKind_v0_3> publisher = requestHandler.onMessageSendStream(ProtoUtils_v0_3.FromProto.messageSendParams(request), context);
+            Flow.Publisher<StreamingEventKind_v0_3> publisher =
+                    requestHandler.onMessageSendStream(
+                            ProtoUtils_v0_3.FromProto.messageSendParams(request), context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(ErrorConverter_v0_3.convertA2AError(e)).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(
+                            new HTTPRestErrorResponse(ErrorConverter_v0_3.convertA2AError(e))
+                                    .toJson()));
         } catch (JSONRPCError_v0_3 e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError_v0_3(throwable.getMessage())).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(
+                            new HTTPRestErrorResponse(
+                                            new InternalError_v0_3(throwable.getMessage()))
+                                    .toJson()));
         }
     }
 
@@ -128,7 +149,10 @@ public class RestHandler_v0_3 {
             TaskIdParams_v0_3 params = new TaskIdParams_v0_3(requiredTaskId);
             Task_v0_3 task = requestHandler.onCancelTask(params, context);
             if (task != null) {
-                return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils_v0_3.ToProto.task(task)));
+                return createSuccessResponse(
+                        200,
+                        org.a2aproject.sdk.compat03.grpc.Task.newBuilder(
+                                ProtoUtils_v0_3.ToProto.task(task)));
             }
             throw new UnsupportedOperationError_v0_3();
         } catch (A2AError e) {
@@ -140,13 +164,17 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse setTaskPushNotificationConfiguration(@Nullable String taskId, String body, ServerCallContext context) {
+    public HTTPRestResponse setTaskPushNotificationConfiguration(
+            @Nullable String taskId, String body, ServerCallContext context) {
         try {
             String requiredTaskId = requireNonEmpty("task id", taskId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
+            org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder
+                    builder =
+                            org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest
+                                    .newBuilder();
             parseRequestBody(body, builder);
             String parent = "tasks/" + requiredTaskId;
             if (!builder.getParent().isBlank() && !parent.equals(builder.getParent())) {
@@ -168,17 +196,26 @@ public class RestHandler_v0_3 {
                 }
             }
             String requestConfigId = builder.getConfigId().isBlank() ? "" : builder.getConfigId();
-            if (requestConfigId.contains("/") || (!nameConfigId.isEmpty() && !requestConfigId.isEmpty()
-                    && !nameConfigId.equals(requestConfigId))) {
+            if (requestConfigId.contains("/")
+                    || (!nameConfigId.isEmpty()
+                            && !requestConfigId.isEmpty()
+                            && !nameConfigId.equals(requestConfigId))) {
                 throw new InvalidParamsError_v0_3("bad config id");
             }
-            String configId = !requestConfigId.isEmpty() ? requestConfigId
-                    : !nameConfigId.isEmpty() ? nameConfigId : requiredTaskId;
+            String configId =
+                    !requestConfigId.isEmpty()
+                            ? requestConfigId
+                            : !nameConfigId.isEmpty() ? nameConfigId : requiredTaskId;
             builder.setParent(parent);
             builder.setConfigId(configId);
             builder.getConfigBuilder().setName(configNamePrefix + "/" + configId);
-            TaskPushNotificationConfig_v0_3 result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(builder), context);
-            return createSuccessResponse(201, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(result)));
+            TaskPushNotificationConfig_v0_3 result =
+                    requestHandler.onSetTaskPushNotificationConfig(
+                            ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(builder), context);
+            return createSuccessResponse(
+                    201,
+                    org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(
+                            ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
             return createErrorResponse(ErrorConverter_v0_3.convertA2AError(e));
         } catch (JSONRPCError_v0_3 e) {
@@ -197,22 +234,35 @@ public class RestHandler_v0_3 {
         }
         try {
             if (!agentCard.capabilities().streaming()) {
-                return createErrorResponse(new InvalidRequestError_v0_3("Streaming is not supported by the agent"));
+                return createErrorResponse(
+                        new InvalidRequestError_v0_3("Streaming is not supported by the agent"));
             }
             TaskIdParams_v0_3 params = new TaskIdParams_v0_3(requiredTaskId);
-            Flow.Publisher<StreamingEventKind_v0_3> publisher = requestHandler.onResubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind_v0_3> publisher =
+                    requestHandler.onResubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(ErrorConverter_v0_3.convertA2AError(e)).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(
+                            new HTTPRestErrorResponse(ErrorConverter_v0_3.convertA2AError(e))
+                                    .toJson()));
         } catch (JSONRPCError_v0_3 e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError_v0_3(throwable.getMessage())).toJson()));
+            return new HTTPRestStreamingResponse(
+                    ZeroPublisher.fromItems(
+                            new HTTPRestErrorResponse(
+                                            new InternalError_v0_3(throwable.getMessage()))
+                                    .toJson()));
         }
     }
 
-    public HTTPRestResponse getTask(@Nullable String taskId, @Nullable String historyLengthSnakeCase,
-            @Nullable String historyLengthCamelCase, ServerCallContext context) {
+    public HTTPRestResponse getTask(
+            @Nullable String taskId,
+            @Nullable String historyLengthSnakeCase,
+            @Nullable String historyLengthCamelCase,
+            ServerCallContext context) {
         String requiredTaskId;
         try {
             requiredTaskId = requireNonEmpty("task id", taskId);
@@ -220,8 +270,9 @@ public class RestHandler_v0_3 {
             return createErrorResponse(e);
         }
         if (historyLengthSnakeCase != null && historyLengthCamelCase != null) {
-            return createErrorResponse(new InvalidParamsError_v0_3(
-                    "Only one of 'history_length' or 'historyLength' may be specified"));
+            return createErrorResponse(
+                    new InvalidParamsError_v0_3(
+                            "Only one of 'history_length' or 'historyLength' may be specified"));
         }
         int historyLength = 0;
         try {
@@ -231,16 +282,21 @@ public class RestHandler_v0_3 {
                 historyLength = Integer.parseInt(historyLengthCamelCase);
             }
         } catch (NumberFormatException e) {
-            return createErrorResponse(new InvalidParamsError_v0_3("bad history_length or historyLength"));
+            return createErrorResponse(
+                    new InvalidParamsError_v0_3("bad history_length or historyLength"));
         }
         if (historyLength < 0) {
-            return createErrorResponse(new InvalidParamsError_v0_3("bad history_length or historyLength"));
+            return createErrorResponse(
+                    new InvalidParamsError_v0_3("bad history_length or historyLength"));
         }
         try {
             TaskQueryParams_v0_3 params = new TaskQueryParams_v0_3(requiredTaskId, historyLength);
             Task_v0_3 task = requestHandler.onGetTask(params, context);
             if (task != null) {
-                return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils_v0_3.ToProto.task(task)));
+                return createSuccessResponse(
+                        200,
+                        org.a2aproject.sdk.compat03.grpc.Task.newBuilder(
+                                ProtoUtils_v0_3.ToProto.task(task)));
             }
             throw new TaskNotFoundError_v0_3();
         } catch (A2AError e) {
@@ -255,15 +311,21 @@ public class RestHandler_v0_3 {
     /**
      * A missing or empty config ID selects the task's default push notification configuration in v0.3.
      */
-    public HTTPRestResponse getTaskPushNotificationConfiguration(@Nullable String taskId, @Nullable String configId, ServerCallContext context) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(
+            @Nullable String taskId, @Nullable String configId, ServerCallContext context) {
         try {
             String requiredTaskId = requireNonEmpty("task id", taskId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            GetTaskPushNotificationConfigParams_v0_3 params = new GetTaskPushNotificationConfigParams_v0_3(requiredTaskId, configId);
-            TaskPushNotificationConfig_v0_3 config = requestHandler.onGetTaskPushNotificationConfig(params, context);
-            return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(config)));
+            GetTaskPushNotificationConfigParams_v0_3 params =
+                    new GetTaskPushNotificationConfigParams_v0_3(requiredTaskId, configId);
+            TaskPushNotificationConfig_v0_3 config =
+                    requestHandler.onGetTaskPushNotificationConfig(params, context);
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(
+                            ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(config)));
         } catch (A2AError e) {
             return createErrorResponse(ErrorConverter_v0_3.convertA2AError(e));
         } catch (JSONRPCError_v0_3 e) {
@@ -273,15 +335,23 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse listTaskPushNotificationConfigurations(@Nullable String taskId, ServerCallContext context) {
+    public HTTPRestResponse listTaskPushNotificationConfigurations(
+            @Nullable String taskId, ServerCallContext context) {
         try {
             String requiredTaskId = requireNonEmpty("task id", taskId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            ListTaskPushNotificationConfigParams_v0_3 params = new ListTaskPushNotificationConfigParams_v0_3(requiredTaskId);
-            List<TaskPushNotificationConfig_v0_3> configs = requestHandler.onListTaskPushNotificationConfig(params, context);
-            return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils_v0_3.ToProto.listTaskPushNotificationConfigResponse(configs)));
+            ListTaskPushNotificationConfigParams_v0_3 params =
+                    new ListTaskPushNotificationConfigParams_v0_3(requiredTaskId);
+            List<TaskPushNotificationConfig_v0_3> configs =
+                    requestHandler.onListTaskPushNotificationConfig(params, context);
+            return createSuccessResponse(
+                    200,
+                    org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse
+                            .newBuilder(
+                                    ProtoUtils_v0_3.ToProto.listTaskPushNotificationConfigResponse(
+                                            configs)));
         } catch (A2AError e) {
             return createErrorResponse(ErrorConverter_v0_3.convertA2AError(e));
         } catch (JSONRPCError_v0_3 e) {
@@ -291,14 +361,17 @@ public class RestHandler_v0_3 {
         }
     }
 
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(@Nullable String taskId, @Nullable String configId, ServerCallContext context) {
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(
+            @Nullable String taskId, @Nullable String configId, ServerCallContext context) {
         try {
             String requiredTaskId = requireNonEmpty("task id", taskId);
             String requiredConfigId = requireNonEmpty("config id", configId);
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError_v0_3();
             }
-            DeleteTaskPushNotificationConfigParams_v0_3 params = new DeleteTaskPushNotificationConfigParams_v0_3(requiredTaskId, requiredConfigId);
+            DeleteTaskPushNotificationConfigParams_v0_3 params =
+                    new DeleteTaskPushNotificationConfigParams_v0_3(
+                            requiredTaskId, requiredConfigId);
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
             return new HTTPRestResponse(204, "application/json", "");
         } catch (A2AError e) {
@@ -310,7 +383,8 @@ public class RestHandler_v0_3 {
         }
     }
 
-    private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder) throws JSONRPCError_v0_3 {
+    private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder)
+            throws JSONRPCError_v0_3 {
         try {
             if (body == null || body.trim().isEmpty()) {
                 throw new InvalidRequestError_v0_3("Request body is required");
@@ -318,7 +392,9 @@ public class RestHandler_v0_3 {
             validate(body);
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Error parsing JSON request body (length={0})",
                     body != null ? body.length() : 0);
             LOGGER.log(Level.SEVERE, "Parse error details", e);
             throw new InvalidParamsError_v0_3("Failed to parse request body: " + e.getMessage());
@@ -336,16 +412,19 @@ public class RestHandler_v0_3 {
         try {
             JsonParser.parseString(json);
         } catch (JsonSyntaxException e) {
-            throw new JSONParseError_v0_3(JSONParseError_v0_3.DEFAULT_CODE, "Failed to parse json", e.getMessage());
+            throw new JSONParseError_v0_3(
+                    JSONParseError_v0_3.DEFAULT_CODE, "Failed to parse json", e.getMessage());
         }
     }
 
-    private HTTPRestResponse createSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
+    private HTTPRestResponse createSuccessResponse(
+            int statusCode, com.google.protobuf.Message.Builder builder) {
         try {
             String jsonBody = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), builder);
             return new HTTPRestResponse(statusCode, "application/json", jsonBody);
         } catch (InvalidProtocolBufferException e) {
-            return createErrorResponse(new InternalError_v0_3("Failed to serialize response: " + e.getMessage()));
+            return createErrorResponse(
+                    new InternalError_v0_3("Failed to serialize response: " + e.getMessage()));
         }
     }
 
@@ -359,57 +438,78 @@ public class RestHandler_v0_3 {
         return new HTTPRestResponse(statusCode, "application/json", jsonBody);
     }
 
-    private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind_v0_3> publisher) {
+    private HTTPRestStreamingResponse createStreamingResponse(
+            Flow.Publisher<StreamingEventKind_v0_3> publisher) {
         return new HTTPRestStreamingResponse(convertToSendStreamingMessageResponse(publisher));
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
     private Flow.Publisher<String> convertToSendStreamingMessageResponse(
             Flow.Publisher<StreamingEventKind_v0_3> publisher) {
-        // We can't use the normal convertingProcessor since that propagates any errors as an error handled
+        // We can't use the normal convertingProcessor since that propagates any errors as an error
+        // handled
         // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
-        return ZeroPublisher.create(createTubeConfig(), tube -> {
-            CompletableFuture.runAsync(() -> {
-                publisher.subscribe(new Flow.Subscriber<StreamingEventKind_v0_3>() {
-                    Flow.@Nullable Subscription subscription;
+        return ZeroPublisher.create(
+                createTubeConfig(),
+                tube -> {
+                    CompletableFuture.runAsync(
+                            () -> {
+                                publisher.subscribe(
+                                        new Flow.Subscriber<StreamingEventKind_v0_3>() {
+                                            Flow.@Nullable Subscription subscription;
 
-                    @Override
-                    public void onSubscribe(Flow.Subscription subscription) {
-                        this.subscription = subscription;
-                        subscription.request(1);
-                    }
+                                            @Override
+                                            public void onSubscribe(
+                                                    Flow.Subscription subscription) {
+                                                this.subscription = subscription;
+                                                subscription.request(1);
+                                            }
 
-                    @Override
-                    public void onNext(StreamingEventKind_v0_3 item) {
-                        try {
-                            String payload = ProtoJsonUtils_v0_3.toJson(
-                                    JsonFormat.printer().omittingInsignificantWhitespace(), ProtoUtils_v0_3.ToProto.taskOrMessageStream(item));
-                            tube.send(payload);
-                            if (subscription != null) {
-                                subscription.request(1);
-                            }
-                        } catch (InvalidProtocolBufferException ex) {
-                            onError(ex);
-                        }
-                    }
+                                            @Override
+                                            public void onNext(StreamingEventKind_v0_3 item) {
+                                                try {
+                                                    String payload =
+                                                            ProtoJsonUtils_v0_3.toJson(
+                                                                    JsonFormat.printer()
+                                                                            .omittingInsignificantWhitespace(),
+                                                                    ProtoUtils_v0_3.ToProto
+                                                                            .taskOrMessageStream(
+                                                                                    item));
+                                                    tube.send(payload);
+                                                    if (subscription != null) {
+                                                        subscription.request(1);
+                                                    }
+                                                } catch (InvalidProtocolBufferException ex) {
+                                                    onError(ex);
+                                                }
+                                            }
 
-                    @Override
-                    public void onError(Throwable throwable) {
-                        if (throwable instanceof JSONRPCError_v0_3 jsonrpcError) {
-                            tube.send(new HTTPRestErrorResponse(jsonrpcError).toJson());
-                        } else {
-                            tube.send(new HTTPRestErrorResponse(new InternalError_v0_3(throwable.getMessage())).toJson());
-                        }
-                        onComplete();
-                    }
+                                            @Override
+                                            public void onError(Throwable throwable) {
+                                                if (throwable
+                                                        instanceof JSONRPCError_v0_3 jsonrpcError) {
+                                                    tube.send(
+                                                            new HTTPRestErrorResponse(jsonrpcError)
+                                                                    .toJson());
+                                                } else {
+                                                    tube.send(
+                                                            new HTTPRestErrorResponse(
+                                                                            new InternalError_v0_3(
+                                                                                    throwable
+                                                                                            .getMessage()))
+                                                                    .toJson());
+                                                }
+                                                onComplete();
+                                            }
 
-                    @Override
-                    public void onComplete() {
-                        tube.complete();
-                    }
+                                            @Override
+                                            public void onComplete() {
+                                                tube.complete();
+                                            }
+                                        });
+                            },
+                            executor);
                 });
-            }, executor);
-        });
     }
 
     private int mapErrorToHttpStatus(JSONRPCError_v0_3 error) {
@@ -419,13 +519,16 @@ public class RestHandler_v0_3 {
         if (error instanceof InvalidParamsError_v0_3) {
             return 422;
         }
-        if (error instanceof MethodNotFoundError_v0_3 || error instanceof TaskNotFoundError_v0_3 || error instanceof AuthenticatedExtendedCardNotConfiguredError_v0_3) {
+        if (error instanceof MethodNotFoundError_v0_3
+                || error instanceof TaskNotFoundError_v0_3
+                || error instanceof AuthenticatedExtendedCardNotConfiguredError_v0_3) {
             return 404;
         }
         if (error instanceof TaskNotCancelableError_v0_3) {
             return 409;
         }
-        if (error instanceof PushNotificationNotSupportedError_v0_3 || error instanceof UnsupportedOperationError_v0_3) {
+        if (error instanceof PushNotificationNotSupportedError_v0_3
+                || error instanceof UnsupportedOperationError_v0_3) {
             return 501;
         }
         if (error instanceof ContentTypeNotSupportedError_v0_3) {
@@ -442,10 +545,14 @@ public class RestHandler_v0_3 {
 
     public HTTPRestResponse getAuthenticatedExtendedCard() {
         try {
-            if (!agentCard.supportsAuthenticatedExtendedCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
-                throw new AuthenticatedExtendedCardNotConfiguredError_v0_3(null, "Authenticated Extended Card not configured", null);
+            if (!agentCard.supportsAuthenticatedExtendedCard()
+                    || extendedAgentCard == null
+                    || !extendedAgentCard.isResolvable()) {
+                throw new AuthenticatedExtendedCardNotConfiguredError_v0_3(
+                        null, "Authenticated Extended Card not configured", null);
             }
-            return new HTTPRestResponse(200, "application/json", JsonUtil_v0_3.toJson(extendedAgentCard.get()));
+            return new HTTPRestResponse(
+                    200, "application/json", JsonUtil_v0_3.toJson(extendedAgentCard.get()));
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
@@ -472,7 +579,8 @@ public class RestHandler_v0_3 {
             this(statusCode, contentType, body, Map.of());
         }
 
-        public HTTPRestResponse(int statusCode, String contentType, String body, Map<String, String> headers) {
+        public HTTPRestResponse(
+                int statusCode, String contentType, String body, Map<String, String> headers) {
             this.statusCode = statusCode;
             this.contentType = contentType;
             this.body = body;
@@ -497,7 +605,16 @@ public class RestHandler_v0_3 {
 
         @Override
         public String toString() {
-            return "HTTPRestResponse{" + "statusCode=" + statusCode + ", contentType=" + contentType + ", body=" + body + ", headers=" + headers + '}';
+            return "HTTPRestResponse{"
+                    + "statusCode="
+                    + statusCode
+                    + ", contentType="
+                    + contentType
+                    + ", body="
+                    + body
+                    + ", headers="
+                    + headers
+                    + '}';
         }
     }
 
@@ -518,8 +635,7 @@ public class RestHandler_v0_3 {
     private static class HTTPRestErrorResponse {
 
         private final String error;
-        private final @Nullable
-        String message;
+        private final @Nullable String message;
 
         private HTTPRestErrorResponse(JSONRPCError_v0_3 jsonRpcError) {
             this.error = jsonRpcError.getClass().getName();

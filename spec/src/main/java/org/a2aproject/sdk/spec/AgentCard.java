@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.spec.util.CollectionCopies;
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.Map;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The AgentCard is a self-describing manifest for an agent in the A2A Protocol.
@@ -173,8 +172,7 @@ public record AgentCard(
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Creates a new Builder initialized with values from an existing AgentCard.
@@ -191,17 +189,22 @@ public record AgentCard(
             this.version = card.version();
             this.documentationUrl = card.documentationUrl();
             this.capabilities = card.capabilities();
-            this.defaultInputModes = CollectionCopies.mutableListCopyOrEmpty(card.defaultInputModes());
-            this.defaultOutputModes = CollectionCopies.mutableListCopyOrEmpty(card.defaultOutputModes());
+            this.defaultInputModes =
+                    CollectionCopies.mutableListCopyOrEmpty(card.defaultInputModes());
+            this.defaultOutputModes =
+                    CollectionCopies.mutableListCopyOrEmpty(card.defaultOutputModes());
             this.skills = CollectionCopies.mutableListCopyOrEmpty(card.skills());
             this.securitySchemes = CollectionCopies.mutableMapCopyOrEmpty(card.securitySchemes());
-            this.securityRequirements = CollectionCopies.mutableListCopyOrEmpty(card.securityRequirements());
+            this.securityRequirements =
+                    CollectionCopies.mutableListCopyOrEmpty(card.securityRequirements());
             this.iconUrl = card.iconUrl();
-            this.supportedInterfaces = CollectionCopies.mutableListCopyOrEmpty(card.supportedInterfaces());
+            this.supportedInterfaces =
+                    CollectionCopies.mutableListCopyOrEmpty(card.supportedInterfaces());
             this.signatures = CollectionCopies.immutableNullableList(card.signatures());
             this.url = card.url();
             this.preferredTransport = card.preferredTransport();
-            this.additionalInterfaces = CollectionCopies.immutableNullableList(card.additionalInterfaces());
+            this.additionalInterfaces =
+                    CollectionCopies.immutableNullableList(card.additionalInterfaces());
         }
 
         /**
@@ -432,7 +435,7 @@ public record AgentCard(
                     Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces),
                     signatures,
                     url,
-                    preferredTransport == null ?  "JSONRPC" : preferredTransport,
+                    preferredTransport == null ? "JSONRPC" : preferredTransport,
                     additionalInterfaces);
         }
     }

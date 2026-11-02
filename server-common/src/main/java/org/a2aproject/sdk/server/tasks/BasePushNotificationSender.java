@@ -8,7 +8,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
@@ -73,7 +71,6 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private PushNotificationUrlValidator urlValidator;
     private Executor dispatchExecutor = ForkJoinPool.commonPool();
 
-
     /**
      * No-args constructor for CDI proxy creation.
      * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
@@ -90,8 +87,8 @@ public class BasePushNotificationSender implements PushNotificationSender {
         this.urlValidator = new DefaultPushNotificationUrlValidator();
     }
 
-    public BasePushNotificationSender(PushNotificationConfigStore configStore,
-                                       PushNotificationUrlValidator urlValidator) {
+    public BasePushNotificationSender(
+            PushNotificationConfigStore configStore, PushNotificationUrlValidator urlValidator) {
         this.httpClient = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
         this.configStore = configStore;
         this.formattersByVersion = Map.of();
@@ -131,13 +128,14 @@ public class BasePushNotificationSender implements PushNotificationSender {
      * @param dispatchExecutor optional named executor for async dispatch
      */
     @Inject
-    public BasePushNotificationSender(PushNotificationConfigStore configStore,
-                                       Instance<PushNotificationPayloadFormatter> formatters,
-                                       PushNotificationUrlValidator urlValidator,
-                                       Instance<A2AHttpClient> httpClient,
-                                       @Instrumented Instance<A2AHttpClient> propagatingClient,
-                                       @Instrumented Instance<Executor> instrumentedExecutor,
-                                       @Named(DISPATCH_EXECUTOR_NAME) Instance<Executor> dispatchExecutor) {
+    public BasePushNotificationSender(
+            PushNotificationConfigStore configStore,
+            Instance<PushNotificationPayloadFormatter> formatters,
+            PushNotificationUrlValidator urlValidator,
+            Instance<A2AHttpClient> httpClient,
+            @Instrumented Instance<A2AHttpClient> propagatingClient,
+            @Instrumented Instance<Executor> instrumentedExecutor,
+            @Named(DISPATCH_EXECUTOR_NAME) Instance<Executor> dispatchExecutor) {
         this.httpClient = resolveHttpClient(propagatingClient, httpClient);
         this.configStore = configStore;
         this.formattersByVersion = toFormatterMap(formatters);
@@ -145,25 +143,29 @@ public class BasePushNotificationSender implements PushNotificationSender {
         this.dispatchExecutor = resolveExecutor(instrumentedExecutor, dispatchExecutor);
     }
 
-    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
-                                       PushNotificationUrlValidator urlValidator) {
+    public BasePushNotificationSender(
+            PushNotificationConfigStore configStore,
+            A2AHttpClient httpClient,
+            PushNotificationUrlValidator urlValidator) {
         this.configStore = configStore;
         this.httpClient = httpClient;
         this.formattersByVersion = Map.of();
         this.urlValidator = urlValidator;
     }
 
-    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient,
-                                       List<PushNotificationPayloadFormatter> formatters,
-                                       PushNotificationUrlValidator urlValidator) {
+    public BasePushNotificationSender(
+            PushNotificationConfigStore configStore,
+            A2AHttpClient httpClient,
+            List<PushNotificationPayloadFormatter> formatters,
+            PushNotificationUrlValidator urlValidator) {
         this.configStore = configStore;
         this.httpClient = httpClient;
         this.formattersByVersion = toFormatterMap(formatters);
         this.urlValidator = urlValidator;
     }
 
-    private static A2AHttpClient resolveHttpClient(Instance<A2AHttpClient> propagating,
-                                                     Instance<A2AHttpClient> plain) {
+    private static A2AHttpClient resolveHttpClient(
+            Instance<A2AHttpClient> propagating, Instance<A2AHttpClient> plain) {
         if (propagating.isResolvable()) {
             return propagating.get();
         }
@@ -173,8 +175,8 @@ public class BasePushNotificationSender implements PushNotificationSender {
         return A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
     }
 
-    private static Executor resolveExecutor(Instance<Executor> instrumented,
-                                              Instance<Executor> named) {
+    private static Executor resolveExecutor(
+            Instance<Executor> instrumented, Instance<Executor> named) {
         if (instrumented.isResolvable()) {
             return instrumented.get();
         }
@@ -197,18 +199,24 @@ public class BasePushNotificationSender implements PushNotificationSender {
     public boolean sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot) {
         String taskId = extractTaskId(event);
         if (taskId == null) {
-            throw new IllegalArgumentException("Cannot send push notification: event does not contain taskId");
+            throw new IllegalArgumentException(
+                    "Cannot send push notification: event does not contain taskId");
         }
 
         List<TaskPushNotificationConfig> configs = new ArrayList<>();
         String nextPageToken = null;
         do {
-          ListTaskPushNotificationConfigsResult pageResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId,
-              DEFAULT_PAGE_SIZE, nextPageToken == null ? "" : nextPageToken, ""));
-          if (!pageResult.configs().isEmpty()) {
-            configs.addAll(pageResult.configs());
-          }
-          nextPageToken = pageResult.nextPageToken();
+            ListTaskPushNotificationConfigsResult pageResult =
+                    configStore.getInfo(
+                            new ListTaskPushNotificationConfigsParams(
+                                    taskId,
+                                    DEFAULT_PAGE_SIZE,
+                                    nextPageToken == null ? "" : nextPageToken,
+                                    ""));
+            if (!pageResult.configs().isEmpty()) {
+                configs.addAll(pageResult.configs());
+            }
+            nextPageToken = pageResult.nextPageToken();
         } while (nextPageToken != null);
 
         if (configs.isEmpty()) {
@@ -218,13 +226,21 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         Map<String, String> versionsByConfigId = configStore.getProtocolVersions(taskId);
 
-        List<CompletableFuture<Boolean>> dispatchResults = configs
-                .stream()
-                .map(pushConfig -> dispatch(event, taskSnapshot, pushConfig, versionsByConfigId))
-                .toList();
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(dispatchResults.toArray(new CompletableFuture[0]));
-        CompletableFuture<Boolean> dispatchResult = allFutures.thenApply(v -> dispatchResults.stream()
-                .allMatch(CompletableFuture::join));
+        List<CompletableFuture<Boolean>> dispatchResults =
+                configs.stream()
+                        .map(
+                                pushConfig ->
+                                        dispatch(
+                                                event,
+                                                taskSnapshot,
+                                                pushConfig,
+                                                versionsByConfigId))
+                        .toList();
+        CompletableFuture<Void> allFutures =
+                CompletableFuture.allOf(dispatchResults.toArray(new CompletableFuture[0]));
+        CompletableFuture<Boolean> dispatchResult =
+                allFutures.thenApply(
+                        v -> dispatchResults.stream().allMatch(CompletableFuture::join));
         try {
             boolean allSent = dispatchResult.get();
             if (!allSent) {
@@ -233,10 +249,18 @@ public class BasePushNotificationSender implements PushNotificationSender {
             return allSent;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOGGER.warn("Some push notifications failed to send for taskId {}: {}", taskId, e.getMessage(), e);
+            LOGGER.warn(
+                    "Some push notifications failed to send for taskId {}: {}",
+                    taskId,
+                    e.getMessage(),
+                    e);
             return false;
         } catch (ExecutionException e) {
-            LOGGER.warn("Some push notifications failed to send for taskId {}: {}", taskId, e.getMessage(), e);
+            LOGGER.warn(
+                    "Some push notifications failed to send for taskId {}: {}",
+                    taskId,
+                    e.getMessage(),
+                    e);
             return false;
         }
     }
@@ -266,18 +290,21 @@ public class BasePushNotificationSender implements PushNotificationSender {
         throw new IllegalStateException("Unknown StreamingEventKind: " + event);
     }
 
-    private CompletableFuture<Boolean> dispatch(StreamingEventKind event,
-                                                 @Nullable Task taskSnapshot,
-                                                 TaskPushNotificationConfig pushInfo,
-                                                 Map<String, String> versionsByConfigId) {
+    private CompletableFuture<Boolean> dispatch(
+            StreamingEventKind event,
+            @Nullable Task taskSnapshot,
+            TaskPushNotificationConfig pushInfo,
+            Map<String, String> versionsByConfigId) {
         return CompletableFuture.supplyAsync(
-                () -> dispatchNotification(event, taskSnapshot, pushInfo, versionsByConfigId), dispatchExecutor);
+                () -> dispatchNotification(event, taskSnapshot, pushInfo, versionsByConfigId),
+                dispatchExecutor);
     }
 
-    private boolean dispatchNotification(StreamingEventKind event,
-                                          @Nullable Task taskSnapshot,
-                                          TaskPushNotificationConfig pushInfo,
-                                          Map<String, String> versionsByConfigId) {
+    private boolean dispatchNotification(
+            StreamingEventKind event,
+            @Nullable Task taskSnapshot,
+            TaskPushNotificationConfig pushInfo,
+            Map<String, String> versionsByConfigId) {
         String url = pushInfo.url();
 
         try {
@@ -290,34 +317,41 @@ public class BasePushNotificationSender implements PushNotificationSender {
         String token = pushInfo.token();
 
         String version = versionsByConfigId.get(pushInfo.id());
-        PushNotificationPayloadFormatter formatter = version != null
-                ? formattersByVersion.get(version) : null;
+        PushNotificationPayloadFormatter formatter =
+                version != null ? formattersByVersion.get(version) : null;
 
         String body;
         if (formatter != null) {
             try {
                 body = formatter.formatPayload(event, taskSnapshot);
             } catch (Throwable throwable) {
-                LOGGER.error("Error formatting payload with {} formatter: {}",
-                        version, throwable.getMessage(), throwable);
+                LOGGER.error(
+                        "Error formatting payload with {} formatter: {}",
+                        version,
+                        throwable.getMessage(),
+                        throwable);
                 return false;
             }
             if (body == null) {
-                LOGGER.debug("Formatter for version {} returned null, skipping notification for {}",
-                        version, url);
+                LOGGER.debug(
+                        "Formatter for version {} returned null, skipping notification for {}",
+                        version,
+                        url);
                 return true;
             }
         } else {
             try {
                 body = JsonUtil.toJsonStreamingEvent(event);
             } catch (Throwable throwable) {
-                LOGGER.error("Error serializing StreamingEventKind to JSON: {}", throwable.getMessage(), throwable);
+                LOGGER.error(
+                        "Error serializing StreamingEventKind to JSON: {}",
+                        throwable.getMessage(),
+                        throwable);
                 return false;
             }
         }
 
-        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
-                .followRedirects(false);
+        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost().followRedirects(false);
         if (token != null && !token.isBlank()) {
             try {
                 rejectCrlf(token, X_A2A_NOTIFICATION_TOKEN);
@@ -333,7 +367,8 @@ public class BasePushNotificationSender implements PushNotificationSender {
             if (credentials != null) {
                 String authorizationHeader;
                 try {
-                    authorizationHeader = buildAuthorizationHeader(authentication.scheme(), credentials);
+                    authorizationHeader =
+                            buildAuthorizationHeader(authentication.scheme(), credentials);
                 } catch (IllegalArgumentException e) {
                     LOGGER.warn("Rejecting push notification to {}: {}", url, e.getMessage());
                     return false;
@@ -343,18 +378,27 @@ public class BasePushNotificationSender implements PushNotificationSender {
         }
 
         try {
-            A2AHttpResponse response = postBuilder
-                    .url(url)
-                    .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .body(body)
-                    .post();
+            A2AHttpResponse response =
+                    postBuilder
+                            .url(url)
+                            .addHeader(CONTENT_TYPE, APPLICATION_JSON)
+                            .body(body)
+                            .post();
             if (!response.success()) {
-                LOGGER.warn("Push notification [config={}] to {} failed with HTTP status {}",
-                        pushInfo.id(), url, response.status());
+                LOGGER.warn(
+                        "Push notification [config={}] to {} failed with HTTP status {}",
+                        pushInfo.id(),
+                        url,
+                        response.status());
                 return false;
             }
         } catch (IOException | InterruptedException e) {
-            LOGGER.warn("Push notification [config={}] to {} failed: {}", pushInfo.id(), url, e.getMessage(), e);
+            LOGGER.warn(
+                    "Push notification [config={}] to {} failed: {}",
+                    pushInfo.id(),
+                    url,
+                    e.getMessage(),
+                    e);
             return false;
         }
         return true;
@@ -390,8 +434,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
      */
     private static void rejectCrlf(String value, String label) {
         if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0) {
-            throw new IllegalArgumentException(
-                    label + " must not contain CR/LF characters");
+            throw new IllegalArgumentException(label + " must not contain CR/LF characters");
         }
     }
 }

@@ -5,18 +5,6 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys_v0_3.HEADERS_KEY;
 import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys_v0_3.METHOD_NAME_KEY;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicLong;
-
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-
 import com.google.gson.JsonSyntaxException;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.ForbiddenException;
@@ -25,6 +13,16 @@ import io.smallrye.mutiny.Multi;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicLong;
 import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
@@ -36,8 +34,8 @@ import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCErrorResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
@@ -65,51 +63,54 @@ import org.jspecify.annotations.Nullable;
 @Singleton
 public class A2AServerRoutes_v0_3 {
 
-    @Inject
-    JSONRPCHandler_v0_3 jsonRpcHandler;
+    @Inject JSONRPCHandler_v0_3 jsonRpcHandler;
 
     // Hook so testing can wait until the SSE subscriber is attached.
     // Without this we get intermittent failures
     private static volatile @Nullable Runnable streamingMultiSseSupportSubscribedRunnable;
 
-    @Inject
-    Instance<CallContextFactory_v0_3> callContextFactory;
+    @Inject Instance<CallContextFactory_v0_3> callContextFactory;
 
-    @Inject
-    VertxSecurityHelper vertxSecurityHelper;
+    @Inject VertxSecurityHelper vertxSecurityHelper;
 
     void setupRoutes(@Observes Router router) {
         // Main JSON-RPC endpoint: POST /
         router.post("/")
-            .consumes(APPLICATION_JSON)
-            .handler(BodyHandler.create())
-            .blockingHandler(ctx -> {
-                try {
-                    vertxSecurityHelper.runInRequestContextDeferred(ctx, () -> {
-                        invokeJSONRPCHandler(ctx.body().asString(), ctx);
-                    });
-                } catch (UnauthorizedException | ForbiddenException e) {
-                    vertxSecurityHelper.handleAuthError(ctx, e);
-                } catch (Exception e) {
-                    VertxSecurityHelper.handleGenericError(ctx);
-                }
-            }, false);
+                .consumes(APPLICATION_JSON)
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        ctx -> {
+                            try {
+                                vertxSecurityHelper.runInRequestContextDeferred(
+                                        ctx,
+                                        () -> {
+                                            invokeJSONRPCHandler(ctx.body().asString(), ctx);
+                                        });
+                            } catch (UnauthorizedException | ForbiddenException e) {
+                                vertxSecurityHelper.handleAuthError(ctx, e);
+                            } catch (Exception e) {
+                                VertxSecurityHelper.handleGenericError(ctx);
+                            }
+                        },
+                        false);
 
         // Only register v0.3 agent card if no user-provided v1.0 @PublicAgentCard bean exists.
         if (!hasNonDefaultV10AgentCard()) {
             router.get("/.well-known/agent-card.json")
-                .produces(APPLICATION_JSON)
-                .handler(ctx -> {
-                    try {
-                        String agentCard = JsonUtil_v0_3.toJson(jsonRpcHandler.getAgentCard());
-                        ctx.response()
-                            .setStatusCode(200)
-                            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                            .end(agentCard);
-                    } catch (JsonProcessingException_v0_3 e) {
-                        ctx.response().setStatusCode(500).end("Internal Server Error");
-                    }
-                });
+                    .produces(APPLICATION_JSON)
+                    .handler(
+                            ctx -> {
+                                try {
+                                    String agentCard =
+                                            JsonUtil_v0_3.toJson(jsonRpcHandler.getAgentCard());
+                                    ctx.response()
+                                            .setStatusCode(200)
+                                            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                                            .end(agentCard);
+                                } catch (JsonProcessingException_v0_3 e) {
+                                    ctx.response().setStatusCode(500).end("Internal Server Error");
+                                }
+                            });
         }
     }
 
@@ -134,7 +135,8 @@ public class A2AServerRoutes_v0_3 {
         JSONRPCErrorResponse_v0_3 error = null;
         Object requestId = null;
         try {
-            JSONRPCRequestDecoder_v0_3.DecodeResult result = JSONRPCRequestDecoder_v0_3.decode(body);
+            JSONRPCRequestDecoder_v0_3.DecodeResult result =
+                    JSONRPCRequestDecoder_v0_3.decode(body);
             if (result instanceof JSONRPCRequestDecoder_v0_3.DecodeFailure failure) {
                 requestId = failure.requestId();
                 if (failure.methodName() != null) {
@@ -142,22 +144,28 @@ public class A2AServerRoutes_v0_3 {
                 }
                 throw failure.error();
             }
-            JSONRPCRequestDecoder_v0_3.DecodedRequest decoded = (JSONRPCRequestDecoder_v0_3.DecodedRequest) result;
+            JSONRPCRequestDecoder_v0_3.DecodedRequest decoded =
+                    (JSONRPCRequestDecoder_v0_3.DecodedRequest) result;
             requestId = decoded.requestId();
             context.getState().put(METHOD_NAME_KEY, decoded.methodName());
             if (decoded.request() instanceof StreamingJSONRPCRequest_v0_3<?> request) {
                 streaming = true;
                 streamingResponse = processStreamingRequest(request, context);
             } else {
-                nonStreamingResponse = processNonStreamingRequest(
-                        (NonStreamingJSONRPCRequest_v0_3<?>) decoded.request(), context);
+                nonStreamingResponse =
+                        processNonStreamingRequest(
+                                (NonStreamingJSONRPCRequest_v0_3<?>) decoded.request(), context);
             }
         } catch (JSONRPCError_v0_3 e) {
             error = new JSONRPCErrorResponse_v0_3(requestId, e);
         } catch (JsonSyntaxException e) {
-            error = new JSONRPCErrorResponse_v0_3(requestId, new JSONParseError_v0_3(e.getMessage()));
+            error =
+                    new JSONRPCErrorResponse_v0_3(
+                            requestId, new JSONParseError_v0_3(e.getMessage()));
         } catch (Throwable t) {
-            error = new JSONRPCErrorResponse_v0_3(requestId, new InternalError_v0_3(t.getMessage()));
+            error =
+                    new JSONRPCErrorResponse_v0_3(
+                            requestId, new InternalError_v0_3(t.getMessage()));
         } finally {
             if (error != null) {
                 rc.response()
@@ -166,9 +174,12 @@ public class A2AServerRoutes_v0_3 {
                         .end(Utils_v0_3.toJsonString(error));
             } else if (streaming) {
                 AtomicLong eventIdCounter = new AtomicLong(0);
-                Multi<String> sseEvents = streamingResponse
-                        .map(response -> formatSseEvent(response, eventIdCounter.getAndIncrement()));
-                SseResponseWriter.writeSseStrings(sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
+                Multi<String> sseEvents =
+                        streamingResponse.map(
+                                response ->
+                                        formatSseEvent(response, eventIdCounter.getAndIncrement()));
+                SseResponseWriter.writeSseStrings(
+                        sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
             } else {
                 rc.response()
                         .setStatusCode(200)
@@ -213,12 +224,14 @@ public class A2AServerRoutes_v0_3 {
         } else if (request instanceof TaskResubscriptionRequest_v0_3 req) {
             publisher = jsonRpcHandler.onResubscribeToTask(req, context);
         } else {
-            return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError_v0_3()));
+            return Multi.createFrom()
+                    .item(generateErrorResponse(request, new UnsupportedOperationError_v0_3()));
         }
         return Multi.createFrom().publisher(publisher);
     }
 
-    private JSONRPCResponse_v0_3<?> generateErrorResponse(JSONRPCRequest_v0_3<?> request, JSONRPCError_v0_3 error) {
+    private JSONRPCResponse_v0_3<?> generateErrorResponse(
+            JSONRPCRequest_v0_3<?> request, JSONRPCError_v0_3 error) {
         return new JSONRPCErrorResponse_v0_3(request.getId(), error);
     }
 
@@ -234,7 +247,10 @@ public class A2AServerRoutes_v0_3 {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 String subject = rc.user().subject();
-                user = subject != null ? new AuthenticatedUser(subject) : UnauthenticatedUser.INSTANCE;
+                user =
+                        subject != null
+                                ? new AuthenticatedUser(subject)
+                                : UnauthenticatedUser.INSTANCE;
             }
             Map<String, Object> state = new HashMap<>();
 
@@ -244,14 +260,16 @@ public class A2AServerRoutes_v0_3 {
             state.put(HEADERS_KEY, headers);
 
             // Extract requested extensions from X-A2A-Extensions header
-            List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders_v0_3.X_A2A_EXTENSIONS);
-            Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
+            List<String> extensionHeaderValues =
+                    rc.request().headers().getAll(A2AHeaders_v0_3.X_A2A_EXTENSIONS);
+            Set<String> requestedExtensions =
+                    A2AExtensions.getRequestedExtensions(extensionHeaderValues);
 
-            return new ServerCallContext(user, state, requestedExtensions, A2AProtocol_v0_3.PROTOCOL_VERSION);
+            return new ServerCallContext(
+                    user, state, requestedExtensions, A2AProtocol_v0_3.PROTOCOL_VERSION);
         } else {
             CallContextFactory_v0_3 builder = callContextFactory.get();
             return builder.build(rc);
         }
     }
-
 }

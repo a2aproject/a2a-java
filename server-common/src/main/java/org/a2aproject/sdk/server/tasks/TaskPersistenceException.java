@@ -85,7 +85,8 @@ public class TaskPersistenceException extends TaskStoreException {
      * @param msg the exception message
      * @param cause the underlying cause
      */
-    public TaskPersistenceException(@Nullable final String taskId, final String msg, final Throwable cause) {
+    public TaskPersistenceException(
+            @Nullable final String taskId, final String msg, final Throwable cause) {
         super(taskId, msg, cause);
     }
 }

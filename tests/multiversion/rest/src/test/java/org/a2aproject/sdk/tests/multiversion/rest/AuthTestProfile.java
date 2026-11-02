@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.tests.multiversion.rest;
 
-import java.util.Map;
-
 import io.quarkus.test.junit.QuarkusTestProfile;
+import java.util.Map;
 
 public class AuthTestProfile implements QuarkusTestProfile {
 
@@ -16,8 +15,7 @@ public class AuthTestProfile implements QuarkusTestProfile {
                 Map.entry("quarkus.security.users.embedded.users.testuser", "testpass"),
                 Map.entry("quarkus.security.users.embedded.roles.testuser", "user"),
                 Map.entry("quarkus.http.auth.basic", "true"),
-                Map.entry("quarkus.http.auth.proactive", "true")
-        );
+                Map.entry("quarkus.http.auth.proactive", "true"));
     }
 
     @Override

@@ -2,7 +2,8 @@ package org.a2aproject.sdk.server.events;
 
 import java.util.Objects;
 
-record MainEventBusContext(String taskId, EventQueue.MainQueue eventQueue, EventQueueItem eventQueueItem) {
+record MainEventBusContext(
+        String taskId, EventQueue.MainQueue eventQueue, EventQueueItem eventQueueItem) {
     MainEventBusContext {
         Objects.requireNonNull(taskId, "taskId cannot be null");
         Objects.requireNonNull(eventQueue, "eventQueue cannot be null");

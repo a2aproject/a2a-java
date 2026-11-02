@@ -8,7 +8,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -65,23 +64,22 @@ public class SSEEventListenerTest {
     public void testOnMessageWithTaskResult() {
         // Set up event handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> receivedEvent.set(event), error -> {});
 
         // JSON format from REST SSE stream (protobuf as JSON)
-        String jsonMessage = """
-            {
-              "task": {
-                "id": "task-123",
-                "contextId": "context-456",
-                "status": {
-                  "state": "TASK_STATE_WORKING"
+        String jsonMessage =
+                """
+                {
+                  "task": {
+                    "id": "task-123",
+                    "contextId": "context-456",
+                    "status": {
+                      "state": "TASK_STATE_WORKING"
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         // Call the onMessage method
         listener.onMessage(new ServerSentEvent(jsonMessage), null);
@@ -99,26 +97,25 @@ public class SSEEventListenerTest {
     public void testOnMessageWithMessageResult() {
         // Set up event handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> receivedEvent.set(event), error -> {});
 
         // JSON format from REST SSE stream
-        String jsonMessage = """
-            {
-              "message": {
-                "role": "ROLE_AGENT",
-                "messageId": "msg-123",
-                "contextId": "context-456",
-                "parts": [
-                  {
-                    "text": "Hello, world!"
+        String jsonMessage =
+                """
+                {
+                  "message": {
+                    "role": "ROLE_AGENT",
+                    "messageId": "msg-123",
+                    "contextId": "context-456",
+                    "parts": [
+                      {
+                        "text": "Hello, world!"
+                      }
+                    ]
                   }
-                ]
-              }
-            }
-            """;
+                }
+                """;
 
         // Call onMessage method
         listener.onMessage(new ServerSentEvent(jsonMessage), null);
@@ -139,23 +136,22 @@ public class SSEEventListenerTest {
     public void testOnMessageWithStatusUpdateEvent() {
         // Set up event handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> receivedEvent.set(event), error -> {});
 
         // JSON format from REST SSE stream
-        String jsonMessage = """
-            {
-              "statusUpdate": {
-                "taskId": "1",
-                "contextId": "2",
-                "status": {
-                  "state": "TASK_STATE_SUBMITTED"
+        String jsonMessage =
+                """
+                {
+                  "statusUpdate": {
+                    "taskId": "1",
+                    "contextId": "2",
+                    "status": {
+                      "state": "TASK_STATE_SUBMITTED"
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         // Call onMessage method
         listener.onMessage(new ServerSentEvent(jsonMessage), null);
@@ -174,23 +170,22 @@ public class SSEEventListenerTest {
     public void testOnMessageWithFinalStatusUpdateEventCancels() {
         // Set up event handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> receivedEvent.set(event), error -> {});
 
         // JSON format from REST SSE stream with final status
-        String jsonMessage = """
-            {
-              "statusUpdate": {
-                "taskId": "1",
-                "contextId": "2",
-                "status": {
-                  "state": "TASK_STATE_COMPLETED"
+        String jsonMessage =
+                """
+                {
+                  "statusUpdate": {
+                    "taskId": "1",
+                    "contextId": "2",
+                    "status": {
+                      "state": "TASK_STATE_COMPLETED"
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         // Call onMessage with a cancellable future
         CancelCapturingFuture future = new CancelCapturingFuture();
@@ -211,23 +206,22 @@ public class SSEEventListenerTest {
     public void testOnMessageWithCompletedTaskCancels() {
         // Set up event handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> receivedEvent.set(event),
-                error -> {}
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> receivedEvent.set(event), error -> {});
 
         // JSON format from REST SSE stream with completed task
-        String jsonMessage = """
-            {
-              "task": {
-                "id": "task-123",
-                "contextId": "context-456",
-                "status": {
-                  "state": "TASK_STATE_COMPLETED"
+        String jsonMessage =
+                """
+                {
+                  "task": {
+                    "id": "task-123",
+                    "contextId": "context-456",
+                    "status": {
+                      "state": "TASK_STATE_COMPLETED"
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         // Call onMessage with a cancellable future
         CancelCapturingFuture future = new CancelCapturingFuture();
@@ -247,10 +241,8 @@ public class SSEEventListenerTest {
     public void testOnMessageWithInvalidJsonCallsErrorHandler() {
         // Set up error handler
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> {},
-                error -> receivedError.set(error)
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> {}, error -> receivedError.set(error));
 
         // Invalid JSON message
         String invalidJson = "{ invalid json }";
@@ -266,10 +258,8 @@ public class SSEEventListenerTest {
     public void testOnMessageWithInvalidPayloadCaseCallsErrorHandler() {
         // Set up error handler
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> {},
-                error -> receivedError.set(error)
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> {}, error -> receivedError.set(error));
 
         // JSON with no recognized payload type (empty object)
         String jsonMessage = "{}";
@@ -287,10 +277,8 @@ public class SSEEventListenerTest {
     public void testOnErrorCallsErrorHandler() {
         // Set up error handler
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> {},
-                error -> receivedError.set(error)
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> {}, error -> receivedError.set(error));
 
         // Create a test error
         IllegalStateException testError = new IllegalStateException("Test error");
@@ -307,10 +295,8 @@ public class SSEEventListenerTest {
     public void testOnErrorCancelsFuture() {
         // Set up error handler
         AtomicBoolean errorHandlerCalled = new AtomicBoolean(false);
-        SSEEventListener listener = new SSEEventListener(
-                event -> {},
-                error -> errorHandlerCalled.set(true)
-        );
+        SSEEventListener listener =
+                new SSEEventListener(event -> {}, error -> errorHandlerCalled.set(true));
 
         // Create a cancel-capturing future
         CancelCapturingFuture future = new CancelCapturingFuture();
@@ -327,10 +313,10 @@ public class SSEEventListenerTest {
     public void testOnMessageWithNullErrorHandler() {
         // Set up with null error handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
-        SSEEventListener listener = new SSEEventListener(
-                event -> receivedEvent.set(event),
-                null  // Null error handler
-        );
+        SSEEventListener listener =
+                new SSEEventListener(
+                        event -> receivedEvent.set(event), null // Null error handler
+                        );
 
         // Invalid JSON message
         String invalidJson = "{ invalid json }";

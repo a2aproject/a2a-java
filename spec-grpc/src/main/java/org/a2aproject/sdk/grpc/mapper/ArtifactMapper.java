@@ -11,7 +11,8 @@ import org.mapstruct.Mapping;
  * Uses ADDER_PREFERRED strategy to use addAllExtensions() method instead of
  * trying to instantiate ProtocolStringList. Enables full compile-time validation!
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {PartMapper.class, A2ACommonFieldMapper.class})
 public interface ArtifactMapper {
@@ -22,9 +23,15 @@ public interface ArtifactMapper {
      * Converts domain Artifact to proto Artifact.
      * ADDER_PREFERRED strategy ensures MapStruct uses addAllExtensions() method.
      */
-    @Mapping(target = "artifactId", source = "artifactId", conditionExpression = "java(domain.artifactId() != null)")
+    @Mapping(
+            target = "artifactId",
+            source = "artifactId",
+            conditionExpression = "java(domain.artifactId() != null)")
     @Mapping(target = "name", source = "name", conditionExpression = "java(domain.name() != null)")
-    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.description() != null)")
+    @Mapping(
+            target = "description",
+            source = "description",
+            conditionExpression = "java(domain.description() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     org.a2aproject.sdk.grpc.Artifact toProto(Artifact domain);
 

@@ -1,13 +1,11 @@
 package org.a2aproject.sdk.compat03.server.grpc.quarkus;
 
+import io.quarkus.security.spi.runtime.AuthorizationController;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Singleton;
 import jakarta.interceptor.Interceptor;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import io.quarkus.security.spi.runtime.AuthorizationController;
 
 @Alternative
 @Priority(Interceptor.Priority.LIBRARY_AFTER + 1)

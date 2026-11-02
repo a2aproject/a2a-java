@@ -18,7 +18,8 @@ import org.mapstruct.Mapper;
  * <b>Manual Implementation Required:</b> Must use manual instanceof dispatch to handle sealed interface (5 permitted subtypes)
  * to protobuf oneof pattern, as MapStruct's @SubclassMapping cannot map different source types to different fields of the same target type.
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {
             APIKeySecuritySchemeMapper.class,
@@ -41,31 +42,33 @@ public interface SecuritySchemeMapper {
      * @param domain the domain security scheme (sealed interface)
      * @return the protobuf SecurityScheme with the appropriate oneof field set
      */
-    default org.a2aproject.sdk.grpc.SecurityScheme toProto(org.a2aproject.sdk.spec.SecurityScheme domain) {
+    default org.a2aproject.sdk.grpc.SecurityScheme toProto(
+            org.a2aproject.sdk.spec.SecurityScheme domain) {
         if (domain == null) {
             return null;
         }
 
         if (domain instanceof APIKeySecurityScheme s) {
             return org.a2aproject.sdk.grpc.SecurityScheme.newBuilder()
-                .setApiKeySecurityScheme(APIKeySecuritySchemeMapper.INSTANCE.toProto(s))
-                .build();
+                    .setApiKeySecurityScheme(APIKeySecuritySchemeMapper.INSTANCE.toProto(s))
+                    .build();
         } else if (domain instanceof HTTPAuthSecurityScheme s) {
             return org.a2aproject.sdk.grpc.SecurityScheme.newBuilder()
-                .setHttpAuthSecurityScheme(HTTPAuthSecuritySchemeMapper.INSTANCE.toProto(s))
-                .build();
+                    .setHttpAuthSecurityScheme(HTTPAuthSecuritySchemeMapper.INSTANCE.toProto(s))
+                    .build();
         } else if (domain instanceof OAuth2SecurityScheme s) {
             return org.a2aproject.sdk.grpc.SecurityScheme.newBuilder()
-                .setOauth2SecurityScheme(OAuth2SecuritySchemeMapper.INSTANCE.toProto(s))
-                .build();
+                    .setOauth2SecurityScheme(OAuth2SecuritySchemeMapper.INSTANCE.toProto(s))
+                    .build();
         } else if (domain instanceof OpenIdConnectSecurityScheme s) {
             return org.a2aproject.sdk.grpc.SecurityScheme.newBuilder()
-                .setOpenIdConnectSecurityScheme(OpenIdConnectSecuritySchemeMapper.INSTANCE.toProto(s))
-                .build();
+                    .setOpenIdConnectSecurityScheme(
+                            OpenIdConnectSecuritySchemeMapper.INSTANCE.toProto(s))
+                    .build();
         } else if (domain instanceof MutualTLSSecurityScheme s) {
             return org.a2aproject.sdk.grpc.SecurityScheme.newBuilder()
-                .setMtlsSecurityScheme(MutualTLSSecuritySchemeMapper.INSTANCE.toProto(s))
-                .build();
+                    .setMtlsSecurityScheme(MutualTLSSecuritySchemeMapper.INSTANCE.toProto(s))
+                    .build();
         }
 
         throw new IllegalArgumentException("Unknown SecurityScheme type: " + domain.getClass());
@@ -81,24 +84,27 @@ public interface SecuritySchemeMapper {
      * @param proto the protobuf SecurityScheme with a oneof field set
      * @return the domain security scheme (sealed interface implementation)
      */
-    default org.a2aproject.sdk.spec.SecurityScheme fromProto(org.a2aproject.sdk.grpc.SecurityScheme proto) {
+    default org.a2aproject.sdk.spec.SecurityScheme fromProto(
+            org.a2aproject.sdk.grpc.SecurityScheme proto) {
         if (proto == null) {
             return null;
         }
 
         return switch (proto.getSchemeCase()) {
             case API_KEY_SECURITY_SCHEME ->
-                APIKeySecuritySchemeMapper.INSTANCE.fromProto(proto.getApiKeySecurityScheme());
+                    APIKeySecuritySchemeMapper.INSTANCE.fromProto(proto.getApiKeySecurityScheme());
             case HTTP_AUTH_SECURITY_SCHEME ->
-                HTTPAuthSecuritySchemeMapper.INSTANCE.fromProto(proto.getHttpAuthSecurityScheme());
+                    HTTPAuthSecuritySchemeMapper.INSTANCE.fromProto(
+                            proto.getHttpAuthSecurityScheme());
             case OAUTH2_SECURITY_SCHEME ->
-                OAuth2SecuritySchemeMapper.INSTANCE.fromProto(proto.getOauth2SecurityScheme());
+                    OAuth2SecuritySchemeMapper.INSTANCE.fromProto(proto.getOauth2SecurityScheme());
             case OPEN_ID_CONNECT_SECURITY_SCHEME ->
-                OpenIdConnectSecuritySchemeMapper.INSTANCE.fromProto(proto.getOpenIdConnectSecurityScheme());
+                    OpenIdConnectSecuritySchemeMapper.INSTANCE.fromProto(
+                            proto.getOpenIdConnectSecurityScheme());
             case MTLS_SECURITY_SCHEME ->
-                MutualTLSSecuritySchemeMapper.INSTANCE.fromProto(proto.getMtlsSecurityScheme());
+                    MutualTLSSecuritySchemeMapper.INSTANCE.fromProto(proto.getMtlsSecurityScheme());
             case SCHEME_NOT_SET ->
-                throw new IllegalArgumentException("SecurityScheme oneof field not set");
+                    throw new IllegalArgumentException("SecurityScheme oneof field not set");
         };
     }
 }

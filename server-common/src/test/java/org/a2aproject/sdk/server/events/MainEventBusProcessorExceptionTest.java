@@ -9,13 +9,15 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
-import org.a2aproject.sdk.server.tasks.TaskManager;
 import org.a2aproject.sdk.server.tasks.TaskPersistenceException;
 import org.a2aproject.sdk.server.tasks.TaskSerializationException;
 import org.a2aproject.sdk.server.tasks.TaskStore;
@@ -28,10 +30,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 
 /**
  * Integration tests for MainEventBusProcessor exception handling.
@@ -61,9 +59,11 @@ public class MainEventBusProcessorExceptionTest {
 
         // Set up MainEventBus and processor with mock TaskStore
         mainEventBus = new MainEventBus();
-        queueManager = new InMemoryQueueManager(null, mainEventBus); // null TaskStateProvider for tests
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, mockTaskStore,
-                                                          PushNotificationSender.NOOP, queueManager);
+        queueManager =
+                new InMemoryQueueManager(null, mainEventBus); // null TaskStateProvider for tests
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, mockTaskStore, PushNotificationSender.NOOP, queueManager);
 
         // Set up log capture for verifying error messages
         Logger logger = (Logger) LoggerFactory.getLogger(MainEventBusProcessor.class);
@@ -75,10 +75,12 @@ public class MainEventBusProcessorExceptionTest {
         EventQueueUtil.start(mainEventBusProcessor);
 
         // Create event queue for testing
-        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(TASK_ID)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        eventQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .taskId(TASK_ID)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
     }
 
     @AfterEach
@@ -98,10 +100,12 @@ public class MainEventBusProcessorExceptionTest {
      * AC#1: Mock TaskStore throws TaskSerializationException → MainEventBusProcessor distributes InternalError
      */
     @Test
-    public void testTaskSerializationException_ConvertsToInternalError() throws InterruptedException {
+    public void testTaskSerializationException_ConvertsToInternalError()
+            throws InterruptedException {
         // Arrange: Mock TaskStore to throw TaskSerializationException
         String exceptionMessage = "Failed to deserialize corrupted JSON";
-        TaskSerializationException exception = new TaskSerializationException(TASK_ID, exceptionMessage);
+        TaskSerializationException exception =
+                new TaskSerializationException(TASK_ID, exceptionMessage);
         when(mockTaskStore.get(any())).thenThrow(exception);
         doThrow(exception).when(mockTaskStore).save(any(Task.class), anyBoolean());
 
@@ -113,20 +117,28 @@ public class MainEventBusProcessorExceptionTest {
         // Assert: Verify InternalError was distributed
         assertEquals(1, distributedEvents.size(), "Should distribute exactly one event");
         Event distributedEvent = distributedEvents.get(0);
-        assertInstanceOf(InternalError.class, distributedEvent,
-                        "TaskSerializationException should convert to InternalError");
+        assertInstanceOf(
+                InternalError.class,
+                distributedEvent,
+                "TaskSerializationException should convert to InternalError");
 
         InternalError error = (InternalError) distributedEvent;
-        assertTrue(error.getMessage().contains(TASK_ID),
-                  "Error message should contain task ID: " + error.getMessage());
-        assertTrue(error.getMessage().contains("serialize"),
-                  "Error message should mention serialization: " + error.getMessage());
+        assertTrue(
+                error.getMessage().contains(TASK_ID),
+                "Error message should contain task ID: " + error.getMessage());
+        assertTrue(
+                error.getMessage().contains("serialize"),
+                "Error message should mention serialization: " + error.getMessage());
 
         // Assert: Verify ERROR level logging
-        boolean foundErrorLog = snapshotLogs().stream()
-            .anyMatch(event -> event.getLevel() == Level.ERROR
-                            && event.getFormattedMessage().contains(TASK_ID)
-                            && event.getFormattedMessage().contains("serialization"));
+        boolean foundErrorLog =
+                snapshotLogs().stream()
+                        .anyMatch(
+                                event ->
+                                        event.getLevel() == Level.ERROR
+                                                && event.getFormattedMessage().contains(TASK_ID)
+                                                && event.getFormattedMessage()
+                                                        .contains("serialization"));
         assertTrue(foundErrorLog, "Should log TaskSerializationException at ERROR level");
     }
 
@@ -138,9 +150,8 @@ public class MainEventBusProcessorExceptionTest {
     public void testTaskPersistenceException_ConvertsToInternalError() throws InterruptedException {
         // Arrange: Mock TaskStore to throw TaskPersistenceException
         String exceptionMessage = "Database operation failed";
-        TaskPersistenceException exception = new TaskPersistenceException(
-            TASK_ID, exceptionMessage
-        );
+        TaskPersistenceException exception =
+                new TaskPersistenceException(TASK_ID, exceptionMessage);
         when(mockTaskStore.get(any())).thenThrow(exception);
         doThrow(exception).when(mockTaskStore).save(any(Task.class), anyBoolean());
 
@@ -152,18 +163,25 @@ public class MainEventBusProcessorExceptionTest {
         // Assert: Verify InternalError was distributed
         assertEquals(1, distributedEvents.size(), "Should distribute exactly one event");
         Event distributedEvent = distributedEvents.get(0);
-        assertInstanceOf(InternalError.class, distributedEvent,
-                        "TaskPersistenceException should convert to InternalError");
+        assertInstanceOf(
+                InternalError.class,
+                distributedEvent,
+                "TaskPersistenceException should convert to InternalError");
 
         InternalError error = (InternalError) distributedEvent;
-        assertTrue(error.getMessage().contains(TASK_ID),
-                  "Error message should contain task ID: " + error.getMessage());
+        assertTrue(
+                error.getMessage().contains(TASK_ID),
+                "Error message should contain task ID: " + error.getMessage());
 
         // Assert: Verify ERROR level logging
-        boolean foundErrorLog = snapshotLogs().stream()
-            .anyMatch(event -> event.getLevel() == Level.ERROR
-                            && event.getFormattedMessage().contains(TASK_ID)
-                            && event.getFormattedMessage().contains("persistence failed"));
+        boolean foundErrorLog =
+                snapshotLogs().stream()
+                        .anyMatch(
+                                event ->
+                                        event.getLevel() == Level.ERROR
+                                                && event.getFormattedMessage().contains(TASK_ID)
+                                                && event.getFormattedMessage()
+                                                        .contains("persistence failed"));
         assertTrue(foundErrorLog, "Should log TaskPersistenceException at ERROR level");
     }
 
@@ -175,52 +193,60 @@ public class MainEventBusProcessorExceptionTest {
     public void testTaskIdPreservedInExceptionChain() throws InterruptedException {
         // Arrange: Create exception with specific taskId
         String specificTaskId = "task-with-unique-id-12345";
-        TaskSerializationException exception = new TaskSerializationException(
-            specificTaskId, "Test exception with specific task ID"
-        );
+        TaskSerializationException exception =
+                new TaskSerializationException(
+                        specificTaskId, "Test exception with specific task ID");
         when(mockTaskStore.get(any())).thenThrow(exception);
         doThrow(exception).when(mockTaskStore).save(any(Task.class), anyBoolean());
 
         // Create event queue with specific taskId
-        EventQueue specificQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(specificTaskId)
-                .mainEventBus(mainEventBus)
-                .build().tap();
+        EventQueue specificQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .taskId(specificTaskId)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
 
-        Task testTask = Task.builder()
-                .id(specificTaskId)
-                .contextId("test-context")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        Task testTask =
+                Task.builder()
+                        .id(specificTaskId)
+                        .contextId("test-context")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
 
         // Act: Enqueue event and wait for processing
         List<Event> distributedEvents = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                distributedEvents.add(event);
-                latch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event event) {
+                        distributedEvents.add(event);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // No-op for this test
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {
+                        // No-op for this test
+                    }
+                });
 
         specificQueue.enqueueEvent(testTask);
-        assertTrue(latch.await(5, TimeUnit.SECONDS), "Event processing should complete within timeout");
+        assertTrue(
+                latch.await(5, TimeUnit.SECONDS),
+                "Event processing should complete within timeout");
 
         // Assert: Verify specific taskId appears in distributed error
         assertEquals(1, distributedEvents.size());
         InternalError error = (InternalError) distributedEvents.get(0);
-        assertTrue(error.getMessage().contains(specificTaskId),
-                  "Error should contain specific task ID: " + error.getMessage());
+        assertTrue(
+                error.getMessage().contains(specificTaskId),
+                "Error should contain specific task ID: " + error.getMessage());
 
         // Assert: Verify specific taskId appears in logs
-        boolean foundTaskIdInLog = snapshotLogs().stream()
-            .anyMatch(event -> event.getFormattedMessage().contains(specificTaskId));
+        boolean foundTaskIdInLog =
+                snapshotLogs().stream()
+                        .anyMatch(event -> event.getFormattedMessage().contains(specificTaskId));
         assertTrue(foundTaskIdInLog, "Logs should contain specific task ID");
     }
 
@@ -258,23 +284,25 @@ public class MainEventBusProcessorExceptionTest {
         List<Event> distributedEvents = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(1);
 
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event processedEvent) {
-                distributedEvents.add(processedEvent);
-                latch.countDown();
-            }
+        mainEventBusProcessor.setCallback(
+                new MainEventBusProcessorCallback() {
+                    @Override
+                    public void onEventProcessed(String taskId, Event processedEvent) {
+                        distributedEvents.add(processedEvent);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // No-op for exception tests
-            }
-        });
+                    @Override
+                    public void onTaskFinalized(String taskId) {
+                        // No-op for exception tests
+                    }
+                });
 
         eventQueue.enqueueEvent(event);
 
-        assertTrue(latch.await(5, TimeUnit.SECONDS),
-                  "Event processing should complete within timeout");
+        assertTrue(
+                latch.await(5, TimeUnit.SECONDS),
+                "Event processing should complete within timeout");
 
         return distributedEvents;
     }

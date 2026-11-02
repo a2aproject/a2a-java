@@ -27,8 +27,7 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public class A2AClientJSONError_v0_3 extends A2AClientError_v0_3 {
 
-    public A2AClientJSONError_v0_3() {
-    }
+    public A2AClientJSONError_v0_3() {}
 
     public A2AClientJSONError_v0_3(String message) {
         super(message);

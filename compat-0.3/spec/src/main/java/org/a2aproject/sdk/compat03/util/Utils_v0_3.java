@@ -2,17 +2,13 @@ package org.a2aproject.sdk.compat03.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.logging.Logger;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
-import java.util.logging.Logger;
-
-
+import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 
 /**
  * Utility class providing common helper methods for A2A Protocol operations.
@@ -31,7 +27,6 @@ import java.util.logging.Logger;
  * @see TaskArtifactUpdateEvent_v0_3 for streaming artifact updates
  */
 public class Utils_v0_3 {
-
 
     private static final Logger LOGGER = Logger.getLogger(Utils_v0_3.class.getName());
 
@@ -73,7 +68,8 @@ public class Utils_v0_3 {
      * @see TaskArtifactUpdateEvent_v0_3 for streaming artifact updates
      * @see Artifact_v0_3 for artifact structure
      */
-    public static Task_v0_3 appendArtifactToTask(Task_v0_3 task, TaskArtifactUpdateEvent_v0_3 event, String taskId) {
+    public static Task_v0_3 appendArtifactToTask(
+            Task_v0_3 task, TaskArtifactUpdateEvent_v0_3 event, String taskId) {
         // Append artifacts
         List<Artifact_v0_3> artifacts = new ArrayList<>(task.artifacts());
 
@@ -97,36 +93,39 @@ public class Utils_v0_3 {
             // This represents the first chunk for this artifact index
             if (existingArtifactIndex >= 0) {
                 // Replace the existing artifact entirely with the new artifact
-                LOGGER.fine(String.format("Replacing artifact at id %s for task %s", artifactId, taskId));
+                LOGGER.fine(
+                        String.format(
+                                "Replacing artifact at id %s for task %s", artifactId, taskId));
                 artifacts.set(existingArtifactIndex, newArtifact);
             } else {
                 // Append the new artifact since no artifact with this id/index exists yet
-                LOGGER.fine(String.format("Adding artifact at id %s for task %s", artifactId, taskId));
+                LOGGER.fine(
+                        String.format("Adding artifact at id %s for task %s", artifactId, taskId));
                 artifacts.add(newArtifact);
             }
 
         } else if (existingArtifact != null) {
             // Append new parts to the existing artifact's parts list
             // Do this to a copy
-            LOGGER.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
+            LOGGER.fine(
+                    String.format(
+                            "Appending parts to artifact id %s for task %s", artifactId, taskId));
             List<Part_v0_3<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
-            Artifact_v0_3 updated = new Artifact_v0_3.Builder(existingArtifact)
-                    .parts(parts)
-                    .build();
+            Artifact_v0_3 updated =
+                    new Artifact_v0_3.Builder(existingArtifact).parts(parts).build();
             artifacts.set(existingArtifactIndex, updated);
         } else {
             // We received a chunk to append, but we don't have an existing artifact.
             // We will ignore this chunk
             LOGGER.warning(
-                    String.format("Received append=true for nonexistent artifact index for artifact %s in task %s. Ignoring chunk.",
-                    artifactId, taskId));
+                    String.format(
+                            "Received append=true for nonexistent artifact index for artifact %s in"
+                                    + " task %s. Ignoring chunk.",
+                            artifactId, taskId));
         }
 
-        return new Task_v0_3.Builder(task)
-                .artifacts(artifacts)
-                .build();
-
+        return new Task_v0_3.Builder(task).artifacts(artifacts).build();
     }
 
     /**
@@ -136,11 +135,12 @@ public class Utils_v0_3 {
      * @return the first defined URL in the supported interaces of the agent card.
      * @throws A2AClientException
      */
-//    public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
-//        if (agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
-//            throw new A2AClientException("No server interface available in the AgentCard");
-//        }
-//        return agentCard.supportedInterfaces().get(0).url();
-//    }
+    //    public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
+    //        if (agentCard.supportedInterfaces() == null ||
+    // agentCard.supportedInterfaces().isEmpty()) {
+    //            throw new A2AClientException("No server interface available in the AgentCard");
+    //        }
+    //        return agentCard.supportedInterfaces().get(0).url();
+    //    }
 
 }

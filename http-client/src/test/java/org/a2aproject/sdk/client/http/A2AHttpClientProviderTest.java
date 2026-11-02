@@ -43,18 +43,20 @@ public class A2AHttpClientProviderTest {
 
     @Test
     public void testDefaultProviderDoesNotSupportSseConfig() {
-        A2AHttpClientProvider defaultProvider = new A2AHttpClientProvider() {
-            @Override
-            public A2AHttpClient create() {
-                return new JdkA2AHttpClient();
-            }
+        A2AHttpClientProvider defaultProvider =
+                new A2AHttpClientProvider() {
+                    @Override
+                    public A2AHttpClient create() {
+                        return new JdkA2AHttpClient();
+                    }
 
-            @Override
-            public String name() {
-                return "test";
-            }
-        };
-        assertFalse(defaultProvider.supportsSseConfig(),
+                    @Override
+                    public String name() {
+                        return "test";
+                    }
+                };
+        assertFalse(
+                defaultProvider.supportsSseConfig(),
                 "Default interface implementation must return false");
     }
 }

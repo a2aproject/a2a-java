@@ -1,12 +1,5 @@
 package org.a2aproject.sdk.extras.opentelemetry.server;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import jakarta.annotation.PreDestroy;
@@ -15,6 +8,12 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
@@ -91,11 +90,13 @@ public class OpenTelemetryHttpClientProducer {
     @ApplicationScoped
     @Instrumented
     A2AHttpClient createPropagatingClient(Instance<A2AHttpClient> httpClient) {
-        A2AHttpClient delegate = httpClient.isResolvable()
-                ? httpClient.get()
-                : A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
-                        .excludedProviderNames(java.util.List.of(CDI_PROVIDER_NAME))
-                        .build());
+        A2AHttpClient delegate =
+                httpClient.isResolvable()
+                        ? httpClient.get()
+                        : A2AHttpClientFactory.create(
+                                A2AHttpClientConfiguration.builder()
+                                        .excludedProviderNames(java.util.List.of(CDI_PROVIDER_NAME))
+                                        .build());
         return new OpenTelemetryA2AHttpClient(delegate, openTelemetry);
     }
 
@@ -126,17 +127,19 @@ public class OpenTelemetryHttpClientProducer {
     @ApplicationScoped
     @Instrumented
     Executor createContextPropagatingExecutor(
-            @Named(BasePushNotificationSender.DISPATCH_EXECUTOR_NAME) Instance<Executor> userExecutor) {
+            @Named(BasePushNotificationSender.DISPATCH_EXECUTOR_NAME)
+                    Instance<Executor> userExecutor) {
         if (userExecutor.isResolvable()) {
             return Context.taskWrapping(userExecutor.get());
         }
         int threads = Math.max(4, Runtime.getRuntime().availableProcessors() * 2);
         AtomicInteger counter = new AtomicInteger();
-        ThreadFactory threadFactory = r -> {
-            Thread t = new Thread(r, "a2a-push-dispatch-" + counter.getAndIncrement());
-            t.setDaemon(true);
-            return t;
-        };
+        ThreadFactory threadFactory =
+                r -> {
+                    Thread t = new Thread(r, "a2a-push-dispatch-" + counter.getAndIncrement());
+                    t.setDaemon(true);
+                    return t;
+                };
         ExecutorService pool = Executors.newFixedThreadPool(threads, threadFactory);
         dispatchPool = pool;
         return Context.taskWrapping(pool);

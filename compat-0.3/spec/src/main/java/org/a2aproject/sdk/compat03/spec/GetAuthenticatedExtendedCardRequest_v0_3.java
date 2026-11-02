@@ -1,29 +1,28 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.UUID;
-
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.compat03.util.Utils_v0_3;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Represents a JSON-RPC request for the `agent/getAuthenticatedExtendedCard` method.
  */
-public final class GetAuthenticatedExtendedCardRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<Void> {
+public final class GetAuthenticatedExtendedCardRequest_v0_3
+        extends NonStreamingJSONRPCRequest_v0_3<Void> {
 
-    private GetAuthenticatedExtendedCardRequest_v0_3() {
-    }
-
+    private GetAuthenticatedExtendedCardRequest_v0_3() {}
 
     public static final String METHOD = "agent/getAuthenticatedExtendedCard";
 
-    public GetAuthenticatedExtendedCardRequest_v0_3(String jsonrpc, Object id, String method, Void params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+    public GetAuthenticatedExtendedCardRequest_v0_3(
+            String jsonrpc, Object id, String method, Void params) {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid GetAuthenticatedExtendedCardRequest method");
+        if (!method.equals(METHOD)) {
+            throw new IllegalArgumentException(
+                    "Invalid GetAuthenticatedExtendedCardRequest method");
         }
         Assert.isValidJsonRpcId(id);
         this.jsonrpc = Utils_v0_3.defaultIfNull(jsonrpc, JSONRPC_VERSION);

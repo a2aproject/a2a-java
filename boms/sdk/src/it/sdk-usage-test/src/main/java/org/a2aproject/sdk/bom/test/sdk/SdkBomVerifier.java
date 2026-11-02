@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.bom.test.sdk;
 
-import org.a2aproject.sdk.bom.test.DynamicBomVerifier;
-
 import java.util.Set;
+import org.a2aproject.sdk.bom.test.DynamicBomVerifier;
 
 /**
  * Verifies SDK BOM completeness by attempting to load all discovered classes.
@@ -11,23 +10,26 @@ import java.util.Set;
  */
 public class SdkBomVerifier extends DynamicBomVerifier {
 
-    private static final Set<String> SDK_EXCLUSIONS = Set.of(
-        "boms/",                 // BOM test modules themselves
-        "docs/",                 // Documentation site (not an SDK artifact)
-        "examples/",             // Example applications
-        "itk/",                  // Integration Test Kit agent
-        "tck/",                  // TCK test suite
-        "compat-0.3/tck/",       // Compat 0.3 TCK (not yet enabled)
-        "compat-0.3/reference/", // Compat 0.3 reference implementations (in reference BOM)
-        "compat-0.3/tests/",     // Compat 0.3 test utilities)
-        "tests/",                // Integration tests
-        "test-utils-docker/"     // Test utilities for Docker-based tests
-    );
+    private static final Set<String> SDK_EXCLUSIONS =
+            Set.of(
+                    "boms/", // BOM test modules themselves
+                    "docs/", // Documentation site (not an SDK artifact)
+                    "examples/", // Example applications
+                    "itk/", // Integration Test Kit agent
+                    "tck/", // TCK test suite
+                    "compat-0.3/tck/", // Compat 0.3 TCK (not yet enabled)
+                    "compat-0.3/reference/", // Compat 0.3 reference implementations (in reference
+                    // BOM)
+                    "compat-0.3/tests/", // Compat 0.3 test utilities)
+                    "tests/", // Integration tests
+                    "test-utils-docker/" // Test utilities for Docker-based tests
+                    );
 
-    private static final Set<String> SDK_FORBIDDEN = Set.of(
-        "extras/",     // Extras modules (separate BOM) - must NOT be loadable
-        "reference/"   // Reference implementations (separate BOM) - must NOT be loadable
-    );
+    private static final Set<String> SDK_FORBIDDEN =
+            Set.of(
+                    "extras/", // Extras modules (separate BOM) - must NOT be loadable
+                    "reference/" // Reference implementations (separate BOM) - must NOT be loadable
+                    );
 
     public SdkBomVerifier() {
         super(SDK_EXCLUSIONS, SDK_FORBIDDEN);

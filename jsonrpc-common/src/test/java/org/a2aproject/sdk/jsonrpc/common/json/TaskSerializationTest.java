@@ -7,15 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
@@ -42,11 +41,12 @@ class TaskSerializationTest {
     @Test
     void testBasicTaskSerialization() throws JsonProcessingException {
         // Create a basic task
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
 
         // Serialize to JSON
         String json = JsonUtil.toJson(task);
@@ -68,19 +68,21 @@ class TaskSerializationTest {
 
     @Test
     void testListTasksSerializationDoesNotWrapTaskItems() throws JsonProcessingException {
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
 
         ListTasksResult result = new ListTasksResult(List.of(task));
         String resultJson = JsonUtil.toJson(result);
-        JsonObject resultTaskJson = JsonParser.parseString(resultJson)
-                .getAsJsonObject()
-                .getAsJsonArray("tasks")
-                .get(0)
-                .getAsJsonObject();
+        JsonObject resultTaskJson =
+                JsonParser.parseString(resultJson)
+                        .getAsJsonObject()
+                        .getAsJsonArray("tasks")
+                        .get(0)
+                        .getAsJsonObject();
 
         assertFalse(resultTaskJson.has(Task.STREAMING_EVENT_ID));
         assertEquals(task.id(), resultTaskJson.get("id").getAsString());
@@ -88,12 +90,13 @@ class TaskSerializationTest {
 
         ListTasksResponse response = new ListTasksResponse("request-1", result);
         String responseJson = JsonUtil.toJson(response);
-        JsonObject responseTaskJson = JsonParser.parseString(responseJson)
-                .getAsJsonObject()
-                .getAsJsonObject("result")
-                .getAsJsonArray("tasks")
-                .get(0)
-                .getAsJsonObject();
+        JsonObject responseTaskJson =
+                JsonParser.parseString(responseJson)
+                        .getAsJsonObject()
+                        .getAsJsonObject("result")
+                        .getAsJsonArray("tasks")
+                        .get(0)
+                        .getAsJsonObject();
 
         assertFalse(responseTaskJson.has(Task.STREAMING_EVENT_ID));
         assertEquals(task.id(), responseTaskJson.get("id").getAsString());
@@ -101,18 +104,19 @@ class TaskSerializationTest {
     }
 
     @Test
-    void testSendMessageResponseSerializationKeepsEventKindWrapper() throws JsonProcessingException {
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+    void testSendMessageResponseSerializationKeepsEventKindWrapper()
+            throws JsonProcessingException {
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
 
         SendMessageResponse response = new SendMessageResponse("request-1", task);
         String responseJson = JsonUtil.toJson(response);
-        JsonObject responseResultJson = JsonParser.parseString(responseJson)
-                .getAsJsonObject()
-                .getAsJsonObject("result");
+        JsonObject responseResultJson =
+                JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonObject("result");
 
         assertTrue(responseResultJson.has(Task.STREAMING_EVENT_ID));
         JsonObject taskJson = responseResultJson.getAsJsonObject(Task.STREAMING_EVENT_ID);
@@ -124,11 +128,12 @@ class TaskSerializationTest {
     void testTaskWithTimestamp() throws JsonProcessingException {
         OffsetDateTime timestamp = OffsetDateTime.now();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -143,22 +148,21 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithArtifacts() throws JsonProcessingException {
-        Artifact artifact = Artifact.builder()
-                .artifactId("artifact-1")
-                .name("Test Artifact")
-                .description("Description of artifact")
-                .parts(List.of(
-                        new TextPart("Hello"),
-                        new TextPart("World")
-                ))
-                .build();
+        Artifact artifact =
+                Artifact.builder()
+                        .artifactId("artifact-1")
+                        .name("Test Artifact")
+                        .description("Description of artifact")
+                        .parts(List.of(new TextPart("Hello"), new TextPart("World")))
+                        .build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -180,17 +184,19 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithHistory() throws JsonProcessingException {
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("Test message")))
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("Test message")))
+                        .build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .history(List.of(message))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .history(List.of(message))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -213,28 +219,29 @@ class TaskSerializationTest {
     void testTaskWithAllFields() throws JsonProcessingException {
         OffsetDateTime timestamp = OffsetDateTime.now();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-789")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
-                .history(List.of(
-                        Message.builder()
-                                .role(Message.Role.ROLE_USER)
-                                .parts(List.of(new TextPart("User message")))
-                                .build(),
-                        Message.builder()
-                                .role(Message.Role.ROLE_AGENT)
-                                .parts(List.of(new TextPart("Agent response")))
-                                .build()
-                ))
-                .artifacts(List.of(
-                        Artifact.builder()
-                                .artifactId("artifact-1")
-                                .parts(List.of(new TextPart("Artifact content")))
-                                .build()
-                ))
-                .metadata(Map.of("key1", "value1", "key2", 42))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-789")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
+                        .history(
+                                List.of(
+                                        Message.builder()
+                                                .role(Message.Role.ROLE_USER)
+                                                .parts(List.of(new TextPart("User message")))
+                                                .build(),
+                                        Message.builder()
+                                                .role(Message.Role.ROLE_AGENT)
+                                                .parts(List.of(new TextPart("Agent response")))
+                                                .build()))
+                        .artifacts(
+                                List.of(
+                                        Artifact.builder()
+                                                .artifactId("artifact-1")
+                                                .parts(List.of(new TextPart("Artifact content")))
+                                                .build()))
+                        .metadata(Map.of("key1", "value1", "key2", 42))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -256,11 +263,12 @@ class TaskSerializationTest {
     @Test
     void testTaskWithDifferentStates() throws JsonProcessingException {
         for (TaskState state : TaskState.values()) {
-            Task task = Task.builder()
-                    .id("task-" + state)
-                    .contextId("context-123")
-                    .status(new TaskStatus(state))
-                    .build();
+            Task task =
+                    Task.builder()
+                            .id("task-" + state)
+                            .contextId("context-123")
+                            .status(new TaskStatus(state))
+                            .build();
 
             // Serialize
             String json = JsonUtil.toJson(task);
@@ -278,12 +286,13 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithNullOptionalFields() throws JsonProcessingException {
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                // artifacts, history, metadata not set
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        // artifacts, history, metadata not set
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -305,24 +314,25 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithFilePartBytes() throws JsonProcessingException {
-        FilePart filePart = new FilePart(new FileWithBytes("application/pdf", "document.pdf", "base64data"));
+        FilePart filePart =
+                new FilePart(new FileWithBytes("application/pdf", "document.pdf", "base64data"));
 
-        Artifact artifact = Artifact.builder()
-                .artifactId("file-artifact")
-                .parts(List.of(filePart))
-                .build();
+        Artifact artifact =
+                Artifact.builder().artifactId("file-artifact").parts(List.of(filePart)).build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
 
-        // Verify JSON contains file part data in flat format (raw/filename/mediaType, not "file" wrapper)
+        // Verify JSON contains file part data in flat format (raw/filename/mediaType, not "file"
+        // wrapper)
         assertTrue(json.contains("\"raw\""));
         assertFalse(json.contains("\"kind\""));
         assertTrue(json.contains("document.pdf"));
@@ -343,19 +353,20 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithFilePartUri() throws JsonProcessingException {
-        FilePart filePart = new FilePart(new FileWithUri("image/png", "photo.png", "https://example.com/photo.png"));
+        FilePart filePart =
+                new FilePart(
+                        new FileWithUri("image/png", "photo.png", "https://example.com/photo.png"));
 
-        Artifact artifact = Artifact.builder()
-                .artifactId("uri-artifact")
-                .parts(List.of(filePart))
-                .build();
+        Artifact artifact =
+                Artifact.builder().artifactId("uri-artifact").parts(List.of(filePart)).build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -380,17 +391,16 @@ class TaskSerializationTest {
     void testTaskWithDataPart() throws JsonProcessingException {
         DataPart dataPart = new DataPart(Map.of("temperature", 22.5, "humidity", 65));
 
-        Artifact artifact = Artifact.builder()
-                .artifactId("data-artifact")
-                .parts(List.of(dataPart))
-                .build();
+        Artifact artifact =
+                Artifact.builder().artifactId("data-artifact").parts(List.of(dataPart)).build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -415,28 +425,34 @@ class TaskSerializationTest {
         // Create a comprehensive task with all part types
         OffsetDateTime timestamp = OffsetDateTime.now();
 
-        Task original = Task.builder()
-                .id("task-123")
-                .contextId("context-789")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
-                .history(List.of(
-                        Message.builder()
-                                .role(Message.Role.ROLE_USER)
-                                .parts(List.of(
-                                        new TextPart("Text"),
-                                        new FilePart(new FileWithBytes("text/plain", "file.txt", "data")),
-                                        new DataPart(Map.of("key", "value"))
-                                ))
-                                .build()
-                ))
-                .artifacts(List.of(
-                        Artifact.builder()
-                                .artifactId("artifact-1")
-                                .parts(List.of(new TextPart("Content")))
-                                .build()
-                ))
-                .metadata(Map.of("meta1", "value1"))
-                .build();
+        Task original =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-789")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
+                        .history(
+                                List.of(
+                                        Message.builder()
+                                                .role(Message.Role.ROLE_USER)
+                                                .parts(
+                                                        List.of(
+                                                                new TextPart("Text"),
+                                                                new FilePart(
+                                                                        new FileWithBytes(
+                                                                                "text/plain",
+                                                                                "file.txt",
+                                                                                "data")),
+                                                                new DataPart(
+                                                                        Map.of("key", "value"))))
+                                                .build()))
+                        .artifacts(
+                                List.of(
+                                        Artifact.builder()
+                                                .artifactId("artifact-1")
+                                                .parts(List.of(new TextPart("Content")))
+                                                .build()))
+                        .metadata(Map.of("meta1", "value1"))
+                        .build();
 
         // Serialize to JSON
         String json = JsonUtil.toJson(original);
@@ -460,16 +476,18 @@ class TaskSerializationTest {
 
     @Test
     void testTaskStatusWithMessage() throws JsonProcessingException {
-        Message statusMessage = Message.builder()
-                .role(Message.Role.ROLE_AGENT)
-                .parts(List.of(new TextPart("Processing complete")))
-                .build();
+        Message statusMessage =
+                Message.builder()
+                        .role(Message.Role.ROLE_AGENT)
+                        .parts(List.of(new TextPart("Processing complete")))
+                        .build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, statusMessage, null))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, statusMessage, null))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -490,15 +508,16 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_SUBMITTED"
-              }
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_SUBMITTED"
+                  }
+                }
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -512,26 +531,27 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithArtifactsFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_COMPLETED"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "artifact-1",
-                  "name": "Result",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  },
+                  "artifacts": [
                     {
-                      "text": "Hello World"
+                      "artifactId": "artifact-1",
+                      "name": "Result",
+                      "parts": [
+                        {
+                          "text": "Hello World"
+                        }
+                      ]
                     }
                   ]
                 }
-              ]
-            }
-            """;
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -547,27 +567,28 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithFilePartBytesFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_COMPLETED"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "file-artifact",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  },
+                  "artifacts": [
                     {
-                      "raw": "base64encodeddata",
-                      "filename": "document.pdf",
-                      "mediaType": "application/pdf"
+                      "artifactId": "file-artifact",
+                      "parts": [
+                        {
+                          "raw": "base64encodeddata",
+                          "filename": "document.pdf",
+                          "mediaType": "application/pdf"
+                        }
+                      ]
                     }
                   ]
                 }
-              ]
-            }
-            """;
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -585,27 +606,28 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithFilePartUriFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_COMPLETED"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "uri-artifact",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  },
+                  "artifacts": [
                     {
-                      "url": "https://example.com/photo.png",
-                      "filename": "photo.png",
-                      "mediaType": "image/png"
+                      "artifactId": "uri-artifact",
+                      "parts": [
+                        {
+                          "url": "https://example.com/photo.png",
+                          "filename": "photo.png",
+                          "mediaType": "image/png"
+                        }
+                      ]
                     }
                   ]
                 }
-              ]
-            }
-            """;
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -622,28 +644,29 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithDataPartFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_COMPLETED"
-              },
-              "artifacts": [
+        String json =
+                """
                 {
-                  "artifactId": "data-artifact",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  },
+                  "artifacts": [
                     {
-                      "data": {
-                        "temperature": 22.5,
-                        "humidity": 65
-                      }
+                      "artifactId": "data-artifact",
+                      "parts": [
+                        {
+                          "data": {
+                            "temperature": 22.5,
+                            "humidity": 65
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
-              ]
-            }
-            """;
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -656,35 +679,36 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithHistoryFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_WORKING"
-              },
-              "history": [
+        String json =
+                """
                 {
-                  "role": "ROLE_USER",
-                  "parts": [
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_WORKING"
+                  },
+                  "history": [
                     {
-                      "text": "User message"
-                    }
-                  ],
-                  "messageId": "msg-1"
-                },
-                {
-                  "role": "ROLE_AGENT",
-                  "parts": [
+                      "role": "ROLE_USER",
+                      "parts": [
+                        {
+                          "text": "User message"
+                        }
+                      ],
+                      "messageId": "msg-1"
+                    },
                     {
-                      "text": "Agent response"
+                      "role": "ROLE_AGENT",
+                      "parts": [
+                        {
+                          "text": "Agent response"
+                        }
+                      ],
+                      "messageId": "msg-2"
                     }
-                  ],
-                  "messageId": "msg-2"
+                  ]
                 }
-              ]
-            }
-            """;
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -698,16 +722,17 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithTimestampFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_WORKING",
-                "timestamp": "2023-10-01T12:00:00.234-05:00"
-              }
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_WORKING",
+                    "timestamp": "2023-10-01T12:00:00.234-05:00"
+                  }
+                }
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -719,19 +744,20 @@ class TaskSerializationTest {
 
     @Test
     void testDeserializeTaskWithMetadataFromJson() throws JsonProcessingException {
-        String json = """
-            {
-              "id": "task-123",
-              "contextId": "context-456",
-              "status": {
-                "state": "TASK_STATE_COMPLETED"
-              },
-              "metadata": {
-                "key1": "value1",
-                "key2": 42
-              }
-            }
-            """;
+        String json =
+                """
+                {
+                  "id": "task-123",
+                  "contextId": "context-456",
+                  "status": {
+                    "state": "TASK_STATE_COMPLETED"
+                  },
+                  "metadata": {
+                    "key1": "value1",
+                    "key2": 42
+                  }
+                }
+                """;
 
         Task task = JsonUtil.fromJson(json, Task.class);
 
@@ -742,22 +768,30 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithMixedPartTypes() throws JsonProcessingException {
-        Artifact artifact = Artifact.builder()
-                .artifactId("mixed-artifact")
-                .parts(List.of(
-                        new TextPart("Text content"),
-                        new FilePart(new FileWithBytes("application/json", "data.json", "{}")),
-                        new DataPart(Map.of("result", 42)),
-                        new FilePart(new FileWithUri("image/png", "image.png", "https://example.com/img.png"))
-                ))
-                .build();
+        Artifact artifact =
+                Artifact.builder()
+                        .artifactId("mixed-artifact")
+                        .parts(
+                                List.of(
+                                        new TextPart("Text content"),
+                                        new FilePart(
+                                                new FileWithBytes(
+                                                        "application/json", "data.json", "{}")),
+                                        new DataPart(Map.of("result", 42)),
+                                        new FilePart(
+                                                new FileWithUri(
+                                                        "image/png",
+                                                        "image.png",
+                                                        "https://example.com/img.png"))))
+                        .build();
 
-        Task task = Task.builder()
-                .id("task-123")
-                .contextId("context-456")
-                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .artifacts(List.of(artifact))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-123")
+                        .contextId("context-456")
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                        .artifacts(List.of(artifact))
+                        .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
@@ -776,8 +810,7 @@ class TaskSerializationTest {
 
     // ========== FileContentTypeAdapter tests ==========
 
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     @Test
     void testFileWithBytesSerializationDoesNotLeakInternalFields() throws Exception {

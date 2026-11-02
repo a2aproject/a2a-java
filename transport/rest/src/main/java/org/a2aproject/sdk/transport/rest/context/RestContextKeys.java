@@ -19,7 +19,7 @@ package org.a2aproject.sdk.transport.rest.context;
  * @see org.a2aproject.sdk.server.ServerCallContext
  */
 public final class RestContextKeys {
-    
+
     /**
      * Context key for storing the headers.
      */
@@ -29,6 +29,7 @@ public final class RestContextKeys {
      * Context key for storing the method name being called.
      */
     public static final String METHOD_NAME_KEY = "method";
+
     /**
      * Context key for storing the tenant identifier extracted from the request path.
      */

@@ -20,8 +20,12 @@ package org.a2aproject.sdk.spec;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme Object</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public sealed interface SecurityScheme permits APIKeySecurityScheme, HTTPAuthSecurityScheme, OAuth2SecurityScheme,
-        OpenIdConnectSecurityScheme, MutualTLSSecurityScheme {
+public sealed interface SecurityScheme
+        permits APIKeySecurityScheme,
+                HTTPAuthSecurityScheme,
+                OAuth2SecurityScheme,
+                OpenIdConnectSecurityScheme,
+                MutualTLSSecurityScheme {
 
     /**
      * Returns the human-readable description of this security scheme.

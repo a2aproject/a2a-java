@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.spec.AgentCapabilities;
@@ -56,8 +55,10 @@ public class A2AVersionValidatorTest {
         AgentCard agentCard = createAgentCard("1.0");
         ServerCallContext context = createContext(null);
 
-        VersionNotSupportedError error = assertThrows(VersionNotSupportedError.class,
-                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+        VersionNotSupportedError error =
+                assertThrows(
+                        VersionNotSupportedError.class,
+                        () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
         assertTrue(error.getMessage().contains("0.3"));
         assertTrue(error.getMessage().contains("not supported"));
     }
@@ -69,8 +70,10 @@ public class A2AVersionValidatorTest {
         AgentCard agentCard = createAgentCard("1.0");
         ServerCallContext context = createContext("");
 
-        VersionNotSupportedError error = assertThrows(VersionNotSupportedError.class,
-                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+        VersionNotSupportedError error =
+                assertThrows(
+                        VersionNotSupportedError.class,
+                        () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
         assertTrue(error.getMessage().contains("0.3"));
         assertTrue(error.getMessage().contains("not supported"));
     }
@@ -129,8 +132,10 @@ public class A2AVersionValidatorTest {
         AgentCard agentCard = createAgentCard("1.0");
         ServerCallContext context = createContext("2.0");
 
-        VersionNotSupportedError error = assertThrows(VersionNotSupportedError.class,
-                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+        VersionNotSupportedError error =
+                assertThrows(
+                        VersionNotSupportedError.class,
+                        () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
 
         assertTrue(error.getMessage().contains("2.0"));
         assertTrue(error.getMessage().contains("1.0"));
@@ -143,8 +148,10 @@ public class A2AVersionValidatorTest {
         AgentCard agentCard = createAgentCard("2.0");
         ServerCallContext context = createContext("1.0");
 
-        VersionNotSupportedError error = assertThrows(VersionNotSupportedError.class,
-                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+        VersionNotSupportedError error =
+                assertThrows(
+                        VersionNotSupportedError.class,
+                        () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
 
         assertTrue(error.getMessage().contains("1.0"));
         assertTrue(error.getMessage().contains("2.0"));
@@ -157,8 +164,10 @@ public class A2AVersionValidatorTest {
         AgentCard agentCard = createAgentCard("1.0");
         ServerCallContext context = createContext("invalid");
 
-        VersionNotSupportedError error = assertThrows(VersionNotSupportedError.class,
-                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+        VersionNotSupportedError error =
+                assertThrows(
+                        VersionNotSupportedError.class,
+                        () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
 
         assertTrue(error.getMessage().contains("invalid"));
         assertTrue(error.getMessage().contains("not supported"));
@@ -178,10 +187,11 @@ public class A2AVersionValidatorTest {
                 .description("Test card")
                 .supportedInterfaces(interfaces)
                 .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(false)
-                        .pushNotifications(false)
-                        .build())
+                .capabilities(
+                        AgentCapabilities.builder()
+                                .streaming(false)
+                                .pushNotifications(false)
+                                .build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(Collections.emptyList())
@@ -193,7 +203,6 @@ public class A2AVersionValidatorTest {
                 UnauthenticatedUser.INSTANCE,
                 Collections.emptyMap(),
                 new HashSet<>(),
-                requestedProtocolVersion
-        );
+                requestedProtocolVersion);
     }
 }

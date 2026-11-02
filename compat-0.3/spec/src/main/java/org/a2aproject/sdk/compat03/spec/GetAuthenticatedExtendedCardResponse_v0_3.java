@@ -3,12 +3,13 @@ package org.a2aproject.sdk.compat03.spec;
 /**
  * A response for the `agent/getAuthenticatedExtendedCard` method.
  */
-public final class GetAuthenticatedExtendedCardResponse_v0_3 extends JSONRPCResponse_v0_3<AgentCard_v0_3> {
+public final class GetAuthenticatedExtendedCardResponse_v0_3
+        extends JSONRPCResponse_v0_3<AgentCard_v0_3> {
 
-    private GetAuthenticatedExtendedCardResponse_v0_3() {
-    }
+    private GetAuthenticatedExtendedCardResponse_v0_3() {}
 
-    public GetAuthenticatedExtendedCardResponse_v0_3(String jsonrpc, Object id, AgentCard_v0_3 result, JSONRPCError_v0_3 error) {
+    public GetAuthenticatedExtendedCardResponse_v0_3(
+            String jsonrpc, Object id, AgentCard_v0_3 result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, AgentCard_v0_3.class);
     }
 
@@ -19,5 +20,4 @@ public final class GetAuthenticatedExtendedCardResponse_v0_3 extends JSONRPCResp
     public GetAuthenticatedExtendedCardResponse_v0_3(Object id, AgentCard_v0_3 result) {
         this(null, id, result, null);
     }
-
 }

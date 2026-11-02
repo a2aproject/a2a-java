@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.server.events;
 
 public class TaskQueueExistsException extends RuntimeException {
-    public TaskQueueExistsException() {
-    }
+    public TaskQueueExistsException() {}
 
     public TaskQueueExistsException(String message) {
         super(message);
@@ -16,7 +15,11 @@ public class TaskQueueExistsException extends RuntimeException {
         super(cause);
     }
 
-    public TaskQueueExistsException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public TaskQueueExistsException(
+            String message,
+            Throwable cause,
+            boolean enableSuppression,
+            boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

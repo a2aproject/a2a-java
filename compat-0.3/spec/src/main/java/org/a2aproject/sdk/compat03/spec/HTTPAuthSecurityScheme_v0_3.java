@@ -7,15 +7,16 @@ import org.jspecify.annotations.Nullable;
  * Defines a security scheme using HTTP authentication.
  */
 public record HTTPAuthSecurityScheme_v0_3(
-        @Nullable String bearerFormat,
-        String scheme,
-        @Nullable String description,
-        String type
-) implements SecurityScheme_v0_3 {
+        @Nullable String bearerFormat, String scheme, @Nullable String description, String type)
+        implements SecurityScheme_v0_3 {
 
     public static final String TYPE = "http";
 
-    public HTTPAuthSecurityScheme_v0_3(@Nullable String bearerFormat, String scheme, @Nullable String description, @Nullable String type) {
+    public HTTPAuthSecurityScheme_v0_3(
+            @Nullable String bearerFormat,
+            String scheme,
+            @Nullable String description,
+            @Nullable String type) {
         Assert.checkNotNullParam("scheme", scheme);
         if (type != null && !TYPE.equals(type)) {
             throw new IllegalArgumentException("Invalid type for HTTPAuthSecurityScheme");
@@ -26,7 +27,8 @@ public record HTTPAuthSecurityScheme_v0_3(
         this.type = TYPE;
     }
 
-    public HTTPAuthSecurityScheme_v0_3(@Nullable String bearerFormat, String scheme, @Nullable String description) {
+    public HTTPAuthSecurityScheme_v0_3(
+            @Nullable String bearerFormat, String scheme, @Nullable String description) {
         this(bearerFormat, scheme, description, TYPE);
     }
 

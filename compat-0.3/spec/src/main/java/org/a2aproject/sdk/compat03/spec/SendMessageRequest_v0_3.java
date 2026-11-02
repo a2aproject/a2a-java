@@ -3,17 +3,15 @@ package org.a2aproject.sdk.compat03.spec;
 import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * Used to send a message request.
  */
-public final class SendMessageRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<MessageSendParams_v0_3> {
+public final class SendMessageRequest_v0_3
+        extends NonStreamingJSONRPCRequest_v0_3<MessageSendParams_v0_3> {
 
-    private SendMessageRequest_v0_3() {
-    }
-
+    private SendMessageRequest_v0_3() {}
 
     public static final String METHOD = "message/send";
 
@@ -29,15 +27,16 @@ public final class SendMessageRequest_v0_3 extends NonStreamingJSONRPCRequest_v0
      * @param params the message send parameters (required)
      * @throws IllegalArgumentException if validation fails
      */
-    public SendMessageRequest_v0_3(String jsonrpc, Object id, String method, MessageSendParams_v0_3 params) {
+    public SendMessageRequest_v0_3(
+            String jsonrpc, Object id, String method, MessageSendParams_v0_3 params) {
         if (jsonrpc == null || jsonrpc.isEmpty()) {
             throw new IllegalArgumentException("JSON-RPC protocol version cannot be null or empty");
         }
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
+        if (!method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid SendMessageRequest method");
         }
         Assert.checkNotNullParam("params", params);

@@ -11,7 +11,6 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.server.events.EventConsumer;
 import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.spec.A2AError;
@@ -37,8 +36,12 @@ public class ResultAggregator {
     private final long reconciliationTimeoutNanos;
     private volatile @Nullable Message message;
 
-    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor,
-            Executor eventConsumerExecutor, long reconciliationTimeoutNanos) {
+    public ResultAggregator(
+            TaskManager taskManager,
+            @Nullable Message message,
+            Executor executor,
+            Executor eventConsumerExecutor,
+            long reconciliationTimeoutNanos) {
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
@@ -58,10 +61,14 @@ public class ResultAggregator {
 
         // Just stream events - no persistence needed
         // TaskStore update moved to MainEventBusProcessor
-        Flow.Publisher<EventQueueItem> processed = processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
-            // Continue processing and emit all events
-            return true;
-        });
+        Flow.Publisher<EventQueueItem> processed =
+                processor(
+                        createTubeConfig(),
+                        allItems,
+                        (errorConsumer, item) -> {
+                            // Continue processing and emit all events
+                            return true;
+                        });
 
         // No wrapper needed - EventConsumer.consumeAll() now handles thread offloading internally
         // This ensures subscription happens immediately without delay, preventing race condition
@@ -69,17 +76,19 @@ public class ResultAggregator {
         return processed;
     }
 
-    public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws A2AError {
+    public EventTypeAndInterrupt consumeAndBreakOnInterrupt(
+            EventConsumer consumer, boolean blocking) throws A2AError {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
         AtomicReference<Message> message = new AtomicReference<>();
-        AtomicReference<Task> capturedTask = new AtomicReference<>();  // Capture Task events
+        AtomicReference<Task> capturedTask = new AtomicReference<>(); // Capture Task events
         AtomicBoolean interrupted = new AtomicBoolean(false);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
         // Separate future for tracking background consumption completion
         CompletableFuture<Void> consumptionCompletionFuture = new CompletableFuture<>();
         // Latch to ensure EventConsumer starts polling before we wait on completionFuture
-        java.util.concurrent.CountDownLatch pollingStarted = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch pollingStarted =
+                new java.util.concurrent.CountDownLatch(1);
 
         // CRITICAL: The subscription itself must run on a background thread to avoid blocking
         // the Vert.x worker thread. EventConsumer.consumeAll() starts a polling loop that
@@ -87,127 +96,181 @@ public class ResultAggregator {
         // Use the dedicated @EventConsumerExecutor (cached thread pool) which creates threads
         // on demand for I/O-bound polling. Using the @Internal executor caused deadlock when
         // pool exhausted (100+ concurrent queues but maxPoolSize=50).
-        CompletableFuture.runAsync(() -> {
-            // Signal that polling is about to start
-            pollingStarted.countDown();
-            consumer(
-                createTubeConfig(),
-                allItems,
-                (item) -> {
-                    Event event = item.getEvent();
+        CompletableFuture.runAsync(
+                () -> {
+                    // Signal that polling is about to start
+                    pollingStarted.countDown();
+                    consumer(
+                            createTubeConfig(),
+                            allItems,
+                            (item) -> {
+                                Event event = item.getEvent();
 
-                    // Handle Throwable events
-                    if (event instanceof Throwable t) {
-                        errorRef.set(t);
-                        completionFuture.completeExceptionally(t);
-                        return false;
-                    }
+                                // Handle Throwable events
+                                if (event instanceof Throwable t) {
+                                    errorRef.set(t);
+                                    completionFuture.completeExceptionally(t);
+                                    return false;
+                                }
 
-                    // Handle Message events
-                    if (event instanceof Message msg) {
-                        ResultAggregator.this.message = msg;
-                        message.set(msg);
-                        completionFuture.complete(null);
-                        return false;
-                    }
+                                // Handle Message events
+                                if (event instanceof Message msg) {
+                                    ResultAggregator.this.message = msg;
+                                    message.set(msg);
+                                    completionFuture.complete(null);
+                                    return false;
+                                }
 
-                    // Capture Task events (especially for new tasks where taskManager.getTask() would return null)
-                    // We capture the LATEST task to ensure we get the most up-to-date state
-                    if (event instanceof Task t) {
-                        Task previousTask = capturedTask.get();
-                        capturedTask.set(t);
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Captured Task event: id={}, state={} (previous: {})",
-                                    t.id(), t.status().state(),
-                                    previousTask != null ? previousTask.id() + "/" + previousTask.status().state() : "none");
-                        }
-                    }
+                                // Capture Task events (especially for new tasks where
+                                // taskManager.getTask() would return null)
+                                // We capture the LATEST task to ensure we get the most up-to-date
+                                // state
+                                if (event instanceof Task t) {
+                                    Task previousTask = capturedTask.get();
+                                    capturedTask.set(t);
+                                    if (LOGGER.isDebugEnabled()) {
+                                        LOGGER.debug(
+                                                "Captured Task event: id={}, state={} (previous:"
+                                                        + " {})",
+                                                t.id(),
+                                                t.status().state(),
+                                                previousTask != null
+                                                        ? previousTask.id()
+                                                                + "/"
+                                                                + previousTask.status().state()
+                                                        : "none");
+                                    }
+                                }
 
-                    // TaskStore update moved to MainEventBusProcessor
+                                // TaskStore update moved to MainEventBusProcessor
 
-                    // Determine interrupt behavior
-                    boolean shouldInterrupt = false;
-                    boolean isFinalEvent = (event instanceof Task task && task.status().state().isFinal())
-                            || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal())
-                            || (event instanceof A2AError);  // A2AError events are terminal
-                    boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.TASK_STATE_AUTH_REQUIRED)
-                            || (event instanceof TaskStatusUpdateEvent tsue && tsue.status().state() == TaskState.TASK_STATE_AUTH_REQUIRED);
+                                // Determine interrupt behavior
+                                boolean shouldInterrupt = false;
+                                boolean isFinalEvent =
+                                        (event instanceof Task task
+                                                        && task.status().state().isFinal())
+                                                || (event instanceof TaskStatusUpdateEvent tsue
+                                                        && tsue.isFinal())
+                                                || (event
+                                                        instanceof
+                                                        A2AError); // A2AError events are terminal
+                                boolean isAuthRequired =
+                                        (event instanceof Task task
+                                                        && task.status().state()
+                                                                == TaskState
+                                                                        .TASK_STATE_AUTH_REQUIRED)
+                                                || (event instanceof TaskStatusUpdateEvent tsue
+                                                        && tsue.status().state()
+                                                                == TaskState
+                                                                        .TASK_STATE_AUTH_REQUIRED);
 
-                    LOGGER.debug("ResultAggregator: Evaluating interrupt (blocking={}, isFinal={}, isAuth={}, eventType={})",
-                        blocking, isFinalEvent, isAuthRequired, event.getClass().getSimpleName());
+                                LOGGER.debug(
+                                        "ResultAggregator: Evaluating interrupt (blocking={},"
+                                                + " isFinal={}, isAuth={}, eventType={})",
+                                        blocking,
+                                        isFinalEvent,
+                                        isAuthRequired,
+                                        event.getClass().getSimpleName());
 
-                    // Always interrupt on auth_required, as it needs external action.
-                    if (isAuthRequired) {
-                        // auth-required is a special state: the message should be
-                        // escalated back to the caller, but the agent is expected to
-                        // continue producing events once the authorization is received
-                        // out-of-band. This is in contrast to input-required, where a
-                        // new request is expected in order for the agent to make progress,
-                        // so the agent should exit.
-                        shouldInterrupt = true;
-                        LOGGER.debug("ResultAggregator: Setting shouldInterrupt=true (AUTH_REQUIRED)");
-                    }
-                    else if (!blocking) {
-                        // For non-blocking calls, interrupt as soon as a task is available.
-                        shouldInterrupt = true;
-                        LOGGER.debug("ResultAggregator: Setting shouldInterrupt=true (non-blocking)");
-                    }
-                    else if (blocking) {
-                        // For blocking calls: Interrupt to free Vert.x thread, but continue in background
-                        // Python's async consumption doesn't block threads, but Java's does
-                        // So we interrupt to return quickly, then rely on background consumption
-                        shouldInterrupt = true;
-                        LOGGER.debug("ResultAggregator: Setting shouldInterrupt=true (blocking, isFinal={})", isFinalEvent);
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Blocking call for task {}: {} event, returning with background consumption",
-                                taskIdForLogging(), isFinalEvent ? "final" : "non-final");
-                        }
-                    }
+                                // Always interrupt on auth_required, as it needs external action.
+                                if (isAuthRequired) {
+                                    // auth-required is a special state: the message should be
+                                    // escalated back to the caller, but the agent is expected to
+                                    // continue producing events once the authorization is received
+                                    // out-of-band. This is in contrast to input-required, where a
+                                    // new request is expected in order for the agent to make
+                                    // progress,
+                                    // so the agent should exit.
+                                    shouldInterrupt = true;
+                                    LOGGER.debug(
+                                            "ResultAggregator: Setting shouldInterrupt=true"
+                                                    + " (AUTH_REQUIRED)");
+                                } else if (!blocking) {
+                                    // For non-blocking calls, interrupt as soon as a task is
+                                    // available.
+                                    shouldInterrupt = true;
+                                    LOGGER.debug(
+                                            "ResultAggregator: Setting shouldInterrupt=true"
+                                                    + " (non-blocking)");
+                                } else if (blocking) {
+                                    // For blocking calls: Interrupt to free Vert.x thread, but
+                                    // continue in background
+                                    // Python's async consumption doesn't block threads, but Java's
+                                    // does
+                                    // So we interrupt to return quickly, then rely on background
+                                    // consumption
+                                    shouldInterrupt = true;
+                                    LOGGER.debug(
+                                            "ResultAggregator: Setting shouldInterrupt=true"
+                                                    + " (blocking, isFinal={})",
+                                            isFinalEvent);
+                                    if (LOGGER.isDebugEnabled()) {
+                                        LOGGER.debug(
+                                                "Blocking call for task {}: {} event, returning"
+                                                        + " with background consumption",
+                                                taskIdForLogging(),
+                                                isFinalEvent ? "final" : "non-final");
+                                    }
+                                }
 
-                    if (shouldInterrupt) {
-                        LOGGER.debug("ResultAggregator: Interrupting consumption (setting interrupted=true)");
-                        // Complete the future to unblock the main thread
-                        interrupted.set(true);
-                        completionFuture.complete(null);
+                                if (shouldInterrupt) {
+                                    LOGGER.debug(
+                                            "ResultAggregator: Interrupting consumption (setting"
+                                                    + " interrupted=true)");
+                                    // Complete the future to unblock the main thread
+                                    interrupted.set(true);
+                                    completionFuture.complete(null);
 
-                        // For blocking calls, DON'T complete consumptionCompletionFuture here.
-                        // Let it complete naturally when subscription finishes (onComplete callback below).
-                        // This ensures all events are fully processed before cleanup.
-                        //
-                        // For non-blocking and auth-required calls, complete immediately to allow
-                        // cleanup to proceed while consumption continues in background.
-                        if (!blocking) {
-                            consumptionCompletionFuture.complete(null);
-                        }
-                        // else: blocking calls wait for actual consumption completion in onComplete
+                                    // For blocking calls, DON'T complete
+                                    // consumptionCompletionFuture here.
+                                    // Let it complete naturally when subscription finishes
+                                    // (onComplete callback below).
+                                    // This ensures all events are fully processed before cleanup.
+                                    //
+                                    // For non-blocking and auth-required calls, complete
+                                    // immediately to allow
+                                    // cleanup to proceed while consumption continues in background.
+                                    if (!blocking) {
+                                        consumptionCompletionFuture.complete(null);
+                                    }
+                                    // else: blocking calls wait for actual consumption completion
+                                    // in onComplete
 
-                        // Continue consuming in background - keep requesting events
-                        // Note: continueInBackground is always true when shouldInterrupt is true
-                        // (auth-required, non-blocking, or blocking all set it to true)
-                        if (LOGGER.isDebugEnabled()) {
-                            String reason = isAuthRequired ? "auth-required" : (blocking ? "blocking" : "non-blocking");
-                            LOGGER.debug("Task {}: Continuing background consumption (reason: {})", taskIdForLogging(), reason);
-                        }
-                        return true;
-                    }
+                                    // Continue consuming in background - keep requesting events
+                                    // Note: continueInBackground is always true when
+                                    // shouldInterrupt is true
+                                    // (auth-required, non-blocking, or blocking all set it to true)
+                                    if (LOGGER.isDebugEnabled()) {
+                                        String reason =
+                                                isAuthRequired
+                                                        ? "auth-required"
+                                                        : (blocking ? "blocking" : "non-blocking");
+                                        LOGGER.debug(
+                                                "Task {}: Continuing background consumption"
+                                                        + " (reason: {})",
+                                                taskIdForLogging(),
+                                                reason);
+                                    }
+                                    return true;
+                                }
 
-                    // Continue processing
-                    return true;
+                                // Continue processing
+                                return true;
+                            },
+                            throwable -> {
+                                // Handle onError and onComplete
+                                if (throwable != null) {
+                                    errorRef.set(throwable);
+                                    completionFuture.completeExceptionally(throwable);
+                                    consumptionCompletionFuture.completeExceptionally(throwable);
+                                } else {
+                                    // onComplete - subscription finished normally
+                                    completionFuture.complete(null);
+                                    consumptionCompletionFuture.complete(null);
+                                }
+                            });
                 },
-                throwable -> {
-                    // Handle onError and onComplete
-                    if (throwable != null) {
-                        errorRef.set(throwable);
-                        completionFuture.completeExceptionally(throwable);
-                        consumptionCompletionFuture.completeExceptionally(throwable);
-                    } else {
-                        // onComplete - subscription finished normally
-                        completionFuture.complete(null);
-                        consumptionCompletionFuture.complete(null);
-                    }
-                }
-            );
-        }, eventConsumerExecutor);
+                eventConsumerExecutor);
 
         // Wait for EventConsumer to start polling before we wait for events
         // This prevents race where agent enqueues events before EventConsumer starts
@@ -215,7 +278,8 @@ public class ResultAggregator {
             pollingStarted.await(5, java.util.concurrent.TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new org.a2aproject.sdk.spec.InternalError("Interrupted waiting for EventConsumer to start");
+            throw new org.a2aproject.sdk.spec.InternalError(
+                    "Interrupted waiting for EventConsumer to start");
         }
 
         // Wait for completion or interruption
@@ -252,17 +316,17 @@ public class ResultAggregator {
         if (eventKind == null) {
             eventKind = reconcileTaskStore(blocking);
             if (LOGGER.isDebugEnabled() && eventKind instanceof Task t) {
-                LOGGER.debug("Returning task from TaskStore: id={}, state={}", t.id(), t.status().state());
+                LOGGER.debug(
+                        "Returning task from TaskStore: id={}, state={}",
+                        t.id(),
+                        t.status().state());
             }
         }
         if (eventKind == null) {
             throw new InternalError("Could not find a Task/Message for " + taskManager.getTaskId());
         }
 
-        return new EventTypeAndInterrupt(
-                eventKind,
-                interrupted.get(),
-                consumptionCompletionFuture);
+        return new EventTypeAndInterrupt(eventKind, interrupted.get(), consumptionCompletionFuture);
     }
 
     private @Nullable Task reconcileTaskStore(boolean blocking) throws A2AError {
@@ -271,7 +335,8 @@ public class ResultAggregator {
             return task;
         }
 
-        LOGGER.debug("TaskStore reconciliation: task not found on first read, polling for up to {}ms",
+        LOGGER.debug(
+                "TaskStore reconciliation: task not found on first read, polling for up to {}ms",
                 TimeUnit.NANOSECONDS.toMillis(reconciliationTimeoutNanos));
 
         long deadline = System.nanoTime() + reconciliationTimeoutNanos;
@@ -280,7 +345,8 @@ public class ResultAggregator {
                 Thread.sleep(TASK_STORE_RECONCILIATION_POLL_MILLIS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new InternalError("Interrupted while reconciling TaskStore for " + taskManager.getTaskId());
+                throw new InternalError(
+                        "Interrupted while reconciling TaskStore for " + taskManager.getTaskId());
             }
 
             task = taskManager.getTask();
@@ -297,7 +363,6 @@ public class ResultAggregator {
         return task != null ? task.id() : "unknown";
     }
 
-    public record EventTypeAndInterrupt(EventKind eventType, boolean interrupted, CompletableFuture<Void> consumptionFuture) {
-
-    }
+    public record EventTypeAndInterrupt(
+            EventKind eventType, boolean interrupted, CompletableFuture<Void> consumptionFuture) {}
 }

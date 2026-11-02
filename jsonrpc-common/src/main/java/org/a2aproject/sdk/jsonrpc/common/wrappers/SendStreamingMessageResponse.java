@@ -26,9 +26,7 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
  */
 public final class SendStreamingMessageResponse extends A2AResponse<StreamingEventKind> {
 
-    private SendStreamingMessageResponse() {
-    }
-
+    private SendStreamingMessageResponse() {}
 
     /**
      * Constructs response with all parameters.
@@ -38,7 +36,8 @@ public final class SendStreamingMessageResponse extends A2AResponse<StreamingEve
      * @param result the result
      * @param error the error if any
      */
-    public SendStreamingMessageResponse(String jsonrpc, Object id, StreamingEventKind result, A2AError error) {
+    public SendStreamingMessageResponse(
+            String jsonrpc, Object id, StreamingEventKind result, A2AError error) {
         super(jsonrpc, id, result, error, StreamingEventKind.class);
     }
 

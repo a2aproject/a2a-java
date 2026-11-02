@@ -3,7 +3,6 @@ package org.a2aproject.sdk.compat03.tck.server;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
@@ -35,9 +34,16 @@ public class AgentExecutorProducer_v0_3 {
 
             // Sleep to allow task state persistence before TCK resubscribe test
             Message message = context.getMessage();
-            if (message != null && message.messageId() != null && message.messageId().startsWith("test-resubscribe-message-id")) {
-                int timeoutMs = Integer.parseInt(System.getenv().getOrDefault("RESUBSCRIBE_TIMEOUT_MS", "3000"));
-                System.out.println("====> task id starts with test-resubscribe-message-id, sleeping for " + timeoutMs + " ms");
+            if (message != null
+                    && message.messageId() != null
+                    && message.messageId().startsWith("test-resubscribe-message-id")) {
+                int timeoutMs =
+                        Integer.parseInt(
+                                System.getenv().getOrDefault("RESUBSCRIBE_TIMEOUT_MS", "3000"));
+                System.out.println(
+                        "====> task id starts with test-resubscribe-message-id, sleeping for "
+                                + timeoutMs
+                                + " ms");
                 try {
                     Thread.sleep(timeoutMs);
                 } catch (InterruptedException e) {
@@ -50,7 +56,8 @@ public class AgentExecutorProducer_v0_3 {
             System.out.println("====> task set to WORKING, starting background execution");
 
             // Method returns immediately - task continues in background
-            System.out.println("====> execute() method returning immediately, task running in background");
+            System.out.println(
+                    "====> execute() method returning immediately, task running in background");
         }
 
         @Override
@@ -79,6 +86,6 @@ public class AgentExecutorProducer_v0_3 {
         @PreDestroy
         public void cleanup() {
             System.out.println("====> shutting down task executor");
-         }
+        }
     }
 }

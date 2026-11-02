@@ -43,5 +43,4 @@ public sealed interface A2AMessage permits A2ARequest, A2AResponse {
      * @return the correlation ID, or null for notifications
      */
     Object getId();
-
 }

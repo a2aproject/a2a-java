@@ -6,8 +6,7 @@ package org.a2aproject.sdk.util;
  */
 public final class HtmlEscapeUtils {
 
-    private HtmlEscapeUtils() {
-    }
+    private HtmlEscapeUtils() {}
 
     /**
      * Removes HTML escaping applied by Gson's {@code JsonWriter} when
@@ -31,10 +30,13 @@ public final class HtmlEscapeUtils {
         if (!json.contains("\\u00")) {
             return json;
         }
-        return json.replace("\\u003c", "<").replace("\\u003C", "<")
-                .replace("\\u003e", ">").replace("\\u003E", ">")
+        return json.replace("\\u003c", "<")
+                .replace("\\u003C", "<")
+                .replace("\\u003e", ">")
+                .replace("\\u003E", ">")
                 .replace("\\u0026", "&")
-                .replace("\\u003d", "=").replace("\\u003D", "=")
+                .replace("\\u003d", "=")
+                .replace("\\u003D", "=")
                 .replace("\\u0027", "'");
     }
 }

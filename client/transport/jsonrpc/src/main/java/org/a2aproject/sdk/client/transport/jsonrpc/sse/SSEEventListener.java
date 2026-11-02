@@ -3,7 +3,6 @@ package org.a2aproject.sdk.client.transport.jsonrpc.sse;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.transport.spi.sse.AbstractSSEEventListener;
 import org.a2aproject.sdk.grpc.StreamResponse;
@@ -21,8 +20,9 @@ import org.jspecify.annotations.Nullable;
 public class SSEEventListener extends AbstractSSEEventListener {
 
     private static final Logger LOGGER = Logger.getLogger(SSEEventListener.class.getName());
-    public SSEEventListener(Consumer<StreamingEventKind> eventHandler,
-            @Nullable Consumer<Throwable> errorHandler) {
+
+    public SSEEventListener(
+            Consumer<StreamingEventKind> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
         super(eventHandler, errorHandler);
     }
 
@@ -32,7 +32,8 @@ public class SSEEventListener extends AbstractSSEEventListener {
     }
 
     public void onComplete() {
-        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
+        LOGGER.fine(
+                "SSEEventListener.onComplete() called - signaling successful stream completion");
         signalTerminal(null);
     }
 
@@ -46,7 +47,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
         try {
             StreamResponse response = JSONRPCUtils.parseResponseEvent(message);
             StreamingEventKind event = ProtoUtils.FromProto.streamingEventKind(response);
-            
+
             // Delegate to base class for common event handling and auto-close logic
             handleEvent(event, future);
         } catch (A2AError error) {
@@ -55,5 +56,4 @@ public class SSEEventListener extends AbstractSSEEventListener {
             throw new RuntimeException(e);
         }
     }
-
 }

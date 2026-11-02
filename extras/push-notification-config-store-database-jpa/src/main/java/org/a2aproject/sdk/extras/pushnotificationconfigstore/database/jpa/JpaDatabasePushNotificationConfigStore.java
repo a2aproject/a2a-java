@@ -1,17 +1,15 @@
 package org.a2aproject.sdk.extras.pushnotificationconfigstore.database.jpa;
 
-import jakarta.persistence.TypedQuery;
-import java.time.Instant;
-import java.util.List;
-
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
-
+import java.time.Instant;
+import java.util.List;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
@@ -29,16 +27,16 @@ import org.slf4j.LoggerFactory;
 @Alternative
 @Priority(50)
 public class JpaDatabasePushNotificationConfigStore implements PushNotificationConfigStore {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabasePushNotificationConfigStore.class);
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JpaDatabasePushNotificationConfigStore.class);
 
     private static final Instant NULL_TIMESTAMP_SENTINEL = Instant.EPOCH;
 
     @PersistenceContext(unitName = "a2a-java")
     EntityManager em;
 
-    @Inject
-    A2AConfigProvider config;
+    @Inject A2AConfigProvider config;
 
     @Transactional
     @Override
@@ -48,82 +46,127 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
     @Transactional
     @Override
-    public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
+    public TaskPushNotificationConfig setInfo(
+            TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         // Default missing config IDs to the task ID, matching the in-memory store.
-        boolean configIdIsMissing = notificationConfig.id() == null || notificationConfig.id().isEmpty();
+        boolean configIdIsMissing =
+                notificationConfig.id() == null || notificationConfig.id().isEmpty();
         if (configIdIsMissing) {
-            notificationConfig = TaskPushNotificationConfig.builder(notificationConfig).id(taskId).build();
+            notificationConfig =
+                    TaskPushNotificationConfig.builder(notificationConfig).id(taskId).build();
         }
 
-        String resolvedVersion = PushNotificationConfigStore.resolveProtocolVersion(protocolVersion);
-        LOGGER.debug("Saving PushNotificationConfig for Task '{}' with ID: {}", taskId, notificationConfig.id());
+        String resolvedVersion =
+                PushNotificationConfigStore.resolveProtocolVersion(protocolVersion);
+        LOGGER.debug(
+                "Saving PushNotificationConfig for Task '{}' with ID: {}",
+                taskId,
+                notificationConfig.id());
         try {
             TaskConfigId configId = new TaskConfigId(taskId, notificationConfig.id());
 
             // Check if entity already exists
-            JpaPushNotificationConfig existingJpaConfig = em.find(JpaPushNotificationConfig.class, configId);
+            JpaPushNotificationConfig existingJpaConfig =
+                    em.find(JpaPushNotificationConfig.class, configId);
 
             if (configIdIsMissing && existingJpaConfig != null && !"0.3".equals(resolvedVersion)) {
-                throw new InvalidParamsError("A push notification config with the default ID already exists for task "
-                        + taskId + "; specify the config ID explicitly to update it");
+                throw new InvalidParamsError(
+                        "A push notification config with the default ID already exists for task "
+                                + taskId
+                                + "; specify the config ID explicitly to update it");
             }
 
             if (existingJpaConfig != null) {
                 // Update existing entity
                 existingJpaConfig.setConfig(notificationConfig);
                 existingJpaConfig.setProtocolVersion(resolvedVersion);
-                LOGGER.debug("Updated existing PushNotificationConfig for Task '{}' with ID: {}",
-                        taskId, notificationConfig.id());
+                LOGGER.debug(
+                        "Updated existing PushNotificationConfig for Task '{}' with ID: {}",
+                        taskId,
+                        notificationConfig.id());
             } else {
                 // Enforce the per-task limit (configurable via
                 // a2a.push-notification-config.max-per-task); only genuinely new
                 // configs count against it.
                 int maxPerTask = PushNotificationConfigStore.maxPushConfigsPerTask(config);
-                Long existingCount = em.createQuery(
-                        "SELECT COUNT(c) FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId",
-                        Long.class).setParameter("taskId", taskId).getSingleResult();
+                Long existingCount =
+                        em.createQuery(
+                                        "SELECT COUNT(c) FROM JpaPushNotificationConfig c WHERE"
+                                                + " c.id.taskId = :taskId",
+                                        Long.class)
+                                .setParameter("taskId", taskId)
+                                .getSingleResult();
                 if (existingCount >= maxPerTask) {
-                    throw new InvalidParamsError("Too many push notification configs for task " + taskId
-                            + " (max " + maxPerTask + ")");
+                    throw new InvalidParamsError(
+                            "Too many push notification configs for task "
+                                    + taskId
+                                    + " (max "
+                                    + maxPerTask
+                                    + ")");
                 }
                 // Create new entity
-                JpaPushNotificationConfig jpaConfig = JpaPushNotificationConfig.createFromConfig(taskId, notificationConfig, resolvedVersion);
+                JpaPushNotificationConfig jpaConfig =
+                        JpaPushNotificationConfig.createFromConfig(
+                                taskId, notificationConfig, resolvedVersion);
                 em.persist(jpaConfig);
-                LOGGER.debug("Persisted new PushNotificationConfig for Task '{}' with ID: {}",
-                        taskId, notificationConfig.id());
+                LOGGER.debug(
+                        "Persisted new PushNotificationConfig for Task '{}' with ID: {}",
+                        taskId,
+                        notificationConfig.id());
             }
         } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to serialize PushNotificationConfig for Task '{}' with ID: {}",
-                    taskId, notificationConfig.id(), e);
-            throw new RuntimeException("Failed to serialize PushNotificationConfig for Task '" +
-                    taskId + "' with ID: " + notificationConfig.id(), e);
+            LOGGER.error(
+                    "Failed to serialize PushNotificationConfig for Task '{}' with ID: {}",
+                    taskId,
+                    notificationConfig.id(),
+                    e);
+            throw new RuntimeException(
+                    "Failed to serialize PushNotificationConfig for Task '"
+                            + taskId
+                            + "' with ID: "
+                            + notificationConfig.id(),
+                    e);
         }
         return notificationConfig;
     }
 
     @Transactional
     @Override
-    public ListTaskPushNotificationConfigsResult getInfo(ListTaskPushNotificationConfigsParams params) {
+    public ListTaskPushNotificationConfigsResult getInfo(
+            ListTaskPushNotificationConfigsParams params) {
         String taskId = params.id();
-        LOGGER.debug("Retrieving PushNotificationConfigs for Task '{}' with params: pageSize={}, pageToken={}",
-            taskId, params.pageSize(), params.pageToken());
+        LOGGER.debug(
+                "Retrieving PushNotificationConfigs for Task '{}' with params: pageSize={},"
+                        + " pageToken={}",
+                taskId,
+                params.pageSize(),
+                params.pageToken());
 
         // Parse pageToken once at the beginning
         PageToken pageToken = PageToken.fromString(params.pageToken());
 
         try {
-            StringBuilder queryBuilder = new StringBuilder("SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId");
+            StringBuilder queryBuilder =
+                    new StringBuilder(
+                            "SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId ="
+                                    + " :taskId");
 
             if (pageToken != null) {
-                // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
+                // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp =
+                // tokenTimestamp AND id > tokenId)
                 // All tasks have timestamps (TaskStatus canonical constructor ensures this)
-                queryBuilder.append(" AND (COALESCE(c.createdAt, :nullSentinel) < :tokenTimestamp OR (COALESCE(c.createdAt, :nullSentinel) = :tokenTimestamp AND c.id.configId > :tokenId))");
+                queryBuilder.append(
+                        " AND (COALESCE(c.createdAt, :nullSentinel) < :tokenTimestamp OR"
+                                + " (COALESCE(c.createdAt, :nullSentinel) = :tokenTimestamp AND"
+                                + " c.id.configId > :tokenId))");
             }
 
-            queryBuilder.append(" ORDER BY  COALESCE(c.createdAt, :nullSentinel) DESC, c.id.configId ASC");
+            queryBuilder.append(
+                    " ORDER BY  COALESCE(c.createdAt, :nullSentinel) DESC, c.id.configId ASC");
 
-            TypedQuery<JpaPushNotificationConfig> query = em.createQuery(queryBuilder.toString(), JpaPushNotificationConfig.class);
+            TypedQuery<JpaPushNotificationConfig> query =
+                    em.createQuery(queryBuilder.toString(), JpaPushNotificationConfig.class);
             query.setParameter("taskId", taskId);
             query.setParameter("nullSentinel", NULL_TIMESTAMP_SENTINEL);
 
@@ -138,35 +181,57 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
             String nextPageToken = null;
             if (jpaConfigsPage.size() > pageSize) {
-              // There are more results than the page size, and in this case, a nextToken should be created with the last item.
-              // Format: "timestamp_millis:taskId" for keyset pagination
-              jpaConfigsPage = jpaConfigsPage.subList(0, pageSize);
-              JpaPushNotificationConfig lastConfig =  jpaConfigsPage.get(jpaConfigsPage.size() - 1);
-              Instant timestamp = lastConfig.getCreatedAt() != null ? lastConfig.getCreatedAt() : NULL_TIMESTAMP_SENTINEL;
-              nextPageToken = new PageToken(timestamp, lastConfig.getId().getConfigId()).toString();
+                // There are more results than the page size, and in this case, a nextToken should
+                // be created with the last item.
+                // Format: "timestamp_millis:taskId" for keyset pagination
+                jpaConfigsPage = jpaConfigsPage.subList(0, pageSize);
+                JpaPushNotificationConfig lastConfig =
+                        jpaConfigsPage.get(jpaConfigsPage.size() - 1);
+                Instant timestamp =
+                        lastConfig.getCreatedAt() != null
+                                ? lastConfig.getCreatedAt()
+                                : NULL_TIMESTAMP_SENTINEL;
+                nextPageToken =
+                        new PageToken(timestamp, lastConfig.getId().getConfigId()).toString();
             }
 
-            List<TaskPushNotificationConfig> taskPushNotificationConfigs = jpaConfigsPage.stream()
-                    .map(jpaConfig -> {
-                        try {
-                            TaskPushNotificationConfig config = jpaConfig.getConfig();
-                            // Set taskId and tenant from the params
-                            return TaskPushNotificationConfig.builder(config)
-                                    .taskId(params.id())
-                                    .tenant(params.tenant())
-                                    .build();
-                        } catch (JsonProcessingException e) {
-                            LOGGER.error("Failed to deserialize PushNotificationConfig for Task '{}' with ID: {}",
-                                    taskId, jpaConfig.getId().getConfigId(), e);
-                            throw new RuntimeException("Failed to deserialize PushNotificationConfig for Task '" +
-                                    taskId + "' with ID: " + jpaConfig.getId().getConfigId(), e);
-                        }
-                    })
-                    .toList();
+            List<TaskPushNotificationConfig> taskPushNotificationConfigs =
+                    jpaConfigsPage.stream()
+                            .map(
+                                    jpaConfig -> {
+                                        try {
+                                            TaskPushNotificationConfig config =
+                                                    jpaConfig.getConfig();
+                                            // Set taskId and tenant from the params
+                                            return TaskPushNotificationConfig.builder(config)
+                                                    .taskId(params.id())
+                                                    .tenant(params.tenant())
+                                                    .build();
+                                        } catch (JsonProcessingException e) {
+                                            LOGGER.error(
+                                                    "Failed to deserialize PushNotificationConfig"
+                                                            + " for Task '{}' with ID: {}",
+                                                    taskId,
+                                                    jpaConfig.getId().getConfigId(),
+                                                    e);
+                                            throw new RuntimeException(
+                                                    "Failed to deserialize PushNotificationConfig"
+                                                            + " for Task '"
+                                                            + taskId
+                                                            + "' with ID: "
+                                                            + jpaConfig.getId().getConfigId(),
+                                                    e);
+                                        }
+                                    })
+                            .toList();
 
-            LOGGER.debug("Successfully retrieved {} PushNotificationConfigs for Task '{}'", taskPushNotificationConfigs.size(), taskId);
+            LOGGER.debug(
+                    "Successfully retrieved {} PushNotificationConfigs for Task '{}'",
+                    taskPushNotificationConfigs.size(),
+                    taskId);
 
-            return new ListTaskPushNotificationConfigsResult(taskPushNotificationConfigs, nextPageToken);
+            return new ListTaskPushNotificationConfigsResult(
+                    taskPushNotificationConfigs, nextPageToken);
         } catch (Exception e) {
             LOGGER.error("Failed to retrieve PushNotificationConfigs for Task '{}'", taskId, e);
             throw e;
@@ -180,41 +245,53 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
             configId = taskId;
         }
 
-        LOGGER.debug("Deleting PushNotificationConfig for Task '{}' with Config ID: {}", taskId, configId);
-        JpaPushNotificationConfig jpaConfig = em.find(JpaPushNotificationConfig.class,
-                new TaskConfigId(taskId, configId));
+        LOGGER.debug(
+                "Deleting PushNotificationConfig for Task '{}' with Config ID: {}",
+                taskId,
+                configId);
+        JpaPushNotificationConfig jpaConfig =
+                em.find(JpaPushNotificationConfig.class, new TaskConfigId(taskId, configId));
 
         if (jpaConfig != null) {
             em.remove(jpaConfig);
-            LOGGER.debug("Successfully deleted PushNotificationConfig for Task '{}' with Config ID: {}",
-                    taskId, configId);
+            LOGGER.debug(
+                    "Successfully deleted PushNotificationConfig for Task '{}' with Config ID: {}",
+                    taskId,
+                    configId);
         } else {
-            LOGGER.debug("PushNotificationConfig not found for deletion with Task '{}' and Config ID: {}",
-                    taskId, configId);
+            LOGGER.debug(
+                    "PushNotificationConfig not found for deletion with Task '{}' and Config ID:"
+                            + " {}",
+                    taskId,
+                    configId);
         }
     }
 
     @Transactional
     @Override
     public String getProtocolVersion(String taskId, String configId) {
-        JpaPushNotificationConfig jpaConfig = em.find(JpaPushNotificationConfig.class,
-                new TaskConfigId(taskId, configId));
-        return jpaConfig != null ? jpaConfig.getProtocolVersion() : PushNotificationConfigStore.resolveProtocolVersion(null);
+        JpaPushNotificationConfig jpaConfig =
+                em.find(JpaPushNotificationConfig.class, new TaskConfigId(taskId, configId));
+        return jpaConfig != null
+                ? jpaConfig.getProtocolVersion()
+                : PushNotificationConfigStore.resolveProtocolVersion(null);
     }
 
     @Transactional
     @Override
     public java.util.Map<String, String> getProtocolVersions(String taskId) {
-        List<Object[]> results = em.createQuery(
-                "SELECT c.id.configId, c.protocolVersion FROM JpaPushNotificationConfig c " +
-                "WHERE c.id.taskId = :taskId AND c.protocolVersion IS NOT NULL", Object[].class)
-                .setParameter("taskId", taskId)
-                .getResultList();
+        List<Object[]> results =
+                em.createQuery(
+                                "SELECT c.id.configId, c.protocolVersion FROM"
+                                    + " JpaPushNotificationConfig c WHERE c.id.taskId = :taskId AND"
+                                    + " c.protocolVersion IS NOT NULL",
+                                Object[].class)
+                        .setParameter("taskId", taskId)
+                        .getResultList();
         java.util.Map<String, String> versions = new java.util.HashMap<>();
         for (Object[] row : results) {
             versions.put((String) row[0], (String) row[1]);
         }
         return versions;
     }
-
 }

@@ -7,15 +7,15 @@ import org.a2aproject.sdk.util.Assert;
 /**
  * Represents a JSONRPC request.
  */
-public abstract sealed class JSONRPCRequest_v0_3<T> implements JSONRPCMessage_v0_3 permits NonStreamingJSONRPCRequest_v0_3, StreamingJSONRPCRequest_v0_3 {
+public abstract sealed class JSONRPCRequest_v0_3<T> implements JSONRPCMessage_v0_3
+        permits NonStreamingJSONRPCRequest_v0_3, StreamingJSONRPCRequest_v0_3 {
 
     protected String jsonrpc;
     protected Object id;
     protected String method;
     protected T params;
 
-    public JSONRPCRequest_v0_3() {
-    }
+    public JSONRPCRequest_v0_3() {}
 
     public JSONRPCRequest_v0_3(String jsonrpc, Object id, String method, T params) {
         Assert.checkNotNullParam("jsonrpc", jsonrpc);

@@ -31,12 +31,12 @@ public class VertxA2AHttpClientSSETest extends AbstractA2AHttpClientSSETest {
     @Override
     @Test
     @Disabled("Vert.x BodyCodec.sseStream() does not propagate last event ID to subsequent events")
-    public void testSSEEventIdAndLastEventId() {
-    }
+    public void testSSEEventIdAndLastEventId() {}
 
     @Override
     @Test
-    @Disabled("Vert.x BodyCodec.sseStream() has no flush() equivalent for streams ending without a trailing blank line")
-    public void testSSEStreamEndingWithoutTrailingEmptyLine() {
-    }
+    @Disabled(
+            "Vert.x BodyCodec.sseStream() has no flush() equivalent for streams ending without a"
+                    + " trailing blank line")
+    public void testSSEStreamEndingWithoutTrailingEmptyLine() {}
 }

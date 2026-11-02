@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -19,27 +18,29 @@ import org.jspecify.annotations.Nullable;
  */
 public final class RedirectHeaderPolicy {
 
-    private static final Set<String> DEFAULT_CROSS_ORIGIN_HEADERS = Set.of(
-            "accept",
-            "accept-charset",
-            "accept-encoding",
-            "accept-language",
-            "a2a-extensions",
-            "a2a-version",
-            "cache-control",
-            "content-type",
-            "pragma",
-            "user-agent");
-    private static final Set<String> ENTITY_HEADERS = Set.of(
-            "content-encoding",
-            "content-language",
-            "content-length",
-            "content-location",
-            "content-type",
-            "digest",
-            "expect",
-            "last-modified",
-            "transfer-encoding");
+    private static final Set<String> DEFAULT_CROSS_ORIGIN_HEADERS =
+            Set.of(
+                    "accept",
+                    "accept-charset",
+                    "accept-encoding",
+                    "accept-language",
+                    "a2a-extensions",
+                    "a2a-version",
+                    "cache-control",
+                    "content-type",
+                    "pragma",
+                    "user-agent");
+    private static final Set<String> ENTITY_HEADERS =
+            Set.of(
+                    "content-encoding",
+                    "content-language",
+                    "content-length",
+                    "content-location",
+                    "content-type",
+                    "digest",
+                    "expect",
+                    "last-modified",
+                    "transfer-encoding");
 
     /** The conservative policy used by every SDK HTTP client by default. */
     public static final RedirectHeaderPolicy DEFAULT = new RedirectHeaderPolicy(Set.of(), Set.of());
@@ -62,12 +63,17 @@ public final class RedirectHeaderPolicy {
         Assert.checkNotNullParam("additionalCrossOriginHeaders", additionalCrossOriginHeaders);
         Assert.checkNotNullParam("trustedOrigins", trustedOrigins);
         if (!additionalCrossOriginHeaders.isEmpty() && trustedOrigins.isEmpty()) {
-            throw new IllegalArgumentException("Additional redirect headers require trusted origins");
+            throw new IllegalArgumentException(
+                    "Additional redirect headers require trusted origins");
         }
-        this.additionalCrossOriginHeaders = additionalCrossOriginHeaders.stream()
-                .map(header -> Assert.checkNotNullParam("additionalCrossOriginHeader", header)
-                        .toLowerCase(Locale.ROOT))
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        this.additionalCrossOriginHeaders =
+                additionalCrossOriginHeaders.stream()
+                        .map(
+                                header ->
+                                        Assert.checkNotNullParam(
+                                                        "additionalCrossOriginHeader", header)
+                                                .toLowerCase(Locale.ROOT))
+                        .collect(java.util.stream.Collectors.toUnmodifiableSet());
         Set<URI> trustedOriginsCopy = Set.copyOf(trustedOrigins);
         for (URI origin : trustedOriginsCopy) {
             Assert.checkNotNullParam("trustedOrigin", origin);
@@ -79,7 +85,8 @@ public final class RedirectHeaderPolicy {
                     || origin.getRawFragment() != null
                     || origin.getPort() == 0
                     || origin.getPort() > 65535) {
-                throw new IllegalArgumentException("Trusted redirect target must be an HTTP(S) origin: " + origin);
+                throw new IllegalArgumentException(
+                        "Trusted redirect target must be an HTTP(S) origin: " + origin);
             }
         }
         this.trustedOrigins = trustedOriginsCopy;
@@ -124,10 +131,11 @@ public final class RedirectHeaderPolicy {
             return Optional.empty();
         }
 
-        return Optional.of(new RedirectedRequest(
-                target,
-                redirectAsGet,
-                headersForRedirect(headers, target, sameOrigin, redirectAsGet)));
+        return Optional.of(
+                new RedirectedRequest(
+                        target,
+                        redirectAsGet,
+                        headersForRedirect(headers, target, sameOrigin, redirectAsGet)));
     }
 
     /**
@@ -189,18 +197,25 @@ public final class RedirectHeaderPolicy {
     private Map<String, String> headersForRedirect(
             Map<String, String> headers, URI target, boolean sameOrigin, boolean redirectAsGet) {
         Map<String, String> filteredHeaders = new HashMap<>(headers);
-        boolean trustedTarget = trustedOrigins.stream().anyMatch(origin -> sameOrigin(origin, target));
-        filteredHeaders.entrySet().removeIf(entry -> {
-            String name = entry.getKey();
-            if (name == null) {
-                return true;
-            }
-            String normalizedName = name.toLowerCase(Locale.ROOT);
-            return (!sameOrigin
-                            && !DEFAULT_CROSS_ORIGIN_HEADERS.contains(normalizedName)
-                            && !(trustedTarget && additionalCrossOriginHeaders.contains(normalizedName)))
-                    || (redirectAsGet && ENTITY_HEADERS.contains(normalizedName));
-        });
+        boolean trustedTarget =
+                trustedOrigins.stream().anyMatch(origin -> sameOrigin(origin, target));
+        filteredHeaders
+                .entrySet()
+                .removeIf(
+                        entry -> {
+                            String name = entry.getKey();
+                            if (name == null) {
+                                return true;
+                            }
+                            String normalizedName = name.toLowerCase(Locale.ROOT);
+                            return (!sameOrigin
+                                            && !DEFAULT_CROSS_ORIGIN_HEADERS.contains(
+                                                    normalizedName)
+                                            && !(trustedTarget
+                                                    && additionalCrossOriginHeaders.contains(
+                                                            normalizedName)))
+                                    || (redirectAsGet && ENTITY_HEADERS.contains(normalizedName));
+                        });
         return Map.copyOf(filteredHeaders);
     }
 
@@ -229,7 +244,8 @@ public final class RedirectHeaderPolicy {
     }
 
     /** A prepared one-hop POST redirect request. */
-    public record RedirectedRequest(URI target, boolean redirectAsGet, Map<String, String> headers) {
+    public record RedirectedRequest(
+            URI target, boolean redirectAsGet, Map<String, String> headers) {
         public RedirectedRequest {
             Assert.checkNotNullParam("target", target);
             Assert.checkNotNullParam("headers", headers);

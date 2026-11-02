@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.client.http;
 
 import java.util.List;
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -17,7 +16,8 @@ public record A2AHttpClientConfiguration(
         @Nullable RedirectHeaderPolicy redirectHeaderPolicy) {
 
     /** The default configuration, which selects the highest-priority available provider. */
-    public static final A2AHttpClientConfiguration DEFAULT = new A2AHttpClientConfiguration(List.of(), null, null);
+    public static final A2AHttpClientConfiguration DEFAULT =
+            new A2AHttpClientConfiguration(List.of(), null, null);
 
     public A2AHttpClientConfiguration {
         Assert.checkNotNullParam("excludedProviderNames", excludedProviderNames);
@@ -52,8 +52,10 @@ public record A2AHttpClientConfiguration(
 
         /** Sets provider names that must not be considered by the factory. */
         public Builder excludedProviderNames(List<String> excludedProviderNames) {
-            this.excludedProviderNames = List.copyOf(Assert.checkNotNullParam(
-                    "excludedProviderNames", excludedProviderNames));
+            this.excludedProviderNames =
+                    List.copyOf(
+                            Assert.checkNotNullParam(
+                                    "excludedProviderNames", excludedProviderNames));
             return this;
         }
 
@@ -71,7 +73,8 @@ public record A2AHttpClientConfiguration(
 
         /** Creates the immutable configuration. */
         public A2AHttpClientConfiguration build() {
-            return new A2AHttpClientConfiguration(excludedProviderNames, sseParserConfig, redirectHeaderPolicy);
+            return new A2AHttpClientConfiguration(
+                    excludedProviderNames, sseParserConfig, redirectHeaderPolicy);
         }
     }
 }

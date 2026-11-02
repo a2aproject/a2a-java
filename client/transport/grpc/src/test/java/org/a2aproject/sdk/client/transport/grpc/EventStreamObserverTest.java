@@ -23,7 +23,9 @@ class EventStreamObserverTest {
         observer.onCompleted();
 
         assertEquals(1, errors.size(), "errorHandler should have been called once");
-        assertNull(errors.get(0), "errorHandler should be called with null to signal clean completion");
+        assertNull(
+                errors.get(0),
+                "errorHandler should be called with null to signal clean completion");
         assertEquals(0, events.size(), "eventHandler should not be called");
     }
 

@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -45,7 +44,10 @@ public class PushNotificationNotSupportedError extends A2AProtocolError {
      * @param message the error message (defaults to "Push Notification is not supported" if null)
      * @param details additional error details (optional)
      */
-    public PushNotificationNotSupportedError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public PushNotificationNotSupportedError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED.code()),
                 defaultIfNull(message, "Push Notification is not supported"),

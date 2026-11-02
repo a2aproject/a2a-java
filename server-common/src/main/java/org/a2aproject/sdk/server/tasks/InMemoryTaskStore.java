@@ -4,6 +4,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
@@ -14,11 +18,6 @@ import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.util.PageToken;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * In-memory implementation of {@link TaskStore} and {@link TaskStateProvider}.
@@ -98,7 +97,8 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     }
 
     @Inject
-    public InMemoryTaskStore(@Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
+    public InMemoryTaskStore(
+            @Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
         this.authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
     }
 
@@ -139,31 +139,60 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     }
 
     @Override
-    public ListTasksResult listAuthorized(ListTasksParams params, ServerCallContext context,
-            TaskAuthorizationProvider provider) {
+    public ListTasksResult listAuthorized(
+            ListTasksParams params, ServerCallContext context, TaskAuthorizationProvider provider) {
         return listWithAuthorization(params, context, provider);
     }
 
-    private ListTasksResult listWithAuthorization(ListTasksParams params, @Nullable ServerCallContext context,
+    private ListTasksResult listWithAuthorization(
+            ListTasksParams params,
+            @Nullable ServerCallContext context,
             @Nullable TaskAuthorizationProvider provider) {
         // Filter and sort tasks in a single stream pipeline
-        List<Task> allFilteredTasks = tasks.values().stream()
-                .filter(task -> params.contextId() == null || params.contextId().equals(task.contextId()))
-                .filter(task -> params.status() == null ||
-                        (task.status() != null && params.status().equals(task.status().state())))
-                .filter(task -> params.statusTimestampAfter() == null ||
-                        (task.status() != null &&
-                         task.status().timestamp() != null &&
-                         task.status().timestamp().toInstant().isAfter(params.statusTimestampAfter())))
-                .filter(task -> isReadAuthorized(provider, context, task.id()))
-                .sorted(Comparator.comparing(
-                        (Task t) -> (t.status() != null && t.status().timestamp() != null)
-                                // Truncate to milliseconds for consistency with pageToken precision
-                                ? t.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
-                                : null,
-                        Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Task::id))
-                .toList();
+        List<Task> allFilteredTasks =
+                tasks.values().stream()
+                        .filter(
+                                task ->
+                                        params.contextId() == null
+                                                || params.contextId().equals(task.contextId()))
+                        .filter(
+                                task ->
+                                        params.status() == null
+                                                || (task.status() != null
+                                                        && params.status()
+                                                                .equals(task.status().state())))
+                        .filter(
+                                task ->
+                                        params.statusTimestampAfter() == null
+                                                || (task.status() != null
+                                                        && task.status().timestamp() != null
+                                                        && task.status()
+                                                                .timestamp()
+                                                                .toInstant()
+                                                                .isAfter(
+                                                                        params
+                                                                                .statusTimestampAfter())))
+                        .filter(task -> isReadAuthorized(provider, context, task.id()))
+                        .sorted(
+                                Comparator.comparing(
+                                                (Task t) ->
+                                                        (t.status() != null
+                                                                        && t.status().timestamp()
+                                                                                != null)
+                                                                // Truncate to milliseconds for
+                                                                // consistency with pageToken
+                                                                // precision
+                                                                ? t.status()
+                                                                        .timestamp()
+                                                                        .toInstant()
+                                                                        .truncatedTo(
+                                                                                java.time.temporal
+                                                                                        .ChronoUnit
+                                                                                        .MILLIS)
+                                                                : null,
+                                                Comparator.nullsLast(Comparator.reverseOrder()))
+                                        .thenComparing(Task::id))
+                        .toList();
 
         int totalSize = allFilteredTasks.size();
 
@@ -172,13 +201,15 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
         int startIndex = 0;
 
         // Handle page token using keyset pagination (format: "timestamp_millis:taskId")
-        // Use binary search to efficiently find the first task after the pageToken position (O(log N))
+        // Use binary search to efficiently find the first task after the pageToken position (O(log
+        // N))
         PageToken pageToken = PageToken.fromString(params.pageToken());
         if (pageToken != null) {
             java.time.Instant tokenTimestamp = pageToken.timestamp();
             String tokenId = pageToken.id();
 
-            // Binary search for first task where: timestamp < tokenTimestamp OR (timestamp == tokenTimestamp AND id > tokenId)
+            // Binary search for first task where: timestamp < tokenTimestamp OR (timestamp ==
+            // tokenTimestamp AND id > tokenId)
             // Since list is sorted (timestamp DESC, id ASC), we search for the insertion point
             int left = 0;
             int right = allFilteredTasks.size();
@@ -187,18 +218,24 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                 int mid = left + (right - left) / 2;
                 Task task = allFilteredTasks.get(mid);
 
-                java.time.Instant taskTimestamp = (task.status() != null && task.status().timestamp() != null)
-                        ? task.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
-                        : null;
+                java.time.Instant taskTimestamp =
+                        (task.status() != null && task.status().timestamp() != null)
+                                ? task.status()
+                                        .timestamp()
+                                        .toInstant()
+                                        .truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+                                : null;
 
                 if (taskTimestamp == null) {
-                    // Task with null timestamp is always "before" a token with a timestamp, as they are sorted last.
+                    // Task with null timestamp is always "before" a token with a timestamp, as they
+                    // are sorted last.
                     // So, we search in the right half.
                     left = mid + 1;
                 } else {
                     int timestampCompare = taskTimestamp.compareTo(tokenTimestamp);
 
-                    if (timestampCompare < 0 || (timestampCompare == 0 && task.id().compareTo(tokenId) > 0)) {
+                    if (timestampCompare < 0
+                            || (timestampCompare == 0 && task.id().compareTo(tokenId) > 0)) {
                         // This task is after the token, search left half
                         right = mid;
                     } else {
@@ -227,11 +264,13 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
         int historyLength = params.getEffectiveHistoryLength();
         boolean includeArtifacts = params.shouldIncludeArtifacts();
 
-        List<Task> transformedTasks = pageTasks.stream()
-                .map(task -> transformTask(task, historyLength, includeArtifacts))
-                .toList();
+        List<Task> transformedTasks =
+                pageTasks.stream()
+                        .map(task -> transformTask(task, historyLength, includeArtifacts))
+                        .toList();
 
-        return new ListTasksResult(transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
+        return new ListTasksResult(
+                transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
     }
 
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
@@ -253,10 +292,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
         }
 
         // Build new task with transformed data
-        return Task.builder(task)
-                .artifacts(artifacts)
-                .history(history)
-                .build();
+        return Task.builder(task).artifacts(artifacts).history(history).build();
     }
 
     @Override
@@ -266,7 +302,9 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
             return false;
         }
         // Task is active if not in final state
-        return task.status() == null || task.status().state() == null || !task.status().state().isFinal();
+        return task.status() == null
+                || task.status().state() == null
+                || !task.status().state().isFinal();
     }
 
     @Override

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
-
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.MockTaskStateProvider;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
@@ -29,13 +28,16 @@ public class InMemoryQueueManagerTest {
     private InMemoryTaskStore taskStore;
     private MainEventBus mainEventBus;
     private MainEventBusProcessor mainEventBusProcessor;
+
     @BeforeEach
     public void setUp() {
         taskStateProvider = new MockTaskStateProvider();
         taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         queueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
     }
 
@@ -63,9 +65,11 @@ public class InMemoryQueueManagerTest {
 
         queueManager.add(taskId, queue1);
 
-        assertThrows(TaskQueueExistsException.class, () -> {
-            queueManager.add(taskId, queue2);
-        });
+        assertThrows(
+                TaskQueueExistsException.class,
+                () -> {
+                    queueManager.add(taskId, queue2);
+                });
     }
 
     @Test
@@ -97,7 +101,10 @@ public class InMemoryQueueManagerTest {
 
         // Tapped queue should be different from original
         // (it's a child queue in Java implementation)
-        assertNotSame(queue, tappedQueue, "Tapped queue should be a different instance from the original.");
+        assertNotSame(
+                queue,
+                tappedQueue,
+                "Tapped queue should be a different instance from the original.");
     }
 
     @Test
@@ -121,9 +128,11 @@ public class InMemoryQueueManagerTest {
 
     @Test
     public void testCloseNonexistentQueueThrowsException() {
-        assertThrows(NoTaskQueueException.class, () -> {
-            queueManager.close("nonexistent_task_id");
-        });
+        assertThrows(
+                NoTaskQueueException.class,
+                () -> {
+                    queueManager.close("nonexistent_task_id");
+                });
     }
 
     @Test
@@ -159,18 +168,23 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testConcurrentOperations() throws InterruptedException, ExecutionException {
         // Create 10 different task IDs
-        List<String> taskIds = IntStream.range(0, 10)
-                .mapToObj(i -> "task_" + i)
-                .toList();
+        List<String> taskIds = IntStream.range(0, 10).mapToObj(i -> "task_" + i).toList();
 
         // Add tasks concurrently
-        List<CompletableFuture<String>> addFutures = taskIds.stream()
-                .map(taskId -> CompletableFuture.supplyAsync(() -> {
-                    EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
-                    queueManager.add(taskId, queue);
-                    return taskId;
-                }))
-                .toList();
+        List<CompletableFuture<String>> addFutures =
+                taskIds.stream()
+                        .map(
+                                taskId ->
+                                        CompletableFuture.supplyAsync(
+                                                () -> {
+                                                    EventQueue queue =
+                                                            EventQueueUtil.getEventQueueBuilder(
+                                                                            mainEventBus)
+                                                                    .build();
+                                                    queueManager.add(taskId, queue);
+                                                    return taskId;
+                                                }))
+                        .toList();
 
         // Wait for all add operations to complete
         List<String> addedTaskIds = new ArrayList<>();
@@ -183,9 +197,13 @@ public class InMemoryQueueManagerTest {
         assertTrue(addedTaskIds.containsAll(taskIds));
 
         // Get tasks concurrently
-        List<CompletableFuture<EventQueue>> getFutures = taskIds.stream()
-                .map(taskId -> CompletableFuture.supplyAsync(() -> queueManager.get(taskId)))
-                .toList();
+        List<CompletableFuture<EventQueue>> getFutures =
+                taskIds.stream()
+                        .map(
+                                taskId ->
+                                        CompletableFuture.supplyAsync(
+                                                () -> queueManager.get(taskId)))
+                        .toList();
 
         // Wait for all get operations to complete
         List<EventQueue> queues = new ArrayList<>();
@@ -210,9 +228,13 @@ public class InMemoryQueueManagerTest {
         String taskId = "race_condition_task";
 
         // Try to create/tap the same task ID concurrently
-        List<CompletableFuture<EventQueue>> futures = IntStream.range(0, 5)
-                .mapToObj(i -> CompletableFuture.supplyAsync(() -> queueManager.createOrTap(taskId)))
-                .toList();
+        List<CompletableFuture<EventQueue>> futures =
+                IntStream.range(0, 5)
+                        .mapToObj(
+                                i ->
+                                        CompletableFuture.supplyAsync(
+                                                () -> queueManager.createOrTap(taskId)))
+                        .toList();
 
         // Wait for all operations to complete
         List<EventQueue> results = new ArrayList<>();
@@ -242,7 +264,8 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testHookOnSubscribeCalledOnCreateOrTap() {
         TestStreamLifecycleHook.CaptureHook hook = TestStreamLifecycleHook.capturing();
-        InMemoryQueueManager hookedQueueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
+        InMemoryQueueManager hookedQueueManager =
+                new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
 
         hookedQueueManager.createOrTap("task-1");
         assertEquals(1, hook.subscribedTaskIds().size());
@@ -255,7 +278,8 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testHookOnUnsubscribeCalledOnChildClose() {
         TestStreamLifecycleHook.CaptureHook hook = TestStreamLifecycleHook.capturing();
-        InMemoryQueueManager hookedQueueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
+        InMemoryQueueManager hookedQueueManager =
+                new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
 
         EventQueue child = hookedQueueManager.createOrTap("task-1");
         child.close();
@@ -267,7 +291,8 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testStreamCloseHandleClosesAllChildrenViaQueueManager() {
         TestStreamLifecycleHook.CaptureHook hook = TestStreamLifecycleHook.capturing();
-        InMemoryQueueManager hookedQueueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
+        InMemoryQueueManager hookedQueueManager =
+                new InMemoryQueueManager(taskStateProvider, mainEventBus, hook);
 
         EventQueue child1 = hookedQueueManager.createOrTap("task-1");
         EventQueue child2 = hookedQueueManager.tap("task-1");

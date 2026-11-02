@@ -2,7 +2,6 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
 
-
 /**
  * A2A Protocol error indicating that an agent returned a response not conforming to protocol specifications.
  * <p>
@@ -35,11 +34,11 @@ import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
  * @see JSONRPCResponse_v0_3 for response structure
  * @see SendMessageResponse_v0_3 for message send response
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
-
+ *
  */
 public class InvalidAgentResponseError_v0_3 extends JSONRPCError_v0_3 {
 
-    public final static Integer DEFAULT_CODE = A2AErrorCodes_v0_3.INVALID_AGENT_RESPONSE_ERROR_CODE;
+    public static final Integer DEFAULT_CODE = A2AErrorCodes_v0_3.INVALID_AGENT_RESPONSE_ERROR_CODE;
 
     public InvalidAgentResponseError_v0_3(Integer code, String message, Object data) {
         super(

@@ -2,9 +2,8 @@ package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.spec.Message;
@@ -24,7 +23,9 @@ import org.mapstruct.Mapper;
  * <p>
  * Uses {@link RoleMapper_v0_3} and {@link PartMapper_v0_3} for nested conversions.
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {RoleMapper_v0_3.class, PartMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {RoleMapper_v0_3.class, PartMapper_v0_3.class})
 public interface MessageMapper_v0_3 {
 
     /**
@@ -47,20 +48,20 @@ public interface MessageMapper_v0_3 {
         }
 
         Message.Role role = RoleMapper_v0_3.INSTANCE.toV10(v03.role());
-        List<Part<?>> parts = v03.parts().stream()
-            .map(PartMapper_v0_3.INSTANCE::toV10)
-            .collect(Collectors.toList());
+        List<Part<?>> parts =
+                v03.parts().stream()
+                        .map(PartMapper_v0_3.INSTANCE::toV10)
+                        .collect(Collectors.toList());
 
         return new Message(
-            role,
-            parts,
-            v03.messageId(),
-            v03.contextId(),
-            v03.taskId(),
-            v03.referenceTaskIds(),
-            v03.metadata(),
-            v03.extensions()
-        );
+                role,
+                parts,
+                v03.messageId(),
+                v03.contextId(),
+                v03.taskId(),
+                v03.referenceTaskIds(),
+                v03.metadata(),
+                v03.extensions());
     }
 
     /**
@@ -78,19 +79,19 @@ public interface MessageMapper_v0_3 {
         }
 
         Message_v0_3.Role role = RoleMapper_v0_3.INSTANCE.fromV10(v10.role());
-        List<Part_v0_3<?>> parts = v10.parts().stream()
-            .map(PartMapper_v0_3.INSTANCE::fromV10)
-            .collect(Collectors.toList());
+        List<Part_v0_3<?>> parts =
+                v10.parts().stream()
+                        .map(PartMapper_v0_3.INSTANCE::fromV10)
+                        .collect(Collectors.toList());
 
         return new Message_v0_3(
-            role,
-            parts,
-            v10.messageId(),
-            v10.contextId(),
-            v10.taskId(),
-            v10.referenceTaskIds(),
-            v10.metadata(),
-            v10.extensions()
-        );
+                role,
+                parts,
+                v10.messageId(),
+                v10.contextId(),
+                v10.taskId(),
+                v10.referenceTaskIds(),
+                v10.metadata(),
+                v10.extensions());
     }
 }

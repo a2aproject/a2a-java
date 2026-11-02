@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.junit.jupiter.api.Test;
@@ -37,9 +36,13 @@ class ServerCallContextTest {
         assertSame(attached, context.getEffectiveAgentCard());
         assertEquals("acme", attached.tenant());
         assertSame(card, attached.card());
-        assertThrows(IllegalStateException.class, () -> context.attachEffectiveAgentCard("other", card));
-        assertThrows(IllegalStateException.class,
-                () -> context.attachEffectiveAgentCard("acme", AgentCardResolverTest.card("public")));
+        assertThrows(
+                IllegalStateException.class, () -> context.attachEffectiveAgentCard("other", card));
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        context.attachEffectiveAgentCard(
+                                "acme", AgentCardResolverTest.card("public")));
         assertSame(attached, context.getEffectiveAgentCard());
 
         ServerCallContext defaults = new ServerCallContext(new TestUser(), Map.of(), Set.of());
@@ -58,16 +61,20 @@ class ServerCallContextTest {
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
-            Future<EffectiveAgentCard> first = executor.submit(() -> {
-                assertTrue(start.await(5, TimeUnit.SECONDS));
-                context.attachEffectiveAgentCard("/acme/", card);
-                return context.getEffectiveAgentCard();
-            });
-            Future<EffectiveAgentCard> second = executor.submit(() -> {
-                assertTrue(start.await(5, TimeUnit.SECONDS));
-                context.attachEffectiveAgentCard("acme", card);
-                return context.getEffectiveAgentCard();
-            });
+            Future<EffectiveAgentCard> first =
+                    executor.submit(
+                            () -> {
+                                assertTrue(start.await(5, TimeUnit.SECONDS));
+                                context.attachEffectiveAgentCard("/acme/", card);
+                                return context.getEffectiveAgentCard();
+                            });
+            Future<EffectiveAgentCard> second =
+                    executor.submit(
+                            () -> {
+                                assertTrue(start.await(5, TimeUnit.SECONDS));
+                                context.attachEffectiveAgentCard("acme", card);
+                                return context.getEffectiveAgentCard();
+                            });
             start.countDown();
             assertSame(first.get(5, TimeUnit.SECONDS), second.get(5, TimeUnit.SECONDS));
             assertSame(card, context.getEffectiveAgentCard().card());
@@ -89,18 +96,20 @@ class ServerCallContextTest {
         try {
             List<Future<?>> calls = new ArrayList<>();
             for (AgentCard card : List.of(firstCard, secondCard)) {
-                calls.add(executor.submit(() -> {
-                    try {
-                        assertTrue(start.await(5, TimeUnit.SECONDS));
-                        context.attachEffectiveAgentCard("acme", card);
-                        successes.incrementAndGet();
-                    } catch (IllegalStateException expected) {
-                        conflicts.incrementAndGet();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new AssertionError(e);
-                    }
-                }));
+                calls.add(
+                        executor.submit(
+                                () -> {
+                                    try {
+                                        assertTrue(start.await(5, TimeUnit.SECONDS));
+                                        context.attachEffectiveAgentCard("acme", card);
+                                        successes.incrementAndGet();
+                                    } catch (IllegalStateException expected) {
+                                        conflicts.incrementAndGet();
+                                    } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
+                                        throw new AssertionError(e);
+                                    }
+                                }));
             }
             start.countDown();
             for (Future<?> call : calls) {
@@ -110,7 +119,9 @@ class ServerCallContextTest {
             assertEquals(1, conflicts.get());
             EffectiveAgentCard attached = context.getEffectiveAgentCard();
             AgentCard loser = attached.card() == firstCard ? secondCard : firstCard;
-            assertThrows(IllegalStateException.class, () -> context.attachEffectiveAgentCard("acme", loser));
+            assertThrows(
+                    IllegalStateException.class,
+                    () -> context.attachEffectiveAgentCard("acme", loser));
             assertSame(attached, context.getEffectiveAgentCard());
         } finally {
             start.countDown();
@@ -122,9 +133,9 @@ class ServerCallContextTest {
     void testDefaultConstructor() {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
-        
+
         ServerCallContext context = new ServerCallContext(user, state, new HashSet<>());
-        
+
         assertEquals(user, context.getUser());
         assertEquals(state, context.getState());
         assertTrue(context.getRequestedExtensions().isEmpty());
@@ -136,9 +147,9 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         assertEquals(user, context.getUser());
         assertEquals(state, context.getState());
         assertEquals(requestedExtensions, context.getRequestedExtensions());
@@ -151,10 +162,10 @@ class ServerCallContextTest {
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         // Manually activate extensions since they start empty
         context.activateExtension("foo");
-        
+
         assertEquals(user, context.getUser());
         assertEquals(state, context.getState());
         assertEquals(requestedExtensions, context.getRequestedExtensions());
@@ -166,23 +177,23 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         // Initially no extensions are activated
         assertFalse(context.isExtensionActivated("foo"));
         assertFalse(context.isExtensionActivated("bar"));
-        
+
         // Activate an extension
         context.activateExtension("foo");
         assertTrue(context.isExtensionActivated("foo"));
         assertFalse(context.isExtensionActivated("bar"));
-        
+
         // Activate another extension
         context.activateExtension("bar");
         assertTrue(context.isExtensionActivated("foo"));
         assertTrue(context.isExtensionActivated("bar"));
-        
+
         // Deactivate an extension
         context.deactivateExtension("foo");
         assertFalse(context.isExtensionActivated("foo"));
@@ -194,9 +205,9 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         assertTrue(context.isExtensionRequested("foo"));
         assertTrue(context.isExtensionRequested("bar"));
         assertFalse(context.isExtensionRequested("baz"));
@@ -207,14 +218,14 @@ class ServerCallContextTest {
         User user = new TestUser();
         Map<String, Object> state = new HashMap<>();
         Set<String> requestedExtensions = Set.of("foo", "bar");
-        
+
         ServerCallContext context = new ServerCallContext(user, state, requestedExtensions);
-        
+
         // Modifying returned sets should not affect the context
         Set<String> returnedRequested = context.getRequestedExtensions();
         returnedRequested.add("baz");
         assertFalse(context.isExtensionRequested("baz"));
-        
+
         context.activateExtension("foo");
         Set<String> returnedActivated = context.getActivatedExtensions();
         returnedActivated.add("bar");

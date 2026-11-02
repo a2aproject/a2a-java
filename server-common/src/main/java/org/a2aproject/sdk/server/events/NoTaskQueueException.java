@@ -11,8 +11,7 @@ public class NoTaskQueueException extends RuntimeException {
     /**
      * Creates a NoTaskQueueException with no message.
      */
-    public NoTaskQueueException() {
-    }
+    public NoTaskQueueException() {}
 
     /**
      * Creates a NoTaskQueueException with the specified detail message.
@@ -51,7 +50,11 @@ public class NoTaskQueueException extends RuntimeException {
      * @param enableSuppression whether suppression is enabled or disabled
      * @param writableStackTrace whether the stack trace should be writable
      */
-    public NoTaskQueueException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public NoTaskQueueException(
+            String message,
+            Throwable cause,
+            boolean enableSuppression,
+            boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

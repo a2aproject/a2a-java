@@ -1,15 +1,16 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
-
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for fetching a pushNotificationConfiguration associated with a Task.
  */
-public record GetTaskPushNotificationConfigParams_v0_3(String id, @Nullable String pushNotificationConfigId, @Nullable Map<String, Object> metadata) {
+public record GetTaskPushNotificationConfigParams_v0_3(
+        String id,
+        @Nullable String pushNotificationConfigId,
+        @Nullable Map<String, Object> metadata) {
 
     public GetTaskPushNotificationConfigParams_v0_3 {
         Assert.checkNotNullParam("id", id);
@@ -44,7 +45,8 @@ public record GetTaskPushNotificationConfigParams_v0_3(String id, @Nullable Stri
         }
 
         public GetTaskPushNotificationConfigParams_v0_3 build() {
-            return new GetTaskPushNotificationConfigParams_v0_3(id, pushNotificationConfigId, metadata);
+            return new GetTaskPushNotificationConfigParams_v0_3(
+                    id, pushNotificationConfigId, metadata);
         }
     }
 }

@@ -1,13 +1,10 @@
 package org.a2aproject.sdk.examples.cloud;
 
-
-import java.util.Collections;
-import java.util.List;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-
+import java.util.Collections;
+import java.util.List;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -30,32 +27,33 @@ public class CloudAgentCardProducer {
     public AgentCard agentCard() {
         return AgentCard.builder()
                 .name("Cloud Deployment Demo Agent")
-                .description("Demonstrates A2A multi-pod deployment with Kafka event replication, " +
-                        "PostgreSQL persistence, and round-robin load balancing across Kubernetes pods")
-                .supportedInterfaces(Collections.singletonList(
-                        new AgentInterface("JSONRPC", agentUrl)))
+                .description(
+                        "Demonstrates A2A multi-pod deployment with Kafka event replication,"
+                                + " PostgreSQL persistence, and round-robin load balancing across"
+                                + " Kubernetes pods")
+                .supportedInterfaces(
+                        Collections.singletonList(new AgentInterface("JSONRPC", agentUrl)))
                 .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(false)
-                        .build())
+                .capabilities(
+                        AgentCapabilities.builder()
+                                .streaming(true)
+                                .pushNotifications(false)
+                                .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(
-                        AgentSkill.builder()
-                                .id("multi_pod_demo")
-                                .name("Multi-Pod Replication Demo")
-                                .description("Demonstrates cross-pod event replication. " +
-                                        "Send 'start' to initialize, 'process' to add artifacts, " +
-                                        "'complete' to finalize. Each artifact shows which pod processed it.")
-                                .tags(List.of("demo", "cloud", "kubernetes", "replication"))
-                                .examples(List.of(
-                                        "start",
-                                        "process",
-                                        "complete"
-                                ))
-                                .build()
-                ))
+                .skills(
+                        Collections.singletonList(
+                                AgentSkill.builder()
+                                        .id("multi_pod_demo")
+                                        .name("Multi-Pod Replication Demo")
+                                        .description(
+                                                "Demonstrates cross-pod event replication. Send"
+                                                        + " 'start' to initialize, 'process' to add"
+                                                        + " artifacts, 'complete' to finalize. Each"
+                                                        + " artifact shows which pod processed it.")
+                                        .tags(List.of("demo", "cloud", "kubernetes", "replication"))
+                                        .examples(List.of("start", "process", "complete"))
+                                        .build()))
                 .build();
     }
 }

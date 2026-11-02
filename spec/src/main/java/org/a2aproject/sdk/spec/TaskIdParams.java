@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -23,7 +23,7 @@ public record TaskIdParams(String id, @Nullable String tenant) {
      * @param id the task identifier
      * @param tenant the tenant identifier
      */
-    public TaskIdParams  {
+    public TaskIdParams {
         Assert.checkNotNullParam("id", id);
         Utils.validateTenant(tenant);
     }
@@ -56,8 +56,7 @@ public record TaskIdParams(String id, @Nullable String tenant) {
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the id.
@@ -81,7 +80,6 @@ public record TaskIdParams(String id, @Nullable String tenant) {
             return this;
         }
 
-
         /**
          * Builds the TaskIdParams.
          *
@@ -89,10 +87,7 @@ public record TaskIdParams(String id, @Nullable String tenant) {
          * @throws IllegalArgumentException if id is null
          */
         public TaskIdParams build() {
-            return new TaskIdParams(
-                Assert.checkNotNullParam("id", id),
-                tenant
-            );
+            return new TaskIdParams(Assert.checkNotNullParam("id", id), tenant);
         }
     }
 }

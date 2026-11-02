@@ -1,14 +1,12 @@
 package org.a2aproject.sdk.extras.queuemanager.replicated.tests;
 
+import io.quarkus.arc.profile.IfBuildProfile;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import jakarta.enterprise.context.ApplicationScoped;
-
 import org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
-import io.quarkus.arc.profile.IfBuildProfile;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 /**
@@ -19,13 +17,15 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 @ApplicationScoped
 public class TestKafkaEventConsumer {
 
-    private final ConcurrentLinkedQueue<ReplicatedEventQueueItem> receivedEvents = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ReplicatedEventQueueItem> receivedEvents =
+            new ConcurrentLinkedQueue<>();
     private volatile CountDownLatch eventLatch;
 
     @Incoming("test-replicated-events-in")
     public void onTestReplicatedEvent(String jsonMessage) {
         try {
-            ReplicatedEventQueueItem event = JsonUtil.fromJson(jsonMessage, ReplicatedEventQueueItem.class);
+            ReplicatedEventQueueItem event =
+                    JsonUtil.fromJson(jsonMessage, ReplicatedEventQueueItem.class);
             receivedEvents.offer(event);
 
             // Signal any waiting threads
@@ -45,7 +45,8 @@ public class TestKafkaEventConsumer {
      * @param timeoutSeconds maximum time to wait
      * @return the matching ReplicatedEventQueueItem, or null if timeout
      */
-    public ReplicatedEventQueueItem waitForEvent(String taskId, int timeoutSeconds) throws InterruptedException {
+    public ReplicatedEventQueueItem waitForEvent(String taskId, int timeoutSeconds)
+            throws InterruptedException {
         // Check if we already have the event
         ReplicatedEventQueueItem existing = findEventByTaskId(taskId);
         if (existing != null) {
@@ -75,7 +76,8 @@ public class TestKafkaEventConsumer {
      * @param timeoutSeconds maximum time to wait
      * @return the matching ReplicatedEventQueueItem, or null if timeout
      */
-    public ReplicatedEventQueueItem waitForEventWithContent(String taskId, String contentMatch, int timeoutSeconds) throws InterruptedException {
+    public ReplicatedEventQueueItem waitForEventWithContent(
+            String taskId, String contentMatch, int timeoutSeconds) throws InterruptedException {
         // Check if we already have the event
         ReplicatedEventQueueItem existing = findEventByTaskIdWithContent(taskId, contentMatch);
         if (existing != null) {
@@ -104,7 +106,8 @@ public class TestKafkaEventConsumer {
      * @param timeoutSeconds maximum time to wait
      * @return the matching ReplicatedEventQueueItem with QueueClosedEvent, or null if timeout
      */
-    public ReplicatedEventQueueItem waitForClosedEvent(String taskId, int timeoutSeconds) throws InterruptedException {
+    public ReplicatedEventQueueItem waitForClosedEvent(String taskId, int timeoutSeconds)
+            throws InterruptedException {
         // Check if we already have the event
         ReplicatedEventQueueItem existing = findClosedEventByTaskId(taskId);
         if (existing != null) {
@@ -150,10 +153,13 @@ public class TestKafkaEventConsumer {
     /**
      * Find an event by task ID and content match in the received events.
      */
-    private ReplicatedEventQueueItem findEventByTaskIdWithContent(String taskId, String contentMatch) {
+    private ReplicatedEventQueueItem findEventByTaskIdWithContent(
+            String taskId, String contentMatch) {
         return receivedEvents.stream()
-                .filter(event -> taskId.equals(event.getTaskId()) &&
-                        event.getEvent().toString().contains(contentMatch))
+                .filter(
+                        event ->
+                                taskId.equals(event.getTaskId())
+                                        && event.getEvent().toString().contains(contentMatch))
                 .findFirst()
                 .orElse(null);
     }

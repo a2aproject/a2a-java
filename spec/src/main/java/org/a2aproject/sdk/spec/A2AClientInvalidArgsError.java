@@ -30,8 +30,7 @@ public class A2AClientInvalidArgsError extends A2AClientError {
     /**
      * Creates a new invalid arguments error with no message.
      */
-    public A2AClientInvalidArgsError() {
-    }
+    public A2AClientInvalidArgsError() {}
 
     /**
      * Creates a new invalid arguments error with the specified message.

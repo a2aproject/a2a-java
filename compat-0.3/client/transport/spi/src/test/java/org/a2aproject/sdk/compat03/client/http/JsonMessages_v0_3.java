@@ -6,7 +6,8 @@ package org.a2aproject.sdk.compat03.client.http;
  */
 public class JsonMessages_v0_3 {
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD =
+            """
             {
                  "protocolVersion": "0.2.9",
                  "name": "GeoSpatial Route Planner Agent",
@@ -81,14 +82,16 @@ public class JsonMessages_v0_3 {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-               }""";
+               }\
+            """;
 
     /**
      * A v1.0 format agent card returned by a current server. Contains the new {@code supportedInterfaces}
      * and {@code securityRequirements} fields (v1.0-only), plus the backward-compat {@code url} and
      * {@code preferredTransport} fields that the v0.3 client relies on.
      */
-    static final String V1_AGENT_CARD = """
+    static final String V1_AGENT_CARD =
+            """
             {
               "name": "Test Agent",
               "description": "A test agent",
@@ -108,13 +111,15 @@ public class JsonMessages_v0_3 {
               "defaultOutputModes": ["text/plain"],
               "skills": [],
               "securityRequirements": [{"oauth2": ["read"]}]
-            }""";
+            }\
+            """;
 
     /**
      * A v1.0 format agent card without an explicit {@code preferredTransport}. The v0.3 client must
      * fall back to the default transport ("JSONRPC").
      */
-    static final String V1_AGENT_CARD_NO_PREFERRED_TRANSPORT = """
+    static final String V1_AGENT_CARD_NO_PREFERRED_TRANSPORT =
+            """
             {
               "name": "Minimal Agent",
               "description": "Minimal agent card",
@@ -131,9 +136,11 @@ public class JsonMessages_v0_3 {
               "defaultInputModes": ["text/plain"],
               "defaultOutputModes": ["text/plain"],
               "skills": []
-            }""";
+            }\
+            """;
 
-    static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
+    static final String AUTHENTICATION_EXTENDED_AGENT_CARD =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
                 "description": "Extended description",
@@ -208,7 +215,6 @@ public class JsonMessages_v0_3 {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-              }""";
-
-
+              }\
+            """;
 }

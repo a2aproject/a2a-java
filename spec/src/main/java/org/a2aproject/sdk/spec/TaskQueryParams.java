@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -69,8 +69,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nulla
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the id.
@@ -112,11 +111,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nulla
          * @throws IllegalArgumentException if id is null or historyLength is negative
          */
         public TaskQueryParams build() {
-            return new TaskQueryParams(
-                Assert.checkNotNullParam("id", id),
-                historyLength,
-                tenant
-            );
+            return new TaskQueryParams(Assert.checkNotNullParam("id", id), historyLength, tenant);
         }
     }
 }

@@ -60,7 +60,8 @@ public class JsonMappingException extends JsonProcessingException {
      * @param message the detail message explaining the mapping error
      * @param cause the underlying cause of the mapping error (may be null)
      */
-    public JsonMappingException(@Nullable Object reference, String message, @Nullable Throwable cause) {
+    public JsonMappingException(
+            @Nullable Object reference, String message, @Nullable Throwable cause) {
         super(message, cause);
         this.reference = reference;
     }

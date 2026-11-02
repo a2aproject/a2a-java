@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.jspecify.annotations.Nullable;
 
@@ -150,7 +149,8 @@ public class ClientConfig {
     private ClientConfig(Builder builder) {
         this.streaming = builder.streaming == null ? true : builder.streaming;
         this.polling = builder.polling == null ? false : builder.polling;
-        this.useClientPreference = builder.useClientPreference == null ? false : builder.useClientPreference;
+        this.useClientPreference =
+                builder.useClientPreference == null ? false : builder.useClientPreference;
         this.acceptedOutputModes = builder.acceptedOutputModes;
         this.taskPushNotificationConfig = builder.taskPushNotificationConfig;
         this.historyLength = builder.historyLength;
@@ -352,7 +352,8 @@ public class ClientConfig {
          * @return this builder for method chaining
          * @see org.a2aproject.sdk.client.Client#sendMessage(org.a2aproject.sdk.spec.Message, org.a2aproject.sdk.spec.TaskPushNotificationConfig, java.util.Map, org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext)
          */
-        public Builder setTaskPushNotificationConfig(TaskPushNotificationConfig taskPushNotificationConfig) {
+        public Builder setTaskPushNotificationConfig(
+                TaskPushNotificationConfig taskPushNotificationConfig) {
             this.taskPushNotificationConfig = taskPushNotificationConfig;
             return this;
         }

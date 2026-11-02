@@ -2,20 +2,18 @@ package org.a2aproject.sdk.server.grpc.quarkus;
 
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 
+import io.grpc.Context;
+import io.grpc.Metadata;
+import io.grpc.stub.StreamObserver;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
-import io.grpc.Context;
-import io.grpc.Metadata;
-import io.grpc.stub.StreamObserver;
-import io.quarkus.security.identity.SecurityIdentity;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
@@ -28,8 +26,7 @@ import org.a2aproject.sdk.transport.grpc.handler.CallContextFactory;
 @ApplicationScoped
 public class QuarkusCallContextFactory implements CallContextFactory {
 
-    @Inject
-    private Instance<SecurityIdentity> securityIdentityInstance;
+    @Inject private Instance<SecurityIdentity> securityIdentityInstance;
 
     @Override
     public <V> ServerCallContext create(StreamObserver<V> responseObserver) {
@@ -60,7 +57,10 @@ public class QuarkusCallContextFactory implements CallContextFactory {
                     if (key.endsWith(Metadata.BINARY_HEADER_SUFFIX)) {
                         continue;
                     }
-                    headers.put(key, grpcMetadata.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
+                    headers.put(
+                            key,
+                            grpcMetadata.get(
+                                    Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
                 }
                 state.put("headers", headers);
             }
@@ -85,7 +85,8 @@ public class QuarkusCallContextFactory implements CallContextFactory {
         try {
             String extensionsHeader = GrpcContextKeys.EXTENSIONS_HEADER_KEY.get();
             if (extensionsHeader != null) {
-                requestedExtensions = A2AExtensions.getRequestedExtensions(List.of(extensionsHeader));
+                requestedExtensions =
+                        A2AExtensions.getRequestedExtensions(List.of(extensionsHeader));
             }
         } catch (Exception e) {
             // Context not available

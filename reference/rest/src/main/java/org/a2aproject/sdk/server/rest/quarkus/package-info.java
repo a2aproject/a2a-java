@@ -64,4 +64,3 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
 import org.jspecify.annotations.NullMarked;
-

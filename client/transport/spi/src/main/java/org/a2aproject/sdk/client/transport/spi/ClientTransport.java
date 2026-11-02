@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.client.transport.spi;
 
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
@@ -48,8 +47,12 @@ public interface ClientTransport {
      * @param context       optional client call context for the request (may be {@code null})
      * @throws A2AClientException if setting up the streaming connection fails
      */
-    void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
-                              Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException;
+    void sendMessageStreaming(
+            MessageSendParams request,
+            Consumer<StreamingEventKind> eventConsumer,
+            Consumer<Throwable> errorConsumer,
+            @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the current state and history of a specific task.
@@ -59,7 +62,8 @@ public interface ClientTransport {
      * @return the task
      * @throws A2AClientException if retrieving the task fails for any reason
      */
-    Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    Task getTask(TaskQueryParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Request the agent to cancel a specific task.
@@ -69,7 +73,8 @@ public interface ClientTransport {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * List tasks with optional filtering and pagination.
@@ -79,7 +84,8 @@ public interface ClientTransport {
      * @return the list tasks result containing tasks and pagination information
      * @throws A2AClientException if listing tasks fails for any reason
      */
-    ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Create or update the push notification configuration for a specific task.
@@ -89,8 +95,9 @@ public interface ClientTransport {
      * @return the configured TaskPushNotificationConfig
      * @throws A2AClientException if creating or updating the task push notification configuration fails for any reason
      */
-    TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-                                                                       @Nullable ClientCallContext context) throws A2AClientException;
+    TaskPushNotificationConfig createTaskPushNotificationConfiguration(
+            TaskPushNotificationConfig request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the push notification configuration for a specific task.
@@ -101,8 +108,8 @@ public interface ClientTransport {
      * @throws A2AClientException if getting the task push notification config fails for any reason
      */
     TaskPushNotificationConfig getTaskPushNotificationConfiguration(
-            GetTaskPushNotificationConfigParams request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the list of push notification configurations for a specific task with pagination support.
@@ -113,8 +120,8 @@ public interface ClientTransport {
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
     ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigsParams request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Delete the list of push notification configurations for a specific task.
@@ -124,8 +131,8 @@ public interface ClientTransport {
      * @throws A2AClientException if deleting the task push notification configs fails for any reason
      */
     void deleteTaskPushNotificationConfigurations(
-            DeleteTaskPushNotificationConfigParams request,
-            @Nullable ClientCallContext context) throws A2AClientException;
+            DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Reconnect to get task updates for an existing task.
@@ -137,8 +144,12 @@ public interface ClientTransport {
      * @param context       optional client call context for the request (may be {@code null})
      * @throws A2AClientException if subscribing to the task fails for any reason
      */
-    void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-                     Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException;
+    void subscribeToTask(
+            TaskIdParams request,
+            Consumer<StreamingEventKind> eventConsumer,
+            Consumer<Throwable> errorConsumer,
+            @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Retrieve the extended AgentCard.
@@ -148,11 +159,12 @@ public interface ClientTransport {
      * @return the extended agent card
      * @throws A2AClientException if retrieving the agent card fails for any reason
      */
-    AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException;
+    AgentCard getExtendedAgentCard(
+            GetExtendedAgentCardParams params, @Nullable ClientCallContext context)
+            throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.
      */
     void close();
-
 }

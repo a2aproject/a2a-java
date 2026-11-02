@@ -6,13 +6,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import org.a2aproject.sdk.util.Assert;
 import mutiny.zero.BackpressureStrategy;
 import mutiny.zero.Tube;
 import mutiny.zero.TubeConfiguration;
 import mutiny.zero.ZeroPublisher;
 import mutiny.zero.operators.Transform;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 public class AsyncUtils {
@@ -35,46 +34,51 @@ public class AsyncUtils {
             Function<T, Boolean> nextFunction,
             Consumer<Throwable> errorConsumer) {
 
-        BiFunction<Consumer<Throwable>, T, Boolean> nextBiFunction = new BiFunction<Consumer<Throwable>, T, Boolean>() {
-            @Override
-            public Boolean apply(Consumer<Throwable> throwableConsumer, T t) {
-                return nextFunction.apply(t);
-            }
-        };
-
-        ZeroPublisher.create(config, tube -> {
-            source.subscribe(new ConsumingSubscriber<>(nextBiFunction, errorConsumer));
-        })
-                .subscribe(new Flow.Subscriber<Object>() {
-                    private Flow.@Nullable Subscription subscription;
-
+        BiFunction<Consumer<Throwable>, T, Boolean> nextBiFunction =
+                new BiFunction<Consumer<Throwable>, T, Boolean>() {
                     @Override
-                    public void onSubscribe(Flow.Subscription subscription) {
-                        this.subscription = subscription;
-                        subscription.request(1);
+                    public Boolean apply(Consumer<Throwable> throwableConsumer, T t) {
+                        return nextFunction.apply(t);
                     }
+                };
 
-                    @Override
-                    public void onNext(Object item) {
-                        if (subscription != null) {
-                            subscription.request(1);
-                        }
-                    }
+        ZeroPublisher.create(
+                        config,
+                        tube -> {
+                            source.subscribe(
+                                    new ConsumingSubscriber<>(nextBiFunction, errorConsumer));
+                        })
+                .subscribe(
+                        new Flow.Subscriber<Object>() {
+                            private Flow.@Nullable Subscription subscription;
 
-                    @Override
-                    public void onError(Throwable throwable) {
-                        if (subscription != null) {
-                            subscription.cancel();
-                        }
-                    }
+                            @Override
+                            public void onSubscribe(Flow.Subscription subscription) {
+                                this.subscription = subscription;
+                                subscription.request(1);
+                            }
 
-                    @Override
-                    public void onComplete() {
-                        if (subscription != null) {
-                            subscription.cancel();
-                        }
-                    }
-                });
+                            @Override
+                            public void onNext(Object item) {
+                                if (subscription != null) {
+                                    subscription.request(1);
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable throwable) {
+                                if (subscription != null) {
+                                    subscription.cancel();
+                                }
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                if (subscription != null) {
+                                    subscription.cancel();
+                                }
+                            }
+                        });
     }
 
     public static <T> Flow.Publisher<T> processor(
@@ -82,12 +86,15 @@ public class AsyncUtils {
             Flow.Publisher<T> source,
             BiFunction<Consumer<Throwable>, T, Boolean> nextFunction) {
 
-        return ZeroPublisher.create(config, tube -> {
-            source.subscribe(new ProcessingSubscriber<>(tube, nextFunction));
-        });
+        return ZeroPublisher.create(
+                config,
+                tube -> {
+                    source.subscribe(new ProcessingSubscriber<>(tube, nextFunction));
+                });
     }
 
-    public static <T, N> Flow.Publisher<N> convertingProcessor(Flow.Publisher<T> source, Function<T, N> converterFunction) {
+    public static <T, N> Flow.Publisher<N> convertingProcessor(
+            Flow.Publisher<T> source, Function<T, N> converterFunction) {
         return new Transform<>(source, converterFunction);
     }
 
@@ -108,50 +115,54 @@ public class AsyncUtils {
      * @return a new publisher that emits inserted items first, then source items
      */
     @SafeVarargs
-    public static <T> Flow.Publisher<T> insertingProcessor(Flow.Publisher<T> source, T... inserted) {
-        return ZeroPublisher.create(createTubeConfig(), tube -> {
-            // Subscribe to source publisher and intercept the subscription flow
-            source.subscribe(new Flow.Subscriber<T>() {
-                private Flow.@Nullable Subscription subscription;
-                private boolean insertedItemsSent = false;
+    public static <T> Flow.Publisher<T> insertingProcessor(
+            Flow.Publisher<T> source, T... inserted) {
+        return ZeroPublisher.create(
+                createTubeConfig(),
+                tube -> {
+                    // Subscribe to source publisher and intercept the subscription flow
+                    source.subscribe(
+                            new Flow.Subscriber<T>() {
+                                private Flow.@Nullable Subscription subscription;
+                                private boolean insertedItemsSent = false;
 
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    this.subscription = subscription;
+                                @Override
+                                public void onSubscribe(Flow.Subscription subscription) {
+                                    this.subscription = subscription;
 
-                    // CRITICAL: Send inserted items BEFORE requesting from source
-                    // This ensures they are emitted first, after subscription is established
-                    if (!insertedItemsSent) {
-                        insertedItemsSent = true;
-                        for (T item : inserted) {
-                            tube.send(item);
-                        }
-                    }
+                                    // CRITICAL: Send inserted items BEFORE requesting from source
+                                    // This ensures they are emitted first, after subscription is
+                                    // established
+                                    if (!insertedItemsSent) {
+                                        insertedItemsSent = true;
+                                        for (T item : inserted) {
+                                            tube.send(item);
+                                        }
+                                    }
 
-                    // Now request all items from source
-                    subscription.request(Long.MAX_VALUE);
-                }
+                                    // Now request all items from source
+                                    subscription.request(Long.MAX_VALUE);
+                                }
 
-                @Override
-                public void onNext(T item) {
-                    tube.send(item);  // Forward source items to our tube
-                }
+                                @Override
+                                public void onNext(T item) {
+                                    tube.send(item); // Forward source items to our tube
+                                }
 
-                @Override
-                public void onError(Throwable throwable) {
-                    tube.fail(throwable);
-                }
+                                @Override
+                                public void onError(Throwable throwable) {
+                                    tube.fail(throwable);
+                                }
 
-                @Override
-                public void onComplete() {
-                    tube.complete();
-                }
-            });
-        });
+                                @Override
+                                public void onComplete() {
+                                    tube.complete();
+                                }
+                            });
+                });
     }
 
-
-    private static abstract class AbstractSubscriber<T> implements Flow.Subscriber<T> {
+    private abstract static class AbstractSubscriber<T> implements Flow.Subscriber<T> {
         private Flow.@Nullable Subscription subscription;
         private final BiFunction<Consumer<Throwable>, T, Boolean> nextFunction;
         private final @Nullable Consumer<T> publishNextConsumer;
@@ -177,10 +188,11 @@ public class AsyncUtils {
         public void onNext(T item) {
             AtomicReference<Throwable> errorRaised = new AtomicReference<>();
 
-            Consumer<Throwable> errorConsumer = t -> {
+            Consumer<Throwable> errorConsumer =
+                    t -> {
                         errorRaised.set(t);
                         onError(t);
-            };
+                    };
             boolean continueProcessing = false;
             if (errorRaised.get() == null) {
                 try {
@@ -202,7 +214,6 @@ public class AsyncUtils {
                 }
             }
         }
-
 
         @Override
         public void onError(Throwable throwable) {
@@ -226,14 +237,16 @@ public class AsyncUtils {
     }
 
     private static class ConsumingSubscriber<T> extends AbstractSubscriber<T> {
-        public ConsumingSubscriber(BiFunction<Consumer<Throwable>, T, Boolean> nextFunction,
-                                   @Nullable Consumer<Throwable> failureOrCompleteConsumer) {
+        public ConsumingSubscriber(
+                BiFunction<Consumer<Throwable>, T, Boolean> nextFunction,
+                @Nullable Consumer<Throwable> failureOrCompleteConsumer) {
             super(nextFunction, null, failureOrCompleteConsumer);
         }
     }
 
     private static class ProcessingSubscriber<T> extends AbstractSubscriber<T> {
-        public ProcessingSubscriber(Tube<T> tube, BiFunction<Consumer<Throwable>, T, Boolean> nextFunction) {
+        public ProcessingSubscriber(
+                Tube<T> tube, BiFunction<Consumer<Throwable>, T, Boolean> nextFunction) {
             super(
                     nextFunction,
                     tube::send,
@@ -243,8 +256,7 @@ public class AsyncUtils {
                         } else {
                             tube.fail(t);
                         }
-                    }
-            );
+                    });
             Assert.checkNotNullParam("tube", tube);
         }
     }
@@ -261,7 +273,8 @@ public class AsyncUtils {
             this.converterBiFunction = (throwableConsumer, t) -> converterFunction.apply(t);
         }
 
-        public ConvertingProcessingSubscriber(Tube<N> tube, BiFunction<Consumer<Throwable>, T, N> converterBiFunction) {
+        public ConvertingProcessingSubscriber(
+                Tube<N> tube, BiFunction<Consumer<Throwable>, T, N> converterBiFunction) {
             Assert.checkNotNullParam("tube", tube);
             Assert.checkNotNullParam("converterBiFunction", converterBiFunction);
             this.tube = tube;
@@ -277,10 +290,11 @@ public class AsyncUtils {
         @Override
         public void onNext(T item) {
             AtomicBoolean errorRaised = new AtomicBoolean(false);
-            Consumer<Throwable> errorConsumer = t -> {
+            Consumer<Throwable> errorConsumer =
+                    t -> {
                         errorRaised.set(true);
                         onError(t);
-            };
+                    };
 
             N converted = null;
             try {

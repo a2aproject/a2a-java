@@ -2,8 +2,6 @@ package org.a2aproject.sdk.tests.multiversion.grpc;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,7 +16,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import org.a2aproject.sdk.compat03.transport.grpc.handler.GrpcHandler_v0_3;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.apps.common.TestUtilsBean;
@@ -31,8 +29,7 @@ import org.a2aproject.sdk.transport.grpc.handler.GrpcHandler;
 @Path("/test")
 @ApplicationScoped
 public class A2ATestResource {
-    @Inject
-    TestUtilsBean testUtilsBean;
+    @Inject TestUtilsBean testUtilsBean;
 
     private final AtomicInteger streamingSubscribedCount = new AtomicInteger(0);
 
@@ -73,9 +70,7 @@ public class A2ATestResource {
             return Response.status(404).build();
         }
         testUtilsBean.deleteTask(taskId);
-        return Response.ok()
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build();
+        return Response.ok().header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -87,7 +82,8 @@ public class A2ATestResource {
 
     @POST
     @Path("/queue/enqueueTaskStatusUpdateEvent/{taskId}")
-    public Response enqueueTaskStatusUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
+    public Response enqueueTaskStatusUpdateEvent(@PathParam("taskId") String taskId, String body)
+            throws Exception {
         TaskStatusUpdateEvent event = JsonUtil.fromJson(body, TaskStatusUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
         return Response.ok().build();
@@ -95,7 +91,8 @@ public class A2ATestResource {
 
     @POST
     @Path("/queue/enqueueTaskArtifactUpdateEvent/{taskId}")
-    public Response enqueueTaskArtifactUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
+    public Response enqueueTaskArtifactUpdateEvent(@PathParam("taskId") String taskId, String body)
+            throws Exception {
         TaskArtifactUpdateEvent event = JsonUtil.fromJson(body, TaskArtifactUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
         return Response.ok().build();
@@ -118,15 +115,14 @@ public class A2ATestResource {
 
     @DELETE
     @Path("/task/{taskId}/config/{configId}")
-    public Response deleteTaskPushNotificationConfig(@PathParam("taskId") String taskId, @PathParam("configId") String configId) {
+    public Response deleteTaskPushNotificationConfig(
+            @PathParam("taskId") String taskId, @PathParam("configId") String configId) {
         Task task = testUtilsBean.getTask(taskId);
         if (task == null) {
             return Response.status(404).build();
         }
         testUtilsBean.deleteTaskPushNotificationConfig(taskId, configId);
-        return Response.ok()
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build();
+        return Response.ok().header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -135,8 +131,10 @@ public class A2ATestResource {
     public Response savePushNotificationConfigInStore(
             @PathParam("taskId") String taskId,
             @HeaderParam("A2A-Version") String protocolVersion,
-            String body) throws Exception {
-        TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
+            String body)
+            throws Exception {
+        TaskPushNotificationConfig notificationConfig =
+                JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
         if (notificationConfig == null) {
             return Response.status(404).build();
         }
@@ -155,7 +153,8 @@ public class A2ATestResource {
      */
     @POST
     @Path("/queue/awaitPollerStart/{taskId}")
-    public Response awaitQueuePollerStart(@PathParam("taskId") String taskId) throws InterruptedException {
+    public Response awaitQueuePollerStart(@PathParam("taskId") String taskId)
+            throws InterruptedException {
         testUtilsBean.awaitQueuePollerStart(taskId);
         return Response.ok().build();
     }
@@ -173,9 +172,11 @@ public class A2ATestResource {
      */
     @POST
     @Path("/queue/awaitChildCountStable/{taskId}/{expectedCount}/{timeoutMs}")
-    public Response awaitChildQueueCountStable(@PathParam("taskId") String taskId,
-                                               @PathParam("expectedCount") int expectedCount,
-                                               @PathParam("timeoutMs") long timeoutMs) throws InterruptedException {
+    public Response awaitChildQueueCountStable(
+            @PathParam("taskId") String taskId,
+            @PathParam("expectedCount") int expectedCount,
+            @PathParam("timeoutMs") long timeoutMs)
+            throws InterruptedException {
         boolean stable = testUtilsBean.awaitChildQueueCountStable(taskId, expectedCount, timeoutMs);
         return Response.ok(String.valueOf(stable), TEXT_PLAIN).build();
     }

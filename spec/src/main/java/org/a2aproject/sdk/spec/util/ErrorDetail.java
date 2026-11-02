@@ -1,8 +1,7 @@
 package org.a2aproject.sdk.spec.util;
 
-import java.util.Map;
-
 import com.google.gson.annotations.SerializedName;
+import java.util.Map;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 

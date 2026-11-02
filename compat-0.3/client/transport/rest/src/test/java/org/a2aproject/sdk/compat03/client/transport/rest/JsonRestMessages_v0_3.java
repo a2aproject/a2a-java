@@ -6,7 +6,8 @@ package org.a2aproject.sdk.compat03.client.transport.rest;
  */
 public class JsonRestMessages_v0_3 {
 
-    static final String SEND_MESSAGE_TEST_REQUEST = """
+    static final String SEND_MESSAGE_TEST_REQUEST =
+            """
             {
               "message":
                 {
@@ -19,9 +20,11 @@ public class JsonRestMessages_v0_3 {
                   "metadata": {
                   }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_RESPONSE =
+            """
             {
               "task": {
                 "id": "9b511af4-b27c-47fa-aecf-2a93c08a44f8",
@@ -44,14 +47,18 @@ public class JsonRestMessages_v0_3 {
                   }
                 ]
               }
-            }""";
+            }\
+            """;
 
-    static final String CANCEL_TASK_TEST_REQUEST = """
+    static final String CANCEL_TASK_TEST_REQUEST =
+            """
             {
               "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
-            }""";
+            }\
+            """;
 
-    static final String CANCEL_TASK_TEST_RESPONSE = """
+    static final String CANCEL_TASK_TEST_RESPONSE =
+            """
             {
                 "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
@@ -59,9 +66,11 @@ public class JsonRestMessages_v0_3 {
                   "state": "TASK_STATE_CANCELLED"
                 },
                 "metadata": {}
-            }""";
+            }\
+            """;
 
-    static final String GET_TASK_TEST_RESPONSE = """
+    static final String GET_TASK_TEST_RESPONSE =
+            """
             {
               "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
@@ -107,7 +116,8 @@ public class JsonRestMessages_v0_3 {
             }
             """;
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -170,9 +180,11 @@ public class JsonRestMessages_v0_3 {
                 ],
                 "supportsAuthenticatedExtendedCard": false,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 
-    static final String AGENT_CARD_SUPPORTS_EXTENDED = """
+    static final String AGENT_CARD_SUPPORTS_EXTENDED =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -235,9 +247,11 @@ public class JsonRestMessages_v0_3 {
                 ],
                 "supportsAuthenticatedExtendedCard": true,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 
-    static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
+    static final String AUTHENTICATION_EXTENDED_AGENT_CARD =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
                 "description": "Extended description",
@@ -306,9 +320,11 @@ public class JsonRestMessages_v0_3 {
                 ],
                 "supportsAuthenticatedExtendedCard": true,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -330,9 +346,11 @@ public class JsonRestMessages_v0_3 {
                 "blocking": true
               },
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "id": 1,
@@ -347,9 +365,11 @@ public class JsonRestMessages_v0_3 {
                 "messageId": "msg-456",
                 "kind": "message"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -371,9 +391,11 @@ public class JsonRestMessages_v0_3 {
                 "blocking": true
               },
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_ERROR_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_ERROR_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "error": {
@@ -381,9 +403,11 @@ public class JsonRestMessages_v0_3 {
                 "message": "Invalid parameters",
                 "data": "Hello world"
              }
-            }""";
+            }\
+            """;
 
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
               "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
               "pushNotificationConfig": {
@@ -392,8 +416,10 @@ public class JsonRestMessages_v0_3 {
                   "schemes": ["jwt"]
                 }
               }
-            }""";
-    static final String LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+            }\
+            """;
+    static final String LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
               "configs":[
                 {
@@ -412,10 +438,11 @@ public class JsonRestMessages_v0_3 {
                   }
                 }
               ]
-            }""";
+            }\
+            """;
 
-
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST =
+            """
             {
               "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
               "config": {
@@ -427,9 +454,11 @@ public class JsonRestMessages_v0_3 {
                   }
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
               "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
               "pushNotificationConfig": {
@@ -438,9 +467,11 @@ public class JsonRestMessages_v0_3 {
                   "schemes": ["jwt"]
                 }
               }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -469,9 +500,11 @@ public class JsonRestMessages_v0_3 {
                 "blocking": true
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -495,9 +528,11 @@ public class JsonRestMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -528,9 +563,11 @@ public class JsonRestMessages_v0_3 {
                 "blocking": true
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -554,9 +591,11 @@ public class JsonRestMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -594,9 +633,11 @@ public class JsonRestMessages_v0_3 {
                 "blocking": true
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -620,9 +661,11 @@ public class JsonRestMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
+    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST =
+            """
             {
               "message": {
                 "role": "ROLE_USER",
@@ -637,20 +680,29 @@ public class JsonRestMessages_v0_3 {
               "configuration": {
                 "acceptedOutputModes": ["text"]
               }
-            }""";
-    static final String SEND_MESSAGE_STREAMING_TEST_RESPONSE
-            = "event: message\n"
-            + "data: {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why did the chicken cross the road? To get to the other side!\"}]}],\"metadata\":{}}}\n\n";
+            }\
+            """;
+    static final String SEND_MESSAGE_STREAMING_TEST_RESPONSE =
+            "event: message\n"
+                + "data:"
+                + " {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why"
+                + " did the chicken cross the road? To get to the other"
+                + " side!\"}]}],\"metadata\":{}}}\n\n";
 
-    static final String TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE
-            = "event: message\n"
-            + "data: {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_COMPLETED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why did the chicken cross the road? To get to the other side!\"}]}],\"metadata\":{}}}\n\n";
-    public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
+    static final String TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE =
+            "event: message\n"
+                + "data:"
+                + " {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_COMPLETED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why"
+                + " did the chicken cross the road? To get to the other"
+                + " side!\"}]}],\"metadata\":{}}}\n\n";
+    public static final String TASK_RESUBSCRIPTION_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "tasks/resubscribe",
              "params": {
                 "id": "task-1234"
              }
-            }""";
+            }\
+            """;
 }

@@ -12,7 +12,8 @@ import org.mapstruct.Mapping;
 @Mapper(config = A2AProtoMapperConfig.class, uses = A2ACommonFieldMapper.class)
 public interface GetTaskPushNotificationConfigParamsMapper {
 
-    GetTaskPushNotificationConfigParamsMapper INSTANCE = A2AMappers.getMapper(GetTaskPushNotificationConfigParamsMapper.class);
+    GetTaskPushNotificationConfigParamsMapper INSTANCE =
+            A2AMappers.getMapper(GetTaskPushNotificationConfigParamsMapper.class);
 
     /**
      * Converts proto GetTaskPushNotificationConfigRequest to domain GetTaskPushNotificationConfigParams.
@@ -21,13 +22,18 @@ public interface GetTaskPushNotificationConfigParamsMapper {
     @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "id", source = "id")
     @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
-    GetTaskPushNotificationConfigParams fromProto(org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest proto);
+    GetTaskPushNotificationConfigParams fromProto(
+            org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest proto);
 
     /**
      * Converts domain GetTaskPushNotificationConfigParams to proto GetTaskPushNotificationConfigRequest.
      */
     @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "id", source = "id", conditionExpression = "java(domain.id() != null)")
-    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
-    org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest toProto(GetTaskPushNotificationConfigParams domain);
+    @Mapping(
+            target = "tenant",
+            source = "tenant",
+            conditionExpression = "java(domain.tenant() != null)")
+    org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest toProto(
+            GetTaskPushNotificationConfigParams domain);
 }

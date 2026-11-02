@@ -1,23 +1,10 @@
 package org.a2aproject.sdk.jsonrpc.common.json;
 
-import static org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.ThrowableTypeAdapter.THROWABLE_MARKER_FIELD;
-import org.a2aproject.sdk.spec.A2AErrorCodes;
-import static org.a2aproject.sdk.spec.DataPart.DATA;
-import static org.a2aproject.sdk.spec.TextPart.TEXT;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
-
-import java.lang.reflect.Type;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
+import static org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.ThrowableTypeAdapter.THROWABLE_MARKER_FIELD;
+import static org.a2aproject.sdk.spec.DataPart.DATA;
+import static org.a2aproject.sdk.spec.TextPart.TEXT;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,8 +17,19 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
+import java.lang.reflect.Type;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.APIKeySecurityScheme;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.DataPart;
@@ -65,7 +63,6 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -77,10 +74,10 @@ public class JsonUtil {
         return new GsonBuilder()
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
-                .registerTypeAdapter(SecurityRequirement.class, new SecurityRequirementTypeAdapter())
+                .registerTypeAdapter(
+                        SecurityRequirement.class, new SecurityRequirementTypeAdapter())
                 .registerTypeHierarchyAdapter(A2AError.class, new A2AErrorTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter());
-
     }
 
     /**
@@ -93,12 +90,15 @@ public class JsonUtil {
      *
      * @see JsonUtil#createBaseGsonBuilder()
      */
-    public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
-            .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
-            .registerTypeAdapter(EventKind.class, new EventKindTypeAdapter())
-            .registerTypeAdapter(StreamingEventKind.class, new StreamingEventKindTypeAdapter())
-            .registerTypeHierarchyAdapter(SecurityScheme.class, new SecuritySchemeTypeAdapter())
-            .create();
+    public static final Gson OBJECT_MAPPER =
+            createBaseGsonBuilder()
+                    .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
+                    .registerTypeAdapter(EventKind.class, new EventKindTypeAdapter())
+                    .registerTypeAdapter(
+                            StreamingEventKind.class, new StreamingEventKindTypeAdapter())
+                    .registerTypeHierarchyAdapter(
+                            SecurityScheme.class, new SecuritySchemeTypeAdapter())
+                    .create();
 
     /**
      * Deserializes JSON string to an object of the specified class.
@@ -159,7 +159,8 @@ public class JsonUtil {
      * @return JSON string representation of the wrapped streaming event
      * @throws JsonProcessingException if conversion fails
      */
-    public static String toJsonStreamingEvent(StreamingEventKind data) throws JsonProcessingException {
+    public static String toJsonStreamingEvent(StreamingEventKind data)
+            throws JsonProcessingException {
         try {
             return OBJECT_MAPPER.toJson(data, StreamingEventKind.class);
         } catch (JsonSyntaxException e) {
@@ -171,7 +172,8 @@ public class JsonUtil {
      * Writes a JSON-RPC {@code id} field. Handles null, String, and Number values,
      * preserving fractional precision for non-integer numeric IDs.
      */
-    public static void writeJsonRpcId(JsonWriter out, @Nullable Object id) throws java.io.IOException {
+    public static void writeJsonRpcId(JsonWriter out, @Nullable Object id)
+            throws java.io.IOException {
         out.name("id");
         if (id == null) {
             // JSON-RPC 2.0 section 5: "id" is required in a response and must be null when the
@@ -182,7 +184,10 @@ public class JsonUtil {
             out.nullValue();
             out.setSerializeNulls(serializeNulls);
         } else if (id instanceof Number n) {
-            if (id instanceof Long || id instanceof Integer || id instanceof Short || id instanceof Byte) {
+            if (id instanceof Long
+                    || id instanceof Integer
+                    || id instanceof Short
+                    || id instanceof Byte) {
                 out.value(n.longValue());
             } else {
                 out.value(n);
@@ -218,8 +223,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        OffsetDateTime read(JsonReader in) throws java.io.IOException {
+        public @Nullable OffsetDateTime read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -228,7 +232,8 @@ public class JsonUtil {
             try {
                 return OffsetDateTime.parse(dateTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             } catch (DateTimeParseException e) {
-                throw new JsonSyntaxException("Failed to parse OffsetDateTime: " + dateTimeString, e);
+                throw new JsonSyntaxException(
+                        "Failed to parse OffsetDateTime: " + dateTimeString, e);
             }
         }
     }
@@ -270,8 +275,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        Throwable read(JsonReader in) throws java.io.IOException {
+        public @Nullable Throwable read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -284,12 +288,9 @@ public class JsonUtil {
             while (in.hasNext()) {
                 String fieldName = in.nextName();
                 switch (fieldName) {
-                    case "type" ->
-                        type = in.nextString();
-                    case "message" ->
-                        message = in.nextString();
-                    default ->
-                        in.skipValue();
+                    case "type" -> type = in.nextString();
+                    case "message" -> message = in.nextString();
+                    default -> in.skipValue();
                 }
             }
             in.endObject();
@@ -365,8 +366,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        A2AError read(JsonReader in) throws java.io.IOException {
+        public @Nullable A2AError read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -380,16 +380,13 @@ public class JsonUtil {
             while (in.hasNext()) {
                 String fieldName = in.nextName();
                 switch (fieldName) {
-                    case CODE_FIELD ->
-                        code = in.nextInt();
-                    case MESSAGE_FIELD ->
-                        message = in.nextString();
+                    case CODE_FIELD -> code = in.nextInt();
+                    case MESSAGE_FIELD -> message = in.nextString();
                     case DETAILS_FIELD -> {
                         // Read details as a map
                         details = readDetailsValue(in);
                     }
-                    default ->
-                        in.skipValue();
+                    default -> in.skipValue();
                 }
             }
             in.endObject();
@@ -402,8 +399,8 @@ public class JsonUtil {
          * Reads the details field value as a map.
          */
         @SuppressWarnings("unchecked")
-        private @Nullable
-        Map<String, Object> readDetailsValue(JsonReader in) throws java.io.IOException {
+        private @Nullable Map<String, Object> readDetailsValue(JsonReader in)
+                throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -418,7 +415,10 @@ public class JsonUtil {
         /**
          * Creates the appropriate A2AError subclass based on the error code.
          */
-        private A2AError createErrorInstance(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+        private A2AError createErrorInstance(
+                @Nullable Integer code,
+                @Nullable String message,
+                @Nullable Map<String, Object> details) {
             if (code == null) {
                 throw new JsonSyntaxException("A2AError must have a code field");
             }
@@ -435,12 +435,17 @@ public class JsonUtil {
                 case INTERNAL -> new org.a2aproject.sdk.spec.InternalError(code, message, details);
                 case TASK_NOT_FOUND -> new TaskNotFoundError(message, details);
                 case TASK_NOT_CANCELABLE -> new TaskNotCancelableError(code, message, details);
-                case PUSH_NOTIFICATION_NOT_SUPPORTED -> new PushNotificationNotSupportedError(code, message, details);
+                case PUSH_NOTIFICATION_NOT_SUPPORTED ->
+                        new PushNotificationNotSupportedError(code, message, details);
                 case UNSUPPORTED_OPERATION -> new UnsupportedOperationError(code, message, details);
-                case CONTENT_TYPE_NOT_SUPPORTED -> new ContentTypeNotSupportedError(code, message, details);
-                case INVALID_AGENT_RESPONSE -> new InvalidAgentResponseError(code, message, details);
-                case EXTENDED_AGENT_CARD_NOT_CONFIGURED -> new ExtendedAgentCardNotConfiguredError(code, message, details);
-                case EXTENSION_SUPPORT_REQUIRED -> new ExtensionSupportRequiredError(code, message, details);
+                case CONTENT_TYPE_NOT_SUPPORTED ->
+                        new ContentTypeNotSupportedError(code, message, details);
+                case INVALID_AGENT_RESPONSE ->
+                        new InvalidAgentResponseError(code, message, details);
+                case EXTENDED_AGENT_CARD_NOT_CONFIGURED ->
+                        new ExtendedAgentCardNotConfiguredError(code, message, details);
+                case EXTENSION_SUPPORT_REQUIRED ->
+                        new ExtensionSupportRequiredError(code, message, details);
                 case VERSION_NOT_SUPPORTED -> new VersionNotSupportedError(code, message, details);
             };
         }
@@ -454,10 +459,11 @@ public class JsonUtil {
      * @param metadata the metadata map to write
      * @throws java.io.IOException if an I/O error occurs
      */
-    public static void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+    public static void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata)
+            throws java.io.IOException {
         if (metadata != null && !metadata.isEmpty()) {
             out.name("metadata");
-            OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>(){}.getType(), out);
+            OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>() {}.getType(), out);
         }
     }
 
@@ -471,7 +477,7 @@ public class JsonUtil {
         if (metadata == null || metadata.isEmpty()) {
             return "";
         }
-        return OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>(){}.getType());
+        return OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>() {}.getType());
     }
 
     /**
@@ -482,7 +488,8 @@ public class JsonUtil {
      */
     public static Map<String, Object> readMetadata(com.google.gson.JsonObject jsonObject) {
         if (jsonObject.has("metadata")) {
-            return OBJECT_MAPPER.fromJson(jsonObject.get("metadata"), new TypeToken<Map<String, Object>>(){}.getType());
+            return OBJECT_MAPPER.fromJson(
+                    jsonObject.get("metadata"), new TypeToken<Map<String, Object>>() {}.getType());
         }
         return Collections.emptyMap();
     }
@@ -494,7 +501,8 @@ public class JsonUtil {
      * @return the metadata map, or an empty map if the input is null, blank, or has no "metadata" field
      * @throws JsonProcessingException if the JSON is invalid
      */
-    public static Map<String, Object> readMetadata(@Nullable String json) throws JsonProcessingException {
+    public static Map<String, Object> readMetadata(@Nullable String json)
+            throws JsonProcessingException {
         if (json == null || json.isBlank()) {
             return Collections.emptyMap();
         }
@@ -532,12 +540,13 @@ public class JsonUtil {
         // The oneOf content-type discriminator keys in the flat JSON format.
         // Exactly one must be present (and non-null) in each Part object.
         private static final Set<String> VALID_KEYS = Set.of(TEXT, RAW, URL, DATA);
-        private static final Type MAP_TYPE = new TypeToken<Map<String, Object>>(){}.getType();
+        private static final Type MAP_TYPE = new TypeToken<Map<String, Object>>() {}.getType();
 
         // Create separate Gson instance without the Part adapter to avoid recursion
         private final Gson delegateGson = createBaseGsonBuilder().create();
 
-        private void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+        private void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata)
+                throws java.io.IOException {
             if (metadata != null && !metadata.isEmpty()) {
                 out.name("metadata");
                 delegateGson.toJson(metadata, MAP_TYPE, out);
@@ -545,7 +554,8 @@ public class JsonUtil {
         }
 
         /** Writes a string field only when the value is non-null and non-empty. */
-        private void writeNonEmpty(JsonWriter out, String name, String value) throws java.io.IOException {
+        private void writeNonEmpty(JsonWriter out, String name, String value)
+                throws java.io.IOException {
             if (!value.isEmpty()) {
                 out.name(name).value(value);
             }
@@ -572,7 +582,9 @@ public class JsonUtil {
                     writeNonEmpty(out, FILENAME, withUri.name());
                     writeNonEmpty(out, MEDIA_TYPE, withUri.mimeType());
                 } else {
-                    throw new JsonSyntaxException("Unknown FileContent subclass: " + filePart.file().getClass().getName());
+                    throw new JsonSyntaxException(
+                            "Unknown FileContent subclass: "
+                                    + filePart.file().getClass().getName());
                 }
                 writeMetadata(out, filePart.metadata());
 
@@ -581,15 +593,15 @@ public class JsonUtil {
                 delegateGson.toJson(dataPart.data(), Object.class, out);
                 JsonUtil.writeMetadata(out, dataPart.metadata());
             } else {
-                throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
+                throw new JsonSyntaxException(
+                        "Unknown Part subclass: " + value.getClass().getName());
             }
 
             out.endObject();
         }
 
         @Override
-        public @Nullable
-        Part<?> read(JsonReader in) throws java.io.IOException {
+        public @Nullable Part<?> read(JsonReader in) throws java.io.IOException {
             if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -606,35 +618,57 @@ public class JsonUtil {
             Map<String, Object> metadata = JsonUtil.readMetadata(jsonObject);
             Set<String> keys = jsonObject.keySet();
 
-            // A producer that emits every content key, leaving the unset ones as "", would otherwise
+            // A producer that emits every content key, leaving the unset ones as "", would
+            // otherwise
             // have its payload discarded by whichever empty placeholder came first on the wire.
             // The fallback keeps a deliberately empty TextPart decodable.
-            List<String> populatedKeys = contentKeys(jsonObject)
-                    .filter(key -> !isEmptyString(jsonObject.get(key)))
-                    .toList();
+            List<String> populatedKeys =
+                    contentKeys(jsonObject)
+                            .filter(key -> !isEmptyString(jsonObject.get(key)))
+                            .toList();
             if (populatedKeys.size() > 1) {
                 throw new JsonSyntaxException(
-                        format("Part is a oneOf: expected exactly one populated content key, but found: %s", populatedKeys));
+                        format(
+                                "Part is a oneOf: expected exactly one populated content key, but"
+                                        + " found: %s",
+                                populatedKeys));
             }
-            String discriminator = populatedKeys.stream().findFirst()
-                    .or(() -> contentKeys(jsonObject).findFirst())
-                    .orElseThrow(() -> new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, keys)));
+            String discriminator =
+                    populatedKeys.stream()
+                            .findFirst()
+                            .or(() -> contentKeys(jsonObject).findFirst())
+                            .orElseThrow(
+                                    () ->
+                                            new JsonSyntaxException(
+                                                    format(
+                                                            "Part must have one of: %s (found: %s)",
+                                                            VALID_KEYS, keys)));
 
             return switch (discriminator) {
                 case TEXT -> new TextPart(requireString(jsonObject, TEXT), metadata);
-                case RAW -> new FilePart(new FileWithBytes(
-                        stringOrEmpty(jsonObject, MEDIA_TYPE),
-                        stringOrEmpty(jsonObject, FILENAME),
-                        requireString(jsonObject, RAW)), metadata);
-                case URL -> new FilePart(new FileWithUri(
-                        stringOrEmpty(jsonObject, MEDIA_TYPE),
-                        stringOrEmpty(jsonObject, FILENAME),
-                        requireString(jsonObject, URL)), metadata);
+                case RAW ->
+                        new FilePart(
+                                new FileWithBytes(
+                                        stringOrEmpty(jsonObject, MEDIA_TYPE),
+                                        stringOrEmpty(jsonObject, FILENAME),
+                                        requireString(jsonObject, RAW)),
+                                metadata);
+                case URL ->
+                        new FilePart(
+                                new FileWithUri(
+                                        stringOrEmpty(jsonObject, MEDIA_TYPE),
+                                        stringOrEmpty(jsonObject, FILENAME),
+                                        requireString(jsonObject, URL)),
+                                metadata);
                 case DATA -> {
                     Object data = delegateGson.fromJson(jsonObject.get(DATA), Object.class);
                     yield new DataPart(data, metadata);
                 }
-                default -> throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
+                default ->
+                        throw new JsonSyntaxException(
+                                format(
+                                        "Part must have one of: %s (found: %s)",
+                                        VALID_KEYS, discriminator));
             };
         }
 
@@ -642,14 +676,18 @@ public class JsonUtil {
         private Stream<String> contentKeys(com.google.gson.JsonObject obj) {
             return obj.keySet().stream()
                     .filter(VALID_KEYS::contains)
-                    .filter(key -> {
-                        JsonElement el = obj.get(key);
-                        return el != null && !el.isJsonNull();
-                    });
+                    .filter(
+                            key -> {
+                                JsonElement el = obj.get(key);
+                                return el != null && !el.isJsonNull();
+                            });
         }
 
         private boolean isEmptyString(@Nullable JsonElement el) {
-            return el != null && el.isJsonPrimitive() && el.getAsJsonPrimitive().isString() && el.getAsString().isEmpty();
+            return el != null
+                    && el.isJsonPrimitive()
+                    && el.getAsJsonPrimitive().isString()
+                    && el.getAsString().isEmpty();
         }
 
         /** Guards {@code getAsString()}, which throws an unchecked UnsupportedOperationException on an object or array. */
@@ -676,9 +714,10 @@ public class JsonUtil {
      */
     static class EventKindTypeAdapter extends TypeAdapter<EventKind> {
 
-        private final Gson delegateGson = createBaseGsonBuilder()
-                .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
-                .create();
+        private final Gson delegateGson =
+                createBaseGsonBuilder()
+                        .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
+                        .create();
         private final StreamingEventKindTypeAdapter streamingEventKindTypeAdapter =
                 new StreamingEventKindTypeAdapter();
 
@@ -719,9 +758,10 @@ public class JsonUtil {
     static class StreamingEventKindTypeAdapter extends TypeAdapter<StreamingEventKind> {
 
         // Create separate Gson instance without the StreamingEventKind adapter to avoid recursion
-        private final Gson delegateGson = createBaseGsonBuilder()
-                .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
-                .create();
+        private final Gson delegateGson =
+                createBaseGsonBuilder()
+                        .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
+                        .create();
 
         @Override
         public void write(JsonWriter out, StreamingEventKind value) throws java.io.IOException {
@@ -737,8 +777,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        StreamingEventKind read(JsonReader in) throws java.io.IOException {
+        public @Nullable StreamingEventKind read(JsonReader in) throws java.io.IOException {
             if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -756,13 +795,16 @@ public class JsonUtil {
             if (jsonObject.has(Task.STREAMING_EVENT_ID)) {
                 return delegateGson.fromJson(jsonObject.get(Task.STREAMING_EVENT_ID), Task.class);
             } else if (jsonObject.has(Message.STREAMING_EVENT_ID)) {
-                return delegateGson.fromJson(jsonObject.get(Message.STREAMING_EVENT_ID), Message.class);
+                return delegateGson.fromJson(
+                        jsonObject.get(Message.STREAMING_EVENT_ID), Message.class);
             } else if (jsonObject.has(TaskStatusUpdateEvent.STREAMING_EVENT_ID)) {
                 return delegateGson.fromJson(
-                        jsonObject.get(TaskStatusUpdateEvent.STREAMING_EVENT_ID), TaskStatusUpdateEvent.class);
+                        jsonObject.get(TaskStatusUpdateEvent.STREAMING_EVENT_ID),
+                        TaskStatusUpdateEvent.class);
             } else if (jsonObject.has(TaskArtifactUpdateEvent.STREAMING_EVENT_ID)) {
                 return delegateGson.fromJson(
-                        jsonObject.get(TaskArtifactUpdateEvent.STREAMING_EVENT_ID), TaskArtifactUpdateEvent.class);
+                        jsonObject.get(TaskArtifactUpdateEvent.STREAMING_EVENT_ID),
+                        TaskArtifactUpdateEvent.class);
             }
 
             // Check for unwrapped format (direct Task/Message deserialization)
@@ -781,7 +823,12 @@ public class JsonUtil {
                 // This is an unwrapped TaskArtifactUpdateEvent
                 return delegateGson.fromJson(jsonObject, TaskArtifactUpdateEvent.class);
             } else {
-                throw new JsonSyntaxException("StreamingEventKind must have wrapper (task/message/statusUpdate/artifactUpdate) or recognizable unwrapped fields (found: " + jsonObject.keySet() + ")");
+                throw new JsonSyntaxException(
+                        "StreamingEventKind must have wrapper"
+                                + " (task/message/statusUpdate/artifactUpdate) or recognizable"
+                                + " unwrapped fields (found: "
+                                + jsonObject.keySet()
+                                + ")");
             }
         }
     }
@@ -807,10 +854,11 @@ public class JsonUtil {
 
         // Create separate Gson instance without the FileContent adapter to avoid recursion,
         // but with an explicit FileWithBytes adapter to prevent field/path leakage.
-        private final Gson delegateGson = new GsonBuilder()
-                .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
-                .registerTypeAdapter(FileWithBytes.class, new FileWithBytesTypeAdapter())
-                .create();
+        private final Gson delegateGson =
+                new GsonBuilder()
+                        .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                        .registerTypeAdapter(FileWithBytes.class, new FileWithBytesTypeAdapter())
+                        .create();
 
         @Override
         public void write(JsonWriter out, FileContent value) throws java.io.IOException {
@@ -823,8 +871,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        FileContent read(JsonReader in) throws java.io.IOException {
+        public @Nullable FileContent read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -838,13 +885,15 @@ public class JsonUtil {
 
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
 
-            // Distinguish between FileWithBytes and FileWithUri by checking for "bytes" or "uri" field
+            // Distinguish between FileWithBytes and FileWithUri by checking for "bytes" or "uri"
+            // field
             if (jsonObject.has("bytes")) {
                 return delegateGson.fromJson(jsonElement, FileWithBytes.class);
             } else if (jsonObject.has("uri")) {
                 return delegateGson.fromJson(jsonElement, FileWithUri.class);
             } else {
-                throw new JsonSyntaxException("FileContent must have either 'bytes' or 'uri' field");
+                throw new JsonSyntaxException(
+                        "FileContent must have either 'bytes' or 'uri' field");
             }
         }
     }
@@ -915,7 +964,8 @@ public class JsonUtil {
     static class APIKeyLocationTypeAdapter extends TypeAdapter<APIKeySecurityScheme.Location> {
 
         @Override
-        public void write(JsonWriter out, APIKeySecurityScheme.Location value) throws java.io.IOException {
+        public void write(JsonWriter out, APIKeySecurityScheme.Location value)
+                throws java.io.IOException {
             if (value == null) {
                 out.nullValue();
                 return;
@@ -924,7 +974,8 @@ public class JsonUtil {
         }
 
         @Override
-        public APIKeySecurityScheme.@Nullable Location read(JsonReader in) throws java.io.IOException {
+        public APIKeySecurityScheme.@Nullable Location read(JsonReader in)
+                throws java.io.IOException {
             if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -933,7 +984,8 @@ public class JsonUtil {
             try {
                 return APIKeySecurityScheme.Location.fromString(locationString);
             } catch (IllegalArgumentException e) {
-                throw new JsonSyntaxException("Invalid APIKeySecurityScheme.Location: " + locationString, e);
+                throw new JsonSyntaxException(
+                        "Invalid APIKeySecurityScheme.Location: " + locationString, e);
             }
         }
     }
@@ -985,17 +1037,22 @@ public class JsonUtil {
      */
     static class SecuritySchemeTypeAdapter extends TypeAdapter<SecurityScheme> {
 
-        private static final Set<String> VALID_KEYS = Set.of(APIKeySecurityScheme.TYPE,
-                HTTPAuthSecurityScheme.TYPE,
-                OAuth2SecurityScheme.TYPE,
-                OpenIdConnectSecurityScheme.TYPE,
-                MutualTLSSecurityScheme.TYPE);
+        private static final Set<String> VALID_KEYS =
+                Set.of(
+                        APIKeySecurityScheme.TYPE,
+                        HTTPAuthSecurityScheme.TYPE,
+                        OAuth2SecurityScheme.TYPE,
+                        OpenIdConnectSecurityScheme.TYPE,
+                        MutualTLSSecurityScheme.TYPE);
 
         // Create separate Gson instance without the SecurityScheme adapter to avoid recursion
         // Register custom adapter for APIKeySecurityScheme.Location enum
-        private final Gson delegateGson = createBaseGsonBuilder()
-                .registerTypeAdapter(APIKeySecurityScheme.Location.class, new APIKeyLocationTypeAdapter())
-                .create();
+        private final Gson delegateGson =
+                createBaseGsonBuilder()
+                        .registerTypeAdapter(
+                                APIKeySecurityScheme.Location.class,
+                                new APIKeyLocationTypeAdapter())
+                        .create();
 
         @Override
         public void write(JsonWriter out, SecurityScheme value) throws java.io.IOException {
@@ -1012,8 +1069,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        SecurityScheme read(JsonReader in) throws java.io.IOException {
+        public @Nullable SecurityScheme read(JsonReader in) throws java.io.IOException {
             if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -1030,19 +1086,33 @@ public class JsonUtil {
             // Check for member name discriminators
             Set<String> keys = jsonObject.keySet();
             if (keys.size() != 1) {
-                throw new JsonSyntaxException(format("A SecurityScheme object must have exactly one key, which must be one of: %s (found: %s)", VALID_KEYS, keys));
+                throw new JsonSyntaxException(
+                        format(
+                                "A SecurityScheme object must have exactly one key, which must be"
+                                        + " one of: %s (found: %s)",
+                                VALID_KEYS, keys));
             }
 
             String discriminator = keys.iterator().next();
             com.google.gson.JsonElement nestedObject = jsonObject.get(discriminator);
 
             return switch (discriminator) {
-                case APIKeySecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, APIKeySecurityScheme.class);
-                case HTTPAuthSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, HTTPAuthSecurityScheme.class);
-                case OAuth2SecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, OAuth2SecurityScheme.class);
-                case OpenIdConnectSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, OpenIdConnectSecurityScheme.class);
-                case MutualTLSSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, MutualTLSSecurityScheme.class);
-                default -> throw new JsonSyntaxException(format("Unknown SecurityScheme type. Must be one of: %s (found: %s)", VALID_KEYS, discriminator));
+                case APIKeySecurityScheme.TYPE ->
+                        delegateGson.fromJson(nestedObject, APIKeySecurityScheme.class);
+                case HTTPAuthSecurityScheme.TYPE ->
+                        delegateGson.fromJson(nestedObject, HTTPAuthSecurityScheme.class);
+                case OAuth2SecurityScheme.TYPE ->
+                        delegateGson.fromJson(nestedObject, OAuth2SecurityScheme.class);
+                case OpenIdConnectSecurityScheme.TYPE ->
+                        delegateGson.fromJson(nestedObject, OpenIdConnectSecurityScheme.class);
+                case MutualTLSSecurityScheme.TYPE ->
+                        delegateGson.fromJson(nestedObject, MutualTLSSecurityScheme.class);
+                default ->
+                        throw new JsonSyntaxException(
+                                format(
+                                        "Unknown SecurityScheme type. Must be one of: %s (found:"
+                                                + " %s)",
+                                        VALID_KEYS, discriminator));
             };
         }
     }

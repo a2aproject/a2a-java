@@ -3,20 +3,17 @@ package org.a2aproject.sdk.transport.jsonrpc.handler;
 import static org.a2aproject.sdk.server.AgentCardOperation.EXTENDED_CARD;
 import static org.a2aproject.sdk.server.AgentCardOperation.PUSH_NOTIFICATIONS;
 import static org.a2aproject.sdk.server.AgentCardOperation.STREAMING;
-
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Flow;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Flow;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
@@ -161,7 +158,8 @@ public class JSONRPCHandler {
     private RequestHandler requestHandler;
     private Executor executor;
     private final CachingAgentCardTransportValidator transportValidator =
-            new CachingAgentCardTransportValidator(AgentCardValidator::validateTransportConfiguration);
+            new CachingAgentCardTransportValidator(
+                    AgentCardValidator::validateTransportConfiguration);
     private AgentCardResolver agentCardResolver;
     private AgentCardRequestPolicy requestPolicy;
 
@@ -191,16 +189,21 @@ public class JSONRPCHandler {
      * @param agentCardRouterInstance optional agent card router instance for multitenancy
      */
     @Inject
-    public JSONRPCHandler(@PublicAgentCard Instance<AgentCard> agentCardInstance,
-                          @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-                          RequestHandler requestHandler, @Internal Executor executor,
-                          @Any @Nullable Instance<AgentCardRouter> agentCardRouterInstance) {
+    public JSONRPCHandler(
+            @PublicAgentCard Instance<AgentCard> agentCardInstance,
+            @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
+            RequestHandler requestHandler,
+            @Internal Executor executor,
+            @Any @Nullable Instance<AgentCardRouter> agentCardRouterInstance) {
         this.agentCardInstance = agentCardInstance;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
         this.executor = executor;
-        this.agentCardResolver = AgentCardResolver.of(() -> CdiUtils.resolveDefault(this.agentCardInstance),
-                () -> CdiUtils.resolveDefault(this.extendedAgentCard), CdiUtils.getIfResolvable(agentCardRouterInstance));
+        this.agentCardResolver =
+                AgentCardResolver.of(
+                        () -> CdiUtils.resolveDefault(this.agentCardInstance),
+                        () -> CdiUtils.resolveDefault(this.extendedAgentCard),
+                        CdiUtils.getIfResolvable(agentCardRouterInstance));
         this.requestPolicy = new AgentCardRequestPolicy(agentCardResolver);
     }
 
@@ -211,9 +214,14 @@ public class JSONRPCHandler {
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
-    public JSONRPCHandler(@Nullable AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
-        this(agentCard != null ? new FixedInstance<>(agentCard) : FixedInstance.empty(),
-                null, requestHandler, executor, null);
+    public JSONRPCHandler(
+            @Nullable AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
+        this(
+                agentCard != null ? new FixedInstance<>(agentCard) : FixedInstance.empty(),
+                null,
+                requestHandler,
+                executor,
+                null);
     }
 
     /**
@@ -258,13 +266,20 @@ public class JSONRPCHandler {
      * @see #onMessageSendStream(SendStreamingMessageRequest, ServerCallContext)
      * @see RequestHandler#onMessageSend(org.a2aproject.sdk.spec.MessageSendParams, ServerCallContext)
      */
-    public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
+    public SendMessageResponse onMessageSend(
+            SendMessageRequest request, ServerCallContext context) {
         try {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
             EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
             MessageSendParams params = request.getParams();
-            EventKind taskOrMessage = requestHandler.onMessageSend(new MessageSendParams(params.message(),
-                    params.configuration(), params.metadata(), effective.tenant()), context);
+            EventKind taskOrMessage =
+                    requestHandler.onMessageSend(
+                            new MessageSendParams(
+                                    params.message(),
+                                    params.configuration(),
+                                    params.metadata(),
+                                    effective.tenant()),
+                            context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (A2AError e) {
             return new SendMessageResponse(request.getId(), e);
@@ -316,15 +331,22 @@ public class JSONRPCHandler {
             EffectiveAgentCard effective = preflight(tenant, context, STREAMING);
             MessageSendParams params = request.getParams();
             Flow.Publisher<StreamingEventKind> publisher =
-                    requestHandler.onMessageSendStream(new MessageSendParams(params.message(), params.configuration(),
-                            params.metadata(), effective.tenant()), context);
-            // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
+                    requestHandler.onMessageSendStream(
+                            new MessageSendParams(
+                                    params.message(),
+                                    params.configuration(),
+                                    params.metadata(),
+                                    effective.tenant()),
+                            context);
+            // We can't use the convertingProcessor convenience method since that propagates any
+            // errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
+            return ZeroPublisher.fromItems(
+                    new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
         }
     }
 
@@ -358,7 +380,11 @@ public class JSONRPCHandler {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
             EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
             CancelTaskParams params = request.getParams();
-            Task task = requestHandler.onCancelTask(new CancelTaskParams(params.id(), effective.tenant(), params.metadata()), context);
+            Task task =
+                    requestHandler.onCancelTask(
+                            new CancelTaskParams(
+                                    params.id(), effective.tenant(), params.metadata()),
+                            context);
             if (task != null) {
                 return new CancelTaskResponse(request.getId(), task);
             }
@@ -413,18 +439,23 @@ public class JSONRPCHandler {
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         }
-        requestHandler.authorizeTaskAccess(request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
+        requestHandler.authorizeTaskAccess(
+                request.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         try {
             Flow.Publisher<StreamingEventKind> publisher =
-                    requestHandler.onSubscribeToTask(new TaskIdParams(request.getParams().id(), effective.tenant()), context);
-            // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
+                    requestHandler.onSubscribeToTask(
+                            new TaskIdParams(request.getParams().id(), effective.tenant()),
+                            context);
+            // We can't use the convertingProcessor convenience method since that propagates any
+            // errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
         } catch (A2AError e) {
             // Other A2AError types - wrap inline as part of the stream
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
+            return ZeroPublisher.fromItems(
+                    new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
         }
     }
 
@@ -459,8 +490,10 @@ public class JSONRPCHandler {
             EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
             GetTaskPushNotificationConfigParams params = request.getParams();
             TaskPushNotificationConfig config =
-                    requestHandler.onGetTaskPushNotificationConfig(new GetTaskPushNotificationConfigParams(
-                            params.taskId(), params.id(), effective.tenant()), context);
+                    requestHandler.onGetTaskPushNotificationConfig(
+                            new GetTaskPushNotificationConfigParams(
+                                    params.taskId(), params.id(), effective.tenant()),
+                            context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), e);
@@ -501,8 +534,15 @@ public class JSONRPCHandler {
             EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
             TaskPushNotificationConfig params = request.getParams();
             TaskPushNotificationConfig config =
-                    requestHandler.onCreateTaskPushNotificationConfig(new TaskPushNotificationConfig(params.id(),
-                            params.taskId(), params.url(), params.token(), params.authentication(), effective.tenant()), context);
+                    requestHandler.onCreateTaskPushNotificationConfig(
+                            new TaskPushNotificationConfig(
+                                    params.id(),
+                                    params.taskId(),
+                                    params.url(),
+                                    params.token(),
+                                    params.authentication(),
+                                    effective.tenant()),
+                            context);
             return new CreateTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(), e);
@@ -540,7 +580,11 @@ public class JSONRPCHandler {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
             EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
             TaskQueryParams params = request.getParams();
-            Task task = requestHandler.onGetTask(new TaskQueryParams(params.id(), params.historyLength(), effective.tenant()), context);
+            Task task =
+                    requestHandler.onGetTask(
+                            new TaskQueryParams(
+                                    params.id(), params.historyLength(), effective.tenant()),
+                            context);
             return new GetTaskResponse(request.getId(), task);
         } catch (A2AError e) {
             return new GetTaskResponse(request.getId(), e);
@@ -590,9 +634,18 @@ public class JSONRPCHandler {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
             EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
             ListTasksParams params = request.getParams();
-            ListTasksResult result = requestHandler.onListTasks(new ListTasksParams(params.contextId(), params.status(),
-                    params.pageSize(), params.pageToken(), params.historyLength(), params.statusTimestampAfter(),
-                    params.includeArtifacts(), effective.tenant()), context);
+            ListTasksResult result =
+                    requestHandler.onListTasks(
+                            new ListTasksParams(
+                                    params.contextId(),
+                                    params.status(),
+                                    params.pageSize(),
+                                    params.pageToken(),
+                                    params.historyLength(),
+                                    params.statusTimestampAfter(),
+                                    params.includeArtifacts(),
+                                    effective.tenant()),
+                            context);
             return new ListTasksResponse(request.getId(), result);
         } catch (A2AError e) {
             return new ListTasksResponse(request.getId(), e);
@@ -632,8 +685,13 @@ public class JSONRPCHandler {
             EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
             ListTaskPushNotificationConfigsParams params = request.getParams();
             ListTaskPushNotificationConfigsResult result =
-                    requestHandler.onListTaskPushNotificationConfigs(new ListTaskPushNotificationConfigsParams(
-                            params.id(), params.pageSize(), params.pageToken(), effective.tenant()), context);
+                    requestHandler.onListTaskPushNotificationConfigs(
+                            new ListTaskPushNotificationConfigsParams(
+                                    params.id(),
+                                    params.pageSize(),
+                                    params.pageToken(),
+                                    effective.tenant()),
+                            context);
             return new ListTaskPushNotificationConfigsResponse(request.getId(), result);
         } catch (A2AError e) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(), e);
@@ -673,8 +731,10 @@ public class JSONRPCHandler {
         try {
             EffectiveAgentCard effective = preflight(tenant, context, PUSH_NOTIFICATIONS);
             DeleteTaskPushNotificationConfigParams params = request.getParams();
-            requestHandler.onDeleteTaskPushNotificationConfig(new DeleteTaskPushNotificationConfigParams(
-                    params.taskId(), params.id(), effective.tenant()), context);
+            requestHandler.onDeleteTaskPushNotificationConfig(
+                    new DeleteTaskPushNotificationConfigParams(
+                            params.taskId(), params.id(), effective.tenant()),
+                    context);
             return new DeleteTaskPushNotificationConfigResponse(request.getId());
         } catch (A2AError e) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), e);
@@ -714,8 +774,10 @@ public class JSONRPCHandler {
             EffectiveAgentCard effective = preflight(tenant, context, EXTENDED_CARD);
             AgentCard extCard = agentCardResolver.resolveExtendedDiscoveryCard(effective.tenant());
             if (extCard == null) {
-                return new GetExtendedAgentCardResponse(request.getId(),
-                        new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
+                return new GetExtendedAgentCardResponse(
+                        request.getId(),
+                        new ExtendedAgentCardNotConfiguredError(
+                                null, "Extended Card not configured", null));
             }
             return new GetExtendedAgentCardResponse(request.getId(), extCard);
         } catch (A2AError e) {
@@ -734,7 +796,8 @@ public class JSONRPCHandler {
      * @param context the server call context carrying the requested version and extensions
      * @throws A2AError if the requested version or a required extension is not supported
      */
-    private EffectiveAgentCard preflight(@Nullable String tenant, ServerCallContext context, AgentCardOperation operation) {
+    private EffectiveAgentCard preflight(
+            @Nullable String tenant, ServerCallContext context, AgentCardOperation operation) {
         try {
             return requestPolicy.preflight(tenant, context, transportValidator, operation);
         } catch (TenantNotFoundException ex) {
@@ -779,49 +842,62 @@ public class JSONRPCHandler {
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(
-            Object requestId,
-            Flow.Publisher<StreamingEventKind> publisher) {
-            // We can't use the normal convertingProcessor since that propagates any errors as an error handled
-            // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
-            return ZeroPublisher.create(createTubeConfig(), tube -> {
-                CompletableFuture.runAsync(() -> {
-                    publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
-                        @SuppressWarnings("NullAway")
-                        Flow.Subscription subscription;
-                        @Override
-                        public void onSubscribe(Flow.Subscription subscription) {
-                            this.subscription = subscription;
-                            subscription.request(1);
-                        }
+            Object requestId, Flow.Publisher<StreamingEventKind> publisher) {
+        // We can't use the normal convertingProcessor since that propagates any errors as an error
+        // handled
+        // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
+        return ZeroPublisher.create(
+                createTubeConfig(),
+                tube -> {
+                    CompletableFuture.runAsync(
+                            () -> {
+                                publisher.subscribe(
+                                        new Flow.Subscriber<StreamingEventKind>() {
+                                            @SuppressWarnings("NullAway")
+                                            Flow.Subscription subscription;
 
-                        @Override
-                        public void onNext(StreamingEventKind item) {
-                            tube.send(new SendStreamingMessageResponse(requestId, item));
-                            subscription.request(1);
-                        }
+                                            @Override
+                                            public void onSubscribe(
+                                                    Flow.Subscription subscription) {
+                                                this.subscription = subscription;
+                                                subscription.request(1);
+                                            }
 
-                        @Override
-                        public void onError(Throwable throwable) {
-                            if (throwable instanceof A2AError jsonrpcError) {
-                                tube.send(new SendStreamingMessageResponse(requestId, jsonrpcError));
-                            } else {
-                                tube.send(
-                                        new SendStreamingMessageResponse(
-                                                requestId, internalError(throwable)));
-                            }
-                            onComplete();
-                        }
+                                            @Override
+                                            public void onNext(StreamingEventKind item) {
+                                                tube.send(
+                                                        new SendStreamingMessageResponse(
+                                                                requestId, item));
+                                                subscription.request(1);
+                                            }
 
-                        @Override
-                        public void onComplete() {
-                            tube.complete();
-                        }
-                    });
-                }, executor);
-            });
+                                            @Override
+                                            public void onError(Throwable throwable) {
+                                                if (throwable instanceof A2AError jsonrpcError) {
+                                                    tube.send(
+                                                            new SendStreamingMessageResponse(
+                                                                    requestId, jsonrpcError));
+                                                } else {
+                                                    tube.send(
+                                                            new SendStreamingMessageResponse(
+                                                                    requestId,
+                                                                    internalError(throwable)));
+                                                }
+                                                onComplete();
+                                            }
+
+                                            @Override
+                                            public void onComplete() {
+                                                tube.complete();
+                                            }
+                                        });
+                            },
+                            executor);
+                });
     }
 
-    public void authorizeTaskAccess(String requestedTaskId, ServerCallContext context, TaskOperation operation) {
+    public void authorizeTaskAccess(
+            String requestedTaskId, ServerCallContext context, TaskOperation operation) {
         requestHandler.authorizeTaskAccess(requestedTaskId, context, operation);
     }
 

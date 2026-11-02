@@ -11,7 +11,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.spec.DataPart;
@@ -55,12 +54,13 @@ final class ActsBehaviors {
      * {@code sut-behaviors.yaml}'s {@code terminal_state} key, though two of them are interrupted
      * states rather than terminal ones.
      */
-    private static final Map<String, TaskState> TERMINAL_STATES = Map.of(
-            "tck-complete-task", TaskState.TASK_STATE_COMPLETED,
-            "tck-task-failure", TaskState.TASK_STATE_FAILED,
-            "tck-reject-task", TaskState.TASK_STATE_REJECTED,
-            "tck-input-required", TaskState.TASK_STATE_INPUT_REQUIRED,
-            "tck-auth-required", TaskState.TASK_STATE_AUTH_REQUIRED);
+    private static final Map<String, TaskState> TERMINAL_STATES =
+            Map.of(
+                    "tck-complete-task", TaskState.TASK_STATE_COMPLETED,
+                    "tck-task-failure", TaskState.TASK_STATE_FAILED,
+                    "tck-reject-task", TaskState.TASK_STATE_REJECTED,
+                    "tck-input-required", TaskState.TASK_STATE_INPUT_REQUIRED,
+                    "tck-auth-required", TaskState.TASK_STATE_AUTH_REQUIRED);
 
     private static final String MULTI_TURN_DONE = "done";
 
@@ -225,7 +225,10 @@ final class ActsBehaviors {
 
     /** Fails the task rather than completing it: a silent success would report conformance the agent never demonstrated. */
     private void unimplemented(AgentEmitter emitter, String behavior) {
-        complete(emitter, TaskState.TASK_STATE_FAILED, "unimplemented ACTS behaviour \"" + behavior + "\"");
+        complete(
+                emitter,
+                TaskState.TASK_STATE_FAILED,
+                "unimplemented ACTS behaviour \"" + behavior + "\"");
     }
 
     private void complete(AgentEmitter emitter, TaskState state, String text) {
@@ -277,7 +280,8 @@ final class ActsBehaviors {
         // CORE-EXEC-001 polls to completion and then asserts the finished task carries at least one
         // artifact, so the work has to leave one behind even though §11.2 describes this behaviour
         // only as delayed completion.
-        emitter.addArtifact(List.of(new TextPart("long running result")), null, "long-running", null);
+        emitter.addArtifact(
+                List.of(new TextPart("long running result")), null, "long-running", null);
         complete(emitter, TaskState.TASK_STATE_COMPLETED, "long running work finished");
     }
 
@@ -285,10 +289,20 @@ final class ActsBehaviors {
         return switch (behavior) {
             case "tck-artifact-text" -> List.of(new TextPart("generated text content"));
             case "tck-artifact-data" -> List.of(new DataPart(dataArtifact()));
-            case "tck-artifact-file" -> List.of(new FilePart(new FileWithBytes(
-                    "text/plain", "document.txt", "file bytes".getBytes(StandardCharsets.UTF_8))));
-            case "tck-artifact-file-url" -> List.of(new FilePart(new FileWithUri(
-                    "text/plain", "document.txt", "https://example.com/document.txt")));
+            case "tck-artifact-file" ->
+                    List.of(
+                            new FilePart(
+                                    new FileWithBytes(
+                                            "text/plain",
+                                            "document.txt",
+                                            "file bytes".getBytes(StandardCharsets.UTF_8))));
+            case "tck-artifact-file-url" ->
+                    List.of(
+                            new FilePart(
+                                    new FileWithUri(
+                                            "text/plain",
+                                            "document.txt",
+                                            "https://example.com/document.txt")));
             default -> null;
         };
     }
@@ -305,7 +319,8 @@ final class ActsBehaviors {
      * frame; a single combined update would satisfy {@code min_count} only by accident.
      */
     private void stream(AgentEmitter emitter, String behavior) {
-        emitter.startWork(emitter.newAgentMessage(List.of(new TextPart("streaming started")), null));
+        emitter.startWork(
+                emitter.newAgentMessage(List.of(new TextPart("streaming started")), null));
 
         if ("tck-stream-chunked".equals(behavior)) {
             List<String> chunks = List.of("chunk one ", "chunk two ", "chunk three");
@@ -313,11 +328,17 @@ final class ActsBehaviors {
             for (int i = 0; i < chunks.size(); i++) {
                 // The first chunk goes out with append=false; an update naming an artifact the task
                 // has not seen yet has nothing to append to.
-                emitter.addArtifact(List.of(new TextPart(chunks.get(i))), artifactId, "chunked", null,
-                        i > 0, i == chunks.size() - 1);
+                emitter.addArtifact(
+                        List.of(new TextPart(chunks.get(i))),
+                        artifactId,
+                        "chunked",
+                        null,
+                        i > 0,
+                        i == chunks.size() - 1);
             }
         } else {
-            emitter.addArtifact(List.of(new TextPart("streamed content")), null, "streamed", null, false, true);
+            emitter.addArtifact(
+                    List.of(new TextPart("streamed content")), null, "streamed", null, false, true);
         }
 
         complete(emitter, TaskState.TASK_STATE_COMPLETED, behavior + " ok");

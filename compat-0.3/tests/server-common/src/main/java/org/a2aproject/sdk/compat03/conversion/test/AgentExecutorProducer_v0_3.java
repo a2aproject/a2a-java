@@ -1,25 +1,22 @@
 package org.a2aproject.sdk.compat03.conversion.test;
 
-import java.util.List;
-
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-
+import java.util.List;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
-import io.quarkus.arc.profile.IfBuildProfile;
 
 @ApplicationScoped
 @IfBuildProfile("test")
 public class AgentExecutorProducer_v0_3 {
 
-    @Inject
-    RequestScopedBean_v0_3 requestScopedBean;
+    @Inject RequestScopedBean_v0_3 requestScopedBean;
 
     @Produces
     public AgentExecutor agentExecutor() {
@@ -27,7 +24,10 @@ public class AgentExecutorProducer_v0_3 {
             @Override
             public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
                 String taskId = context.getTaskId();
-                String input = context.getMessage() != null ? extractTextFromMessage(context.getMessage()) : "";
+                String input =
+                        context.getMessage() != null
+                                ? extractTextFromMessage(context.getMessage())
+                                : "";
 
                 // Request-scoped bean test: verify CDI request context propagation
                 if (input.startsWith("request-scoped:")) {
@@ -55,8 +55,10 @@ public class AgentExecutorProducer_v0_3 {
                 }
                 if (input.startsWith("multi-event:second")) {
                     agentEmitter.addArtifact(
-                        List.of(new TextPart("Second message artifact")),
-                        "artifact-2", "Second Artifact", null);
+                            List.of(new TextPart("Second message artifact")),
+                            "artifact-2",
+                            "Second Artifact",
+                            null);
                     agentEmitter.complete();
                     return;
                 }
@@ -70,23 +72,28 @@ public class AgentExecutorProducer_v0_3 {
                         return;
                     }
                     // First call: emit INPUT_REQUIRED
-                    agentEmitter.requiresInput(agentEmitter.newAgentMessage(
-                            List.of(new TextPart("Please provide additional information")),
-                            context.getMessage().metadata()));
+                    agentEmitter.requiresInput(
+                            agentEmitter.newAgentMessage(
+                                    List.of(new TextPart("Please provide additional information")),
+                                    context.getMessage().metadata()));
                     return;
                 }
 
                 // Special handling for auth-required test (routed by message content)
                 if (input.startsWith("auth-required:")) {
-                    agentEmitter.requiresAuth(agentEmitter.newAgentMessage(
-                            List.of(new TextPart("Please authenticate with OAuth provider")),
-                            context.getMessage().metadata()));
+                    agentEmitter.requiresAuth(
+                            agentEmitter.newAgentMessage(
+                                    List.of(
+                                            new TextPart(
+                                                    "Please authenticate with OAuth provider")),
+                                    context.getMessage().metadata()));
 
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new org.a2aproject.sdk.spec.InternalError("Auth simulation interrupted: " + e.getMessage());
+                        throw new org.a2aproject.sdk.spec.InternalError(
+                                "Auth simulation interrupted: " + e.getMessage());
                     }
 
                     agentEmitter.complete();

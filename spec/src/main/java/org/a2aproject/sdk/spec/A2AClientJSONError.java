@@ -30,8 +30,7 @@ public class A2AClientJSONError extends A2AClientError {
     /**
      * Creates a new JSON error with no message.
      */
-    public A2AClientJSONError() {
-    }
+    public A2AClientJSONError() {}
 
     /**
      * Creates a new JSON error with the specified message.

@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class TextPartTest {
@@ -22,6 +21,7 @@ class TextPartTest {
         assertEquals("hello", part.text());
         assertTrue(part.metadata().containsKey("language"));
         assertNull(part.metadata().get("language"));
-        assertThrows(UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
     }
 }

@@ -13,7 +13,8 @@ import org.mapstruct.Mapping;
  * Uses ADDER_PREFERRED strategy for List fields (parts, extensions, referenceTaskIds)
  * to avoid ProtocolStringList instantiation issues.
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {RoleMapper.class, PartMapper.class, A2ACommonFieldMapper.class})
 public interface MessageMapper {
@@ -24,9 +25,18 @@ public interface MessageMapper {
      * Converts domain Message to proto Message.
      * Uses CommonFieldMapper for metadata conversion and ADDER_PREFERRED for lists.
      */
-    @Mapping(target = "messageId", source = "messageId", conditionExpression = "java(domain.messageId() != null)")
-    @Mapping(target = "contextId", source = "contextId", conditionExpression = "java(domain.contextId() != null)")
-    @Mapping(target = "taskId", source = "taskId", conditionExpression = "java(domain.taskId() != null)")
+    @Mapping(
+            target = "messageId",
+            source = "messageId",
+            conditionExpression = "java(domain.messageId() != null)")
+    @Mapping(
+            target = "contextId",
+            source = "contextId",
+            conditionExpression = "java(domain.contextId() != null)")
+    @Mapping(
+            target = "taskId",
+            source = "taskId",
+            conditionExpression = "java(domain.taskId() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     org.a2aproject.sdk.grpc.Message toProto(Message domain);
 
@@ -40,7 +50,13 @@ public interface MessageMapper {
     @Mapping(target = "contextId", source = "contextId", qualifiedByName = "emptyToNull")
     @Mapping(target = "taskId", source = "taskId", qualifiedByName = "emptyToNull")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
-    @Mapping(target = "extensions", expression = "java(org.a2aproject.sdk.grpc.mapper.A2ACommonFieldMapper.INSTANCE.emptyListToNull(proto.getExtensionsList()))")
-    @Mapping(target = "referenceTaskIds", expression = "java(org.a2aproject.sdk.grpc.mapper.A2ACommonFieldMapper.INSTANCE.emptyListToNull(proto.getReferenceTaskIdsList()))")
+    @Mapping(
+            target = "extensions",
+            expression =
+                    "java(org.a2aproject.sdk.grpc.mapper.A2ACommonFieldMapper.INSTANCE.emptyListToNull(proto.getExtensionsList()))")
+    @Mapping(
+            target = "referenceTaskIds",
+            expression =
+                    "java(org.a2aproject.sdk.grpc.mapper.A2ACommonFieldMapper.INSTANCE.emptyListToNull(proto.getReferenceTaskIdsList()))")
     Message fromProto(org.a2aproject.sdk.grpc.Message proto);
 }

@@ -1,5 +1,10 @@
 package org.a2aproject.sdk.server.util.async;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -7,13 +12,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -28,8 +26,7 @@ public class AsyncExecutorProducer {
     private static final String A2A_EXECUTOR_KEEP_ALIVE_SECONDS = "a2a.executor.keep-alive-seconds";
     private static final String A2A_EXECUTOR_QUEUE_CAPACITY = "a2a.executor.queue-capacity";
 
-    @Inject
-    A2AConfigProvider configProvider;
+    @Inject A2AConfigProvider configProvider;
 
     /**
      * Core pool size for async agent execution thread pool.
@@ -77,8 +74,13 @@ public class AsyncExecutorProducer {
         keepAliveSeconds = Long.parseLong(configProvider.getValue(A2A_EXECUTOR_KEEP_ALIVE_SECONDS));
         queueCapacity = Integer.parseInt(configProvider.getValue(A2A_EXECUTOR_QUEUE_CAPACITY));
 
-        LOGGER.info("Initializing async executor: corePoolSize={}, maxPoolSize={}, keepAliveSeconds={}, queueCapacity={}",
-                corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity);
+        LOGGER.info(
+                "Initializing async executor: corePoolSize={}, maxPoolSize={}, keepAliveSeconds={},"
+                        + " queueCapacity={}",
+                corePoolSize,
+                maxPoolSize,
+                keepAliveSeconds,
+                queueCapacity);
 
         // CRITICAL: Use ArrayBlockingQueue (bounded) instead of LinkedBlockingQueue (unbounded).
         // With unbounded queue, ThreadPoolExecutor NEVER grows beyond corePoolSize because the
@@ -86,14 +88,14 @@ public class AsyncExecutorProducer {
         // EventConsumer polling threads hold all core threads and agent tasks queue indefinitely.
         // Bounded queue enables pool growth: when queue is full, new threads are created up to
         // maxPoolSize, preventing agent execution starvation.
-        ThreadPoolExecutor tpe = new ThreadPoolExecutor(
-                corePoolSize,
-                maxPoolSize,
-                keepAliveSeconds,
-                TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(queueCapacity),
-                new A2AThreadFactory()
-        );
+        ThreadPoolExecutor tpe =
+                new ThreadPoolExecutor(
+                        corePoolSize,
+                        maxPoolSize,
+                        keepAliveSeconds,
+                        TimeUnit.SECONDS,
+                        new ArrayBlockingQueue<>(queueCapacity),
+                        new A2AThreadFactory());
 
         // CRITICAL: Allow core threads to timeout after keepAliveSeconds when idle.
         // By default, ThreadPoolExecutor only times out threads above corePoolSize.
@@ -144,5 +146,4 @@ public class AsyncExecutorProducer {
             return t;
         }
     }
-
 }

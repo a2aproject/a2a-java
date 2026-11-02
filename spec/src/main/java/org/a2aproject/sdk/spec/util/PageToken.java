@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec.util;
 
 import java.time.Instant;
-
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.jspecify.annotations.Nullable;
 
@@ -37,20 +36,21 @@ public record PageToken(Instant timestamp, String id) {
 
         String[] tokenParts = tokenStr.split(":", 2);
         if (tokenParts.length != 2) {
-            throw new InvalidParamsError(null,
-                "Invalid pageToken format: expected 'timestamp:id'", null);
+            throw new InvalidParamsError(
+                    null, "Invalid pageToken format: expected 'timestamp:id'", null);
         }
 
         try {
             long timestampMillis = Long.parseLong(tokenParts[0]);
             String id = tokenParts[1];
             if (id.isEmpty()) {
-                throw new InvalidParamsError(null, "Invalid pageToken format: id part cannot be empty", null);
+                throw new InvalidParamsError(
+                        null, "Invalid pageToken format: id part cannot be empty", null);
             }
             return new PageToken(Instant.ofEpochMilli(timestampMillis), id);
         } catch (NumberFormatException e) {
-            throw new InvalidParamsError(null,
-                "Invalid pageToken format: timestamp must be numeric milliseconds", null);
+            throw new InvalidParamsError(
+                    null, "Invalid pageToken format: timestamp must be numeric milliseconds", null);
         }
     }
 

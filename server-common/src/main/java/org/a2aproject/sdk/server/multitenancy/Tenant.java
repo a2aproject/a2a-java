@@ -6,11 +6,10 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import jakarta.enterprise.util.AnnotationLiteral;
 import jakarta.inject.Qualifier;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 /**
  * CDI qualifier for tenant-specific beans.

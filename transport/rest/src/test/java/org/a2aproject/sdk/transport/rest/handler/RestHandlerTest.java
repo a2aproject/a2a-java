@@ -2,6 +2,10 @@ package org.a2aproject.sdk.transport.rest.handler;
 
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.protobuf.InvalidProtocolBufferException;
+import jakarta.enterprise.inject.Instance;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -13,12 +17,6 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-
-import jakarta.enterprise.inject.Instance;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.protobuf.InvalidProtocolBufferException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.AgentCardValidator;
@@ -54,7 +52,9 @@ import org.mockito.Mockito;
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
 public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
-    private final ServerCallContext callContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "1.0");
+    private final ServerCallContext callContext =
+            new ServerCallContext(
+                    UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "1.0");
 
     private static AgentCardCacheMetadata createCacheMetadata() {
         return createCacheMetadata(CARD);
@@ -66,10 +66,12 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetTaskSuccess() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), "0");
+        RestHandler.HTTPRestResponse response =
+                handler.getTask(callContext, "", MINIMAL_TASK.id(), "0");
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -84,36 +86,53 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetTaskNotFound() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", "nonexistent", "0");
+        RestHandler.HTTPRestResponse response =
+                handler.getTask(callContext, "", "nonexistent", "0");
 
-        assertProblemDetail(response, 404,
-                "TASK_NOT_FOUND", "Task not found");
+        assertProblemDetail(response, 404, "TASK_NOT_FOUND", "Task not found");
     }
 
     @Test
     public void testGetTaskNegativeHistoryLengthReturns422() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), "-1");
+        RestHandler.HTTPRestResponse response =
+                handler.getTask(callContext, "", MINIMAL_TASK.id(), "-1");
 
-        assertProblemDetail(response, 422,
-                "INVALID_PARAMS", "Invalid history length");
+        assertProblemDetail(response, 422, "INVALID_PARAMS", "Invalid history length");
         Assertions.assertEquals(Map.of(), response.getHeaders());
         Assertions.assertFalse(response instanceof RestHandler.HTTPRestStreamingResponse);
-        JsonObject error = JsonParser.parseString(response.getBody()).getAsJsonObject().getAsJsonObject("error");
+        JsonObject error =
+                JsonParser.parseString(response.getBody())
+                        .getAsJsonObject()
+                        .getAsJsonObject("error");
         Assertions.assertEquals("INVALID_ARGUMENT", error.get("status").getAsString());
-        Assertions.assertEquals(new JsonObject(), error.getAsJsonArray("details").get(0).getAsJsonObject().get("metadata"));
+        Assertions.assertEquals(
+                new JsonObject(),
+                error.getAsJsonArray("details").get(0).getAsJsonObject().get("metadata"));
     }
 
     @Test
     public void testListTasksStatusWireString() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "TASK_STATE_SUBMITTED", null, null,
-                null, null, null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(
+                        callContext,
+                        "",
+                        null,
+                        "TASK_STATE_SUBMITTED",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -122,47 +141,63 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksInvalidStatus() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "not-a-status", null, null,
-                null, null, null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(
+                        callContext, "", null, "not-a-status", null, null, null, null, null);
 
-        assertProblemDetail(response, 422,
-                "INVALID_PARAMS", "Invalid params");
+        assertProblemDetail(response, 422, "INVALID_PARAMS", "Invalid params");
         Assertions.assertEquals(Map.of(), response.getHeaders());
         Assertions.assertFalse(response instanceof RestHandler.HTTPRestStreamingResponse);
-        JsonObject error = JsonParser.parseString(response.getBody()).getAsJsonObject().getAsJsonObject("error");
+        JsonObject error =
+                JsonParser.parseString(response.getBody())
+                        .getAsJsonObject()
+                        .getAsJsonObject("error");
         Assertions.assertEquals("INVALID_ARGUMENT", error.get("status").getAsString());
-        JsonObject metadata = error.getAsJsonArray("details").get(0).getAsJsonObject().getAsJsonObject("metadata");
+        JsonObject metadata =
+                error.getAsJsonArray("details")
+                        .get(0)
+                        .getAsJsonObject()
+                        .getAsJsonObject("metadata");
         Assertions.assertEquals("status", metadata.get("parameter").getAsString());
-        Assertions.assertEquals("Must be one of: " + java.util.Arrays.stream(TaskState.values())
-                .map(Enum::name).collect(java.util.stream.Collectors.joining(", ")), metadata.get("reason").getAsString());
+        Assertions.assertEquals(
+                "Must be one of: "
+                        + java.util.Arrays.stream(TaskState.values())
+                                .map(Enum::name)
+                                .collect(java.util.stream.Collectors.joining(", ")),
+                metadata.get("reason").getAsString());
     }
 
     @Test
     public void testSendMessage() throws InvalidProtocolBufferException {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
-        agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.sendMessage(context.getMessage());
-        };
-        String requestBody = """
-            {
-              "message":
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    agentEmitter.sendMessage(context.getMessage());
+                };
+        String requestBody =
+                """
                 {
-                  "messageId": "message-1234",
-                  "contextId": "context-1234",
-                  "role": "ROLE_USER",
-                  "parts": [{
-                    "text": "tell me a joke"
-                  }],
-                  "metadata": {
+                  "message":
+                    {
+                      "messageId": "message-1234",
+                      "contextId": "context-1234",
+                      "role": "ROLE_USER",
+                      "parts": [{
+                        "text": "tell me a joke"
+                      }],
+                      "metadata": {
+                      }
+                  },
+                  "configuration":
+                    {
+                      "returnImmediately": false
                   }
-              },
-              "configuration":
-                {
-                  "returnImmediately": false
-              }
-            }""";
+                }\
+                """;
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
@@ -172,32 +207,35 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageInvalidBody() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         String invalidBody = "invalid json";
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", invalidBody);
 
-        assertProblemDetail(response, 400,
-                "JSON_PARSE", "Failed to parse json");
+        assertProblemDetail(response, 400, "JSON_PARSE", "Failed to parse json");
     }
 
     @Test
     public void testSendMessageWrongValueBody() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
-        String requestBody = """
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        String requestBody =
+                """
+                {
+                  "message":
                     {
-                      "message":
-                        {
-                          "messageId": "message-1234",
-                          "contextId": "context-1234",
-                          "role": "user",
-                          "parts": [{
-                            "text": "tell me a joke"
-                          }],
-                          "metadata": {
-                          }
+                      "messageId": "message-1234",
+                      "contextId": "context-1234",
+                      "role": "user",
+                      "parts": [{
+                        "text": "tell me a joke"
+                      }],
+                      "metadata": {
                       }
-                    }""";
+                  }
+                }\
+                """;
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
         Assertions.assertEquals(422, response.getStatusCode());
@@ -205,36 +243,47 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
         JsonObject error = body.getAsJsonObject("error");
         Assertions.assertEquals(422, error.get("code").getAsInt());
-        Assertions.assertEquals("INVALID_PARAMS", error.getAsJsonArray("details").get(0).getAsJsonObject().get("reason").getAsString());
-        Assertions.assertTrue(error.get("message").getAsString().startsWith("Failed to parse request body:"),
+        Assertions.assertEquals(
+                "INVALID_PARAMS",
+                error.getAsJsonArray("details")
+                        .get(0)
+                        .getAsJsonObject()
+                        .get("reason")
+                        .getAsString());
+        Assertions.assertTrue(
+                error.get("message").getAsString().startsWith("Failed to parse request body:"),
                 "message should indicate parse failure: " + error.get("message").getAsString());
     }
 
     @Test
     public void testSendMessageEmptyBody() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", "");
 
-        assertProblemDetail(response, 400,
-                "INVALID_REQUEST", "Request body is required");
+        assertProblemDetail(response, 400, "INVALID_REQUEST", "Request body is required");
     }
 
     @Test
     public void testCancelTaskSuccess() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        agentExecutorCancel = (context, agentEmitter) -> {
-            // We need to cancel the task or the EventConsumer never finds a 'final' event.
-            // Looking at the Python implementation, they typically use AgentExecutors that
-            // don't support cancellation. So my theory is the Agent updates the task to the CANCEL status
-            Task task = context.getTask();
-            agentEmitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, agentEmitter) -> {
+                    // We need to cancel the task or the EventConsumer never finds a 'final' event.
+                    // Looking at the Python implementation, they typically use AgentExecutors that
+                    // don't support cancellation. So my theory is the Agent updates the task to the
+                    // CANCEL status
+                    Task task = context.getTask();
+                    agentEmitter.cancel();
+                };
 
         String requestBody = String.format("{\"id\":\"%s\"}", MINIMAL_TASK.id());
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -243,40 +292,45 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskNotFound() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         String requestBody = "{\"id\":\"nonexistent\"}";
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, "nonexistent");
+        RestHandler.HTTPRestResponse response =
+                handler.cancelTask(callContext, "", requestBody, "nonexistent");
 
-        assertProblemDetail(response, 404,
-                "TASK_NOT_FOUND", "Task not found");
+        assertProblemDetail(response, 404, "TASK_NOT_FOUND", "Task not found");
     }
 
     @Test
     public void testCancelTaskWithMetadata() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        agentExecutorCancel = (context, agentEmitter) -> {
-            // Verify metadata is accessible in the context
-            Task task = context.getTask();
+        agentExecutorCancel =
+                (context, agentEmitter) -> {
+                    // Verify metadata is accessible in the context
+                    Task task = context.getTask();
 
-            // Cancel the task so EventConsumer finds a final event
-            agentEmitter.cancel();
-        };
+                    // Cancel the task so EventConsumer finds a final event
+                    agentEmitter.cancel();
+                };
 
         // Request body with metadata
-        String requestBody = """
-            {
-                "metadata": {
-                    "reason": "user_requested",
-                    "source": "web_ui",
-                    "priority": "high"
+        String requestBody =
+                """
+                {
+                    "metadata": {
+                        "reason": "user_requested",
+                        "source": "web_ui",
+                        "priority": "high"
+                    }
                 }
-            }
-            """;
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -285,22 +339,26 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithEmptyMetadata() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        agentExecutorCancel = (context, agentEmitter) -> {
-            Task task = context.getTask();
-            agentEmitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, agentEmitter) -> {
+                    Task task = context.getTask();
+                    agentEmitter.cancel();
+                };
 
         // Request body with empty metadata object
-        String requestBody = """
-            {
-                "metadata": {}
-            }
-            """;
+        String requestBody =
+                """
+                {
+                    "metadata": {}
+                }
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -309,18 +367,21 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithNoMetadata() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        agentExecutorCancel = (context, agentEmitter) -> {
-            Task task = context.getTask();
-            agentEmitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, agentEmitter) -> {
+                    Task task = context.getTask();
+                    agentEmitter.cancel();
+                };
 
         // Request body without metadata field
         String requestBody = "{}";
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -329,16 +390,19 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithNullBody() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        agentExecutorCancel = (context, agentEmitter) -> {
-            Task task = context.getTask();
-            agentEmitter.cancel();
-        };
+        agentExecutorCancel =
+                (context, agentEmitter) -> {
+                    Task task = context.getTask();
+                    agentEmitter.cancel();
+                };
 
         // Null body should still work - metadata defaults to empty map
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", null, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.cancelTask(callContext, "", null, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -347,31 +411,37 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendStreamingMessageSuccess() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
-        agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.sendMessage(context.getMessage());
-        };
-        String requestBody = """
-            {
-              "message": {
-                "role": "ROLE_USER",
-                "parts": [
-                  {
-                    "text": "tell me some jokes"
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    agentEmitter.sendMessage(context.getMessage());
+                };
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "role": "ROLE_USER",
+                    "parts": [
+                      {
+                        "text": "tell me some jokes"
+                      }
+                    ],
+                    "messageId": "message-1234",
+                    "contextId": "context-1234"
+                  },
+                  "configuration": {
+                    "acceptedOutputModes": ["text"]
                   }
-                ],
-                "messageId": "message-1234",
-                "contextId": "context-1234"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"]
-              }
-            }""";
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendStreamingMessage(callContext, "", requestBody);
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
-        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
+        RestHandler.HTTPRestStreamingResponse streamingResponse =
+                (RestHandler.HTTPRestStreamingResponse) response;
         Assertions.assertNotNull(streamingResponse.getPublisher());
         Assertions.assertEquals("text/event-stream", streamingResponse.getContentType());
     }
@@ -379,41 +449,49 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testSendStreamingMessageNotSupported() {
         AgentCard card = createAgentCard(false, true);
-        RestHandler handler = new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
 
-        String requestBody = """
-            {
-                "contextId": "ctx123",
-                "role": "ROLE_USER",
-                "parts": [{
-                    "text": "Hello"
-                }]
-            }
-            """;
+        String requestBody =
+                """
+                {
+                    "contextId": "ctx123",
+                    "role": "ROLE_USER",
+                    "parts": [{
+                        "text": "Hello"
+                    }]
+                }
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendStreamingMessage(callContext, "", requestBody);
 
-        assertProblemDetail(response, 400,
-                "UNSUPPORTED_OPERATION",
-                "Streaming is not supported by the agent");
+        assertProblemDetail(
+                response, 400, "UNSUPPORTED_OPERATION", "Streaming is not supported by the agent");
     }
 
     @Test
     public void testPushNotificationConfigSuccess() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        String requestBody = """
-            {
-              "id": "default-config-id",
-              "taskId": "%s",
-              "url": "https://example.com/callback",
-              "authentication": {
-                "scheme": "jwt"
-              }
-            }""".formatted(MINIMAL_TASK.id());
+        String requestBody =
+                """
+                {
+                  "id": "default-config-id",
+                  "taskId": "%s",
+                  "url": "https://example.com/callback",
+                  "authentication": {
+                    "scheme": "jwt"
+                  }
+                }\
+                """
+                        .formatted(MINIMAL_TASK.id());
 
-        RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.createTaskPushNotificationConfiguration(
+                        callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -423,61 +501,82 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testPushNotificationConfigNotSupported() {
         AgentCard card = createAgentCard(true, false);
-        RestHandler handler = new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
 
-        String requestBody = """
-            {
-                "id": "default-config-id",
-                "taskId": "%s",
-                "url": "http://example.com"
-            }
-            """.formatted(MINIMAL_TASK.id());
+        String requestBody =
+                """
+                {
+                    "id": "default-config-id",
+                    "taskId": "%s",
+                    "url": "http://example.com"
+                }
+                """
+                        .formatted(MINIMAL_TASK.id());
 
-        RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.createTaskPushNotificationConfiguration(
+                        callContext, "", requestBody, MINIMAL_TASK.id());
 
-        assertProblemDetail(response, 400,
+        assertProblemDetail(
+                response,
+                400,
                 "PUSH_NOTIFICATION_NOT_SUPPORTED",
                 "Push Notification is not supported");
     }
 
     @Test
     public void testGetPushNotificationConfig() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         // First, create a push notification config
-        String createRequestBody = """
-            {
-              "id": "default-config-id",
-              "taskId": "%s",
-              "url": "https://example.com/callback",
-              "authentication": {
-                "scheme": "jwt"
-              }
-            }""".formatted(MINIMAL_TASK.id());
-        RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", createRequestBody, MINIMAL_TASK.id());
+        String createRequestBody =
+                """
+                {
+                  "id": "default-config-id",
+                  "taskId": "%s",
+                  "url": "https://example.com/callback",
+                  "authentication": {
+                    "scheme": "jwt"
+                  }
+                }\
+                """
+                        .formatted(MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response =
+                handler.createTaskPushNotificationConfiguration(
+                        callContext, "", createRequestBody, MINIMAL_TASK.id());
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         // Now get it
-        response = handler.getTaskPushNotificationConfiguration(callContext, "", MINIMAL_TASK.id(), "default-config-id");
+        response =
+                handler.getTaskPushNotificationConfiguration(
+                        callContext, "", MINIMAL_TASK.id(), "default-config-id");
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
     }
 
     @Test
     public void testDeletePushNotificationConfig() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
-        RestHandler.HTTPRestResponse response = handler.deleteTaskPushNotificationConfiguration(callContext, "", MINIMAL_TASK.id(), "default-config-id");
+        RestHandler.HTTPRestResponse response =
+                handler.deleteTaskPushNotificationConfiguration(
+                        callContext, "", MINIMAL_TASK.id(), "default-config-id");
         Assertions.assertEquals(204, response.getStatusCode());
     }
 
     @Test
     public void testListPushNotificationConfigs() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(callContext, "", MINIMAL_TASK.id(), "0", "");
+        RestHandler.HTTPRestResponse response =
+                handler.listTaskPushNotificationConfigurations(
+                        callContext, "", MINIMAL_TASK.id(), "0", "");
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -486,34 +585,45 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testPushNotificationConfigParseError_DoesNotLogSensitiveData() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        String requestBody = """
-            {
-              "id": "default-config-id",
-              "taskId": "%s",
-              "url": "https://webhook.example.com",
-              "token": "secret-token-12345",
-              "authentication": {
-                "scheme": "Bearer",
-                "credentials": "oauth-secret-67890"
-              },
-              "unknownField": "trigger-parse-error"
-            }""".formatted(MINIMAL_TASK.id());
+        String requestBody =
+                """
+                {
+                  "id": "default-config-id",
+                  "taskId": "%s",
+                  "url": "https://webhook.example.com",
+                  "token": "secret-token-12345",
+                  "authentication": {
+                    "scheme": "Bearer",
+                    "credentials": "oauth-secret-67890"
+                  },
+                  "unknownField": "trigger-parse-error"
+                }\
+                """
+                        .formatted(MINIMAL_TASK.id());
 
         // Request body with sensitive data and an unknown field to trigger parse error
-        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RestHandler.class.getName());
-        LogCaptureAssertions.assertSensitiveDataNotLogged(logger,
-                () -> Assertions.assertEquals(422,
-                        handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id())
-                                .getStatusCode()),
-                "secret-token-12345", "oauth-secret-67890");
+        java.util.logging.Logger logger =
+                java.util.logging.Logger.getLogger(RestHandler.class.getName());
+        LogCaptureAssertions.assertSensitiveDataNotLogged(
+                logger,
+                () ->
+                        Assertions.assertEquals(
+                                422,
+                                handler.createTaskPushNotificationConfiguration(
+                                                callContext, "", requestBody, MINIMAL_TASK.id())
+                                        .getStatusCode()),
+                "secret-token-12345",
+                "oauth-secret-67890");
     }
 
     @Test
     public void testHttpStatusCodeMapping() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Test 400 for invalid request
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", "");
@@ -526,73 +636,81 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testStreamingDoesNotBlockMainThread() throws Exception {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Track if the main thread gets blocked during streaming
         AtomicBoolean eventReceived = new AtomicBoolean(false);
         CountDownLatch streamStarted = new CountDownLatch(1);
         CountDownLatch eventProcessed = new CountDownLatch(1);
-        agentExecutorExecute = (context, agentEmitter) -> {
-            // Wait a bit to ensure the main thread continues
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            agentEmitter.sendMessage(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    // Wait a bit to ensure the main thread continues
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    agentEmitter.sendMessage(context.getMessage());
+                };
 
-        String requestBody = """
-            {
-              "message": {
-                "role": "ROLE_USER",
-                "parts": [
-                  {
-                    "text": "tell me some jokes"
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "role": "ROLE_USER",
+                    "parts": [
+                      {
+                        "text": "tell me some jokes"
+                      }
+                    ],
+                    "messageId": "message-1234",
+                    "contextId": "context-1234"
+                  },
+                  "configuration": {
+                    "acceptedOutputModes": ["text"]
                   }
-                ],
-                "messageId": "message-1234",
-                "contextId": "context-1234"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"]
-              }
-            }""";
+                }\
+                """;
 
         // Start streaming
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendStreamingMessage(callContext, "", requestBody);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
 
-        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
+        RestHandler.HTTPRestStreamingResponse streamingResponse =
+                (RestHandler.HTTPRestStreamingResponse) response;
         Flow.Publisher<String> publisher = streamingResponse.getPublisher();
-        publisher.subscribe(new Flow.Subscriber<String>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                streamStarted.countDown();
-                subscription.request(1);
-            }
+        publisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        streamStarted.countDown();
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                eventReceived.set(true);
-                eventProcessed.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        eventReceived.set(true);
+                        eventProcessed.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                eventProcessed.countDown();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        eventProcessed.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                eventProcessed.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        eventProcessed.countDown();
+                    }
+                });
 
         // The main thread should not be blocked - we should be able to continue immediately
-        Assertions.assertTrue(streamStarted.await(100, TimeUnit.MILLISECONDS),
+        Assertions.assertTrue(
+                streamStarted.await(100, TimeUnit.MILLISECONDS),
                 "Streaming subscription should start quickly without blocking main thread");
 
         // This proves the main thread is not blocked - we can do other work
@@ -600,7 +718,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Thread.sleep(50);
 
         // Wait for the actual event processing to complete
-        Assertions.assertTrue(eventProcessed.await(2, TimeUnit.SECONDS),
+        Assertions.assertTrue(
+                eventProcessed.await(2, TimeUnit.SECONDS),
                 "Event should be processed within reasonable time");
 
         // Verify we received the event
@@ -610,137 +729,173 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testExtensionSupportRequiredErrorOnSendMessage() {
         // Create AgentCard with a required extension
-        AgentCard cardWithExtension = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with required extension")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .extensions(List.of(
-                                AgentExtension.builder()
-                                        .uri("https://example.com/test-extension")
-                                        .required(true)
-                                        .build()
-                        ))
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard cardWithExtension =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with required extension")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(true)
+                                        .extensions(
+                                                List.of(
+                                                        AgentExtension.builder()
+                                                                .uri(
+                                                                        "https://example.com/test-extension")
+                                                                .required(true)
+                                                                .build()))
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(cardWithExtension, createCacheMetadata(cardWithExtension), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        cardWithExtension,
+                        createCacheMetadata(cardWithExtension),
+                        requestHandler,
+                        internalExecutor);
 
-        String requestBody = """
-            {
-              "message": {
-                "messageId": "message-1234",
-                "contextId": "context-1234",
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me a joke"
-                }],
-                "metadata": {}
-              },
-              "configuration": {
-                "returnImmediately": false
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me a joke"
+                    }],
+                    "metadata": {}
+                  },
+                  "configuration": {
+                    "returnImmediately": false
+                  }
+                }\
+                """;
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
-        assertProblemDetail(response, 400,
+        assertProblemDetail(
+                response,
+                400,
                 "EXTENSION_SUPPORT_REQUIRED",
-                "Required extension 'https://example.com/test-extension' was not requested by the client");
+                "Required extension 'https://example.com/test-extension' was not requested by the"
+                        + " client");
     }
 
     @Test
     public void testExtensionSupportRequiredErrorOnSendStreamingMessage() {
         // Create AgentCard with a required extension
-        AgentCard cardWithExtension = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with required extension")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .extensions(List.of(
-                                AgentExtension.builder()
-                                        .uri("https://example.com/streaming-extension")
-                                        .required(true)
-                                        .build()
-                        ))
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard cardWithExtension =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with required extension")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(true)
+                                        .extensions(
+                                                List.of(
+                                                        AgentExtension.builder()
+                                                                .uri(
+                                                                        "https://example.com/streaming-extension")
+                                                                .required(true)
+                                                                .build()))
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(cardWithExtension, createCacheMetadata(cardWithExtension), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        cardWithExtension,
+                        createCacheMetadata(cardWithExtension),
+                        requestHandler,
+                        internalExecutor);
 
-        String requestBody = """
-            {
-              "message": {
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me some jokes"
-                }],
-                "messageId": "message-1234",
-                "contextId": "context-1234"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"]
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me some jokes"
+                    }],
+                    "messageId": "message-1234",
+                    "contextId": "context-1234"
+                  },
+                  "configuration": {
+                    "acceptedOutputModes": ["text"]
+                  }
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendStreamingMessage(callContext, "", requestBody);
 
         // Streaming responses embed errors in the stream with status 200
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
-        
+
         // Subscribe to publisher and verify error in stream
-        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
+        RestHandler.HTTPRestStreamingResponse streamingResponse =
+                (RestHandler.HTTPRestStreamingResponse) response;
         Flow.Publisher<String> publisher = streamingResponse.getPublisher();
-        
+
         AtomicBoolean errorFound = new AtomicBoolean(false);
         CountDownLatch latch = new CountDownLatch(1);
-        
-        publisher.subscribe(new Flow.Subscriber<String>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(1);
-            }
 
-            @Override
-            public void onNext(String item) {
-                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
-                if (body.has("error")) {
-                    JsonObject error = body.getAsJsonObject("error");
-                    var details = error.has("details") ? error.getAsJsonArray("details") : null;
-                    if (details != null && !details.isEmpty()) {
-                        String reason = details.get(0).getAsJsonObject().get("reason").getAsString();
-                        if ("EXTENSION_SUPPORT_REQUIRED".equals(reason) &&
-                            item.contains("https://example.com/streaming-extension")) {
-                            errorFound.set(true);
-                        }
+        publisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(1);
                     }
-                }
-                latch.countDown();
-            }
 
-            @Override
-            public void onError(Throwable throwable) {
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                        if (body.has("error")) {
+                            JsonObject error = body.getAsJsonObject("error");
+                            var details =
+                                    error.has("details") ? error.getAsJsonArray("details") : null;
+                            if (details != null && !details.isEmpty()) {
+                                String reason =
+                                        details.get(0)
+                                                .getAsJsonObject()
+                                                .get("reason")
+                                                .getAsString();
+                                if ("EXTENSION_SUPPORT_REQUIRED".equals(reason)
+                                        && item.contains(
+                                                "https://example.com/streaming-extension")) {
+                                    errorFound.set(true);
+                                }
+                            }
+                        }
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                latch.countDown();
-            }
-        });
+                    @Override
+                    public void onError(Throwable throwable) {
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        latch.countDown();
+                    }
+                });
 
         try {
             Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS));
@@ -753,59 +908,73 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testRequiredExtensionProvidedSuccess() {
         // Create AgentCard with a required extension
-        AgentCard cardWithExtension = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with required extension")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .extensions(List.of(
-                                AgentExtension.builder()
-                                        .uri("https://example.com/required-extension")
-                                        .required(true)
-                                        .build()
-                        ))
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard cardWithExtension =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with required extension")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(true)
+                                        .extensions(
+                                                List.of(
+                                                        AgentExtension.builder()
+                                                                .uri(
+                                                                        "https://example.com/required-extension")
+                                                                .required(true)
+                                                                .build()))
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(cardWithExtension, createCacheMetadata(cardWithExtension), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        cardWithExtension,
+                        createCacheMetadata(cardWithExtension),
+                        requestHandler,
+                        internalExecutor);
 
         // Create context WITH the required extension
         Set<String> requestedExtensions = new HashSet<>();
         requestedExtensions.add("https://example.com/required-extension");
-        ServerCallContext contextWithExtension = new ServerCallContext(
-                UnauthenticatedUser.INSTANCE,
-                Map.of("foo", "bar"),
-                requestedExtensions,
-                "1.0"
-        );
+        ServerCallContext contextWithExtension =
+                new ServerCallContext(
+                        UnauthenticatedUser.INSTANCE,
+                        Map.of("foo", "bar"),
+                        requestedExtensions,
+                        "1.0");
 
-        agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.sendMessage(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    agentEmitter.sendMessage(context.getMessage());
+                };
 
-        String requestBody = """
-            {
-              "message": {
-                "messageId": "message-1234",
-                "contextId": "context-1234",
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me a joke"
-                }],
-                "metadata": {}
-              },
-              "configuration": {
-                "returnImmediately": false
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me a joke"
+                    }],
+                    "metadata": {}
+                  },
+                  "configuration": {
+                    "returnImmediately": false
+                  }
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendMessage(contextWithExtension, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendMessage(contextWithExtension, "", requestBody);
 
         // Should succeed without error
         Assertions.assertEquals(200, response.getStatusCode());
@@ -816,49 +985,64 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testVersionNotSupportedErrorOnSendMessage() {
         // Create AgentCard with protocol version 1.0
-        AgentCard agentCard = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(false)
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with version 1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(false)
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        agentCard,
+                        createCacheMetadata(agentCard),
+                        requestHandler,
+                        internalExecutor);
 
         // Create context with incompatible version 2.0
-        ServerCallContext contextWithVersion = new ServerCallContext(
-                UnauthenticatedUser.INSTANCE,
-                Map.of("foo", "bar"),
-                new HashSet<>(),
-                "2.0"  // Incompatible version
-        );
+        ServerCallContext contextWithVersion =
+                new ServerCallContext(
+                        UnauthenticatedUser.INSTANCE,
+                        Map.of("foo", "bar"),
+                        new HashSet<>(),
+                        "2.0" // Incompatible version
+                        );
 
-        String requestBody = """
-            {
-              "message": {
-                "messageId": "message-1234",
-                "contextId": "context-1234",
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me a joke"
-                }],
-                "metadata": {}
-              },
-              "configuration": {
-                "returnImmediately": false
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me a joke"
+                    }],
+                    "metadata": {}
+                  },
+                  "configuration": {
+                    "returnImmediately": false
+                  }
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendMessage(contextWithVersion, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendMessage(contextWithVersion, "", requestBody);
 
-        assertProblemDetail(response, 400,
+        assertProblemDetail(
+                response,
+                400,
                 "VERSION_NOT_SUPPORTED",
                 "Protocol version '2.0' is not supported. Supported versions: [1.0]");
     }
@@ -866,90 +1050,111 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testVersionNotSupportedErrorOnSendStreamingMessage() {
         // Create AgentCard with protocol version 1.0
-        AgentCard agentCard = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(false)
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with version 1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(false)
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        agentCard,
+                        createCacheMetadata(agentCard),
+                        requestHandler,
+                        internalExecutor);
 
         // Create context with incompatible version 2.0
-        ServerCallContext contextWithVersion = new ServerCallContext(
-                UnauthenticatedUser.INSTANCE,
-                Map.of("foo", "bar"),
-                new HashSet<>(),
-                "2.0"  // Incompatible version
-        );
+        ServerCallContext contextWithVersion =
+                new ServerCallContext(
+                        UnauthenticatedUser.INSTANCE,
+                        Map.of("foo", "bar"),
+                        new HashSet<>(),
+                        "2.0" // Incompatible version
+                        );
 
-        String requestBody = """
-            {
-              "message": {
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me some jokes"
-                }],
-                "messageId": "message-1234",
-                "contextId": "context-1234"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"]
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me some jokes"
+                    }],
+                    "messageId": "message-1234",
+                    "contextId": "context-1234"
+                  },
+                  "configuration": {
+                    "acceptedOutputModes": ["text"]
+                  }
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(contextWithVersion, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendStreamingMessage(contextWithVersion, "", requestBody);
 
         // Streaming responses embed errors in the stream with status 200
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
 
         // Subscribe to publisher and verify error in stream
-        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
+        RestHandler.HTTPRestStreamingResponse streamingResponse =
+                (RestHandler.HTTPRestStreamingResponse) response;
         Flow.Publisher<String> publisher = streamingResponse.getPublisher();
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
         CountDownLatch latch = new CountDownLatch(1);
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-            }
+        publisher.subscribe(
+                new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(Long.MAX_VALUE);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
-                if (body.has("error")) {
-                    JsonObject error = body.getAsJsonObject("error");
-                    var details = error.has("details") ? error.getAsJsonArray("details") : null;
-                    if (details != null && !details.isEmpty()) {
-                        String reason = details.get(0).getAsJsonObject().get("reason").getAsString();
-                        if ("VERSION_NOT_SUPPORTED".equals(reason) &&
-                            error.has("message") && error.get("message").getAsString().contains("2.0")) {
-                            errorFound.set(true);
+                    @Override
+                    public void onNext(String item) {
+                        JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                        if (body.has("error")) {
+                            JsonObject error = body.getAsJsonObject("error");
+                            var details =
+                                    error.has("details") ? error.getAsJsonArray("details") : null;
+                            if (details != null && !details.isEmpty()) {
+                                String reason =
+                                        details.get(0)
+                                                .getAsJsonObject()
+                                                .get("reason")
+                                                .getAsString();
+                                if ("VERSION_NOT_SUPPORTED".equals(reason)
+                                        && error.has("message")
+                                        && error.get("message").getAsString().contains("2.0")) {
+                                    errorFound.set(true);
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onError(Throwable throwable) {
-                latch.countDown();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onComplete() {
-                latch.countDown();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        latch.countDown();
+                    }
+                });
 
         try {
             Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS));
@@ -962,51 +1167,65 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testCompatibleVersionSuccess() {
         // Create AgentCard with protocol version 1.0
-        AgentCard agentCard = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(false)
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with version 1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(false)
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        agentCard,
+                        createCacheMetadata(agentCard),
+                        requestHandler,
+                        internalExecutor);
 
         // Create context with compatible version 1.1
-        ServerCallContext contextWithVersion = new ServerCallContext(
-                UnauthenticatedUser.INSTANCE,
-                Map.of("foo", "bar"),
-                new HashSet<>(),
-                "1.1"  // Compatible version (same major version)
-        );
+        ServerCallContext contextWithVersion =
+                new ServerCallContext(
+                        UnauthenticatedUser.INSTANCE,
+                        Map.of("foo", "bar"),
+                        new HashSet<>(),
+                        "1.1" // Compatible version (same major version)
+                        );
 
-        agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.sendMessage(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    agentEmitter.sendMessage(context.getMessage());
+                };
 
-        String requestBody = """
-            {
-              "message": {
-                "messageId": "message-1234",
-                "contextId": "context-1234",
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me a joke"
-                }],
-                "metadata": {}
-              },
-              "configuration": {
-                "returnImmediately": false
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me a joke"
+                    }],
+                    "metadata": {}
+                  },
+                  "configuration": {
+                    "returnImmediately": false
+                  }
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendMessage(contextWithVersion, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendMessage(contextWithVersion, "", requestBody);
 
         // Should succeed without error
         Assertions.assertEquals(200, response.getStatusCode());
@@ -1017,47 +1236,61 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testNoVersionDefaultsTo0_3_RejectedByV10OnlyServer() {
         // Per spec Section 3.6.2: missing A2A-Version defaults to 0.3
-        AgentCard agentCard = AgentCard.builder()
-                .name("test-card")
-                .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
-                .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(false)
-                        .build())
-                .defaultInputModes(List.of("text"))
-                .defaultOutputModes(List.of("text"))
-                .skills(List.of())
-                .build();
+        AgentCard agentCard =
+                AgentCard.builder()
+                        .name("test-card")
+                        .description("Test card with version 1.0")
+                        .supportedInterfaces(
+                                Collections.singletonList(
+                                        new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                        .version("1.0.0")
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(true)
+                                        .pushNotifications(false)
+                                        .build())
+                        .defaultInputModes(List.of("text"))
+                        .defaultOutputModes(List.of("text"))
+                        .skills(List.of())
+                        .build();
 
-        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(
+                        agentCard,
+                        createCacheMetadata(agentCard),
+                        requestHandler,
+                        internalExecutor);
 
-        agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.sendMessage(context.getMessage());
-        };
+        agentExecutorExecute =
+                (context, agentEmitter) -> {
+                    agentEmitter.sendMessage(context.getMessage());
+                };
 
         // Context with no version — defaults to 0.3, incompatible with v1.0-only server
-        ServerCallContext noVersionContext = new ServerCallContext(
-                UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
+        ServerCallContext noVersionContext =
+                new ServerCallContext(
+                        UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
 
-        String requestBody = """
-            {
-              "message": {
-                "messageId": "message-1234",
-                "contextId": "context-1234",
-                "role": "ROLE_USER",
-                "parts": [{
-                  "text": "tell me a joke"
-                }],
-                "metadata": {}
-              },
-              "configuration": {
-                "returnImmediately": false
-              }
-            }""";
+        String requestBody =
+                """
+                {
+                  "message": {
+                    "messageId": "message-1234",
+                    "contextId": "context-1234",
+                    "role": "ROLE_USER",
+                    "parts": [{
+                      "text": "tell me a joke"
+                    }],
+                    "metadata": {}
+                  },
+                  "configuration": {
+                    "returnImmediately": false
+                  }
+                }\
+                """;
 
-        RestHandler.HTTPRestResponse response = handler.sendMessage(noVersionContext, "", requestBody);
+        RestHandler.HTTPRestResponse response =
+                handler.sendMessage(noVersionContext, "", requestBody);
 
         // Should return error (0.3 is not supported by v1.0-only server)
         Assertions.assertEquals(400, response.getStatusCode());
@@ -1067,33 +1300,44 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksNegativeTimestampReturns422() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Negative timestamp should return 422 (Invalid params)
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, null, null, null,
-                null, "-1", null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(callContext, "", null, null, null, null, null, "-1", null);
 
-        assertProblemDetail(response, 422,
-                "INVALID_PARAMS", "Invalid params");
+        assertProblemDetail(response, 422, "INVALID_PARAMS", "Invalid params");
     }
 
     @Test
     public void testListTasksUnixMillisecondsTimestamp() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         // Unix milliseconds timestamp are no longer accepted
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, null, null, null,
-                null, "1234567", null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(callContext, "", null, null, null, null, null, "1234567", null);
         Assertions.assertEquals(422, response.getStatusCode());
     }
 
     @Test
     public void testListTasksProtobufEnumStatus() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         // Protobuf enum format (TASK_STATE_SUBMITTED) should be accepted
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "TASK_STATE_SUBMITTED", null, null,
-                null, null, null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(
+                        callContext,
+                        "",
+                        null,
+                        "TASK_STATE_SUBMITTED",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -1102,12 +1346,22 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksEnumConstantStatus() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         // Enum constant format (TASK_STATE_SUBMITTED) should be accepted
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "TASK_STATE_SUBMITTED", null, null,
-                null, null, null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(
+                        callContext,
+                        "",
+                        null,
+                        "TASK_STATE_SUBMITTED",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -1116,11 +1370,21 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksEmptyResultIncludesAllFields() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Query for a context that doesn't exist - should return empty result with all fields
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", "nonexistent-context-id", null, null, null,
-                null, null, null);
+        RestHandler.HTTPRestResponse response =
+                handler.listTasks(
+                        callContext,
+                        "",
+                        "nonexistent-context-id",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
@@ -1128,11 +1392,15 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         String body = response.getBody();
         // Verify all required fields are present (not missing)
         Assertions.assertTrue(body.contains("\"tasks\""), "Response should contain tasks field");
-        Assertions.assertTrue(body.contains("\"totalSize\""), "Response should contain totalSize field");
-        Assertions.assertTrue(body.contains("\"pageSize\""), "Response should contain pageSize field");
-        Assertions.assertTrue(body.contains("\"nextPageToken\""), "Response should contain nextPageToken field");
+        Assertions.assertTrue(
+                body.contains("\"totalSize\""), "Response should contain totalSize field");
+        Assertions.assertTrue(
+                body.contains("\"pageSize\""), "Response should contain pageSize field");
+        Assertions.assertTrue(
+                body.contains("\"nextPageToken\""), "Response should contain nextPageToken field");
         // Verify empty array, not null
-        Assertions.assertTrue(body.contains("\"tasks\":[]") || body.contains("\"tasks\": []"),
+        Assertions.assertTrue(
+                body.contains("\"tasks\":[]") || body.contains("\"tasks\": []"),
                 "tasks should be empty array");
     }
 
@@ -1140,27 +1408,44 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     void constructorDoesNotResolveAgentCardInstances() {
         Instance<AgentCard> throwOnGet = TestInstances.throwOnGet();
 
-        Assertions.assertDoesNotThrow(() -> new RestHandler(throwOnGet, throwOnGet,
-                createCacheMetadata(), requestHandler, internalExecutor, null));
+        Assertions.assertDoesNotThrow(
+                () ->
+                        new RestHandler(
+                                throwOnGet,
+                                throwOnGet,
+                                createCacheMetadata(),
+                                requestHandler,
+                                internalExecutor,
+                                null));
     }
 
-    private static void assertProblemDetail(RestHandler.HTTPRestResponse response,
-                                            int expectedStatus, String expectedReason, String expectedMessage) {
+    private static void assertProblemDetail(
+            RestHandler.HTTPRestResponse response,
+            int expectedStatus,
+            String expectedReason,
+            String expectedMessage) {
         Assertions.assertEquals(expectedStatus, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
         Assertions.assertTrue(body.has("error"), "error wrapper should be present");
         JsonObject error = body.getAsJsonObject("error");
-        Assertions.assertEquals(expectedStatus, error.get("code").getAsInt(), "code field mismatch");
-        Assertions.assertEquals(expectedMessage, error.get("message").getAsString(), "message field mismatch");
+        Assertions.assertEquals(
+                expectedStatus, error.get("code").getAsInt(), "code field mismatch");
+        Assertions.assertEquals(
+                expectedMessage, error.get("message").getAsString(), "message field mismatch");
         Assertions.assertTrue(error.has("status"), "status field should be present");
         Assertions.assertTrue(error.has("details"), "details field should be present");
         var details = error.getAsJsonArray("details");
         Assertions.assertFalse(details.isEmpty(), "details array should not be empty");
         JsonObject detail = details.get(0).getAsJsonObject();
-        Assertions.assertEquals("type.googleapis.com/google.rpc.ErrorInfo", detail.get("@type").getAsString(), "@type field mismatch");
-        Assertions.assertEquals(expectedReason, detail.get("reason").getAsString(), "reason field mismatch");
-        Assertions.assertEquals("a2a-protocol.org", detail.get("domain").getAsString(), "domain field mismatch");
+        Assertions.assertEquals(
+                "type.googleapis.com/google.rpc.ErrorInfo",
+                detail.get("@type").getAsString(),
+                "@type field mismatch");
+        Assertions.assertEquals(
+                expectedReason, detail.get("reason").getAsString(), "reason field mismatch");
+        Assertions.assertEquals(
+                "a2a-protocol.org", detail.get("domain").getAsString(), "domain field mismatch");
     }
 
     @Test
@@ -1168,10 +1453,13 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         // A non-A2AError exception must not leak its message to the client
         RequestHandler mocked = Mockito.mock(RequestHandler.class);
         Mockito.doThrow(new RuntimeException("sensitive detail: /var/lib/secret/config.db"))
-                .when(mocked).onMessageSend(Mockito.any(), Mockito.any());
+                .when(mocked)
+                .onMessageSend(Mockito.any(), Mockito.any());
 
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), mocked, internalExecutor);
-        String requestBody = """
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), mocked, internalExecutor);
+        String requestBody =
+                """
                 {
                   "message": {
                     "messageId": "message-1234",
@@ -1180,7 +1468,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                     "parts": [{"text": "hello"}],
                     "metadata": {}
                   }
-                }""";
+                }\
+                """;
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
@@ -1188,7 +1477,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         JsonObject error = body.getAsJsonObject("error");
         Assertions.assertEquals(500, error.get("code").getAsInt());
         Assertions.assertEquals("Internal error", error.get("message").getAsString());
-        Assertions.assertFalse(error.get("message").getAsString().contains("sensitive"),
+        Assertions.assertFalse(
+                error.get("message").getAsString().contains("sensitive"),
                 "Internal exception message must not be leaked to the client");
     }
 
@@ -1197,7 +1487,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = versionTestHandler();
         taskStore.save(MINIMAL_TASK, false);
 
-        assertVersionRejected(handler.getTask(incompatibleVersionContext(), "", MINIMAL_TASK.id(), null));
+        assertVersionRejected(
+                handler.getTask(incompatibleVersionContext(), "", MINIMAL_TASK.id(), null));
     }
 
     @Test
@@ -1205,8 +1496,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = versionTestHandler();
         taskStore.save(MINIMAL_TASK, false);
 
-        assertVersionRejected(handler.listTasks(incompatibleVersionContext(), "",
-                MINIMAL_TASK.contextId(), null, null, null, null, null, null));
+        assertVersionRejected(
+                handler.listTasks(
+                        incompatibleVersionContext(),
+                        "",
+                        MINIMAL_TASK.contextId(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
     }
 
     @Test
@@ -1218,7 +1518,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         // waits forever for a final event rather than failing the assertion.
         agentExecutorCancel = (context, agentEmitter) -> agentEmitter.cancel();
 
-        assertVersionRejected(handler.cancelTask(incompatibleVersionContext(), "", "{}", MINIMAL_TASK.id()));
+        assertVersionRejected(
+                handler.cancelTask(incompatibleVersionContext(), "", "{}", MINIMAL_TASK.id()));
     }
 
     @Test
@@ -1226,15 +1527,19 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = versionTestHandler();
         taskStore.save(MINIMAL_TASK, false);
 
-        String requestBody = """
-            {
-              "id": "config-1",
-              "taskId": "%s",
-              "url": "http://example.com"
-            }""".formatted(MINIMAL_TASK.id());
+        String requestBody =
+                """
+                {
+                  "id": "config-1",
+                  "taskId": "%s",
+                  "url": "http://example.com"
+                }\
+                """
+                        .formatted(MINIMAL_TASK.id());
 
-        assertVersionRejected(handler.createTaskPushNotificationConfiguration(
-                incompatibleVersionContext(), "", requestBody, MINIMAL_TASK.id()));
+        assertVersionRejected(
+                handler.createTaskPushNotificationConfiguration(
+                        incompatibleVersionContext(), "", requestBody, MINIMAL_TASK.id()));
     }
 
     @Test
@@ -1242,8 +1547,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = versionTestHandler();
         taskStore.save(MINIMAL_TASK, false);
 
-        assertVersionRejected(handler.getTaskPushNotificationConfiguration(
-                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
+        assertVersionRejected(
+                handler.getTaskPushNotificationConfiguration(
+                        incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
     }
 
     @Test
@@ -1251,8 +1557,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = versionTestHandler();
         taskStore.save(MINIMAL_TASK, false);
 
-        assertVersionRejected(handler.listTaskPushNotificationConfigurations(
-                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "10", ""));
+        assertVersionRejected(
+                handler.listTaskPushNotificationConfigurations(
+                        incompatibleVersionContext(), "", MINIMAL_TASK.id(), "10", ""));
     }
 
     @Test
@@ -1260,8 +1567,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = versionTestHandler();
         taskStore.save(MINIMAL_TASK, false);
 
-        assertVersionRejected(handler.deleteTaskPushNotificationConfiguration(
-                incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
+        assertVersionRejected(
+                handler.deleteTaskPushNotificationConfiguration(
+                        incompatibleVersionContext(), "", MINIMAL_TASK.id(), "config-1"));
     }
 
     @Test
@@ -1270,22 +1578,36 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard extended = AgentCard.builder(card).description("extended").build();
         Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
 
-        RestHandler handler = new RestHandler(new FixedInstance<>(card), extendedInstance,
-                createCacheMetadata(card), requestHandler, internalExecutor, null);
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(card),
+                        extendedInstance,
+                        createCacheMetadata(card),
+                        requestHandler,
+                        internalExecutor,
+                        null);
 
         assertVersionRejected(handler.getExtendedAgentCard(incompatibleVersionContext(), ""));
     }
 
     @Test
     public void testExtendedAgentCardWithRouterKnownTenant() {
-        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
-                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
+        AgentCard cardWithExtCapability =
+                AgentCard.builder(CARD)
+                        .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build())
+                        .build();
         AgentCard tenantCard = AgentCard.builder(cardWithExtCapability).name("acme-card").build();
-        AgentCardRouter router = tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
+        AgentCardRouter router =
+                tenant -> "acme".equals(tenant) ? tenantCard : cardWithExtCapability;
 
-        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
-                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
-                new FixedInstance<>(router));
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(cardWithExtCapability),
+                        null,
+                        createCacheMetadata(cardWithExtCapability),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
 
         RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
 
@@ -1296,39 +1618,59 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testExtendedAgentCardWithRouterReturnsNull() {
-        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
-                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override
-            public AgentCard resolveExtendedCard(String tenant) {
-                return null;
-            }
+        AgentCard cardWithExtCapability =
+                AgentCard.builder(CARD)
+                        .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build())
+                        .build();
+        AgentCardRouter router =
+                new AgentCardRouter() {
+                    @Override
+                    public AgentCard resolveExtendedCard(String tenant) {
+                        return null;
+                    }
 
-            @Override
-            public AgentCard resolvePublicCard(String tenant) {
-                return cardWithExtCapability;
-            }
-        };
+                    @Override
+                    public AgentCard resolvePublicCard(String tenant) {
+                        return cardWithExtCapability;
+                    }
+                };
 
-        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), null,
-                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor,
-                new FixedInstance<>(router));
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(cardWithExtCapability),
+                        null,
+                        createCacheMetadata(cardWithExtCapability),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
 
         RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
 
-        assertProblemDetail(response, 400,
-                "EXTENDED_AGENT_CARD_NOT_CONFIGURED", "Extended Card not configured");
+        assertProblemDetail(
+                response,
+                400,
+                "EXTENDED_AGENT_CARD_NOT_CONFIGURED",
+                "Extended Card not configured");
     }
 
     @Test
     public void testExtendedAgentCardWithoutRouter() {
-        AgentCard cardWithExtCapability = AgentCard.builder(CARD)
-                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
-        AgentCard extended = AgentCard.builder(cardWithExtCapability).description("extended").build();
+        AgentCard cardWithExtCapability =
+                AgentCard.builder(CARD)
+                        .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build())
+                        .build();
+        AgentCard extended =
+                AgentCard.builder(cardWithExtCapability).description("extended").build();
         Instance<AgentCard> extendedInstance = new FixedInstance<>(extended);
 
-        RestHandler handler = new RestHandler(new FixedInstance<>(cardWithExtCapability), extendedInstance,
-                createCacheMetadata(cardWithExtCapability), requestHandler, internalExecutor, null);
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(cardWithExtCapability),
+                        extendedInstance,
+                        createCacheMetadata(cardWithExtCapability),
+                        requestHandler,
+                        internalExecutor,
+                        null);
 
         RestHandler.HTTPRestResponse response = handler.getExtendedAgentCard(callContext, "acme");
 
@@ -1343,13 +1685,27 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testGetPublicAgentCard_withRouterKnownTenant_returns200() {
         AgentCard tenantCard = AgentCard.builder(CARD).name("acme-public").build();
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override public AgentCard resolveExtendedCard(String t) { return null; }
-            @Override public AgentCard resolvePublicCard(String t) { return "acme".equals(t) ? tenantCard : null; }
-        };
+        AgentCardRouter router =
+                new AgentCardRouter() {
+                    @Override
+                    public AgentCard resolveExtendedCard(String t) {
+                        return null;
+                    }
 
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
-                createCacheMetadata(CARD), requestHandler, internalExecutor, new FixedInstance<>(router));
+                    @Override
+                    public AgentCard resolvePublicCard(String t) {
+                        return "acme".equals(t) ? tenantCard : null;
+                    }
+                };
+
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(CARD),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
 
         RestHandler.HTTPRestResponse response = handler.getAgentCard("acme");
 
@@ -1359,13 +1715,27 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetPublicAgentCard_withRouterUnknownTenant_returns404() {
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override public AgentCard resolveExtendedCard(String t) { return null; }
-            @Override public AgentCard resolvePublicCard(String t) { return null; }
-        };
+        AgentCardRouter router =
+                new AgentCardRouter() {
+                    @Override
+                    public AgentCard resolveExtendedCard(String t) {
+                        return null;
+                    }
 
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
-                createCacheMetadata(CARD), requestHandler, internalExecutor, new FixedInstance<>(router));
+                    @Override
+                    public AgentCard resolvePublicCard(String t) {
+                        return null;
+                    }
+                };
+
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(CARD),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
 
         RestHandler.HTTPRestResponse response = handler.getAgentCard("unknown");
 
@@ -1375,8 +1745,14 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testGetPublicAgentCard_noRouterWithTenant_returnsDefaultCard() {
         // Single-tenant server: no AgentCardRouter configured; tenant segment is ignored.
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
-                createCacheMetadata(CARD), requestHandler, internalExecutor, null);
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(CARD),
+                        requestHandler,
+                        internalExecutor,
+                        null);
 
         RestHandler.HTTPRestResponse response = handler.getAgentCard("any-tenant");
 
@@ -1386,8 +1762,14 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetPublicAgentCard_noTenant_returnsDefaultCard() {
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null,
-                createCacheMetadata(CARD), requestHandler, internalExecutor, null);
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(CARD),
+                        requestHandler,
+                        internalExecutor,
+                        null);
 
         RestHandler.HTTPRestResponse response = handler.getAgentCard((String) null);
 
@@ -1416,13 +1798,16 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         return AgentCard.builder()
                 .name("test-card")
                 .description("Test card with version 1.0")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:9999")))
+                .supportedInterfaces(
+                        Collections.singletonList(
+                                new AgentInterface("HTTP+JSON", "http://localhost:9999")))
                 .version("1.0.0")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .extendedAgentCard(true)
-                        .build())
+                .capabilities(
+                        AgentCapabilities.builder()
+                                .streaming(true)
+                                .pushNotifications(true)
+                                .extendedAgentCard(true)
+                                .build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
@@ -1439,7 +1824,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
      * {@link #versionTestCard()} and is therefore incompatible under section 3.6.2.
      */
     private static ServerCallContext incompatibleVersionContext() {
-        return new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "2.0");
+        return new ServerCallContext(
+                UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "2.0");
     }
 
     /**
@@ -1449,7 +1835,10 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
      * @param response the response an operation returned
      */
     private static void assertVersionRejected(RestHandler.HTTPRestResponse response) {
-        assertProblemDetail(response, 400, "VERSION_NOT_SUPPORTED",
+        assertProblemDetail(
+                response,
+                400,
+                "VERSION_NOT_SUPPORTED",
                 "Protocol version '2.0' is not supported. Supported versions: [1.0]");
     }
 
@@ -1460,101 +1849,158 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
      * @param response the streaming response under test
      * @throws InterruptedException if the wait for termination is interrupted
      */
-    private static void assertVersionRejectedInStream(RestHandler.HTTPRestStreamingResponse response)
-            throws InterruptedException {
+    private static void assertVersionRejectedInStream(
+            RestHandler.HTTPRestStreamingResponse response) throws InterruptedException {
         AtomicBoolean errorFound = new AtomicBoolean(false);
         CountDownLatch latch = new CountDownLatch(1);
 
-        response.getPublisher().subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-            }
+        response.getPublisher()
+                .subscribe(
+                        new Flow.Subscriber<>() {
+                            @Override
+                            public void onSubscribe(Flow.Subscription subscription) {
+                                subscription.request(Long.MAX_VALUE);
+                            }
 
-            @Override
-            public void onNext(String item) {
-                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
-                if (!body.has("error")) {
-                    return;
-                }
-                JsonObject error = body.getAsJsonObject("error");
-                var details = error.has("details") ? error.getAsJsonArray("details") : null;
-                if (details != null && !details.isEmpty()
-                        && "VERSION_NOT_SUPPORTED".equals(details.get(0).getAsJsonObject().get("reason").getAsString())
-                        && error.get("message").getAsString().contains("2.0")) {
-                    errorFound.set(true);
-                }
-            }
+                            @Override
+                            public void onNext(String item) {
+                                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                                if (!body.has("error")) {
+                                    return;
+                                }
+                                JsonObject error = body.getAsJsonObject("error");
+                                var details =
+                                        error.has("details")
+                                                ? error.getAsJsonArray("details")
+                                                : null;
+                                if (details != null
+                                        && !details.isEmpty()
+                                        && "VERSION_NOT_SUPPORTED"
+                                                .equals(
+                                                        details.get(0)
+                                                                .getAsJsonObject()
+                                                                .get("reason")
+                                                                .getAsString())
+                                        && error.get("message").getAsString().contains("2.0")) {
+                                    errorFound.set(true);
+                                }
+                            }
 
-            @Override
-            public void onError(Throwable throwable) {
-                latch.countDown();
-            }
+                            @Override
+                            public void onError(Throwable throwable) {
+                                latch.countDown();
+                            }
 
-            @Override
-            public void onComplete() {
-                latch.countDown();
-            }
-        });
+                            @Override
+                            public void onComplete() {
+                                latch.countDown();
+                            }
+                        });
 
-        Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected the stream to terminate within timeout");
-        Assertions.assertTrue(errorFound.get(), "Expected a VERSION_NOT_SUPPORTED event in the stream");
+        Assertions.assertTrue(
+                latch.await(2, TimeUnit.SECONDS),
+                "Expected the stream to terminate within timeout");
+        Assertions.assertTrue(
+                errorFound.get(), "Expected a VERSION_NOT_SUPPORTED event in the stream");
     }
 
     @Test
     public void testGetAgentCardReturns404WhenNoPublicCard() {
-        RestHandler handler = new RestHandler(null, createCacheMetadata(CARD), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(null, createCacheMetadata(CARD), requestHandler, internalExecutor);
         RestHandler.HTTPRestResponse response = handler.getAgentCard();
         Assertions.assertEquals(404, response.getStatusCode());
     }
 
     @Test
     public void testGetAgentCardWithTenantReturns404WhenNoPublicCard() {
-        RestHandler handler = new RestHandler(null, createCacheMetadata(CARD), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(null, createCacheMetadata(CARD), requestHandler, internalExecutor);
         RestHandler.HTTPRestResponse response = handler.getAgentCard("some-tenant");
         Assertions.assertEquals(404, response.getStatusCode());
     }
+
     @Test
     public void testUnknownOperationTenantIsInvalidParams() {
         AgentCardRouter router = tenant -> null;
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
-                requestHandler, internalExecutor, new FixedInstance<>(router));
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
 
-        assertProblemDetail(handler.sendMessage(callContext, "unknown", "{broken"), 422,
-                "INVALID_PARAMS", "No public agent card registered for tenant: unknown");
+        assertProblemDetail(
+                handler.sendMessage(callContext, "unknown", "{broken"),
+                422,
+                "INVALID_PARAMS",
+                "No public agent card registered for tenant: unknown");
     }
 
     @Test
     public void testInvalidTenantPrecedesVersionAndStreamingBody() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         String message = "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed";
-        assertProblemDetail(handler.sendMessage(incompatibleVersionContext(), "bad/tenant", "{broken"),
-                422, "INVALID_PARAMS", message);
-        RestHandler.HTTPRestStreamingResponse response = Assertions.assertInstanceOf(
-                RestHandler.HTTPRestStreamingResponse.class,
-                handler.sendStreamingMessage(callContext, "bad/tenant", "{broken"));
+        assertProblemDetail(
+                handler.sendMessage(incompatibleVersionContext(), "bad/tenant", "{broken"),
+                422,
+                "INVALID_PARAMS",
+                message);
+        RestHandler.HTTPRestStreamingResponse response =
+                Assertions.assertInstanceOf(
+                        RestHandler.HTTPRestStreamingResponse.class,
+                        handler.sendStreamingMessage(callContext, "bad/tenant", "{broken"));
         assertSingleStreamProblem(response, 422, "INVALID_PARAMS", message);
     }
 
     @Test
     public void testDisabledStreamingPrecedesMalformedBody() {
-        AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
-        RestHandler handler = new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
-        assertProblemDetail(handler.sendStreamingMessage(callContext, "", "{broken"), 400,
-                "UNSUPPORTED_OPERATION", "Streaming is not supported by the agent");
+        AgentCard card =
+                AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        RestHandler handler =
+                new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
+        assertProblemDetail(
+                handler.sendStreamingMessage(callContext, "", "{broken"),
+                400,
+                "UNSUPPORTED_OPERATION",
+                "Streaming is not supported by the agent");
     }
 
-    private static void assertSingleStreamProblem(RestHandler.HTTPRestStreamingResponse response,
-            int status, String reason, String message) {
+    private static void assertSingleStreamProblem(
+            RestHandler.HTTPRestStreamingResponse response,
+            int status,
+            String reason,
+            String message) {
         CompletableFuture<String> event = new CompletableFuture<>();
-        response.getPublisher().subscribe(new Flow.Subscriber<>() {
-            @Override public void onSubscribe(Flow.Subscription subscription) { subscription.request(Long.MAX_VALUE); }
-            @Override public void onNext(String item) { event.complete(item); }
-            @Override public void onError(Throwable failure) { event.completeExceptionally(failure); }
-            @Override public void onComplete() { }
-        });
-        assertProblemDetail(new RestHandler.HTTPRestResponse(status, APPLICATION_JSON, event.join()),
-                status, reason, message);
+        response.getPublisher()
+                .subscribe(
+                        new Flow.Subscriber<>() {
+                            @Override
+                            public void onSubscribe(Flow.Subscription subscription) {
+                                subscription.request(Long.MAX_VALUE);
+                            }
+
+                            @Override
+                            public void onNext(String item) {
+                                event.complete(item);
+                            }
+
+                            @Override
+                            public void onError(Throwable failure) {
+                                event.completeExceptionally(failure);
+                            }
+
+                            @Override
+                            public void onComplete() {}
+                        });
+        assertProblemDetail(
+                new RestHandler.HTTPRestResponse(status, APPLICATION_JSON, event.join()),
+                status,
+                reason,
+                message);
     }
 
     @Test
@@ -1563,10 +2009,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Mockito.when(router.resolvePublicCard("acme")).thenReturn(CARD);
         RequestHandler delegate = Mockito.mock(RequestHandler.class);
         Mockito.when(delegate.onGetTask(Mockito.any(), Mockito.any())).thenReturn(MINIMAL_TASK);
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
-                delegate, internalExecutor, new FixedInstance<>(router));
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(),
+                        delegate,
+                        internalExecutor,
+                        new FixedInstance<>(router));
 
-        Assertions.assertEquals(200, handler.getTask(callContext, "/acme/", "task", null).getStatusCode());
+        Assertions.assertEquals(
+                200, handler.getTask(callContext, "/acme/", "task", null).getStatusCode());
         ArgumentCaptor<TaskQueryParams> params = ArgumentCaptor.forClass(TaskQueryParams.class);
         Mockito.verify(delegate).onGetTask(params.capture(), Mockito.same(callContext));
         Assertions.assertEquals("acme", params.getValue().tenant());
@@ -1578,47 +2031,96 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testPublicDiscoveryValidatesDefaultAndRouterCardsOnce() {
         AgentCard routed = AgentCard.builder(CARD).name("routed").build();
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override public AgentCard resolvePublicCard(String tenant) { return routed; }
-            @Override public AgentCard resolveExtendedCard(String tenant) { return null; }
-        };
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
-                requestHandler, internalExecutor, new FixedInstance<>(router));
-        try (MockedStatic<AgentCardValidator> validator = Mockito.mockStatic(AgentCardValidator.class, Mockito.CALLS_REAL_METHODS)) {
+        AgentCardRouter router =
+                new AgentCardRouter() {
+                    @Override
+                    public AgentCard resolvePublicCard(String tenant) {
+                        return routed;
+                    }
+
+                    @Override
+                    public AgentCard resolveExtendedCard(String tenant) {
+                        return null;
+                    }
+                };
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
+        try (MockedStatic<AgentCardValidator> validator =
+                Mockito.mockStatic(AgentCardValidator.class, Mockito.CALLS_REAL_METHODS)) {
             for (int i = 0; i < 2; i++) {
                 Assertions.assertEquals(200, handler.getAgentCard().getStatusCode());
                 RestHandler.HTTPRestResponse response = handler.getAgentCard("acme");
                 Assertions.assertEquals(200, response.getStatusCode());
-                Assertions.assertEquals("routed", JsonParser.parseString(response.getBody()).getAsJsonObject().get("name").getAsString());
+                Assertions.assertEquals(
+                        "routed",
+                        JsonParser.parseString(response.getBody())
+                                .getAsJsonObject()
+                                .get("name")
+                                .getAsString());
             }
-            validator.verify(() -> AgentCardValidator.validateTransportConfiguration(CARD), Mockito.times(1));
-            validator.verify(() -> AgentCardValidator.validateTransportConfiguration(routed), Mockito.times(1));
+            validator.verify(
+                    () -> AgentCardValidator.validateTransportConfiguration(CARD),
+                    Mockito.times(1));
+            validator.verify(
+                    () -> AgentCardValidator.validateTransportConfiguration(routed),
+                    Mockito.times(1));
         }
     }
 
     @Test
     public void testDiscoveryValidationFailureCanRetry() {
-        AgentCardRouter router = new AgentCardRouter() {
-            @Override public AgentCard resolvePublicCard(String tenant) { return CARD; }
-            @Override public AgentCard resolveExtendedCard(String tenant) { return null; }
-        };
-        RestHandler handler = new RestHandler(new FixedInstance<>(CARD), null, createCacheMetadata(),
-                requestHandler, internalExecutor, new FixedInstance<>(router));
-        try (MockedStatic<AgentCardValidator> validator = Mockito.mockStatic(AgentCardValidator.class, Mockito.CALLS_REAL_METHODS)) {
-            validator.when(() -> AgentCardValidator.validateTransportConfiguration(CARD))
-                    .thenThrow(new IllegalArgumentException("invalid transport")).thenCallRealMethod();
+        AgentCardRouter router =
+                new AgentCardRouter() {
+                    @Override
+                    public AgentCard resolvePublicCard(String tenant) {
+                        return CARD;
+                    }
+
+                    @Override
+                    public AgentCard resolveExtendedCard(String tenant) {
+                        return null;
+                    }
+                };
+        RestHandler handler =
+                new RestHandler(
+                        new FixedInstance<>(CARD),
+                        null,
+                        createCacheMetadata(),
+                        requestHandler,
+                        internalExecutor,
+                        new FixedInstance<>(router));
+        try (MockedStatic<AgentCardValidator> validator =
+                Mockito.mockStatic(AgentCardValidator.class, Mockito.CALLS_REAL_METHODS)) {
+            validator
+                    .when(() -> AgentCardValidator.validateTransportConfiguration(CARD))
+                    .thenThrow(new IllegalArgumentException("invalid transport"))
+                    .thenCallRealMethod();
             validator.clearInvocations();
             assertProblemDetail(handler.getAgentCard("acme"), 500, "INTERNAL", "Internal error");
             Assertions.assertEquals(200, handler.getAgentCard("acme").getStatusCode());
             Assertions.assertEquals(200, handler.getAgentCard("acme").getStatusCode());
-            validator.verify(() -> AgentCardValidator.validateTransportConfiguration(CARD), Mockito.times(2));
+            validator.verify(
+                    () -> AgentCardValidator.validateTransportConfiguration(CARD),
+                    Mockito.times(2));
         }
     }
 
     @Test
     public void testPublicDiscoveryNeverExposesOnlyExtendedCard() {
-        RestHandler handler = new RestHandler(FixedInstance.empty(), new FixedInstance<>(CARD), createCacheMetadata(),
-                requestHandler, internalExecutor, null);
+        RestHandler handler =
+                new RestHandler(
+                        FixedInstance.empty(),
+                        new FixedInstance<>(CARD),
+                        createCacheMetadata(),
+                        requestHandler,
+                        internalExecutor,
+                        null);
         RestHandler.HTTPRestResponse response = handler.getAgentCard();
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("text/plain", response.getContentType());
@@ -1627,22 +2129,40 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDiscoveryInvalidTenantRetainsSanitized500() {
-        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        RestHandler handler =
+                new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         assertProblemDetail(handler.getAgentCard("bad/tenant"), 500, "INTERNAL", "Internal error");
-        assertProblemDetail(handler.getExtendedAgentCard(callContext, "bad/tenant"), 500, "INTERNAL", "Internal error");
+        assertProblemDetail(
+                handler.getExtendedAgentCard(callContext, "bad/tenant"),
+                500,
+                "INTERNAL",
+                "Internal error");
     }
 
     @Test
     public void testExtendedDiscoveryDistinguishesCapabilityAndMissingCard() {
-        AgentCard disabled = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
-        RestHandler handler = new RestHandler(disabled, createCacheMetadata(disabled), requestHandler, internalExecutor);
-        assertProblemDetail(handler.getExtendedAgentCard(callContext, ""), 400,
-                "UNSUPPORTED_OPERATION", "This operation is not supported");
-        AgentCard enabled = AgentCard.builder(disabled)
-                .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build()).build();
-        handler = new RestHandler(enabled, createCacheMetadata(enabled), requestHandler, internalExecutor);
-        assertProblemDetail(handler.getExtendedAgentCard(callContext, ""), 400,
-                "EXTENDED_AGENT_CARD_NOT_CONFIGURED", "Extended Card not configured");
+        AgentCard disabled =
+                AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
+        RestHandler handler =
+                new RestHandler(
+                        disabled, createCacheMetadata(disabled), requestHandler, internalExecutor);
+        assertProblemDetail(
+                handler.getExtendedAgentCard(callContext, ""),
+                400,
+                "UNSUPPORTED_OPERATION",
+                "This operation is not supported");
+        AgentCard enabled =
+                AgentCard.builder(disabled)
+                        .capabilities(AgentCapabilities.builder().extendedAgentCard(true).build())
+                        .build();
+        handler =
+                new RestHandler(
+                        enabled, createCacheMetadata(enabled), requestHandler, internalExecutor);
+        assertProblemDetail(
+                handler.getExtendedAgentCard(callContext, ""),
+                400,
+                "EXTENDED_AGENT_CARD_NOT_CONFIGURED",
+                "Extended Card not configured");
     }
 
     private RequestHandler validationHandler;
@@ -1651,13 +2171,30 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     private void validationFixture(int conflict) {
         validationHandler = Mockito.mock(RequestHandler.class);
-        AgentCard card = AgentCard.builder(CARD)
-                .capabilities(AgentCapabilities.builder().streaming(conflict != 3).pushNotifications(conflict != 3)
-                        .extensions(conflict == 2 ? List.of(AgentExtension.builder().uri("urn:test:required")
-                                .required(true).build()) : List.of()).build()).build();
-        validationRestHandler = new RestHandler(card, createCacheMetadata(card), validationHandler, Runnable::run);
-        validationContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of(), new HashSet<>(),
-                conflict == 1 ? "2.0" : "1.0");
+        AgentCard card =
+                AgentCard.builder(CARD)
+                        .capabilities(
+                                AgentCapabilities.builder()
+                                        .streaming(conflict != 3)
+                                        .pushNotifications(conflict != 3)
+                                        .extensions(
+                                                conflict == 2
+                                                        ? List.of(
+                                                                AgentExtension.builder()
+                                                                        .uri("urn:test:required")
+                                                                        .required(true)
+                                                                        .build())
+                                                        : List.of())
+                                        .build())
+                        .build();
+        validationRestHandler =
+                new RestHandler(card, createCacheMetadata(card), validationHandler, Runnable::run);
+        validationContext =
+                new ServerCallContext(
+                        UnauthenticatedUser.INSTANCE,
+                        Map.of(),
+                        new HashSet<>(),
+                        conflict == 1 ? "2.0" : "1.0");
     }
 
     private void assertRawInputError(RestHandler.HTTPRestResponse response, String message) {
@@ -1665,31 +2202,40 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     private void assertRawVersionError(RestHandler.HTTPRestResponse response) {
-        assertRawInputError(response, 400, "VERSION_NOT_SUPPORTED",
+        assertRawInputError(
+                response,
+                400,
+                "VERSION_NOT_SUPPORTED",
                 "Protocol version '2.0' is not supported. Supported versions: [1.0]");
     }
 
-    private void assertRawInputError(RestHandler.HTTPRestResponse response, int status, String reason, String message) {
+    private void assertRawInputError(
+            RestHandler.HTTPRestResponse response, int status, String reason, String message) {
         Assertions.assertEquals(status, response.getStatusCode());
         Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
         Assertions.assertFalse(response instanceof RestHandler.HTTPRestStreamingResponse);
         Assertions.assertEquals(Map.of(), response.getHeaders());
-        JsonObject expected = JsonParser.parseString("""
-                {"error":{"code":422,"status":"INVALID_ARGUMENT","message":"", "details":[{
-                "@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_PARAMS",
-                "domain":"a2a-protocol.org","metadata":{}}]}}
-                """).getAsJsonObject();
+        JsonObject expected =
+                JsonParser.parseString(
+                                """
+                                {"error":{"code":422,"status":"INVALID_ARGUMENT","message":"", "details":[{
+                                "@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"INVALID_PARAMS",
+                                "domain":"a2a-protocol.org","metadata":{}}]}}
+                                """)
+                        .getAsJsonObject();
         JsonObject error = expected.getAsJsonObject("error");
         error.addProperty("code", status);
-        error.addProperty("status", reason.equals("VERSION_NOT_SUPPORTED") ? "UNIMPLEMENTED" : "INVALID_ARGUMENT");
+        error.addProperty(
+                "status",
+                reason.equals("VERSION_NOT_SUPPORTED") ? "UNIMPLEMENTED" : "INVALID_ARGUMENT");
         error.addProperty("message", message);
         error.getAsJsonArray("details").get(0).getAsJsonObject().addProperty("reason", reason);
         Assertions.assertEquals(expected, JsonParser.parseString(response.getBody()));
         Mockito.verifyNoInteractions(validationHandler);
     }
 
-    private void assertBadTaskPath(String taskId,
-            Function<String, RestHandler.HTTPRestResponse> operation) {
+    private void assertBadTaskPath(
+            String taskId, Function<String, RestHandler.HTTPRestResponse> operation) {
         for (int conflict = 0; conflict < 4; conflict++) {
             validationFixture(conflict);
             assertRawInputError(operation.apply(taskId), "bad task id");
@@ -1700,11 +2246,14 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testGetTaskRawInputValidationOrder(String taskId) {
-        assertBadTaskPath(taskId, id -> validationRestHandler.getTask(validationContext, "", id, "bad"));
+        assertBadTaskPath(
+                taskId, id -> validationRestHandler.getTask(validationContext, "", id, "bad"));
         for (String history : List.of("", "bad", "2147483648")) {
             for (int conflict = 0; conflict < 3; conflict++) {
                 validationFixture(conflict);
-                assertRawInputError(validationRestHandler.getTask(validationContext, "", "task", history), "bad historyLength");
+                assertRawInputError(
+                        validationRestHandler.getTask(validationContext, "", "task", history),
+                        "bad historyLength");
             }
         }
         validationFixture(1);
@@ -1716,33 +2265,44 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testCancelTaskPathValidationOrder(String taskId) {
-        assertBadTaskPath(taskId, id -> validationRestHandler.cancelTask(validationContext, "", "{broken", id));
+        assertBadTaskPath(
+                taskId,
+                id -> validationRestHandler.cancelTask(validationContext, "", "{broken", id));
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testSubscribeToTaskPathValidationOrder(String taskId) {
-        assertBadTaskPath(taskId, id -> validationRestHandler.subscribeToTask(validationContext, "", id));
+        assertBadTaskPath(
+                taskId, id -> validationRestHandler.subscribeToTask(validationContext, "", id));
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testCreatePushConfigPathValidationOrder(String taskId) {
-        assertBadTaskPath(taskId,
-                id -> validationRestHandler.createTaskPushNotificationConfiguration(validationContext, "", "{broken", id));
+        assertBadTaskPath(
+                taskId,
+                id ->
+                        validationRestHandler.createTaskPushNotificationConfiguration(
+                                validationContext, "", "{broken", id));
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testGetPushConfigPathValidationOrder(String id) {
-        assertBadTaskPath(id,
-                taskId -> validationRestHandler.getTaskPushNotificationConfiguration(validationContext, "", taskId, id));
+        assertBadTaskPath(
+                id,
+                taskId ->
+                        validationRestHandler.getTaskPushNotificationConfiguration(
+                                validationContext, "", taskId, id));
         for (int conflict = 0; conflict < 4; conflict++) {
             validationFixture(conflict);
-            assertRawInputError(validationRestHandler.getTaskPushNotificationConfiguration(validationContext, "", "task", id),
+            assertRawInputError(
+                    validationRestHandler.getTaskPushNotificationConfiguration(
+                            validationContext, "", "task", id),
                     "bad configuration id");
         }
     }
@@ -1751,11 +2311,16 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testDeletePushConfigPathValidationOrder(String id) {
-        assertBadTaskPath(id,
-                taskId -> validationRestHandler.deleteTaskPushNotificationConfiguration(validationContext, "", taskId, id));
+        assertBadTaskPath(
+                id,
+                taskId ->
+                        validationRestHandler.deleteTaskPushNotificationConfiguration(
+                                validationContext, "", taskId, id));
         for (int conflict = 0; conflict < 4; conflict++) {
             validationFixture(conflict);
-            assertRawInputError(validationRestHandler.deleteTaskPushNotificationConfiguration(validationContext, "", "task", id),
+            assertRawInputError(
+                    validationRestHandler.deleteTaskPushNotificationConfiguration(
+                            validationContext, "", "task", id),
                     "bad config id");
         }
     }
@@ -1764,13 +2329,18 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     public void testListPushConfigsRawInputValidationOrder(String taskId) {
-        assertBadTaskPath(taskId,
-                id -> validationRestHandler.listTaskPushNotificationConfigurations(validationContext, "", id, "bad", null));
+        assertBadTaskPath(
+                taskId,
+                id ->
+                        validationRestHandler.listTaskPushNotificationConfigurations(
+                                validationContext, "", id, "bad", null));
         for (String page : List.of("", "bad", "2147483648")) {
             for (int conflict = 0; conflict < 4; conflict++) {
                 validationFixture(conflict);
-                assertRawInputError(validationRestHandler.listTaskPushNotificationConfigurations(
-                        validationContext, "", "task", page, null), "bad pageSize");
+                assertRawInputError(
+                        validationRestHandler.listTaskPushNotificationConfigurations(
+                                validationContext, "", "task", page, null),
+                        "bad pageSize");
             }
         }
     }
@@ -1780,14 +2350,31 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         for (String field : List.of("pageSize", "historyLength")) {
             for (int conflict = 0; conflict < 3; conflict++) {
                 validationFixture(conflict);
-                assertRawInputError(validationRestHandler.listTasks(validationContext, "", null, "invalid",
-                        field.equals("pageSize") ? "bad" : null, null, "also-bad", "invalid", null),
+                assertRawInputError(
+                        validationRestHandler.listTasks(
+                                validationContext,
+                                "",
+                                null,
+                                "invalid",
+                                field.equals("pageSize") ? "bad" : null,
+                                null,
+                                "also-bad",
+                                "invalid",
+                                null),
                         "Invalid number format in parameters");
             }
             validationFixture(1);
-            assertRawVersionError(validationRestHandler.listTasks(validationContext, "", null, null,
-                    field.equals("pageSize") ? "-1" : null, null,
-                    field.equals("historyLength") ? "-1" : null, null, null));
+            assertRawVersionError(
+                    validationRestHandler.listTasks(
+                            validationContext,
+                            "",
+                            null,
+                            null,
+                            field.equals("pageSize") ? "-1" : null,
+                            null,
+                            field.equals("historyLength") ? "-1" : null,
+                            null,
+                            null));
             Mockito.verifyNoInteractions(validationHandler);
         }
         for (String number : new String[] {null, "", "2"}) {
@@ -1795,17 +2382,32 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 validationFixture(0);
                 Mockito.when(validationHandler.onListTasks(Mockito.any(), Mockito.any()))
                         .thenReturn(new ListTasksResult(List.of()));
-                RestHandler.HTTPRestResponse response = validationRestHandler.listTasks(validationContext, "", null,
-                        "task_state_submitted", number, null, number, null, raw);
+                RestHandler.HTTPRestResponse response =
+                        validationRestHandler.listTasks(
+                                validationContext,
+                                "",
+                                null,
+                                "task_state_submitted",
+                                number,
+                                null,
+                                number,
+                                null,
+                                raw);
                 Assertions.assertEquals(200, response.getStatusCode());
                 Assertions.assertEquals(APPLICATION_JSON, response.getContentType());
                 ArgumentCaptor<ListTasksParams> params =
                         ArgumentCaptor.forClass(ListTasksParams.class);
                 Mockito.verify(validationHandler).onListTasks(params.capture(), Mockito.any());
                 Assertions.assertEquals(TaskState.TASK_STATE_SUBMITTED, params.getValue().status());
-                Assertions.assertEquals(number == null || number.isEmpty() ? null : Integer.valueOf(number), params.getValue().pageSize());
-                Assertions.assertEquals(number == null || number.isEmpty() ? null : Integer.valueOf(number), params.getValue().historyLength());
-                Assertions.assertEquals(raw == null || raw.isEmpty() ? null : Boolean.valueOf(raw), params.getValue().includeArtifacts());
+                Assertions.assertEquals(
+                        number == null || number.isEmpty() ? null : Integer.valueOf(number),
+                        params.getValue().pageSize());
+                Assertions.assertEquals(
+                        number == null || number.isEmpty() ? null : Integer.valueOf(number),
+                        params.getValue().historyLength());
+                Assertions.assertEquals(
+                        raw == null || raw.isEmpty() ? null : Boolean.valueOf(raw),
+                        params.getValue().includeArtifacts());
             }
         }
     }
@@ -1814,27 +2416,40 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testRawQueryDefaultsAndSuccessfulConversions() {
         for (String history : new String[] {null, "0", "2"}) {
             validationFixture(0);
-            Mockito.when(validationHandler.onGetTask(Mockito.any(), Mockito.any())).thenReturn(MINIMAL_TASK);
-            Assertions.assertEquals(200, validationRestHandler.getTask(validationContext, "", "task", history).getStatusCode());
-            ArgumentCaptor<TaskQueryParams> params =
-                    ArgumentCaptor.forClass(TaskQueryParams.class);
+            Mockito.when(validationHandler.onGetTask(Mockito.any(), Mockito.any()))
+                    .thenReturn(MINIMAL_TASK);
+            Assertions.assertEquals(
+                    200,
+                    validationRestHandler
+                            .getTask(validationContext, "", "task", history)
+                            .getStatusCode());
+            ArgumentCaptor<TaskQueryParams> params = ArgumentCaptor.forClass(TaskQueryParams.class);
             Mockito.verify(validationHandler).onGetTask(params.capture(), Mockito.any());
-            Assertions.assertEquals(history == null ? null : Integer.valueOf(history), params.getValue().historyLength());
+            Assertions.assertEquals(
+                    history == null ? null : Integer.valueOf(history),
+                    params.getValue().historyLength());
         }
         for (String page : new String[] {null, "0", "2"}) {
             for (String token : new String[] {null, "", "next"}) {
                 validationFixture(0);
-                Mockito.when(validationHandler.onListTaskPushNotificationConfigs(Mockito.any(), Mockito.any()))
+                Mockito.when(
+                                validationHandler.onListTaskPushNotificationConfigs(
+                                        Mockito.any(), Mockito.any()))
                         .thenReturn(new ListTaskPushNotificationConfigsResult(List.of()));
-                Assertions.assertEquals(200, validationRestHandler.listTaskPushNotificationConfigurations(
-                        validationContext, "", "task", page, token).getStatusCode());
+                Assertions.assertEquals(
+                        200,
+                        validationRestHandler
+                                .listTaskPushNotificationConfigurations(
+                                        validationContext, "", "task", page, token)
+                                .getStatusCode());
                 ArgumentCaptor<ListTaskPushNotificationConfigsParams> params =
                         ArgumentCaptor.forClass(ListTaskPushNotificationConfigsParams.class);
-                Mockito.verify(validationHandler).onListTaskPushNotificationConfigs(params.capture(), Mockito.any());
-                Assertions.assertEquals(page == null ? 0 : Integer.parseInt(page), params.getValue().pageSize());
+                Mockito.verify(validationHandler)
+                        .onListTaskPushNotificationConfigs(params.capture(), Mockito.any());
+                Assertions.assertEquals(
+                        page == null ? 0 : Integer.parseInt(page), params.getValue().pageSize());
                 Assertions.assertEquals(token == null ? "" : token, params.getValue().pageToken());
             }
         }
     }
-
 }

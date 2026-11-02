@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class AuthorizationCodeOAuthFlowTest {
@@ -15,12 +14,13 @@ class AuthorizationCodeOAuthFlowTest {
         Map<String, String> scopes = new HashMap<>();
         scopes.put("read", "Read access");
 
-        AuthorizationCodeOAuthFlow flow = new AuthorizationCodeOAuthFlow(
-                "https://auth.example.com/authorize",
-                "https://auth.example.com/refresh",
-                scopes,
-                "https://auth.example.com/token",
-                true);
+        AuthorizationCodeOAuthFlow flow =
+                new AuthorizationCodeOAuthFlow(
+                        "https://auth.example.com/authorize",
+                        "https://auth.example.com/refresh",
+                        scopes,
+                        "https://auth.example.com/token",
+                        true);
 
         scopes.put("write", "Write access");
 

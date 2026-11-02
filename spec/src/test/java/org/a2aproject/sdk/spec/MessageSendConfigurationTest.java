@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 class MessageSendConfigurationTest {
@@ -14,13 +13,15 @@ class MessageSendConfigurationTest {
     @Test
     void testConstruction_withAllFields() {
         List<String> acceptedOutputModes = List.of("text", "audio");
-        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
-                .id("id")
-                .taskId("task-123")
-                .url("https://example.com")
-                .build();
+        TaskPushNotificationConfig config =
+                TaskPushNotificationConfig.builder()
+                        .id("id")
+                        .taskId("task-123")
+                        .url("https://example.com")
+                        .build();
 
-        MessageSendConfiguration result = new MessageSendConfiguration(acceptedOutputModes, 3, config, Boolean.TRUE);
+        MessageSendConfiguration result =
+                new MessageSendConfiguration(acceptedOutputModes, 3, config, Boolean.TRUE);
 
         assertEquals(acceptedOutputModes, result.acceptedOutputModes());
         assertEquals(Integer.valueOf(3), result.historyLength());
@@ -40,7 +41,8 @@ class MessageSendConfigurationTest {
 
     @Test
     void testConstruction_negativeHistoryLength_throwsException() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> new MessageSendConfiguration(List.of("text"), -1, null, null));
     }
 
@@ -49,11 +51,14 @@ class MessageSendConfigurationTest {
         List<String> mutableModes = new ArrayList<>();
         mutableModes.add("text");
 
-        MessageSendConfiguration result = new MessageSendConfiguration(mutableModes, null, null, null);
+        MessageSendConfiguration result =
+                new MessageSendConfiguration(mutableModes, null, null, null);
         mutableModes.add("audio");
 
         assertEquals(List.of("text"), result.acceptedOutputModes());
-        assertThrows(UnsupportedOperationException.class, () -> result.acceptedOutputModes().add("video"));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> result.acceptedOutputModes().add("video"));
     }
 
     @Test
@@ -61,9 +66,8 @@ class MessageSendConfigurationTest {
         List<String> mutableModes = new ArrayList<>();
         mutableModes.add("text");
 
-        MessageSendConfiguration result = MessageSendConfiguration.builder()
-                .acceptedOutputModes(mutableModes)
-                .build();
+        MessageSendConfiguration result =
+                MessageSendConfiguration.builder().acceptedOutputModes(mutableModes).build();
         mutableModes.add("audio");
 
         assertEquals(List.of("text"), result.acceptedOutputModes());

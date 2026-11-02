@@ -25,7 +25,9 @@ public class AndroidA2AHttpClientProviderTest {
 
         A2AHttpClient client = provider.createWithSseConfig(config);
         assertNotNull(client);
-        assertInstanceOf(AndroidA2AHttpClient.class, client,
+        assertInstanceOf(
+                AndroidA2AHttpClient.class,
+                client,
                 "Provider should return AndroidA2AHttpClient when Android runtime is available");
     }
 
@@ -38,7 +40,8 @@ public class AndroidA2AHttpClientProviderTest {
     @Test
     public void testDoesNotSupportRedirectHeaderPolicy() {
         AndroidA2AHttpClientProvider provider = new AndroidA2AHttpClientProvider();
-        assertFalse(provider.supportsRedirectHeaderPolicy(),
+        assertFalse(
+                provider.supportsRedirectHeaderPolicy(),
                 "Android does not safely support cross-origin redirect header filtering");
     }
 
@@ -51,7 +54,9 @@ public class AndroidA2AHttpClientProviderTest {
     @Test
     public void testPriorityOnAndroid() {
         AndroidA2AHttpClientProvider provider = new AndroidA2AHttpClientProvider();
-        assertEquals(110, provider.priority(),
+        assertEquals(
+                110,
+                provider.priority(),
                 "Android provider should have priority 110 when Android runtime is available");
     }
 }

@@ -2,10 +2,9 @@ package org.a2aproject.sdk.client.http.vertx;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
-import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
 import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
 
 /**
@@ -23,7 +22,8 @@ import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
  */
 public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(VertxA2AHttpClientProvider.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(VertxA2AHttpClientProvider.class.getName());
     private static final boolean VERTX_AVAILABLE = isVertxAvailable();
 
     private static boolean isVertxAvailable() {
@@ -32,7 +32,11 @@ public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
             Class.forName("io.vertx.ext.web.client.WebClient");
             return true;
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.FINE, "Vert.x classes are not available on the classpath. Falling back to other providers.", ex);
+            LOGGER.log(
+                    Level.FINE,
+                    "Vert.x classes are not available on the classpath. Falling back to other"
+                            + " providers.",
+                    ex);
             return false;
         }
     }
@@ -41,15 +45,17 @@ public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
     public A2AHttpClient create() {
         if (!VERTX_AVAILABLE) {
             throw new IllegalStateException(
-                    "Vert.x classes are not available on the classpath. "
-                    + "Add io.vertx:vertx-web-client dependency or use the JDK HTTP client implementation.");
+                    "Vert.x classes are not available on the classpath. Add"
+                            + " io.vertx:vertx-web-client dependency or use the JDK HTTP client"
+                            + " implementation.");
         }
 
         // Reflection avoids a compile-time reference to VertxA2AHttpClient so that
         // this provider class can be loaded by ServiceLoader even when Vert.x jars
         // are absent from the classpath.
         try {
-            Class<?> clientClass = Class.forName("org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient");
+            Class<?> clientClass =
+                    Class.forName("org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient");
             return (A2AHttpClient) clientClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create VertxA2AHttpClient instance", e);
@@ -63,14 +69,17 @@ public final class VertxA2AHttpClientProvider implements A2AHttpClientProvider {
         }
         if (!VERTX_AVAILABLE) {
             throw new IllegalStateException(
-                    "Vert.x classes are not available on the classpath. "
-                    + "Add io.vertx:vertx-web-client dependency or use the JDK HTTP client implementation.");
+                    "Vert.x classes are not available on the classpath. Add"
+                            + " io.vertx:vertx-web-client dependency or use the JDK HTTP client"
+                            + " implementation.");
         }
         try {
-            Class<?> clientClass = Class.forName("org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient");
-            return (A2AHttpClient) clientClass
-                    .getMethod("withRedirectHeaderPolicy", RedirectHeaderPolicy.class)
-                    .invoke(null, configuration.redirectHeaderPolicy());
+            Class<?> clientClass =
+                    Class.forName("org.a2aproject.sdk.client.http.vertx.VertxA2AHttpClient");
+            return (A2AHttpClient)
+                    clientClass
+                            .getMethod("withRedirectHeaderPolicy", RedirectHeaderPolicy.class)
+                            .invoke(null, configuration.redirectHeaderPolicy());
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create VertxA2AHttpClient instance", e);
         }

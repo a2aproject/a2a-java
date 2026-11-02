@@ -21,10 +21,9 @@ import org.mapstruct.ReportingPolicy;
  * @see A2AMappers_v0_3
  */
 @MapperConfig(
-    unmappedTargetPolicy = ReportingPolicy.ERROR,
-    componentModel = "default",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
-)
+        unmappedTargetPolicy = ReportingPolicy.ERROR,
+        componentModel = "default",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface A03ToV10MapperConfig {
 
     /**

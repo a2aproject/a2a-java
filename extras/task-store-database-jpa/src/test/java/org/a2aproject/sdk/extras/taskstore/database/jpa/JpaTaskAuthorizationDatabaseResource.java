@@ -1,15 +1,15 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
+import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /** Real database startup deliberately fails when the engine is unavailable. */
-public abstract class JpaTaskAuthorizationDatabaseResource implements QuarkusTestResourceLifecycleManager {
+public abstract class JpaTaskAuthorizationDatabaseResource
+        implements QuarkusTestResourceLifecycleManager {
     private JdbcDatabaseContainer<?> database;
 
     protected abstract JdbcDatabaseContainer<?> createDatabase();
@@ -43,7 +43,9 @@ public abstract class JpaTaskAuthorizationDatabaseResource implements QuarkusTes
         @Override
         protected JdbcDatabaseContainer<?> createDatabase() {
             return new MySQLContainer("mysql:8.0")
-                    .withCommand("--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci");
+                    .withCommand(
+                            "--character-set-server=utf8mb4",
+                            "--collation-server=utf8mb4_0900_ai_ci");
         }
     }
 }

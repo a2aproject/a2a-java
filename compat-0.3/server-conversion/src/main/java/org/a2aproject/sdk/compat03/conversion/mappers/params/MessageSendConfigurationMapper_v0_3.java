@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.params;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskPushNotificationConfigMapper_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
@@ -25,13 +25,16 @@ import org.mapstruct.Mapper;
  *   <li>{@code PushNotificationConfig} wraps to {@code TaskPushNotificationConfig} with empty taskId</li>
  * </ul>
  */
-@Mapper(config = A03ToV10MapperConfig.class, uses = {TaskPushNotificationConfigMapper_v0_3.class})
+@Mapper(
+        config = A03ToV10MapperConfig.class,
+        uses = {TaskPushNotificationConfigMapper_v0_3.class})
 public interface MessageSendConfigurationMapper_v0_3 {
 
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    MessageSendConfigurationMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(MessageSendConfigurationMapper_v0_3.class);
+    MessageSendConfigurationMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(MessageSendConfigurationMapper_v0_3.class);
 
     /**
      * Converts v0.3 MessageSendConfiguration to v1.0 MessageSendConfiguration.
@@ -42,8 +45,7 @@ public interface MessageSendConfigurationMapper_v0_3 {
      * @param v03 the v0.3 message send configuration
      * @return the equivalent v1.0 message send configuration
      */
-    default MessageSendConfiguration toV10(
-            MessageSendConfiguration_v0_3 v03) {
+    default MessageSendConfiguration toV10(MessageSendConfiguration_v0_3 v03) {
         if (v03 == null) {
             return null;
         }
@@ -53,10 +55,9 @@ public interface MessageSendConfigurationMapper_v0_3 {
         if (v03.pushNotificationConfig() != null) {
             // Wrap the push notification config with an empty taskId (will be set by the server)
             TaskPushNotificationConfig_v0_3 v03TaskConfig =
-                new TaskPushNotificationConfig_v0_3(
-                    "",  // Empty taskId - will be populated by server
-                    v03.pushNotificationConfig()
-                );
+                    new TaskPushNotificationConfig_v0_3(
+                            "", // Empty taskId - will be populated by server
+                            v03.pushNotificationConfig());
             taskPushConfig = TaskPushNotificationConfigMapper_v0_3.INSTANCE.toV10(v03TaskConfig);
         }
 
@@ -64,11 +65,7 @@ public interface MessageSendConfigurationMapper_v0_3 {
         Boolean returnImmediately = v03.blocking() != null ? !v03.blocking() : null;
 
         return new MessageSendConfiguration(
-            v03.acceptedOutputModes(),
-            v03.historyLength(),
-            taskPushConfig,
-            returnImmediately
-        );
+                v03.acceptedOutputModes(), v03.historyLength(), taskPushConfig, returnImmediately);
     }
 
     /**
@@ -80,8 +77,7 @@ public interface MessageSendConfigurationMapper_v0_3 {
      * @param v10 the v1.0 message send configuration
      * @return the equivalent v0.3 message send configuration
      */
-    default MessageSendConfiguration_v0_3 fromV10(
-            MessageSendConfiguration v10) {
+    default MessageSendConfiguration_v0_3 fromV10(MessageSendConfiguration v10) {
         if (v10 == null) {
             return null;
         }
@@ -90,7 +86,8 @@ public interface MessageSendConfigurationMapper_v0_3 {
         PushNotificationConfig_v0_3 pushConfig = null;
         if (v10.taskPushNotificationConfig() != null) {
             TaskPushNotificationConfig_v0_3 v03TaskConfig =
-                TaskPushNotificationConfigMapper_v0_3.INSTANCE.fromV10(v10.taskPushNotificationConfig());
+                    TaskPushNotificationConfigMapper_v0_3.INSTANCE.fromV10(
+                            v10.taskPushNotificationConfig());
             pushConfig = v03TaskConfig.pushNotificationConfig();
         }
 
@@ -98,10 +95,6 @@ public interface MessageSendConfigurationMapper_v0_3 {
         Boolean blocking = v10.returnImmediately() != null ? !v10.returnImmediately() : null;
 
         return new MessageSendConfiguration_v0_3(
-            v10.acceptedOutputModes(),
-            v10.historyLength(),
-            pushConfig,
-            blocking
-        );
+                v10.acceptedOutputModes(), v10.historyLength(), pushConfig, blocking);
     }
 }

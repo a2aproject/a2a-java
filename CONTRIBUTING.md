@@ -71,6 +71,24 @@ To set up your development environment you need to:
     mvn clean install -DskipTests=true
     ```
 
+## Code Formatting
+
+Run Spotless from the repository root using JDK 21 or later. CI uses JDK 25; the SDK itself still supports Java 17.
+
+**Fix formatting errors** (updates files in place):
+
+```bash
+mvn -N -Dskip.spotless=false spotless:apply
+```
+
+**Check formatting** without changing files (the command fails if formatting errors remain):
+
+```bash
+mvn -N -Dskip.spotless=false spotless:check
+```
+
+The root configuration covers sources and POMs throughout the repository; `-N` avoids repeating the same work in each module. Released documentation snapshots are excluded.
+
 ## Contributing Guidelines
 
 When submitting a PR, please keep the following guidelines in mind:

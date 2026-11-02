@@ -1,16 +1,14 @@
 package org.a2aproject.sdk.spec;
 
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.spec.util.CollectionCopies;
 import java.util.List;
 import java.util.Map;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * Represents a structured data content part within a {@link Message} or {@link Artifact}.
@@ -48,7 +46,8 @@ import org.jspecify.annotations.Nullable;
  * @see Message
  * @see Artifact
  */
-public record DataPart(Object data, @Nullable Map<String, Object> metadata) implements Part<Object> {
+public record DataPart(Object data, @Nullable Map<String, Object> metadata)
+        implements Part<Object> {
 
     /**
      * The JSON member name discriminator for data parts: "data".
@@ -68,7 +67,7 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      * @param metadata additional metadata for the part
      * @throws IllegalArgumentException if data is null
      */
-    public DataPart (Object data, @Nullable Map<String, Object> metadata) {
+    public DataPart(Object data, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("data", data);
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.data = defensivelyCopy(data);
@@ -135,9 +134,8 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
         }
     }
 
-    private static final Gson JSON_PARSER = new GsonBuilder()
-            .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
-            .create();
+    private static final Gson JSON_PARSER =
+            new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
 
     /**
      * Creates a defensive copy of mutable collection types to ensure immutability.

@@ -7,16 +7,13 @@ import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
  */
 public class PushNotificationNotSupportedError_v0_3 extends JSONRPCError_v0_3 {
 
-    public final static Integer DEFAULT_CODE = -32003;
+    public static final Integer DEFAULT_CODE = -32003;
 
     public PushNotificationNotSupportedError_v0_3() {
         this(null, null, null);
     }
 
-    public PushNotificationNotSupportedError_v0_3(
-            Integer code,
-            String message,
-            Object data) {
+    public PushNotificationNotSupportedError_v0_3(Integer code, String message, Object data) {
         super(
                 defaultIfNull(code, DEFAULT_CODE),
                 defaultIfNull(message, "Push Notification is not supported"),

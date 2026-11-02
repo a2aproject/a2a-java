@@ -16,13 +16,13 @@ import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 public class GsonObjectMapper_v0_3 implements ObjectMapper {
     public static final GsonObjectMapper_v0_3 INSTANCE = new GsonObjectMapper_v0_3();
 
-    private GsonObjectMapper_v0_3() {
-    }
+    private GsonObjectMapper_v0_3() {}
 
     @Override
     public Object deserialize(ObjectMapperDeserializationContext context) {
         try {
-            return JsonUtil_v0_3.fromJson(context.getDataToDeserialize().asString(), context.getType());
+            return JsonUtil_v0_3.fromJson(
+                    context.getDataToDeserialize().asString(), context.getType());
         } catch (JsonProcessingException_v0_3 ex) {
             throw new RuntimeException(ex);
         }

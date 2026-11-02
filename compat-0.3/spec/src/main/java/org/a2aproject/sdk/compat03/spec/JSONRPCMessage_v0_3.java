@@ -8,6 +8,6 @@ public sealed interface JSONRPCMessage_v0_3 permits JSONRPCRequest_v0_3, JSONRPC
     String JSONRPC_VERSION = "2.0";
 
     String getJsonrpc();
-    Object getId();
 
+    Object getId();
 }

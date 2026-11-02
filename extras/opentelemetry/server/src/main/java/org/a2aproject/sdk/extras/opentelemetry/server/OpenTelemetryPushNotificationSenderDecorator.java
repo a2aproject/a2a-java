@@ -42,17 +42,14 @@ import org.jspecify.annotations.Nullable;
  */
 @Decorator
 @Priority(100)
-public abstract class OpenTelemetryPushNotificationSenderDecorator implements PushNotificationSender {
+public abstract class OpenTelemetryPushNotificationSenderDecorator
+        implements PushNotificationSender {
 
     static final String SEND_PUSH_NOTIFICATION = "SendPushNotification";
 
-    @Inject
-    @Delegate
-    @Any
-    private PushNotificationSender delegate;
+    @Inject @Delegate @Any private PushNotificationSender delegate;
 
-    @Inject
-    private Tracer tracer;
+    @Inject private Tracer tracer;
 
     private final boolean extractResponse;
 
@@ -71,8 +68,8 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
      * @param tracer the tracer to use
      * @param extractResponse whether to capture the full event payload as a span attribute
      */
-    OpenTelemetryPushNotificationSenderDecorator(PushNotificationSender delegate, Tracer tracer,
-                                                  boolean extractResponse) {
+    OpenTelemetryPushNotificationSenderDecorator(
+            PushNotificationSender delegate, Tracer tracer, boolean extractResponse) {
         this.delegate = delegate;
         this.tracer = tracer;
         this.extractResponse = extractResponse;
@@ -80,10 +77,12 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
 
     @Override
     public boolean sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot) {
-        var spanBuilder = tracer.spanBuilder(SEND_PUSH_NOTIFICATION)
-                .setSpanKind(SpanKind.CLIENT)
-                .setAttribute(GENAI_OPERATION_NAME, SEND_PUSH_NOTIFICATION)
-                .setAttribute(PUSH_NOTIFICATION_EVENT_KIND, event.getClass().getSimpleName());
+        var spanBuilder =
+                tracer.spanBuilder(SEND_PUSH_NOTIFICATION)
+                        .setSpanKind(SpanKind.CLIENT)
+                        .setAttribute(GENAI_OPERATION_NAME, SEND_PUSH_NOTIFICATION)
+                        .setAttribute(
+                                PUSH_NOTIFICATION_EVENT_KIND, event.getClass().getSimpleName());
 
         EventIds ids = extractIds(event, taskSnapshot);
         if (ids.taskId != null) {
@@ -107,12 +106,14 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
             }
             return result;
         } catch (Error err) {
-            String errorDescription = err.getMessage() != null ? err.getMessage() : err.getClass().getName();
+            String errorDescription =
+                    err.getMessage() != null ? err.getMessage() : err.getClass().getName();
             span.setAttribute(ERROR_TYPE, errorDescription);
             span.setStatus(StatusCode.ERROR, errorDescription);
             throw err;
         } catch (Exception ex) {
-            String errorDescription = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getName();
+            String errorDescription =
+                    ex.getMessage() != null ? ex.getMessage() : ex.getClass().getName();
             span.setAttribute(ERROR_TYPE, errorDescription);
             span.setStatus(StatusCode.ERROR, errorDescription);
             throw ex;
@@ -121,8 +122,7 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
         }
     }
 
-    private record EventIds(@Nullable String taskId, @Nullable String contextId) {
-    }
+    private record EventIds(@Nullable String taskId, @Nullable String contextId) {}
 
     private static EventIds extractIds(StreamingEventKind event, @Nullable Task taskSnapshot) {
         if (taskSnapshot != null) {
@@ -142,5 +142,4 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
         }
         return new EventIds(null, null);
     }
-
 }

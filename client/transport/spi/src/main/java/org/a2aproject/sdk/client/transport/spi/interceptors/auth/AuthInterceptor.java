@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
@@ -36,13 +35,8 @@ public class AuthInterceptor extends ClientCallInterceptor {
      * Only standard authentication-related headers are permitted.
      * Header names are stored in lowercase for case-insensitive comparison.
      */
-    private static final Set<String> SAFE_API_KEY_HEADER_NAMES = Set.of(
-        "authorization",
-        "x-api-key",
-        "api-key",
-        "x-auth-token",
-        "x-authentication"
-    );
+    private static final Set<String> SAFE_API_KEY_HEADER_NAMES =
+            Set.of("authorization", "x-api-key", "api-key", "x-auth-token", "x-authentication");
 
     private final CredentialService credentialService;
 
@@ -51,10 +45,17 @@ public class AuthInterceptor extends ClientCallInterceptor {
     }
 
     @Override
-    public PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
-                                       @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
-        Map<String, String> updatedHeaders = new HashMap<>(headers == null ? new HashMap<>() : headers);
-        if (agentCard == null || agentCard.securityRequirements()== null || agentCard.securitySchemes() == null) {
+    public PayloadAndHeaders intercept(
+            String methodName,
+            @Nullable Object payload,
+            Map<String, String> headers,
+            @Nullable AgentCard agentCard,
+            @Nullable ClientCallContext clientCallContext) {
+        Map<String, String> updatedHeaders =
+                new HashMap<>(headers == null ? new HashMap<>() : headers);
+        if (agentCard == null
+                || agentCard.securityRequirements() == null
+                || agentCard.securitySchemes() == null) {
             return new PayloadAndHeaders(payload, updatedHeaders);
         }
         for (SecurityRequirement requirement : agentCard.securityRequirements()) {
@@ -62,9 +63,12 @@ public class AuthInterceptor extends ClientCallInterceptor {
                 continue;
             }
             for (String securitySchemeName : requirement.schemes().keySet()) {
-                String credential = credentialService.getCredential(securitySchemeName, clientCallContext);
-                if (credential != null && agentCard.securitySchemes().containsKey(securitySchemeName)) {
-                    SecurityScheme securityScheme = agentCard.securitySchemes().get(securitySchemeName);
+                String credential =
+                        credentialService.getCredential(securitySchemeName, clientCallContext);
+                if (credential != null
+                        && agentCard.securitySchemes().containsKey(securitySchemeName)) {
+                    SecurityScheme securityScheme =
+                            agentCard.securitySchemes().get(securitySchemeName);
                     if (securityScheme == null) {
                         continue;
                     }
@@ -81,8 +85,10 @@ public class AuthInterceptor extends ClientCallInterceptor {
                             || securityScheme instanceof OpenIdConnectSecurityScheme) {
                         updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
                         return new PayloadAndHeaders(payload, updatedHeaders);
-                    } else if (securityScheme instanceof APIKeySecurityScheme apiKeySecurityScheme) {
-                        // Only inject API key if it's intended for header transport and the header name is safe
+                    } else if (securityScheme
+                            instanceof APIKeySecurityScheme apiKeySecurityScheme) {
+                        // Only inject API key if it's intended for header transport and the header
+                        // name is safe
                         if (apiKeySecurityScheme.location() == APIKeySecurityScheme.Location.HEADER
                                 && isSafeHeaderName(apiKeySecurityScheme.name())) {
                             updatedHeaders.put(apiKeySecurityScheme.name(), credential);

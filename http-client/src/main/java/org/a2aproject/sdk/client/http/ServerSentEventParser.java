@@ -24,9 +24,12 @@ public class ServerSentEventParser {
     private final List<String> dataBuffer = new ArrayList<>();
     private int dataBufferChars = 0;
     private @Nullable String eventType;
-    // currentEventId: the spec's "event ID buffer" — persists across events, overwritten by each "id:" field.
-    // lastEventId: the spec's "last event ID string" — copied from currentEventId only at dispatch (empty line),
-    //   so a skipped/corrupt event block cannot advance it. Returned to callers as the reconnect Last-Event-ID.
+    // currentEventId: the spec's "event ID buffer" — persists across events, overwritten by each
+    // "id:" field.
+    // lastEventId: the spec's "last event ID string" — copied from currentEventId only at dispatch
+    // (empty line),
+    //   so a skipped/corrupt event block cannot advance it. Returned to callers as the reconnect
+    // Last-Event-ID.
     private @Nullable String currentEventId;
     private @Nullable String lastEventId;
     private @Nullable Long retry;
@@ -38,11 +41,14 @@ public class ServerSentEventParser {
         this(eventConsumer, null, SSEParserConfig.DEFAULT);
     }
 
-    public ServerSentEventParser(Consumer<ServerSentEvent> eventConsumer, @Nullable Consumer<Throwable> errorConsumer) {
+    public ServerSentEventParser(
+            Consumer<ServerSentEvent> eventConsumer, @Nullable Consumer<Throwable> errorConsumer) {
         this(eventConsumer, errorConsumer, SSEParserConfig.DEFAULT);
     }
 
-    public ServerSentEventParser(Consumer<ServerSentEvent> eventConsumer, @Nullable Consumer<Throwable> errorConsumer,
+    public ServerSentEventParser(
+            Consumer<ServerSentEvent> eventConsumer,
+            @Nullable Consumer<Throwable> errorConsumer,
             SSEParserConfig config) {
         this.eventConsumer = eventConsumer;
         this.errorConsumer = errorConsumer;
@@ -58,7 +64,9 @@ public class ServerSentEventParser {
      * and reports the error, without requiring the caller to allocate a placeholder string.
      */
     public void processLineTooLong() {
-        handleError(new IllegalArgumentException("Line exceeds maximum length of " + maxLineLength + " characters"));
+        handleError(
+                new IllegalArgumentException(
+                        "Line exceeds maximum length of " + maxLineLength + " characters"));
         skippingCurrentEvent = true;
         dataBuffer.clear();
         dataBufferChars = 0;
@@ -76,7 +84,9 @@ public class ServerSentEventParser {
 
         // Check line length to prevent DoS; corrupt the current event so it is not dispatched
         if (maxLineLength > 0 && line.length() > maxLineLength) {
-            handleError(new IllegalArgumentException("Line exceeds maximum length of " + maxLineLength + " characters"));
+            handleError(
+                    new IllegalArgumentException(
+                            "Line exceeds maximum length of " + maxLineLength + " characters"));
             skippingCurrentEvent = true;
             dataBuffer.clear();
             dataBufferChars = 0;
@@ -121,7 +131,11 @@ public class ServerSentEventParser {
             case "data" -> {
                 // Check line count to prevent DoS; corrupt and skip the rest of this event block
                 if (dataBuffer.size() >= maxBufferLines) {
-                    handleError(new IllegalStateException("SSE data buffer exceeded maximum size of " + maxBufferLines + " lines"));
+                    handleError(
+                            new IllegalStateException(
+                                    "SSE data buffer exceeded maximum size of "
+                                            + maxBufferLines
+                                            + " lines"));
                     skippingCurrentEvent = true;
                     dataBuffer.clear();
                     dataBufferChars = 0;
@@ -129,7 +143,11 @@ public class ServerSentEventParser {
                 }
                 // Check total char count to prevent OOM on large streams
                 if (dataBufferChars + value.length() > maxBufferChars) {
-                    handleError(new IllegalStateException("SSE data buffer exceeded maximum size of " + maxBufferChars + " chars"));
+                    handleError(
+                            new IllegalStateException(
+                                    "SSE data buffer exceeded maximum size of "
+                                            + maxBufferChars
+                                            + " chars"));
                     skippingCurrentEvent = true;
                     dataBuffer.clear();
                     dataBufferChars = 0;
@@ -147,7 +165,8 @@ public class ServerSentEventParser {
                 }
             }
             case "retry" -> {
-                // Per SSE spec: ignore the retry field unless the value consists entirely of ASCII digits.
+                // Per SSE spec: ignore the retry field unless the value consists entirely of ASCII
+                // digits.
                 if (!value.isEmpty() && value.chars().allMatch(c -> c >= '0' && c <= '9')) {
                     try {
                         retry = Long.parseLong(value);
@@ -167,13 +186,16 @@ public class ServerSentEventParser {
     }
 
     private void dispatchEvent() {
-        // Per SSE spec §9.2.6: copy currentEventId → lastEventId at dispatch, but only for blocks that
-        // were not skipped. A corrupt/oversized block must not advance the reconnect cursor even if its
+        // Per SSE spec §9.2.6: copy currentEventId → lastEventId at dispatch, but only for blocks
+        // that
+        // were not skipped. A corrupt/oversized block must not advance the reconnect cursor even if
+        // its
         // id: field was parsed before the violation was detected.
         if (!skippingCurrentEvent && currentEventId != null) {
             lastEventId = currentEventId;
         } else if (skippingCurrentEvent) {
-            // Roll back the event ID buffer so the skipped block's id: cannot leak into subsequent events.
+            // Roll back the event ID buffer so the skipped block's id: cannot leak into subsequent
+            // events.
             currentEventId = lastEventId;
         }
 
@@ -188,12 +210,15 @@ public class ServerSentEventParser {
         skippingCurrentEvent = false;
         // currentEventId is NOT reset — it persists per the SSE specification
 
-        // Per SSE spec: don't dispatch if data is empty (also covers limit-violation blocks, whose buffer was cleared)
+        // Per SSE spec: don't dispatch if data is empty (also covers limit-violation blocks, whose
+        // buffer was cleared)
         if (data.isEmpty()) {
             return;
         }
 
-        eventConsumer.accept(new ServerSentEvent(data, type != null ? type : ServerSentEvent.DEFAULT_EVENT_TYPE, id, retry));
+        eventConsumer.accept(
+                new ServerSentEvent(
+                        data, type != null ? type : ServerSentEvent.DEFAULT_EVENT_TYPE, id, retry));
     }
 
     /** Dispatches any buffered data not yet followed by an empty line. Call when the stream ends. */

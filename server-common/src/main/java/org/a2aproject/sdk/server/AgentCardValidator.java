@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
@@ -23,13 +22,17 @@ public final class AgentCardValidator {
     private static final Logger LOGGER = Logger.getLogger(AgentCardValidator.class.getName());
 
     static final String NO_AGENT_CARD_MESSAGE =
-            "No agent card configured. Provide either a @PublicAgentCard or @ExtendedAgentCard bean.";
+            "No agent card configured. Provide either a @PublicAgentCard or @ExtendedAgentCard"
+                    + " bean.";
 
     // Properties to turn off validation globally, or per known transport
     public static final String SKIP_PROPERTY = "org.a2aproject.sdk.transport.skipValidation";
-    public static final String SKIP_JSONRPC_PROPERTY = "org.a2aproject.sdk.transport.jsonrpc.skipValidation";
-    public static final String SKIP_GRPC_PROPERTY = "org.a2aproject.sdk.transport.grpc.skipValidation";
-    public static final String SKIP_REST_PROPERTY = "org.a2aproject.sdk.transport.rest.skipValidation";
+    public static final String SKIP_JSONRPC_PROPERTY =
+            "org.a2aproject.sdk.transport.jsonrpc.skipValidation";
+    public static final String SKIP_GRPC_PROPERTY =
+            "org.a2aproject.sdk.transport.grpc.skipValidation";
+    public static final String SKIP_REST_PROPERTY =
+            "org.a2aproject.sdk.transport.rest.skipValidation";
 
     /** Creates a cache whose entries represent completed successful validation. */
     public static ConcurrentMap<AgentCard, Boolean> newValidatedCardsMap() {
@@ -37,12 +40,16 @@ public final class AgentCardValidator {
     }
 
     /** Waits for validation of the same card and leaves failures uncached so they can be retried. */
-    public static void validateOnce(AgentCard card, ConcurrentMap<AgentCard, Boolean> cache,
+    public static void validateOnce(
+            AgentCard card,
+            ConcurrentMap<AgentCard, Boolean> cache,
             Consumer<AgentCard> validator) {
-        cache.computeIfAbsent(card, selected -> {
-            validator.accept(selected);
-            return Boolean.TRUE;
-        });
+        cache.computeIfAbsent(
+                card,
+                selected -> {
+                    validator.accept(selected);
+                    return Boolean.TRUE;
+                });
     }
 
     /**
@@ -62,7 +69,8 @@ public final class AgentCardValidator {
      * @param agentCard the agent card to validate
      * @param availableTransports the set of available transport protocols
      */
-    static void validateTransportConfiguration(AgentCard agentCard, Set<String> availableTransports) {
+    static void validateTransportConfiguration(
+            AgentCard agentCard, Set<String> availableTransports) {
         boolean skip = Boolean.getBoolean(SKIP_PROPERTY);
         if (skip) {
             return;
@@ -71,36 +79,39 @@ public final class AgentCardValidator {
         Set<String> agentCardTransports = getAgentCardTransports(agentCard);
         Set<String> filteredAvailableTransports = filterSkippedTransports(availableTransports);
         Set<String> filteredAgentCardTransports = filterSkippedTransports(agentCardTransports);
-        
+
         // Check for missing transports (warn if AgentCard doesn't include all available transports)
-        Set<String> missingTransports = filteredAvailableTransports.stream()
-                .filter(transport -> !filteredAgentCardTransports.contains(transport))
-                .collect(Collectors.toSet());
-        
+        Set<String> missingTransports =
+                filteredAvailableTransports.stream()
+                        .filter(transport -> !filteredAgentCardTransports.contains(transport))
+                        .collect(Collectors.toSet());
+
         if (!missingTransports.isEmpty()) {
-            LOGGER.warning(String.format(
-                "AgentCard does not include all available transports. Missing: %s. " +
-                "Available transports: %s. AgentCard transports: %s",
-                formatTransports(missingTransports),
-                formatTransports(filteredAvailableTransports),
-                formatTransports(filteredAgentCardTransports)
-            ));
+            LOGGER.warning(
+                    String.format(
+                            "AgentCard does not include all available transports. Missing: %s. "
+                                    + "Available transports: %s. AgentCard transports: %s",
+                            formatTransports(missingTransports),
+                            formatTransports(filteredAvailableTransports),
+                            formatTransports(filteredAgentCardTransports)));
         }
-        
+
         // Check for unsupported transports (error if AgentCard specifies unavailable transports)
-        Set<String> unsupportedTransports = filteredAgentCardTransports.stream()
-                .filter(transport -> !filteredAvailableTransports.contains(transport))
-                .collect(Collectors.toSet());
-        
+        Set<String> unsupportedTransports =
+                filteredAgentCardTransports.stream()
+                        .filter(transport -> !filteredAvailableTransports.contains(transport))
+                        .collect(Collectors.toSet());
+
         if (!unsupportedTransports.isEmpty()) {
-            String errorMessage = String.format(
-                "AgentCard specifies transport interfaces for unavailable transports: %s. " +
-                "Available transports: %s. Consider removing these interfaces or adding the required transport dependencies.",
-                formatTransports(unsupportedTransports),
-                formatTransports(filteredAvailableTransports)
-            );
+            String errorMessage =
+                    String.format(
+                            "AgentCard specifies transport interfaces for unavailable transports:"
+                                    + " %s. Available transports: %s. Consider removing these"
+                                    + " interfaces or adding the required transport dependencies.",
+                            formatTransports(unsupportedTransports),
+                            formatTransports(filteredAvailableTransports));
             LOGGER.severe(errorMessage);
-            
+
             // Following the GitHub issue suggestion to use an error instead of warning
             throw new IllegalStateException(errorMessage);
         }
@@ -108,7 +119,7 @@ public final class AgentCardValidator {
         // Validation no longer needed - supportedInterfaces is now the single source of truth
         // The first entry in supportedInterfaces is the preferred interface
     }
-    
+
     /**
      * Extracts all transport protocols specified in the AgentCard.
      *
@@ -126,21 +137,20 @@ public final class AgentCardValidator {
                 }
             }
         }
-        
+
         return new HashSet<>(transportStrings);
     }
-    
+
     /**
      * Formats a set of transport protocols for logging.
-     * 
+     *
      * @param transports the transport protocols to format
      * @return formatted string representation
      */
     private static String formatTransports(Set<String> transports) {
-        return transports.stream()
-                .collect(Collectors.joining(", ", "[", "]"));
+        return transports.stream().collect(Collectors.joining(", ", "[", "]"));
     }
-    
+
     /**
      * Filters out transports that have been configured to skip validation.
      *
@@ -162,7 +172,7 @@ public final class AgentCardValidator {
     private static boolean isTransportSkipped(String transport) {
         if (transport.equals(TransportProtocol.JSONRPC.asString())) {
             return Boolean.getBoolean(SKIP_JSONRPC_PROPERTY);
-        } else if (transport.equals(TransportProtocol.GRPC.asString())){
+        } else if (transport.equals(TransportProtocol.GRPC.asString())) {
             return Boolean.getBoolean(SKIP_GRPC_PROPERTY);
         } else if (transport.equals(TransportProtocol.HTTP_JSON.asString())) {
             return Boolean.getBoolean(SKIP_REST_PROPERTY);
@@ -173,12 +183,11 @@ public final class AgentCardValidator {
     /**
      * Discovers available transport endpoints using ServiceLoader.
      * This searches the classpath for implementations of TransportMetadata.
-     * 
+     *
      * @return set of available transport protocols
      */
     private static Set<String> getAvailableTransports() {
-        return ServiceLoader.load(TransportMetadata.class)
-                .stream()
+        return ServiceLoader.load(TransportMetadata.class).stream()
                 .map(ServiceLoader.Provider::get)
                 .filter(TransportMetadata::isAvailable)
                 .map(TransportMetadata::getTransportProtocol)

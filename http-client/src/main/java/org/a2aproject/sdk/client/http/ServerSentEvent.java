@@ -14,7 +14,8 @@ import org.jspecify.annotations.Nullable;
  * <li>{@code retry} — the reconnection interval in milliseconds from the {@code retry:} field; null if absent</li>
  * </ul>
  */
-public record ServerSentEvent(String data, String eventType, @Nullable String id, @Nullable Long retry) {
+public record ServerSentEvent(
+        String data, String eventType, @Nullable String id, @Nullable Long retry) {
 
     /**
      * Default event type per the SSE specification when no {@code event:} field is present.

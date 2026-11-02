@@ -1,15 +1,13 @@
 package org.a2aproject.sdk.itk;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-import org.jspecify.annotations.Nullable;
-
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.quarkus.grpc.GlobalInterceptor;
+import jakarta.enterprise.context.ApplicationScoped;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Applies the ACTS credential rule to every gRPC call.
@@ -28,8 +26,7 @@ public class ActsAuthInterceptor implements ServerInterceptor {
         @Nullable Status rejection = ActsAuth.grpcRejection(metadata);
         if (rejection != null) {
             call.close(rejection, new Metadata());
-            return new ServerCall.Listener<>() {
-            };
+            return new ServerCall.Listener<>() {};
         }
         return next.startCall(call, metadata);
     }

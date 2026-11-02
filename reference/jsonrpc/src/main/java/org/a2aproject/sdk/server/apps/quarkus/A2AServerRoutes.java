@@ -7,19 +7,6 @@ import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.HE
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicLong;
-
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-
 import com.google.gson.JsonSyntaxException;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.ForbiddenException;
@@ -28,8 +15,18 @@ import io.smallrye.mutiny.Multi;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicLong;
 import org.a2aproject.sdk.common.A2AHeaders;
-import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.IdJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
@@ -65,14 +62,15 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.server.util.sse.SseFormatter;
-import org.a2aproject.sdk.server.multitenancy.TenantNotFoundException;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.InternalError;
@@ -177,26 +175,19 @@ public class A2AServerRoutes {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(A2AServerRoutes.class);
 
-    @Inject
-    JSONRPCHandler jsonRpcHandler;
+    @Inject JSONRPCHandler jsonRpcHandler;
 
-    @Inject
-    AgentCardCacheMetadata cacheMetadata;
+    @Inject AgentCardCacheMetadata cacheMetadata;
 
     // Hook so testing can wait until the SSE subscriber is attached.
     // Without this we get intermittent failures
-    private static volatile @Nullable
-    Runnable streamingMultiSseSupportSubscribedRunnable;
+    private static volatile @Nullable Runnable streamingMultiSseSupportSubscribedRunnable;
 
-    @Inject
-    @Internal
-    Executor executor;
+    @Inject @Internal Executor executor;
 
-    @Inject
-    Instance<CallContextFactory> callContextFactory;
+    @Inject Instance<CallContextFactory> callContextFactory;
 
-    @Inject
-    VertxSecurityHelper vertxSecurityHelper;
+    @Inject VertxSecurityHelper vertxSecurityHelper;
 
     /**
      * Configures Vert.x Web Router with JSON-RPC routes.
@@ -210,65 +201,84 @@ public class A2AServerRoutes {
     void setupRoutes(@Observes Router router) {
         // Main JSON-RPC endpoint: POST /
         // BodyHandler is per-route (not global) to avoid interfering with gRPC routes
-        // ordered=false: delegation via Vert.x WebClient can share the same event loop context as the outer request; ordered=true would serialize them, causing a 30s deadlock.
+        // ordered=false: delegation via Vert.x WebClient can share the same event loop context as
+        // the outer request; ordered=true would serialize them, causing a 30s deadlock.
         router.post("/")
-            .consumes(APPLICATION_JSON)
-            .handler(BodyHandler.create())
-            .blockingHandler(ctx -> {
-                try {
-                    vertxSecurityHelper.runInRequestContextDeferred(ctx, () -> {
-                        invokeJSONRPCHandler(ctx.body().asString(), ctx);
-                    });
-                } catch (UnauthorizedException | ForbiddenException e) {
-                    vertxSecurityHelper.handleAuthError(ctx, e);
-                } catch (Exception e) {
-                    VertxSecurityHelper.handleGenericError(ctx);
-                }
-            }, false);
+                .consumes(APPLICATION_JSON)
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        ctx -> {
+                            try {
+                                vertxSecurityHelper.runInRequestContextDeferred(
+                                        ctx,
+                                        () -> {
+                                            invokeJSONRPCHandler(ctx.body().asString(), ctx);
+                                        });
+                            } catch (UnauthorizedException | ForbiddenException e) {
+                                vertxSecurityHelper.handleAuthError(ctx, e);
+                            } catch (Exception e) {
+                                VertxSecurityHelper.handleGenericError(ctx);
+                            }
+                        },
+                        false);
 
         // Agent card endpoint: GET /.well-known/agent-card.json
         router.get("/.well-known/agent-card.json")
-            .produces(APPLICATION_JSON)
-            .handler(ctx -> {
-                try {
-                    String agentCard = getAgentCard(ctx);
-                    if (agentCard == null) {
-                        sendAgentCardNotConfigured(ctx);
-                        return;
-                    }
-                    ctx.response()
-                        .setStatusCode(200)
-                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(agentCard);
-                } catch (Exception e) {
-                    LOGGER.error("Internal error while resolving agent card", e);
-                    ctx.response().setStatusCode(500).putHeader(CONTENT_TYPE, "text/plain").end("Internal Server Error");
-                }
-            });
+                .produces(APPLICATION_JSON)
+                .handler(
+                        ctx -> {
+                            try {
+                                String agentCard = getAgentCard(ctx);
+                                if (agentCard == null) {
+                                    sendAgentCardNotConfigured(ctx);
+                                    return;
+                                }
+                                ctx.response()
+                                        .setStatusCode(200)
+                                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                                        .end(agentCard);
+                            } catch (Exception e) {
+                                LOGGER.error("Internal error while resolving agent card", e);
+                                ctx.response()
+                                        .setStatusCode(500)
+                                        .putHeader(CONTENT_TYPE, "text/plain")
+                                        .end("Internal Server Error");
+                            }
+                        });
 
         // Tenant-specific agent card: GET /.well-known/{tenant}/agent-card.json
         router.getWithRegex("^\\/\\.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
-            .produces(APPLICATION_JSON)
-            .handler(ctx -> {
-                try {
-                    String agentCard = getTenantAgentCard(ctx);
-                    if (agentCard == null) {
-                        sendAgentCardNotConfigured(ctx);
-                        return;
-                    }
-                    ctx.response()
-                        .setStatusCode(200)
-                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(agentCard);
-                } catch (TenantNotFoundException e) {
-                    ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE, "text/plain").end(e.getResponseMessage());
-                } catch (IllegalArgumentException e) {
-                    ctx.response().setStatusCode(400).putHeader(CONTENT_TYPE, "text/plain").end(e.getMessage());
-                } catch (Exception e) {
-                    LOGGER.error("Internal error while resolving agent card", e);
-                    ctx.response().setStatusCode(500).putHeader(CONTENT_TYPE, "text/plain").end("Internal Server Error");
-                }
-            });
+                .produces(APPLICATION_JSON)
+                .handler(
+                        ctx -> {
+                            try {
+                                String agentCard = getTenantAgentCard(ctx);
+                                if (agentCard == null) {
+                                    sendAgentCardNotConfigured(ctx);
+                                    return;
+                                }
+                                ctx.response()
+                                        .setStatusCode(200)
+                                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                                        .end(agentCard);
+                            } catch (TenantNotFoundException e) {
+                                ctx.response()
+                                        .setStatusCode(404)
+                                        .putHeader(CONTENT_TYPE, "text/plain")
+                                        .end(e.getResponseMessage());
+                            } catch (IllegalArgumentException e) {
+                                ctx.response()
+                                        .setStatusCode(400)
+                                        .putHeader(CONTENT_TYPE, "text/plain")
+                                        .end(e.getMessage());
+                            } catch (Exception e) {
+                                LOGGER.error("Internal error while resolving agent card", e);
+                                ctx.response()
+                                        .setStatusCode(500)
+                                        .putHeader(CONTENT_TYPE, "text/plain")
+                                        .end("Internal Server Error");
+                            }
+                        });
     }
 
     /**
@@ -362,14 +372,29 @@ public class A2AServerRoutes {
         } catch (A2AError e) {
             error = new A2AErrorResponse(e);
         } catch (InvalidParamsJsonMappingException e) {
-            error = new A2AErrorResponse(e.getId(), new org.a2aproject.sdk.spec.InvalidParamsError(null, e.getMessage(), null));
+            error =
+                    new A2AErrorResponse(
+                            e.getId(),
+                            new org.a2aproject.sdk.spec.InvalidParamsError(
+                                    null, e.getMessage(), null));
         } catch (MethodNotFoundJsonMappingException e) {
-            error = new A2AErrorResponse(e.getId(), new org.a2aproject.sdk.spec.MethodNotFoundError(null, e.getMessage(), null));
+            error =
+                    new A2AErrorResponse(
+                            e.getId(),
+                            new org.a2aproject.sdk.spec.MethodNotFoundError(
+                                    null, e.getMessage(), null));
         } catch (IdJsonMappingException e) {
-            error = new A2AErrorResponse(e.getId(), new org.a2aproject.sdk.spec.InvalidRequestError(null, e.getMessage(), null));
+            error =
+                    new A2AErrorResponse(
+                            e.getId(),
+                            new org.a2aproject.sdk.spec.InvalidRequestError(
+                                    null, e.getMessage(), null));
         } catch (JsonMappingException e) {
             // General JsonMappingException - treat as InvalidRequest
-            error = new A2AErrorResponse(new org.a2aproject.sdk.spec.InvalidRequestError(null, e.getMessage(), null));
+            error =
+                    new A2AErrorResponse(
+                            new org.a2aproject.sdk.spec.InvalidRequestError(
+                                    null, e.getMessage(), null));
         } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
@@ -384,13 +409,18 @@ public class A2AServerRoutes {
             } else if (streaming) {
                 // Convert Multi<A2AResponse> to Multi<String> with SSE formatting
                 // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
-                // starts emitting events before the SSE subscriber is attached. The executor.execute()
+                // starts emitting events before the SSE subscriber is attached. The
+                // executor.execute()
                 // wrapper caused 100-600ms delays before subscription, causing events to be lost.
                 AtomicLong eventIdCounter = new AtomicLong(0);
-                Multi<String> sseEvents = streamingResponse
-                        .map(response -> SseFormatter.formatResponseAsSSE(response, eventIdCounter.getAndIncrement()));
+                Multi<String> sseEvents =
+                        streamingResponse.map(
+                                response ->
+                                        SseFormatter.formatResponseAsSSE(
+                                                response, eventIdCounter.getAndIncrement()));
                 // Write SSE-formatted strings to HTTP response
-                SseResponseWriter.writeSseStrings(sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
+                SseResponseWriter.writeSseStrings(
+                        sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
 
             } else {
                 rc.response()
@@ -476,7 +506,9 @@ public class A2AServerRoutes {
     }
 
     private static void sendAgentCardNotConfigured(RoutingContext ctx) {
-        ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE, "text/plain")
+        ctx.response()
+                .setStatusCode(404)
+                .putHeader(CONTENT_TYPE, "text/plain")
                 .end("Public agent card not configured");
     }
 
@@ -503,7 +535,8 @@ public class A2AServerRoutes {
      * @param context the server call context
      * @return the JSON-RPC response
      */
-    private A2AResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
+    private A2AResponse<?> processNonStreamingRequest(
+            NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
         if (request instanceof GetTaskRequest req) {
             return jsonRpcHandler.onGetTask(req, context);
         }
@@ -553,11 +586,11 @@ public class A2AServerRoutes {
     private Multi<? extends A2AResponse<?>> processStreamingRequest(
             A2ARequest<?> request, ServerCallContext context) throws A2AError {
         if (request instanceof SendStreamingMessageRequest req) {
-            jsonRpcHandler.authorizeTaskAccess(req.getParams().message().taskId(), context,
-                    TaskOperation.MESSAGE_SEND_STREAM);
+            jsonRpcHandler.authorizeTaskAccess(
+                    req.getParams().message().taskId(), context, TaskOperation.MESSAGE_SEND_STREAM);
         } else if (request instanceof SubscribeToTaskRequest req) {
-            jsonRpcHandler.authorizeTaskAccess(req.getParams().id(), context,
-                    TaskOperation.SUBSCRIBE_TO_TASK);
+            jsonRpcHandler.authorizeTaskAccess(
+                    req.getParams().id(), context, TaskOperation.SUBSCRIBE_TO_TASK);
         }
         try {
             Flow.Publisher<? extends A2AResponse<?>> publisher;
@@ -566,7 +599,8 @@ public class A2AServerRoutes {
             } else if (request instanceof SubscribeToTaskRequest req) {
                 publisher = jsonRpcHandler.onSubscribeToTask(req, context);
             } else {
-                return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
+                return Multi.createFrom()
+                        .item(generateErrorResponse(request, new UnsupportedOperationError()));
             }
             return Multi.createFrom().publisher(publisher);
         } catch (A2AError error) {
@@ -630,7 +664,10 @@ public class A2AServerRoutes {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 String subject = rc.user().subject();
-                user = subject != null ? new AuthenticatedUser(subject) : UnauthenticatedUser.INSTANCE;
+                user =
+                        subject != null
+                                ? new AuthenticatedUser(subject)
+                                : UnauthenticatedUser.INSTANCE;
             }
             Map<String, Object> state = new HashMap<>();
             // TODO Python's impl has
@@ -648,8 +685,10 @@ public class A2AServerRoutes {
             String requestedVersion = rc.request().getHeader(A2AHeaders.A2A_VERSION);
 
             // Extract requested extensions from A2A-Extensions header
-            List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.A2A_EXTENSIONS);
-            Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
+            List<String> extensionHeaderValues =
+                    rc.request().headers().getAll(A2AHeaders.A2A_EXTENSIONS);
+            Set<String> requestedExtensions =
+                    A2AExtensions.getRequestedExtensions(extensionHeaderValues);
 
             return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
@@ -680,8 +719,8 @@ public class A2AServerRoutes {
         if (tenantPath.startsWith("/")) {
             tenantPath = tenantPath.substring(1);
         }
-        if(tenantPath.endsWith("/")) {
-            tenantPath = tenantPath.substring(0, tenantPath.length() -1);
+        if (tenantPath.endsWith("/")) {
+            tenantPath = tenantPath.substring(0, tenantPath.length() - 1);
         }
         return tenantPath;
     }
@@ -768,21 +807,26 @@ public class A2AServerRoutes {
         } else if (response instanceof ListTasksResponse r) {
             return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.listTasksResult(r.getResult());
         } else if (response instanceof CreateTaskPushNotificationConfigResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto
+                    .createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto
+                    .getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof ListTaskPushNotificationConfigsResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto
+                    .listTaskPushNotificationConfigsResponse(r.getResult());
         } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
             return com.google.protobuf.Empty.getDefaultInstance();
         } else if (response instanceof GetExtendedAgentCardResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.getExtendedCardResponse(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.getExtendedCardResponse(
+                    r.getResult());
         } else if (response instanceof SendStreamingMessageResponse r) {
-            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.taskOrMessageStream(r.getResult());
+            return org.a2aproject.sdk.grpc.utils.ProtoUtils.ToProto.taskOrMessageStream(
+                    r.getResult());
         } else {
-            throw new IllegalArgumentException("Unknown response type: " + response.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Unknown response type: " + response.getClass().getName());
         }
     }
-
 }

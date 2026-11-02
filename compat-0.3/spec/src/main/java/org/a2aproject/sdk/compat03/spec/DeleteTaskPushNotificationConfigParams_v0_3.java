@@ -1,14 +1,13 @@
 package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
-
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * Parameters for removing pushNotificationConfiguration associated with a Task.
  */
-public record DeleteTaskPushNotificationConfigParams_v0_3(String id, String pushNotificationConfigId, Map<String, Object> metadata) {
+public record DeleteTaskPushNotificationConfigParams_v0_3(
+        String id, String pushNotificationConfigId, Map<String, Object> metadata) {
 
     public DeleteTaskPushNotificationConfigParams_v0_3 {
         Assert.checkNotNullParam("id", id);
@@ -40,7 +39,8 @@ public record DeleteTaskPushNotificationConfigParams_v0_3(String id, String push
         }
 
         public DeleteTaskPushNotificationConfigParams_v0_3 build() {
-            return new DeleteTaskPushNotificationConfigParams_v0_3(id, pushNotificationConfigId, metadata);
+            return new DeleteTaskPushNotificationConfigParams_v0_3(
+                    id, pushNotificationConfigId, metadata);
         }
     }
 }

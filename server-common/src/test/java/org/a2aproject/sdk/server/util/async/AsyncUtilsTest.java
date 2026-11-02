@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-
 import mutiny.zero.ZeroPublisher;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +32,8 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(3);
 
         AtomicReference<Throwable> error = new AtomicReference<>();
-        consumer(createTubeConfig(),
+        consumer(
+                createTubeConfig(),
                 publisher,
                 s -> {
                     received.add(s);
@@ -41,7 +41,6 @@ public class AsyncUtilsTest {
                     return true;
                 },
                 error::set);
-
 
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(toSend, received);
@@ -57,7 +56,8 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(3);
 
         AtomicReference<Throwable> error = new AtomicReference<>();
-        consumer(createTubeConfig(),
+        consumer(
+                createTubeConfig(),
                 publisher,
                 s -> {
                     latch.countDown();
@@ -83,7 +83,8 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(3);
 
         AtomicReference<Throwable> error = new AtomicReference<>();
-        consumer(createTubeConfig(),
+        consumer(
+                createTubeConfig(),
                 publisher,
                 s -> {
                     latch.countDown();
@@ -110,38 +111,42 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(3);
 
         Flow.Publisher<String> processedPublisher =
-                processor(createTubeConfig(), publisher, (errorConsumer, s) -> {
-            processed.add(s);
-            latch.countDown();
-            return true;
-        });
+                processor(
+                        createTubeConfig(),
+                        publisher,
+                        (errorConsumer, s) -> {
+                            processed.add(s);
+                            latch.countDown();
+                            return true;
+                        });
 
-        processedPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        processedPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(toSend, received);
@@ -157,43 +162,46 @@ public class AsyncUtilsTest {
         List<String> received = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(3);
 
-
         Flow.Publisher<String> processedPublisher =
-                processor(createTubeConfig(), publisher, (errorConsumer, s) -> {
-            latch.countDown();
-            if (s.equals("C")) {
-                errorConsumer.accept(new IllegalStateException());
-            }
-            return true;
-        });
+                processor(
+                        createTubeConfig(),
+                        publisher,
+                        (errorConsumer, s) -> {
+                            latch.countDown();
+                            if (s.equals("C")) {
+                                errorConsumer.accept(new IllegalStateException());
+                            }
+                            return true;
+                        });
 
-        processedPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        processedPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        error.set(throwable);
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         Thread.sleep(500);
@@ -210,43 +218,46 @@ public class AsyncUtilsTest {
         List<String> received = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(3);
 
-
         Flow.Publisher<String> processedPublisher =
-                processor(createTubeConfig(), publisher, (errorConsumer, s) -> {
-            latch.countDown();
-            if (s.equals("C")) {
-                throw new IllegalStateException();
-            }
-            return true;
-        });
+                processor(
+                        createTubeConfig(),
+                        publisher,
+                        (errorConsumer, s) -> {
+                            latch.countDown();
+                            if (s.equals("C")) {
+                                throw new IllegalStateException();
+                            }
+                            return true;
+                        });
 
-        processedPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        processedPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        error.set(throwable);
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         Thread.sleep(500);
@@ -265,32 +276,33 @@ public class AsyncUtilsTest {
         Flow.Publisher<String> convertingPublisher =
                 convertingProcessor(publisher, String::valueOf);
 
-        convertingPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        convertingPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(toSend.stream().map(String::valueOf).toList(), received);
@@ -309,32 +321,33 @@ public class AsyncUtilsTest {
         Flow.Publisher<Long> convertingPublisher2 =
                 convertingProcessor(convertingPublisher, Long::valueOf);
 
-        convertingPublisher2.subscribe(new Flow.Subscriber<Long>() {
-            private Flow.Subscription subscription;
+        convertingPublisher2.subscribe(
+                new Flow.Subscriber<Long>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(Long item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(Long item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(toSend.stream().map(Long::valueOf).toList(), received);
@@ -349,39 +362,42 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(2);
 
         Flow.Publisher<String> convertingPublisher =
-                convertingProcessor(publisher, i -> {
-                    if (i == 3) {
-                        throw new IllegalStateException();
+                convertingProcessor(
+                        publisher,
+                        i -> {
+                            if (i == 3) {
+                                throw new IllegalStateException();
+                            }
+                            return String.valueOf(i);
+                        });
+
+        convertingPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
+
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
                     }
-                    return String.valueOf(i);
+
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
                 });
-
-        convertingPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
-
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
-
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
 
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(toSend.stream().map(String::valueOf).toList().subList(0, 2), received);
@@ -397,40 +413,44 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(3);
 
         Flow.Publisher<Integer> processedPublisher =
-                processor(createTubeConfig(), publisher, (errorConsumer, i) -> {
-            processed.add(i);
-            return true;
-        });
+                processor(
+                        createTubeConfig(),
+                        publisher,
+                        (errorConsumer, i) -> {
+                            processed.add(i);
+                            return true;
+                        });
 
         Flow.Publisher<String> convertingPublisher =
                 convertingProcessor(processedPublisher, String::valueOf);
 
-                convertingPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        convertingPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(toSend, processed);
         assertEquals(toSend.stream().map(String::valueOf).toList(), received);
@@ -445,40 +465,44 @@ public class AsyncUtilsTest {
         CountDownLatch latch = new CountDownLatch(3);
 
         Flow.Publisher<String> processedPublisher =
-                processor(createTubeConfig(), publisher, (errorConsumer, s) -> {
-            latch.countDown();
-            if (s.equals("C")) {
-                return false;
-            }
-            return true;
-        });
+                processor(
+                        createTubeConfig(),
+                        publisher,
+                        (errorConsumer, s) -> {
+                            latch.countDown();
+                            if (s.equals("C")) {
+                                return false;
+                            }
+                            return true;
+                        });
 
-        processedPublisher.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        processedPublisher.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                subscription.request(1);
-                received.add(item);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        subscription.request(1);
+                        received.add(item);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         Thread.sleep(500);
@@ -489,94 +513,102 @@ public class AsyncUtilsTest {
     public void testMutinyZeroErrorPropagationSanityTest() {
         Flow.Publisher<String> source = ZeroPublisher.fromItems("a", "b", "c");
 
-        Flow.Publisher<String> processor = ZeroPublisher.create(createTubeConfig(), tube -> {
-            source.subscribe(new Flow.Subscriber<String>() {
-                private Flow.Subscription subscription;
+        Flow.Publisher<String> processor =
+                ZeroPublisher.create(
+                        createTubeConfig(),
+                        tube -> {
+                            source.subscribe(
+                                    new Flow.Subscriber<String>() {
+                                        private Flow.Subscription subscription;
 
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    this.subscription = subscription;
-                    subscription.request(1);
-                }
+                                        @Override
+                                        public void onSubscribe(Flow.Subscription subscription) {
+                                            this.subscription = subscription;
+                                            subscription.request(1);
+                                        }
 
-                @Override
-                public void onNext(String item) {
-                    if (item.equals("c")) {
-                        onError(new IllegalStateException());
-                    }
-                    tube.send(item);
-                    subscription.request(1);
-                }
+                                        @Override
+                                        public void onNext(String item) {
+                                            if (item.equals("c")) {
+                                                onError(new IllegalStateException());
+                                            }
+                                            tube.send(item);
+                                            subscription.request(1);
+                                        }
 
-                @Override
-                public void onError(Throwable throwable) {
-                    tube.fail(throwable);
-                    subscription.cancel();
-                }
+                                        @Override
+                                        public void onError(Throwable throwable) {
+                                            tube.fail(throwable);
+                                            subscription.cancel();
+                                        }
 
-                @Override
-                public void onComplete() {
-                    tube.complete();
-                }
-            });
-        });
+                                        @Override
+                                        public void onComplete() {
+                                            tube.complete();
+                                        }
+                                    });
+                        });
 
-      Flow.Publisher<String> processor2 = ZeroPublisher.create(createTubeConfig(), tube -> {
-            processor.subscribe(new Flow.Subscriber<String>() {
-                private Flow.Subscription subscription;
+        Flow.Publisher<String> processor2 =
+                ZeroPublisher.create(
+                        createTubeConfig(),
+                        tube -> {
+                            processor.subscribe(
+                                    new Flow.Subscriber<String>() {
+                                        private Flow.Subscription subscription;
 
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    this.subscription = subscription;
-                    subscription.request(1);
-                }
+                                        @Override
+                                        public void onSubscribe(Flow.Subscription subscription) {
+                                            this.subscription = subscription;
+                                            subscription.request(1);
+                                        }
 
-                @Override
-                public void onNext(String item) {
-                    tube.send(item);
-                    subscription.request(1);
-                }
+                                        @Override
+                                        public void onNext(String item) {
+                                            tube.send(item);
+                                            subscription.request(1);
+                                        }
 
-                @Override
-                public void onError(Throwable throwable) {
-                    tube.fail(throwable);
-                    subscription.cancel();
-                }
+                                        @Override
+                                        public void onError(Throwable throwable) {
+                                            tube.fail(throwable);
+                                            subscription.cancel();
+                                        }
 
-                @Override
-                public void onComplete() {
-                    tube.complete();
-                }
-            });
-        });
+                                        @Override
+                                        public void onComplete() {
+                                            tube.complete();
+                                        }
+                                    });
+                        });
 
         List<Object> results = new ArrayList<>();
 
-        processor2.subscribe(new Flow.Subscriber<String>() {
-            private Flow.Subscription subscription;
+        processor2.subscribe(
+                new Flow.Subscriber<String>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                results.add(item);
-                subscription.request(1);
-            }
+                    @Override
+                    public void onNext(String item) {
+                        results.add(item);
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                results.add(throwable);
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        results.add(throwable);
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-            }
-        });
+                    @Override
+                    public void onComplete() {}
+                });
 
         assertEquals(3, results.size());
         assertEquals("a", results.get(0));
@@ -588,29 +620,39 @@ public class AsyncUtilsTest {
     public void testAsyncUtilsErrorPropagation() {
         Flow.Publisher<String> source = ZeroPublisher.fromItems("a", "b", "c");
 
-        Flow.Publisher<String> processor = processor(createTubeConfig(), source, new BiFunction<Consumer<Throwable>, String, Boolean>() {
-            @Override
-            public Boolean apply(Consumer<Throwable> throwableConsumer, String item) {
-                if (item.equals("c")) {
-                    throw new IllegalStateException();
-                }
-                return true;
-            }
-        });
+        Flow.Publisher<String> processor =
+                processor(
+                        createTubeConfig(),
+                        source,
+                        new BiFunction<Consumer<Throwable>, String, Boolean>() {
+                            @Override
+                            public Boolean apply(
+                                    Consumer<Throwable> throwableConsumer, String item) {
+                                if (item.equals("c")) {
+                                    throw new IllegalStateException();
+                                }
+                                return true;
+                            }
+                        });
 
-        Flow.Publisher<String> processor2 = processor(createTubeConfig(), processor, new BiFunction<Consumer<Throwable>, String, Boolean>() {
-            @Override
-            public Boolean apply(Consumer<Throwable> throwableConsumer, String s) {
-                return true;
-            }
-        });
+        Flow.Publisher<String> processor2 =
+                processor(
+                        createTubeConfig(),
+                        processor,
+                        new BiFunction<Consumer<Throwable>, String, Boolean>() {
+                            @Override
+                            public Boolean apply(Consumer<Throwable> throwableConsumer, String s) {
+                                return true;
+                            }
+                        });
 
         Flow.Publisher<List<String>> processor3 = convertingProcessor(processor2, List::of);
 
         List<Object> results = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
 
-        consumer(createTubeConfig(),
+        consumer(
+                createTubeConfig(),
                 processor3,
                 results::add,
                 t -> {
@@ -633,62 +675,63 @@ public class AsyncUtilsTest {
 
         final List<String> results = Collections.synchronizedList(new ArrayList<>());
 
-        source.subscribe(new Flow.Subscriber<>() {
-            private Flow.Subscription subscription;
+        source.subscribe(
+                new Flow.Subscriber<>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                results.add(item);
-                subscription.request(1);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        results.add(item);
+                        subscription.request(1);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
-        source.subscribe(new Flow.Subscriber<>() {
-            private Flow.Subscription subscription;
+        source.subscribe(
+                new Flow.Subscriber<>() {
+                    private Flow.Subscription subscription;
 
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        this.subscription = subscription;
+                        subscription.request(1);
+                    }
 
-            @Override
-            public void onNext(String item) {
-                results.add(item);
-                subscription.request(1);
-                latch.countDown();
-            }
+                    @Override
+                    public void onNext(String item) {
+                        results.add(item);
+                        subscription.request(1);
+                        latch.countDown();
+                    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscription.cancel();
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscription.cancel();
+                    }
 
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        subscription.cancel();
+                    }
+                });
 
         latch.await(2, TimeUnit.SECONDS);
         assertEquals(6, results.size());
     }
-    
 }

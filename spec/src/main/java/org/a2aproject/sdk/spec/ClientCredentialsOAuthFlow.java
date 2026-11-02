@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Configuration for the OAuth 2.0 Client Credentials flow.
@@ -25,7 +24,8 @@ import org.a2aproject.sdk.spec.util.CollectionCopies;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.4">RFC 6749 - Client Credentials Grant</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record ClientCredentialsOAuthFlow(String refreshUrl, Map<String, String> scopes, String tokenUrl) {
+public record ClientCredentialsOAuthFlow(
+        String refreshUrl, Map<String, String> scopes, String tokenUrl) {
 
     /**
      * Compact constructor that validates required fields.
@@ -40,5 +40,4 @@ public record ClientCredentialsOAuthFlow(String refreshUrl, Map<String, String> 
         Assert.checkNotNullParam("tokenUrl", tokenUrl);
         scopes = CollectionCopies.immutableMap(scopes);
     }
-
 }

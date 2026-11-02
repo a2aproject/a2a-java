@@ -5,8 +5,11 @@ import java.util.List;
 /**
  * Defines optional capabilities supported by an agent.
  */
-public record AgentCapabilities_v0_3(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory,
-                                     List<AgentExtension_v0_3> extensions) {
+public record AgentCapabilities_v0_3(
+        boolean streaming,
+        boolean pushNotifications,
+        boolean stateTransitionHistory,
+        List<AgentExtension_v0_3> extensions) {
 
     public static class Builder {
 
@@ -36,7 +39,8 @@ public record AgentCapabilities_v0_3(boolean streaming, boolean pushNotification
         }
 
         public AgentCapabilities_v0_3 build() {
-            return new AgentCapabilities_v0_3(streaming, pushNotifications, stateTransitionHistory, extensions);
+            return new AgentCapabilities_v0_3(
+                    streaming, pushNotifications, stateTransitionHistory, extensions);
         }
     }
 }

@@ -2,7 +2,6 @@ package org.a2aproject.sdk.client.http;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.HttpHeaderUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -36,22 +35,23 @@ public interface A2AHttpHeaders {
     /**
      * Empty headers instance returned by default when headers are not available.
      */
-    A2AHttpHeaders EMPTY = new A2AHttpHeaders() {
-        @Override
-        public @Nullable String firstValue(String name) {
-            return null;
-        }
+    A2AHttpHeaders EMPTY =
+            new A2AHttpHeaders() {
+                @Override
+                public @Nullable String firstValue(String name) {
+                    return null;
+                }
 
-        @Override
-        public List<String> allValues(String name) {
-            return List.of();
-        }
+                @Override
+                public List<String> allValues(String name) {
+                    return List.of();
+                }
 
-        @Override
-        public Map<String, List<String>> toMap() {
-            return Map.of();
-        }
-    };
+                @Override
+                public Map<String, List<String>> toMap() {
+                    return Map.of();
+                }
+            };
 
     /**
      * Returns the first value for the given header name, or {@code null} if not present.
@@ -59,8 +59,7 @@ public interface A2AHttpHeaders {
      * @param name the header name (case-insensitive)
      * @return the first header value, or {@code null}
      */
-    @Nullable
-    String firstValue(String name);
+    @Nullable String firstValue(String name);
 
     /**
      * Returns all values for the given header name.

@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -178,24 +177,27 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * @param redirectHeaderPolicy policy applied to explicitly enabled POST redirects
      * @return a client with an internally managed Vert.x instance and supplied redirect policy
      */
-    public static VertxA2AHttpClient withRedirectHeaderPolicy(RedirectHeaderPolicy redirectHeaderPolicy) {
+    public static VertxA2AHttpClient withRedirectHeaderPolicy(
+            RedirectHeaderPolicy redirectHeaderPolicy) {
         return new VertxA2AHttpClient(createVertx(), redirectHeaderPolicy);
     }
 
-    private VertxA2AHttpClient(ManagedVertx managedVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
+    private VertxA2AHttpClient(
+            ManagedVertx managedVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
         this(managedVertx.vertx(), managedVertx.ownsVertx(), redirectHeaderPolicy);
     }
 
-    private VertxA2AHttpClient(Vertx vertx, boolean ownsVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
+    private VertxA2AHttpClient(
+            Vertx vertx, boolean ownsVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
         this.vertx = Assert.checkNotNullParam("vertx", vertx);
         this.ownsVertx = ownsVertx;
-        this.redirectHeaderPolicy = Assert.checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
-        WebClientOptions options = new WebClientOptions()
-                .setFollowRedirects(false)
-                .setKeepAlive(true);
+        this.redirectHeaderPolicy =
+                Assert.checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
+        WebClientOptions options =
+                new WebClientOptions().setFollowRedirects(false).setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
         this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
-       LOGGER.fine("Vert.x client is ready.");
+        LOGGER.fine("Vert.x client is ready.");
     }
 
     private static ManagedVertx createVertx() {
@@ -323,9 +325,8 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * @throws InterruptedException if the thread is interrupted while waiting
      */
     private A2AHttpResponse executeSyncRequest(
-            HttpRequest<Buffer> request,
-            Map<String, String> headers,
-            @Nullable Buffer bodyBuffer) throws IOException, InterruptedException {
+            HttpRequest<Buffer> request, Map<String, String> headers, @Nullable Buffer bodyBuffer)
+            throws IOException, InterruptedException {
 
         // Add headers
         for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -349,14 +350,14 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
             Throwable error = errorRef.get();
             if (error instanceof IOException) {
                 throw (IOException) error;
-            } 
+            }
             if (error instanceof InterruptedException) {
                 throw (InterruptedException) error;
             }
             throw new IOException("Request failed", error);
         }
         A2AHttpResponse finalResponse = responseRef.get();
-        if(finalResponse == null) {
+        if (finalResponse == null) {
             throw new IllegalStateException("No response from http request");
         }
         return finalResponse;
@@ -378,20 +379,31 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
             switch (status) {
                 case HTTP_UNAUTHORIZED -> {
                     A2AHttpHeaders headers = fromVertxHeaders(response.headers());
-                    errorRef.set(new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
-                            new org.a2aproject.sdk.spec.A2AClientHTTPError(
-                                    HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED, null, headers.toMap())));
+                    errorRef.set(
+                            new IOException(
+                                    A2AErrorMessages.AUTHENTICATION_FAILED,
+                                    new org.a2aproject.sdk.spec.A2AClientHTTPError(
+                                            HTTP_UNAUTHORIZED,
+                                            A2AErrorMessages.AUTHENTICATION_FAILED,
+                                            null,
+                                            headers.toMap())));
                 }
                 case HTTP_FORBIDDEN -> {
                     A2AHttpHeaders headers = fromVertxHeaders(response.headers());
-                    errorRef.set(new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
-                            new org.a2aproject.sdk.spec.A2AClientHTTPError(
-                                    HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED, null, headers.toMap())));
+                    errorRef.set(
+                            new IOException(
+                                    A2AErrorMessages.AUTHORIZATION_FAILED,
+                                    new org.a2aproject.sdk.spec.A2AClientHTTPError(
+                                            HTTP_FORBIDDEN,
+                                            A2AErrorMessages.AUTHORIZATION_FAILED,
+                                            null,
+                                            headers.toMap())));
                 }
                 default -> {
                     String body = response.bodyAsString();
                     A2AHttpHeaders headers = fromVertxHeaders(response.headers());
-                    responseRef.set(new VertxHttpResponse(status, body != null ? body : "", headers));
+                    responseRef.set(
+                            new VertxHttpResponse(status, body != null ? body : "", headers));
                 }
             }
         } else {
@@ -429,111 +441,180 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         CompletableFuture<Void> future = new CompletableFuture<>();
         AtomicBoolean futureCompleted = new AtomicBoolean(false);
 
-        RequestOptions options = new RequestOptions()
-                .setAbsoluteURI(url)
-                .setMethod(httpMethod)
-                .addHeader(ACCEPT, EVENT_STREAM);
+        RequestOptions options =
+                new RequestOptions()
+                        .setAbsoluteURI(url)
+                        .setMethod(httpMethod)
+                        .addHeader(ACCEPT, EVENT_STREAM);
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             options.addHeader(entry.getKey(), entry.getValue());
         }
 
-        httpClient.request(options)
+        httpClient
+                .request(options)
                 .compose(req -> bodyBuffer != null ? req.send(bodyBuffer) : req.send())
-                .onSuccess(response -> {
-                    // Pause before inspecting headers so no body bytes are lost while we
-                    // set up the appropriate handler. pipe().to(...) will resume the response.
-                    response.pause();
-                    int statusCode = response.statusCode();
-                    if (statusCode == HTTP_UNAUTHORIZED || statusCode == HTTP_FORBIDDEN) {
-                        if (futureCompleted.compareAndSet(false, true)) {
-                            A2AHttpHeaders respHeaders = fromVertxHeaders(response.headers());
-                            String msg = statusCode == HTTP_UNAUTHORIZED
-                                    ? A2AErrorMessages.AUTHENTICATION_FAILED
-                                    : A2AErrorMessages.AUTHORIZATION_FAILED;
-                            errorConsumer.accept(new IOException(msg,
-                                    new org.a2aproject.sdk.spec.A2AClientHTTPError(
-                                            statusCode, msg, null, respHeaders.toMap())));
-                            future.complete(null);
-                        }
-                        return;
-                    }
-                    String contentType = response.getHeader("Content-Type");
-                    boolean isSse = statusCode >= HTTP_OK && statusCode < HTTP_MULT_CHOICE
-                            && contentType != null && contentType.contains(EVENT_STREAM);
-                    if (isSse) {
-                        BodyCodec.sseStream(readStream ->
-                            readStream.handler(sseEvent -> {
-                                String data = sseEvent.data();
-                                if (data != null && !data.isEmpty()) {
-                                    String eventType = sseEvent.event() != null ? sseEvent.event() : ServerSentEvent.DEFAULT_EVENT_TYPE;
-                                    // Vert.x SseEvent.retry() defaults to 0 when no retry field is present, so
-                                    // retry:0 (a valid SSE directive meaning "reconnect immediately") is
-                                    // indistinguishable from "not set" and is silently treated as absent.
-                                    Long retry = sseEvent.retry() != 0 ? (long) sseEvent.retry() : null;
-                                    messageConsumer.accept(new ServerSentEvent(data, eventType, sseEvent.id(), retry));
-                                }
-                            })
-                        ).create(ar -> {
-                            if (ar.failed()) {
+                .onSuccess(
+                        response -> {
+                            // Pause before inspecting headers so no body bytes are lost while we
+                            // set up the appropriate handler. pipe().to(...) will resume the
+                            // response.
+                            response.pause();
+                            int statusCode = response.statusCode();
+                            if (statusCode == HTTP_UNAUTHORIZED || statusCode == HTTP_FORBIDDEN) {
                                 if (futureCompleted.compareAndSet(false, true)) {
-                                    errorConsumer.accept(ar.cause());
+                                    A2AHttpHeaders respHeaders =
+                                            fromVertxHeaders(response.headers());
+                                    String msg =
+                                            statusCode == HTTP_UNAUTHORIZED
+                                                    ? A2AErrorMessages.AUTHENTICATION_FAILED
+                                                    : A2AErrorMessages.AUTHORIZATION_FAILED;
+                                    errorConsumer.accept(
+                                            new IOException(
+                                                    msg,
+                                                    new org.a2aproject.sdk.spec.A2AClientHTTPError(
+                                                            statusCode,
+                                                            msg,
+                                                            null,
+                                                            respHeaders.toMap())));
                                     future.complete(null);
                                 }
                                 return;
                             }
-                            response.pipe().to(ar.result())
-                                    .onSuccess(v -> {
-                                        if (futureCompleted.compareAndSet(false, true)) {
-                                            completeRunnable.run();
-                                            future.complete(null);
-                                        }
-                                    })
-                                    .onFailure(cause -> {
-                                        if (futureCompleted.compareAndSet(false, true)) {
-                                            errorConsumer.accept(cause);
-                                            future.complete(null);
-                                        }
-                                    });
+                            String contentType = response.getHeader("Content-Type");
+                            boolean isSse =
+                                    statusCode >= HTTP_OK
+                                            && statusCode < HTTP_MULT_CHOICE
+                                            && contentType != null
+                                            && contentType.contains(EVENT_STREAM);
+                            if (isSse) {
+                                BodyCodec.sseStream(
+                                                readStream ->
+                                                        readStream.handler(
+                                                                sseEvent -> {
+                                                                    String data = sseEvent.data();
+                                                                    if (data != null
+                                                                            && !data.isEmpty()) {
+                                                                        String eventType =
+                                                                                sseEvent.event()
+                                                                                                != null
+                                                                                        ? sseEvent
+                                                                                                .event()
+                                                                                        : ServerSentEvent
+                                                                                                .DEFAULT_EVENT_TYPE;
+                                                                        // Vert.x SseEvent.retry()
+                                                                        // defaults to 0 when no
+                                                                        // retry field is present,
+                                                                        // so
+                                                                        // retry:0 (a valid SSE
+                                                                        // directive meaning
+                                                                        // "reconnect immediately")
+                                                                        // is
+                                                                        // indistinguishable from
+                                                                        // "not set" and is silently
+                                                                        // treated as absent.
+                                                                        Long retry =
+                                                                                sseEvent.retry()
+                                                                                                != 0
+                                                                                        ? (long)
+                                                                                                sseEvent
+                                                                                                        .retry()
+                                                                                        : null;
+                                                                        messageConsumer.accept(
+                                                                                new ServerSentEvent(
+                                                                                        data,
+                                                                                        eventType,
+                                                                                        sseEvent
+                                                                                                .id(),
+                                                                                        retry));
+                                                                    }
+                                                                }))
+                                        .create(
+                                                ar -> {
+                                                    if (ar.failed()) {
+                                                        if (futureCompleted.compareAndSet(
+                                                                false, true)) {
+                                                            errorConsumer.accept(ar.cause());
+                                                            future.complete(null);
+                                                        }
+                                                        return;
+                                                    }
+                                                    response.pipe()
+                                                            .to(ar.result())
+                                                            .onSuccess(
+                                                                    v -> {
+                                                                        if (futureCompleted
+                                                                                .compareAndSet(
+                                                                                        false,
+                                                                                        true)) {
+                                                                            completeRunnable.run();
+                                                                            future.complete(null);
+                                                                        }
+                                                                    })
+                                                            .onFailure(
+                                                                    cause -> {
+                                                                        if (futureCompleted
+                                                                                .compareAndSet(
+                                                                                        false,
+                                                                                        true)) {
+                                                                            errorConsumer.accept(
+                                                                                    cause);
+                                                                            future.complete(null);
+                                                                        }
+                                                                    });
+                                                });
+                            } else {
+                                // Non-SSE response (error body): collect the full body and deliver
+                                // it
+                                // to messageConsumer so the SSEEventListener can parse the JSON-RPC
+                                // error.
+                                // Using body() instead of pipe() avoids a race where small
+                                // responses
+                                // are already ended before pipe() can attach, causing
+                                // "Response already ended" IllegalStateException.
+                                response.resume();
+                                response.body()
+                                        .onSuccess(
+                                                body -> {
+                                                    if (body != null && body.length() > 0) {
+                                                        String text =
+                                                                body.toString(
+                                                                                StandardCharsets
+                                                                                        .UTF_8)
+                                                                        .trim();
+                                                        if (!text.isEmpty()) {
+                                                            messageConsumer.accept(
+                                                                    new ServerSentEvent(text));
+                                                        }
+                                                    }
+                                                    if (futureCompleted.compareAndSet(
+                                                            false, true)) {
+                                                        completeRunnable.run();
+                                                        future.complete(null);
+                                                    }
+                                                })
+                                        .onFailure(
+                                                cause -> {
+                                                    if (futureCompleted.compareAndSet(
+                                                            false, true)) {
+                                                        errorConsumer.accept(cause);
+                                                        future.complete(null);
+                                                    }
+                                                });
+                            }
+                        })
+                .onFailure(
+                        cause -> {
+                            if (futureCompleted.compareAndSet(false, true)) {
+                                errorConsumer.accept(cause);
+                                future.complete(null);
+                            }
                         });
-                    } else {
-                        // Non-SSE response (error body): collect the full body and deliver it
-                        // to messageConsumer so the SSEEventListener can parse the JSON-RPC error.
-                        // Using body() instead of pipe() avoids a race where small responses
-                        // are already ended before pipe() can attach, causing
-                        // "Response already ended" IllegalStateException.
-                        response.resume();
-                        response.body()
-                                .onSuccess(body -> {
-                                    if (body != null && body.length() > 0) {
-                                        String text = body.toString(StandardCharsets.UTF_8).trim();
-                                        if (!text.isEmpty()) {
-                                            messageConsumer.accept(new ServerSentEvent(text));
-                                        }
-                                    }
-                                    if (futureCompleted.compareAndSet(false, true)) {
-                                        completeRunnable.run();
-                                        future.complete(null);
-                                    }
-                                })
-                                .onFailure(cause -> {
-                                    if (futureCompleted.compareAndSet(false, true)) {
-                                        errorConsumer.accept(cause);
-                                        future.complete(null);
-                                    }
-                                });
-                    }
-                })
-                .onFailure(cause -> {
-                    if (futureCompleted.compareAndSet(false, true)) {
-                        errorConsumer.accept(cause);
-                        future.complete(null);
-                    }
-                });
 
         return future;
     }
 
-    private class VertxGetBuilder extends VertxBuilder<GetBuilder> implements A2AHttpClient.GetBuilder {
+    private class VertxGetBuilder extends VertxBuilder<GetBuilder>
+            implements A2AHttpClient.GetBuilder {
 
         private boolean followRedirects = false;
 
@@ -563,16 +644,23 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 if (location != null) {
                     RedirectHeaderPolicy.RedirectedRequest redirect;
                     try {
-                        redirect = redirectHeaderPolicy
-                                .redirectedRequest(URI.create(url), response.status(), location, headers)
-                                .orElse(null);
+                        redirect =
+                                redirectHeaderPolicy
+                                        .redirectedRequest(
+                                                URI.create(url),
+                                                response.status(),
+                                                location,
+                                                headers)
+                                        .orElse(null);
                     } catch (IllegalArgumentException e) {
                         LOGGER.fine("Not following redirect with malformed Location: " + location);
                         return response;
                     }
                     if (redirect != null) {
                         return executeSyncRequest(
-                                webClient.getAbs(redirect.target().toString()), redirect.headers(), null);
+                                webClient.getAbs(redirect.target().toString()),
+                                redirect.headers(),
+                                null);
                     }
                 }
             }
@@ -583,13 +671,22 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         public CompletableFuture<Void> getAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException {
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
 
-            return executeAsyncSSE(HttpMethod.GET, url, headers, null, messageConsumer, errorConsumer, completeRunnable);
+            return executeAsyncSSE(
+                    HttpMethod.GET,
+                    url,
+                    headers,
+                    null,
+                    messageConsumer,
+                    errorConsumer,
+                    completeRunnable);
         }
     }
 
-    private class VertxPostBuilder extends VertxBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {
+    private class VertxPostBuilder extends VertxBuilder<PostBuilder>
+            implements A2AHttpClient.PostBuilder {
 
         private String body = "";
         private boolean followRedirects = false;
@@ -629,8 +726,11 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 if (location != null) {
                     RedirectHeaderPolicy.RedirectedRequest redirect;
                     try {
-                        redirect = redirectHeaderPolicy.redirectedRequest(URI.create(url), statusCode, location, headers)
-                                .orElse(null);
+                        redirect =
+                                redirectHeaderPolicy
+                                        .redirectedRequest(
+                                                URI.create(url), statusCode, location, headers)
+                                        .orElse(null);
                     } catch (IllegalArgumentException e) {
                         LOGGER.fine("Not following redirect with malformed Location: " + location);
                         return response;
@@ -639,13 +739,19 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                         return response;
                     }
                     if (redirect.redirectAsGet()) {
-                        // RFC 7231: 301/302/303 redirect POST as GET; 307/308 would preserve the method
+                        // RFC 7231: 301/302/303 redirect POST as GET; 307/308 would preserve the
+                        // method
                         return executeSyncRequest(
-                                webClient.getAbs(redirect.target().toString()), redirect.headers(), null);
+                                webClient.getAbs(redirect.target().toString()),
+                                redirect.headers(),
+                                null);
                     } else {
-                        // RFC 7538: 307/308 must repeat the request with the original method and body
+                        // RFC 7538: 307/308 must repeat the request with the original method and
+                        // body
                         return executeSyncRequest(
-                                webClient.postAbs(redirect.target().toString()), redirect.headers(), bodyBuffer);
+                                webClient.postAbs(redirect.target().toString()),
+                                redirect.headers(),
+                                bodyBuffer);
                     }
                 }
             }
@@ -656,14 +762,23 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         public CompletableFuture<Void> postAsyncSSE(
                 Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
-                Runnable completeRunnable) throws IOException, InterruptedException {
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
 
             Buffer bodyBuffer = Buffer.buffer(body, StandardCharsets.UTF_8.name());
-            return executeAsyncSSE(HttpMethod.POST, url, headers, bodyBuffer, messageConsumer, errorConsumer, completeRunnable);
+            return executeAsyncSSE(
+                    HttpMethod.POST,
+                    url,
+                    headers,
+                    bodyBuffer,
+                    messageConsumer,
+                    errorConsumer,
+                    completeRunnable);
         }
     }
 
-    private class VertxDeleteBuilder extends VertxBuilder<DeleteBuilder> implements A2AHttpClient.DeleteBuilder {
+    private class VertxDeleteBuilder extends VertxBuilder<DeleteBuilder>
+            implements A2AHttpClient.DeleteBuilder {
 
         /**
          * {@inheritDoc}
@@ -707,8 +822,11 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         @Override
         public Future<Void> write(Buffer data) {
             if (rawBuffer.length() + data.length() > MAX_BUFFER_BYTES) {
-                IllegalStateException ex = new IllegalStateException(
-                        "Response body exceeded maximum allowed size of " + MAX_BUFFER_BYTES + " bytes");
+                IllegalStateException ex =
+                        new IllegalStateException(
+                                "Response body exceeded maximum allowed size of "
+                                        + MAX_BUFFER_BYTES
+                                        + " bytes");
                 Handler<Throwable> eh = exceptionHandler;
                 if (eh != null) {
                     eh.handle(ex);
@@ -771,7 +889,8 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         return A2AHttpHeaders.of(snapshot);
     }
 
-    private record VertxHttpResponse(int status, String body, A2AHttpHeaders headers) implements A2AHttpResponse {
+    private record VertxHttpResponse(int status, String body, A2AHttpHeaders headers)
+            implements A2AHttpResponse {
 
         @Override
         public int status() {

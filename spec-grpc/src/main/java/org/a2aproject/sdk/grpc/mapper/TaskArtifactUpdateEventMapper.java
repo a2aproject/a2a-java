@@ -11,17 +11,26 @@ import org.mapstruct.Mapping;
  * <p>
  * Now fully declarative using Builder pattern with @BeanMapping.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {ArtifactMapper.class, A2ACommonFieldMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {ArtifactMapper.class, A2ACommonFieldMapper.class})
 public interface TaskArtifactUpdateEventMapper {
 
-    TaskArtifactUpdateEventMapper INSTANCE = A2AMappers.getMapper(TaskArtifactUpdateEventMapper.class);
+    TaskArtifactUpdateEventMapper INSTANCE =
+            A2AMappers.getMapper(TaskArtifactUpdateEventMapper.class);
 
     /**
      * Converts domain TaskArtifactUpdateEvent to proto.
      * Uses declarative mapping with CommonFieldMapper for metadata conversion.
      */
-    @Mapping(target = "append", source = "append", conditionExpression = "java(domain.append() != null)")
-    @Mapping(target = "lastChunk", source = "lastChunk", conditionExpression = "java(domain.lastChunk() != null)")
+    @Mapping(
+            target = "append",
+            source = "append",
+            conditionExpression = "java(domain.append() != null)")
+    @Mapping(
+            target = "lastChunk",
+            source = "lastChunk",
+            conditionExpression = "java(domain.lastChunk() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent toProto(TaskArtifactUpdateEvent domain);
 

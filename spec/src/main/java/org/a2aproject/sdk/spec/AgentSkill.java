@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.List;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -40,9 +39,15 @@ import org.jspecify.annotations.Nullable;
  * @see AgentCard
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentSkill(String id, String name, String description, List<String> tags,
-                         @Nullable List<String> examples, @Nullable List<String> inputModes, @Nullable List<String> outputModes,
-                         @Nullable List<SecurityRequirement> securityRequirements) {
+public record AgentSkill(
+        String id,
+        String name,
+        String description,
+        List<String> tags,
+        @Nullable List<String> examples,
+        @Nullable List<String> inputModes,
+        @Nullable List<String> outputModes,
+        @Nullable List<SecurityRequirement> securityRequirements) {
 
     /**
      * Compact constructor that validates required fields.
@@ -115,8 +120,7 @@ public record AgentSkill(String id, String name, String description, List<String
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the unique identifier for the skill.

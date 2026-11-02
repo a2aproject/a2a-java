@@ -2,27 +2,26 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
 
-import org.a2aproject.sdk.util.Assert;
-
 import java.util.UUID;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Used to resubscribe to a task.
  */
-public final class TaskResubscriptionRequest_v0_3 extends StreamingJSONRPCRequest_v0_3<TaskIdParams_v0_3> {
+public final class TaskResubscriptionRequest_v0_3
+        extends StreamingJSONRPCRequest_v0_3<TaskIdParams_v0_3> {
 
-    private TaskResubscriptionRequest_v0_3() {
-    }
-
+    private TaskResubscriptionRequest_v0_3() {}
 
     public static final String METHOD = "tasks/resubscribe";
 
-    public TaskResubscriptionRequest_v0_3(String jsonrpc, Object id, String method, TaskIdParams_v0_3 params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+    public TaskResubscriptionRequest_v0_3(
+            String jsonrpc, Object id, String method, TaskIdParams_v0_3 params) {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
+        if (!method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid TaskResubscriptionRequest method");
         }
         Assert.checkNotNullParam("params", params);

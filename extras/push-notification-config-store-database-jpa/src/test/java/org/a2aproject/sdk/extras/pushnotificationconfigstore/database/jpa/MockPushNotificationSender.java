@@ -1,12 +1,10 @@
 package org.a2aproject.sdk.extras.pushnotificationconfigstore.database.jpa;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
-
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -43,9 +41,9 @@ public class MockPushNotificationSender implements PushNotificationSender {
     public Queue<Task> getCapturedTasks() {
         Queue<Task> tasks = new ConcurrentLinkedQueue<>();
         capturedEvents.stream()
-            .filter(e -> e instanceof Task)
-            .map(e -> (Task) e)
-            .forEach(tasks::add);
+                .filter(e -> e instanceof Task)
+                .map(e -> (Task) e)
+                .forEach(tasks::add);
         return tasks;
     }
 

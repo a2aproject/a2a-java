@@ -3,7 +3,6 @@ package org.a2aproject.sdk.examples.streamlifecycle.server;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
-
 import org.a2aproject.sdk.server.events.StreamCloseHandle;
 import org.a2aproject.sdk.server.events.TaskStreamLifecycleHook;
 import org.a2aproject.sdk.spec.Event;
@@ -32,21 +31,28 @@ public class CloseStreamsHook implements TaskStreamLifecycleHook {
         LOGGER.info("[HOOK] Subscriber added for task {}. Active subscribers: {}", taskId, count);
 
         if (count >= MAX_SUBSCRIBERS) {
-            LOGGER.info("[HOOK] Subscriber count reached {} for task {} — closing all streams",
-                    MAX_SUBSCRIBERS, taskId);
+            LOGGER.info(
+                    "[HOOK] Subscriber count reached {} for task {} — closing all streams",
+                    MAX_SUBSCRIBERS,
+                    taskId);
             handle.closeStreams();
         }
     }
 
     @Override
     public void onUnsubscribe(String taskId, StreamCloseHandle handle) {
-        LOGGER.info("[HOOK] Subscriber removed for task {}. Active subscribers: {}",
-                taskId, handle.getActiveSubscriberCount());
+        LOGGER.info(
+                "[HOOK] Subscriber removed for task {}. Active subscribers: {}",
+                taskId,
+                handle.getActiveSubscriberCount());
     }
 
     @Override
     public void onEvent(String taskId, Event event, StreamCloseHandle handle) {
-        LOGGER.info("[HOOK] Event distributed for task {}: {} (subscribers: {})",
-                taskId, event.getClass().getSimpleName(), handle.getActiveSubscriberCount());
+        LOGGER.info(
+                "[HOOK] Event distributed for task {}: {} (subscribers: {})",
+                taskId,
+                event.getClass().getSimpleName(),
+                handle.getActiveSubscriberCount());
     }
 }

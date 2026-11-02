@@ -1,14 +1,12 @@
 package org.a2aproject.sdk.server.util;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Singleton;
-
 import org.a2aproject.sdk.server.multitenancy.Tenant;
 import org.jspecify.annotations.Nullable;
 
@@ -19,8 +17,7 @@ public final class CdiUtils {
 
     private static final Logger LOGGER = Logger.getLogger(CdiUtils.class.getName());
 
-    private CdiUtils() {
-    }
+    private CdiUtils() {}
 
     /**
      * Resolves a bean from an optional CDI {@link Instance}.
@@ -61,14 +58,15 @@ public final class CdiUtils {
         }
         T defaultBean = null;
         for (Instance.Handle<T> handle : instance.handles()) {
-            boolean hasTenant = handle.getBean().getQualifiers().stream()
-                    .anyMatch(Tenant.class::isInstance);
+            boolean hasTenant =
+                    handle.getBean().getQualifiers().stream().anyMatch(Tenant.class::isInstance);
             if (hasTenant) {
                 continue;
             }
             if (defaultBean != null) {
                 throw new IllegalStateException(
-                        "Multiple default beans detected — ensure only one bean without @Tenant qualifier exists");
+                        "Multiple default beans detected — ensure only one bean without @Tenant"
+                                + " qualifier exists");
             }
             defaultBean = handle.get();
         }
@@ -99,21 +97,31 @@ public final class CdiUtils {
             if (qualifiers.stream().anyMatch(excludeQualifier::isInstance)) {
                 continue;
             }
-            if (requiredQualifier != null && qualifiers.stream().noneMatch(requiredQualifier::isInstance)) {
+            if (requiredQualifier != null
+                    && qualifiers.stream().noneMatch(requiredQualifier::isInstance)) {
                 continue;
             }
             if (defaultBean != null) {
-                throw new IllegalStateException(String.format(
-                        "Multiple default %s beans detected — found %s but already resolved one; "
-                                + "ensure only one %s bean without the excluded qualifier exists",
-                        beanTypeName, handle.getBean().getBeanClass().getName(), beanTypeName));
+                throw new IllegalStateException(
+                        String.format(
+                                "Multiple default %s beans detected — found %s but already resolved"
+                                    + " one; ensure only one %s bean without the excluded qualifier"
+                                    + " exists",
+                                beanTypeName,
+                                handle.getBean().getBeanClass().getName(),
+                                beanTypeName));
             } else {
                 Class<? extends Annotation> scope = handle.getBean().getScope();
                 if (!ApplicationScoped.class.equals(scope) && !Singleton.class.equals(scope)) {
-                    LOGGER.log(Level.WARNING,
-                            "Default {0} bean {1} has scope {2} — only @ApplicationScoped or @Singleton is safe here",
-                            new Object[] { beanTypeName, handle.getBean().getBeanClass().getName(),
-                                    scope.getSimpleName() });
+                    LOGGER.log(
+                            Level.WARNING,
+                            "Default {0} bean {1} has scope {2} — only @ApplicationScoped or"
+                                    + " @Singleton is safe here",
+                            new Object[] {
+                                beanTypeName,
+                                handle.getBean().getBeanClass().getName(),
+                                scope.getSimpleName()
+                            });
                 }
                 defaultBean = handle.get();
             }

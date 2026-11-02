@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server.auth;
 
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 
 /**
@@ -26,7 +25,8 @@ public class SimpleTaskAuthorizationProvider implements TaskAuthorizationProvide
         return context.getUser().isAuthenticated();
     }
 
-    // Only returns true after an explicit recordOwnership call — unrecorded tasks are allowed by checkRead/checkWrite.
+    // Only returns true after an explicit recordOwnership call — unrecorded tasks are allowed by
+    // checkRead/checkWrite.
     @Override
     public boolean isTaskRecorded(String taskId) {
         return owners.containsKey(taskId);

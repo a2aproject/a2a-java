@@ -31,7 +31,8 @@ public record SSEParserConfig(int maxLineLength, int maxBufferLines, int maxBuff
     /**
      * Default configuration: 1 MB per-line and per-event character limit, 1 000 data lines per event.
      */
-    public static final SSEParserConfig DEFAULT = new SSEParserConfig(1024 * 1024, 1000, 1024 * 1024);
+    public static final SSEParserConfig DEFAULT =
+            new SSEParserConfig(1024 * 1024, 1000, 1024 * 1024);
 
     public SSEParserConfig {
         if (maxLineLength < 0) {
@@ -57,8 +58,7 @@ public record SSEParserConfig(int maxLineLength, int maxBufferLines, int maxBuff
         private int maxBufferLines = DEFAULT.maxBufferLines;
         private int maxBufferChars = DEFAULT.maxBufferChars;
 
-        Builder() {
-        }
+        Builder() {}
 
         /**
          * Sets the maximum number of bytes allowed in a single raw SSE line.

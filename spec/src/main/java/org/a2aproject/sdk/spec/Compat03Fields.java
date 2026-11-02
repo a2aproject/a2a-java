@@ -17,11 +17,13 @@ public final class Compat03Fields {
         COMPAT_03_AVAILABLE = available;
     }
 
-    private Compat03Fields() {
-    }
+    private Compat03Fields() {}
 
-    public static void addCompat03FieldsIfAvailable(AgentCard.Builder builder,
-            List<AgentInterface> supportedInterfaces, String url, String preferredTransport) {
+    public static void addCompat03FieldsIfAvailable(
+            AgentCard.Builder builder,
+            List<AgentInterface> supportedInterfaces,
+            String url,
+            String preferredTransport) {
         if (!COMPAT_03_AVAILABLE) {
             return;
         }
@@ -29,7 +31,10 @@ public final class Compat03Fields {
                 .preferredTransport(preferredTransport)
                 .additionalInterfaces(
                         supportedInterfaces.stream()
-                                .map(iface -> new Legacy_0_3_AgentInterface(iface.protocolBinding(), iface.url()))
+                                .map(
+                                        iface ->
+                                                new Legacy_0_3_AgentInterface(
+                                                        iface.protocolBinding(), iface.url()))
                                 .toList());
     }
 }

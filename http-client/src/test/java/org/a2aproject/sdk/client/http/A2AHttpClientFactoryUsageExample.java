@@ -21,10 +21,11 @@ public class A2AHttpClientFactoryUsageExample {
         A2AHttpClient client = A2AHttpClientFactory.create();
 
         try {
-            A2AHttpResponse response = client.createGet()
-                .url("https://api.example.com/data")
-                .addHeader("Accept", "application/json")
-                .get();
+            A2AHttpResponse response =
+                    client.createGet()
+                            .url("https://api.example.com/data")
+                            .addHeader("Accept", "application/json")
+                            .get();
 
             if (response.success()) {
                 System.out.println("Response: " + response.body());
@@ -50,21 +51,23 @@ public class A2AHttpClientFactoryUsageExample {
         // Only use try-with-resources if the client is AutoCloseable
         if (client instanceof AutoCloseable) {
             try (AutoCloseable closeableClient = (AutoCloseable) client) {
-                A2AHttpResponse response = client.createPost()
-                    .url("https://api.example.com/submit")
-                    .addHeader("Content-Type", "application/json")
-                    .body("{\"key\":\"value\"}")
-                    .post();
+                A2AHttpResponse response =
+                        client.createPost()
+                                .url("https://api.example.com/submit")
+                                .addHeader("Content-Type", "application/json")
+                                .body("{\"key\":\"value\"}")
+                                .post();
 
                 System.out.println("Status: " + response.status());
             }
         } else {
             // Non-closeable client, use normally
-            A2AHttpResponse response = client.createPost()
-                .url("https://api.example.com/submit")
-                .addHeader("Content-Type", "application/json")
-                .body("{\"key\":\"value\"}")
-                .post();
+            A2AHttpResponse response =
+                    client.createPost()
+                            .url("https://api.example.com/submit")
+                            .addHeader("Content-Type", "application/json")
+                            .body("{\"key\":\"value\"}")
+                            .post();
 
             System.out.println("Status: " + response.status());
         }
@@ -76,18 +79,18 @@ public class A2AHttpClientFactoryUsageExample {
     public void specificProviderUsage() throws IOException, InterruptedException {
         // Force the use of JDK client even if Vert.x is available
         A2AHttpClient jdkClient = A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT);
-        A2AHttpResponse response = jdkClient.createGet()
-            .url("https://api.example.com/data")
-            .get();
+        A2AHttpResponse response = jdkClient.createGet().url("https://api.example.com/data").get();
 
         System.out.println("Using JDK client: " + response.status());
 
         // Or explicitly use Vert.x client
-        try (AutoCloseable vertxClient = (AutoCloseable) A2AHttpClientFactory.create(
-                A2AHttpClientConfiguration.DEFAULT)) {
-            A2AHttpResponse vertxResponse = ((A2AHttpClient) vertxClient).createGet()
-                .url("https://api.example.com/data")
-                .get();
+        try (AutoCloseable vertxClient =
+                (AutoCloseable) A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)) {
+            A2AHttpResponse vertxResponse =
+                    ((A2AHttpClient) vertxClient)
+                            .createGet()
+                            .url("https://api.example.com/data")
+                            .get();
 
             System.out.println("Using Vert.x client: " + vertxResponse.status());
         } catch (Exception e) {
@@ -103,9 +106,7 @@ public class A2AHttpClientFactoryUsageExample {
         try {
             client = A2AHttpClientFactory.create();
 
-            A2AHttpResponse response = client.createGet()
-                .url("https://api.example.com/data")
-                .get();
+            A2AHttpResponse response = client.createGet().url("https://api.example.com/data").get();
 
             System.out.println("Response: " + response.body());
 

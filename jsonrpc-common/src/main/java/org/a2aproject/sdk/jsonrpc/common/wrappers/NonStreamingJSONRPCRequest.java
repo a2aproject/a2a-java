@@ -5,13 +5,18 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
  *
  * @param <T> the type of the request parameters
  */
-public abstract sealed class NonStreamingJSONRPCRequest<T> extends A2ARequest<T> permits GetTaskRequest,
-        CancelTaskRequest, CreateTaskPushNotificationConfigRequest, GetTaskPushNotificationConfigRequest,
-        SendMessageRequest, DeleteTaskPushNotificationConfigRequest, ListTaskPushNotificationConfigsRequest,
-        GetExtendedAgentCardRequest, ListTasksRequest {
+public abstract sealed class NonStreamingJSONRPCRequest<T> extends A2ARequest<T>
+        permits GetTaskRequest,
+                CancelTaskRequest,
+                CreateTaskPushNotificationConfigRequest,
+                GetTaskPushNotificationConfigRequest,
+                SendMessageRequest,
+                DeleteTaskPushNotificationConfigRequest,
+                ListTaskPushNotificationConfigsRequest,
+                GetExtendedAgentCardRequest,
+                ListTasksRequest {
 
-    NonStreamingJSONRPCRequest() {
-    }
+    NonStreamingJSONRPCRequest() {}
 
     NonStreamingJSONRPCRequest(String jsonrpc, String method, Object id, T params) {
         validateAndSetJsonParameters(jsonrpc, method, id, params, true);

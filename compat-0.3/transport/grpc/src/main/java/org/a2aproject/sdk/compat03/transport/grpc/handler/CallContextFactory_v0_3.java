@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.transport.grpc.handler;
 
-import org.a2aproject.sdk.server.ServerCallContext;
 import io.grpc.stub.StreamObserver;
+import org.a2aproject.sdk.server.ServerCallContext;
 
 /**
  * Factory interface for creating ServerCallContext from gRPC StreamObserver.

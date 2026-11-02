@@ -1,18 +1,19 @@
 package org.a2aproject.sdk.compat03.client.transport.grpc;
 
+import io.grpc.Channel;
+import java.util.function.Function;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransportConfigBuilder_v0_3;
 import org.a2aproject.sdk.util.Assert;
-import io.grpc.Channel;
-
-import java.util.function.Function;
-
 import org.jspecify.annotations.Nullable;
 
-public class GrpcTransportConfigBuilder_v0_3 extends ClientTransportConfigBuilder_v0_3<GrpcTransportConfig_v0_3, GrpcTransportConfigBuilder_v0_3> {
+public class GrpcTransportConfigBuilder_v0_3
+        extends ClientTransportConfigBuilder_v0_3<
+                GrpcTransportConfig_v0_3, GrpcTransportConfigBuilder_v0_3> {
 
     private @Nullable Function<String, Channel> channelFactory;
 
-    public GrpcTransportConfigBuilder_v0_3 channelFactory(Function<String, Channel> channelFactory) {
+    public GrpcTransportConfigBuilder_v0_3 channelFactory(
+            Function<String, Channel> channelFactory) {
         Assert.checkNotNullParam("channelFactory", channelFactory);
 
         this.channelFactory = channelFactory;

@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -40,7 +39,10 @@ public class InvalidParamsError extends A2AError {
      * @param message the error message
      * @param details additional error details
      */
-    public InvalidParamsError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public InvalidParamsError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.INVALID_PARAMS.code()),
                 defaultIfNull(message, "Invalid parameters"),

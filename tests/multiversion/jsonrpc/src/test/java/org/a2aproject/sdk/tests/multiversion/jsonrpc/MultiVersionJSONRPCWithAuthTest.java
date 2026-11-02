@@ -16,8 +16,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 @TestProfile(AuthTestProfile.class)
 public class MultiVersionJSONRPCWithAuthTest extends AbstractA2AServerWithAuthTest {
 
-    @Inject
-    Vertx vertx;
+    @Inject Vertx vertx;
 
     public MultiVersionJSONRPCWithAuthTest() {
         super(8081);
@@ -35,11 +34,15 @@ public class MultiVersionJSONRPCWithAuthTest extends AbstractA2AServerWithAuthTe
 
     @Override
     protected void configureTransportWithAuth(ClientBuilder builder) {
-        AuthInterceptor authInterceptor = new AuthInterceptor(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName) ? getEncodedCredentials() : null
-        );
+        AuthInterceptor authInterceptor =
+                new AuthInterceptor(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials()
+                                        : null);
 
-        builder.withTransport(JSONRPCTransport.class,
+        builder.withTransport(
+                JSONRPCTransport.class,
                 new JSONRPCTransportConfigBuilder()
                         .httpClient(new VertxA2AHttpClient(vertx))
                         .addInterceptor(authInterceptor));
@@ -47,8 +50,8 @@ public class MultiVersionJSONRPCWithAuthTest extends AbstractA2AServerWithAuthTe
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(JSONRPCTransport.class,
-                new JSONRPCTransportConfigBuilder()
-                        .httpClient(new VertxA2AHttpClient(vertx)));
+        builder.withTransport(
+                JSONRPCTransport.class,
+                new JSONRPCTransportConfigBuilder().httpClient(new VertxA2AHttpClient(vertx)));
     }
 }

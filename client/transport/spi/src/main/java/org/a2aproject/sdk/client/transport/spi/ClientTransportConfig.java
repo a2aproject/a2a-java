@@ -1,13 +1,11 @@
 package org.a2aproject.sdk.client.transport.spi;
 
 import java.util.ArrayList;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
-import java.util.Collections;
 
 /**
  * Base configuration class for A2A client transport protocols.
@@ -76,10 +74,9 @@ public abstract class ClientTransportConfig<T extends ClientTransport> {
      *
      * @param parameters the map of parameters to use (will be copied)
      */
-    public void setParameters(Map<String, ? extends Object > parameters) {
+    public void setParameters(Map<String, ? extends Object> parameters) {
         this.parameters = new HashMap<>(parameters);
     }
-
 
     /**
      * Get the list of configured parameters.
@@ -89,7 +86,7 @@ public abstract class ClientTransportConfig<T extends ClientTransport> {
      *
      * @return an unmodifiable map of configured parameters (never null, but may be empty)
      */
-    public Map<String, ? extends Object > getParameters() {
+    public Map<String, ? extends Object> getParameters() {
         return java.util.Collections.unmodifiableMap(parameters);
     }
 }

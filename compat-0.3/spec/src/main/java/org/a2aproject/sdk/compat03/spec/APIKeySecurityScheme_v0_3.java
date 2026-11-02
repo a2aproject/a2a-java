@@ -6,7 +6,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * Defines a security scheme using an API key.
  */
-public record APIKeySecurityScheme_v0_3(String in, String name, @Nullable String description, String type) implements SecurityScheme_v0_3 {
+public record APIKeySecurityScheme_v0_3(
+        String in, String name, @Nullable String description, String type)
+        implements SecurityScheme_v0_3 {
 
     public static final String TYPE = "apiKey";
 
@@ -39,12 +41,14 @@ public record APIKeySecurityScheme_v0_3(String in, String name, @Nullable String
                 case "query" -> {
                     return QUERY;
                 }
-                default -> throw new IllegalArgumentException("Invalid API key location: " + location);
+                default ->
+                        throw new IllegalArgumentException("Invalid API key location: " + location);
             }
         }
     }
 
-    public APIKeySecurityScheme_v0_3(String in, String name, @Nullable String description, @Nullable String type) {
+    public APIKeySecurityScheme_v0_3(
+            String in, String name, @Nullable String description, @Nullable String type) {
         Assert.checkNotNullParam("in", in);
         Assert.checkNotNullParam("name", name);
         if (type != null && !type.equals(TYPE)) {

@@ -32,26 +32,23 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.AgentCard;
-import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
-import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.EventKind;
+import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.FileContent;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
@@ -71,6 +68,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.util.Utils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,13 +107,16 @@ public class JSONRPCTransportTest {
 
     @Test
     public void testListTasksWithTenant() throws Exception {
-        JsonObject params = listTasksAndGetRequestParams(ListTasksParams.builder().tenant("tenant-123").build());
+        JsonObject params =
+                listTasksAndGetRequestParams(
+                        ListTasksParams.builder().tenant("tenant-123").build());
 
         assertEquals("tenant-123", params.get("tenant").getAsString());
     }
 
     private JsonObject listTasksAndGetRequestParams(ListTasksParams params) throws Exception {
-        String body = """
+        String body =
+                """
                 {
                   "jsonrpc": "2.0",
                   "id": "list-tasks",
@@ -125,7 +126,8 @@ public class JSONRPCTransportTest {
         server.when(request().withMethod("POST").withPath("/"))
                 .respond(response().withStatusCode(200).withBody(body));
 
-        ListTasksResult result = new JSONRPCTransport("http://localhost:4001").listTasks(params, null);
+        ListTasksResult result =
+                new JSONRPCTransport("http://localhost:4001").listTasks(params, null);
 
         assertTrue(result.tasks().isEmpty());
         assertEquals(0, result.totalSize());
@@ -144,46 +146,48 @@ public class JSONRPCTransportTest {
 
     @Test
     public void configBuilderEnablesRedirectFollowing() {
-        assertTrue(new JSONRPCTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
+        assertTrue(
+                new JSONRPCTransportConfigBuilder()
+                        .followRedirects(true)
+                        .build()
+                        .isFollowRedirects());
     }
 
     @Test
     public void testA2AClientSendMessage() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_TEST_RESPONSE)
-                );
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
+                .respond(response().withStatusCode(200).withBody(SEND_MESSAGE_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("tell me a joke")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertNotNull(task.contextId());
-        assertEquals(TaskState.TASK_STATE_COMPLETED,task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
@@ -191,40 +195,43 @@ public class JSONRPCTransportTest {
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
     }
 
     @Test
     public void testA2AClientSendMessageWithMessageResponse() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("tell me a joke")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Message.class, result);
@@ -232,68 +239,68 @@ public class JSONRPCTransportTest {
         assertEquals(Message.Role.ROLE_AGENT, agentMessage.role());
         Part<?> part = agentMessage.parts().get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart) part).text());
         assertEquals("msg-456", agentMessage.messageId());
     }
 
-
     @Test
     public void testA2AClientSendMessageWithError() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_WITH_ERROR_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_ERROR_TEST_RESPONSE)
-                );
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_WITH_ERROR_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
+                .respond(response().withStatusCode(200).withBody(SEND_MESSAGE_ERROR_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("tell me a joke")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                        .contextId("context-1234")
+                        .messageId("message-1234")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         try {
             client.sendMessage(params, null);
             fail(); // should not reach here
         } catch (A2AClientException e) {
-            assertTrue(e.getMessage().contains("Invalid parameters: {info=Hello world}"),e.getMessage());
+            assertTrue(
+                    e.getMessage().contains("Invalid parameters: {info=Hello world}"),
+                    e.getMessage());
         }
     }
 
     @Test
     public void testA2AClientGetTask() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(GET_TASK_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(GET_TASK_TEST_RESPONSE)
-                );
+                                .withBody(
+                                        JsonBody.json(
+                                                GET_TASK_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Task task = client.getTask(new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                10), null);
+        Task task =
+                client.getTask(
+                        new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64", 10), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
         assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
@@ -303,7 +310,9 @@ public class JSONRPCTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertEquals(
+                "Why did the chicken cross the road? To get to the other side!",
+                ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
         List<Message> history = task.history();
         assertNotNull(history);
@@ -315,7 +324,7 @@ public class JSONRPCTransportTest {
         assertEquals(3, parts.size());
         part = parts.get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("tell me a joke", ((TextPart)part).text());
+        assertEquals("tell me a joke", ((TextPart) part).text());
         part = parts.get(1);
         assertTrue(part instanceof FilePart);
         FileContent filePart = ((FilePart) part).file();
@@ -331,21 +340,21 @@ public class JSONRPCTransportTest {
 
     @Test
     public void testA2AClientCancelTask() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(CANCEL_TASK_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(CANCEL_TASK_TEST_RESPONSE)
-                );
+                                .withBody(
+                                        JsonBody.json(
+                                                CANCEL_TASK_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
+                .respond(response().withStatusCode(200).withBody(CANCEL_TASK_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Task task = client.cancelTask(new CancelTaskParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
+        Task task =
+                client.cancelTask(
+                        new CancelTaskParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
         assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
@@ -354,22 +363,27 @@ public class JSONRPCTransportTest {
 
     @Test
     public void testA2AClientGetTaskPushNotificationConfig() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
-                );
+                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
-                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "c295ea44-7543-4f78-b524-7a38915ad6e4"), null);
+        TaskPushNotificationConfig taskPushNotificationConfig =
+                client.getTaskPushNotificationConfiguration(
+                        new GetTaskPushNotificationConfigParams(
+                                "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                                "c295ea44-7543-4f78-b524-7a38915ad6e4"),
+                        null);
         assertNotNull(taskPushNotificationConfig);
         assertEquals("https://example.com/callback", taskPushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = taskPushNotificationConfig.authentication();
@@ -378,28 +392,31 @@ public class JSONRPCTransportTest {
 
     @Test
     public void testA2AClientCreateTaskPushNotificationConfig() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
-                );
+                                .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        TaskPushNotificationConfig taskPushNotificationConfig = client.createTaskPushNotificationConfiguration(
-                TaskPushNotificationConfig.builder()
-                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
-                        .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
-                        .url("https://example.com/callback")
-                        .authentication(new AuthenticationInfo("jwt", null))
-                        .tenant("")
-                        .build(), null);
+        TaskPushNotificationConfig taskPushNotificationConfig =
+                client.createTaskPushNotificationConfiguration(
+                        TaskPushNotificationConfig.builder()
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                                .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                                .url("https://example.com/callback")
+                                .authentication(new AuthenticationInfo("jwt", null))
+                                .tenant("")
+                                .build(),
+                        null);
         assertNotNull(taskPushNotificationConfig);
         assertEquals("https://example.com/callback", taskPushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = taskPushNotificationConfig.authentication();
@@ -408,35 +425,44 @@ public class JSONRPCTransportTest {
 
     @Test
     public void testA2AClientGetExtendedAgentCard() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE)
-                );
+                                .withBody(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         GetExtendedAgentCardParams params = new GetExtendedAgentCardParams(null);
         AgentCard agentCard = client.getExtendedAgentCard(params, null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());
+        assertEquals(
+                "https://georoute-agent.example.com/a2a/v1",
+                Utils.getFavoriteInterface(agentCard).url());
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());
-        assertEquals("https://docs.examplegeoservices.com/georoute-agent/api", agentCard.documentationUrl());
+        assertEquals(
+                "https://docs.examplegeoservices.com/georoute-agent/api",
+                agentCard.documentationUrl());
         assertTrue(agentCard.capabilities().streaming());
         assertTrue(agentCard.capabilities().pushNotifications());
         assertTrue(agentCard.capabilities().extendedAgentCard());
         Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
-        OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
-        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.openIdConnectUrl());
+        OpenIdConnectSecurityScheme google =
+                (OpenIdConnectSecurityScheme) securitySchemes.get("google");
+        assertEquals(
+                "https://accounts.google.com/.well-known/openid-configuration",
+                google.openIdConnectUrl());
         List<SecurityRequirement> security = agentCard.securityRequirements();
         assertEquals(1, security.size());
         Map<String, List<String>> securityMap = security.get(0).schemes();
@@ -450,22 +476,39 @@ public class JSONRPCTransportTest {
         List<AgentSkill> skills = agentCard.skills();
         assertEquals("route-optimizer-traffic", skills.get(0).id());
         assertEquals("Traffic-Aware Route Optimizer", skills.get(0).name());
-        assertEquals("Calculates the optimal driving route between two or more locations, taking into account real-time traffic conditions, road closures, and user preferences (e.g., avoid tolls, prefer highways).", skills.get(0).description());
+        assertEquals(
+                "Calculates the optimal driving route between two or more locations, taking into"
+                    + " account real-time traffic conditions, road closures, and user preferences"
+                    + " (e.g., avoid tolls, prefer highways).",
+                skills.get(0).description());
         List<String> tags = List.of("maps", "routing", "navigation", "directions", "traffic");
         assertEquals(tags, skills.get(0).tags());
-        List<String> examples = List.of("Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San Francisco International Airport' avoiding tolls.",
-                "{\"origin\": {\"lat\": 37.422, \"lng\": -122.084}, \"destination\": {\"lat\": 37.7749, \"lng\": -122.4194}, \"preferences\": [\"avoid_ferries\"]}");
+        List<String> examples =
+                List.of(
+                        "Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San"
+                                + " Francisco International Airport' avoiding tolls.",
+                        "{\"origin\": {\"lat\": 37.422, \"lng\": -122.084}, \"destination\":"
+                                + " {\"lat\": 37.7749, \"lng\": -122.4194}, \"preferences\":"
+                                + " [\"avoid_ferries\"]}");
         assertEquals(examples, skills.get(0).examples());
         assertEquals(defaultInputModes, skills.get(0).inputModes());
-        List<String> outputModes = List.of("application/json", "application/vnd.geo+json", "text/html");
+        List<String> outputModes =
+                List.of("application/json", "application/vnd.geo+json", "text/html");
         assertEquals(outputModes, skills.get(0).outputModes());
         assertEquals("custom-map-generator", skills.get(1).id());
         assertEquals("Personalized Map Generator", skills.get(1).name());
-        assertEquals("Creates custom map images or interactive map views based on user-defined points of interest, routes, and style preferences. Can overlay data layers.", skills.get(1).description());
+        assertEquals(
+                "Creates custom map images or interactive map views based on user-defined points of"
+                        + " interest, routes, and style preferences. Can overlay data layers.",
+                skills.get(1).description());
         tags = List.of("maps", "customization", "visualization", "cartography");
         assertEquals(tags, skills.get(1).tags());
-        examples = List.of("Generate a map of my upcoming road trip with all planned stops highlighted.",
-                "Show me a map visualizing all coffee shops within a 1-mile radius of my current location.");
+        examples =
+                List.of(
+                        "Generate a map of my upcoming road trip with all planned stops"
+                                + " highlighted.",
+                        "Show me a map visualizing all coffee shops within a 1-mile radius of my"
+                                + " current location.");
         assertEquals(examples, skills.get(1).examples());
         List<String> inputModes = List.of("application/json");
         assertEquals(inputModes, skills.get(1).inputModes());
@@ -476,42 +519,48 @@ public class JSONRPCTransportTest {
         assertEquals("This is an extended skill.", skills.get(2).description());
         assertEquals(List.of("extended"), skills.get(2).tags());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.supportedInterfaces().get(0).protocolVersion());
+        assertEquals(
+                CURRENT_PROTOCOL_VERSION, agentCard.supportedInterfaces().get(0).protocolVersion());
     }
 
     @Test
     public void testA2AClientSendMessageWithFilePart() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(
-                        new TextPart("analyze this image"),
-                        new FilePart(new FileWithUri("image/jpeg", null, "file:///path/to/image.jpg"))
-                ))
-                .contextId("context-1234")
-                .messageId("message-1234-with-file")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(
+                                List.of(
+                                        new TextPart("analyze this image"),
+                                        new FilePart(
+                                                new FileWithUri(
+                                                        "image/jpeg",
+                                                        null,
+                                                        "file:///path/to/image.jpg"))))
+                        .contextId("context-1234")
+                        .messageId("message-1234-with-file")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
@@ -526,7 +575,8 @@ public class JSONRPCTransportTest {
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).text());
+        assertEquals(
+                "This is an image of a cat sitting on a windowsill.", ((TextPart) part).text());
         assertFalse(task.metadata().isEmpty());
         assertEquals(1, task.metadata().size());
         assertEquals("metadata-test", task.metadata().get("test"));
@@ -534,18 +584,19 @@ public class JSONRPCTransportTest {
 
     @Test
     public void testA2AClientSendMessageWithDataPart() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
 
@@ -555,23 +606,20 @@ public class JSONRPCTransportTest {
         data.put("location", "San Francisco");
         data.put("timestamp", "2024-01-15T10:30:00Z");
 
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(
-                        new TextPart("process this data"),
-                        new DataPart(data)
-                ))
-                .contextId("context-1234")
-                .messageId("message-1234-with-data")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("process this data"), new DataPart(data)))
+                        .contextId("context-1234")
+                        .messageId("message-1234-with-data")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
@@ -586,24 +634,28 @@ public class JSONRPCTransportTest {
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart) part).text());
+        assertEquals(
+                "Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San"
+                        + " Francisco.",
+                ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
     }
 
     @Test
     public void testA2AClientSendMessageWithMixedParts() throws Exception {
-        this.server.when(
+        this.server
+                .when(
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
-
-                )
+                                .withBody(
+                                        JsonBody.json(
+                                                SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST,
+                                                MatchType.ONLY_MATCHING_FIELDS)))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE)
-                );
+                                .withBody(SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
 
@@ -612,24 +664,26 @@ public class JSONRPCTransportTest {
         data.put("dataPoints", List.of(10, 20, 30, 40));
         data.put("labels", List.of("Q1", "Q2", "Q3", "Q4"));
 
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(
-                        new TextPart("analyze this data and image"),
-                        new FilePart(new FileWithBytes("image/png", "chart.png", "aGVsbG8=")),
-                        new DataPart(data)
-                ))
-                .contextId("context-1234")
-                .messageId("message-1234-with-mixed")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(
+                                List.of(
+                                        new TextPart("analyze this data and image"),
+                                        new FilePart(
+                                                new FileWithBytes(
+                                                        "image/png", "chart.png", "aGVsbG8=")),
+                                        new DataPart(data)))
+                        .contextId("context-1234")
+                        .messageId("message-1234-with-mixed")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
@@ -644,7 +698,10 @@ public class JSONRPCTransportTest {
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof TextPart);
-        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).text());
+        assertEquals(
+                "Analyzed chart image and data: Bar chart showing quarterly data with values [10,"
+                        + " 20, 30, 40].",
+                ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
     }
 
@@ -654,7 +711,8 @@ public class JSONRPCTransportTest {
     @Test
     public void testExtensionSupportRequiredErrorUnmarshalling() throws Exception {
         // Mock server returns JSON-RPC error with code -32008 (EXTENSION_SUPPORT_REQUIRED_ERROR)
-        String errorResponseBody = """
+        String errorResponseBody =
+                """
                 {
                     "jsonrpc": "2.0",
                     "id": 1,
@@ -665,32 +723,25 @@ public class JSONRPCTransportTest {
                 }
                 """;
 
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/")
-                )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(errorResponseBody)
-                );
+        this.server
+                .when(request().withMethod("POST").withPath("/"))
+                .respond(response().withStatusCode(200).withBody(errorResponseBody));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("test message")))
-                .contextId("context-test")
-                .messageId("message-test")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("test message")))
+                        .contextId("context-test")
+                        .messageId("message-test")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         // Should throw A2AClientException with ExtensionSupportRequiredError as cause
         try {
@@ -699,7 +750,8 @@ public class JSONRPCTransportTest {
         } catch (A2AClientException e) {
             // Verify the cause is ExtensionSupportRequiredError
             assertInstanceOf(ExtensionSupportRequiredError.class, e.getCause());
-            ExtensionSupportRequiredError extensionError = (ExtensionSupportRequiredError) e.getCause();
+            ExtensionSupportRequiredError extensionError =
+                    (ExtensionSupportRequiredError) e.getCause();
             assertTrue(extensionError.getMessage().contains("https://example.com/test-extension"));
         }
     }
@@ -710,39 +762,42 @@ public class JSONRPCTransportTest {
      */
     @Test
     public void testHttpErrorExposeStatusCode() throws Exception {
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/"))
                 .respond(
                         response()
                                 .withStatusCode(503)
-                                .withBody("{\"error\": \"Service Unavailable\"}")
-                );
+                                .withBody("{\"error\": \"Service Unavailable\"}"));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .role(Message.Role.ROLE_USER)
-                        .parts(Collections.singletonList(new TextPart("hello")))
-                        .contextId("ctx")
-                        .messageId("msg")
-                        .build())
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(Collections.singletonList(new TextPart("hello")))
+                                        .contextId("ctx")
+                                        .messageId("msg")
+                                        .build())
+                        .build();
 
         try {
             client.sendMessage(params, null);
             fail("Expected A2AClientException to be thrown");
         } catch (A2AClientException e) {
             // Backward compatible: still throws A2AClientException
-            assertTrue(e.getMessage().contains("503"), "Expected message to contain '503' but was: " + e.getMessage());
+            assertTrue(
+                    e.getMessage().contains("503"),
+                    "Expected message to contain '503' but was: " + e.getMessage());
             // New: cause carries structured HTTP status
             assertInstanceOf(A2AClientHTTPError.class, e.getCause());
             A2AClientHTTPError httpError = (A2AClientHTTPError) e.getCause();
             assertEquals(503, httpError.getCode());
             assertNotNull(httpError.getResponseBody());
-            assertTrue(httpError.getResponseBody().contains("Service Unavailable"), "Expected response body to contain 'Service Unavailable' but was: " + httpError.getResponseBody());
+            assertTrue(
+                    httpError.getResponseBody().contains("Service Unavailable"),
+                    "Expected response body to contain 'Service Unavailable' but was: "
+                            + httpError.getResponseBody());
         }
     }
 
@@ -752,28 +807,26 @@ public class JSONRPCTransportTest {
      */
     @Test
     public void testHttpErrorExposeResponseHeaders() throws Exception {
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/")
-                )
+        this.server
+                .when(request().withMethod("POST").withPath("/"))
                 .respond(
                         response()
                                 .withStatusCode(429)
                                 .withHeader("Retry-After", "120")
                                 .withHeader("X-RateLimit-Remaining", "0")
-                                .withBody("{\"error\": \"Too Many Requests\"}")
-                );
+                                .withBody("{\"error\": \"Too Many Requests\"}"));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        MessageSendParams params = MessageSendParams.builder()
-                .message(Message.builder()
-                        .role(Message.Role.ROLE_USER)
-                        .parts(Collections.singletonList(new TextPart("hello")))
-                        .contextId("ctx")
-                        .messageId("msg")
-                        .build())
-                .build();
+        MessageSendParams params =
+                MessageSendParams.builder()
+                        .message(
+                                Message.builder()
+                                        .role(Message.Role.ROLE_USER)
+                                        .parts(Collections.singletonList(new TextPart("hello")))
+                                        .contextId("ctx")
+                                        .messageId("msg")
+                                        .build())
+                        .build();
 
         try {
             client.sendMessage(params, null);
@@ -791,7 +844,8 @@ public class JSONRPCTransportTest {
             assertFalse(retryAfter.isEmpty(), "Expected Retry-After header");
             assertEquals("120", retryAfter.get(0));
 
-            List<String> rateLimitRemaining = headers.getOrDefault("X-RateLimit-Remaining", List.of());
+            List<String> rateLimitRemaining =
+                    headers.getOrDefault("X-RateLimit-Remaining", List.of());
             assertFalse(rateLimitRemaining.isEmpty(), "Expected X-RateLimit-Remaining header");
             assertEquals("0", rateLimitRemaining.get(0));
         }
@@ -803,7 +857,8 @@ public class JSONRPCTransportTest {
     @Test
     public void testVersionNotSupportedErrorUnmarshalling() throws Exception {
         // Mock server returns JSON-RPC error with code -32009 (VERSION_NOT_SUPPORTED_ERROR)
-        String errorResponseBody = """
+        String errorResponseBody =
+                """
                 {
                     "jsonrpc": "2.0",
                     "id": 1,
@@ -814,32 +869,25 @@ public class JSONRPCTransportTest {
                 }
                 """;
 
-        this.server.when(
-                        request()
-                                .withMethod("POST")
-                                .withPath("/")
-                )
-                .respond(
-                        response()
-                                .withStatusCode(200)
-                                .withBody(errorResponseBody)
-                );
+        this.server
+                .when(request().withMethod("POST").withPath("/"))
+                .respond(response().withStatusCode(200).withBody(errorResponseBody));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("test message")))
-                .contextId("context-test")
-                .messageId("message-test")
-                .build();
-        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
-                .acceptedOutputModes(List.of("text"))
-                .returnImmediately(false)
-                .build();
-        MessageSendParams params = MessageSendParams.builder()
-                .message(message)
-                .configuration(configuration)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("test message")))
+                        .contextId("context-test")
+                        .messageId("message-test")
+                        .build();
+        MessageSendConfiguration configuration =
+                MessageSendConfiguration.builder()
+                        .acceptedOutputModes(List.of("text"))
+                        .returnImmediately(false)
+                        .build();
+        MessageSendParams params =
+                MessageSendParams.builder().message(message).configuration(configuration).build();
 
         // Should throw A2AClientException with VersionNotSupportedError as cause
         try {

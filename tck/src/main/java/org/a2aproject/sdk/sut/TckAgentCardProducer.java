@@ -1,10 +1,8 @@
 package org.a2aproject.sdk.sut;
 
-import java.util.List;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
+import java.util.List;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -28,28 +26,30 @@ public class TckAgentCardProducer {
         String sutJsonRpcUrl = String.format("http://%s", HOST);
         String sutRestUrl = sutJsonRpcUrl;
         String sutGrpcUrl = GRPC_HOST;
-        
+
         return AgentCard.builder()
                 .name("A2A Java SDK System Under Test (SUT)")
                 .description("Auto-generated System Under Test for A2A TCK conformance")
                 .version("1.0.0")
-                .supportedInterfaces(List.of(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), sutJsonRpcUrl),
-                        new AgentInterface(TransportProtocol.GRPC.asString(), sutGrpcUrl),
-                        new AgentInterface(TransportProtocol.HTTP_JSON.asString(), sutRestUrl)))
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
+                .supportedInterfaces(
+                        List.of(
+                                new AgentInterface(
+                                        TransportProtocol.JSONRPC.asString(), sutJsonRpcUrl),
+                                new AgentInterface(TransportProtocol.GRPC.asString(), sutGrpcUrl),
+                                new AgentInterface(
+                                        TransportProtocol.HTTP_JSON.asString(), sutRestUrl)))
+                .capabilities(
+                        AgentCapabilities.builder().streaming(true).pushNotifications(true).build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
-                .skills(List.of(
-                        AgentSkill.builder()
-                                .id("tck")
-                                .name("TCK Conformance")
-                                .description("Handles TCK conformance test messages")
-                                .tags(List.of("tck"))
-                                .build()))
+                .skills(
+                        List.of(
+                                AgentSkill.builder()
+                                        .id("tck")
+                                        .name("TCK Conformance")
+                                        .description("Handles TCK conformance test messages")
+                                        .tags(List.of("tck"))
+                                        .build()))
                 .build();
     }
 

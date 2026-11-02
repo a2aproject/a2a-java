@@ -13,9 +13,15 @@ import org.mapstruct.Mapping;
  * Uses ADDER_PREFERRED strategy for List fields (artifacts, history)
  * to use addAllArtifacts() and addAllHistory() methods.
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {TaskStatusMapper.class, ArtifactMapper.class, MessageMapper.class, A2ACommonFieldMapper.class})
+        uses = {
+            TaskStatusMapper.class,
+            ArtifactMapper.class,
+            MessageMapper.class,
+            A2ACommonFieldMapper.class
+        })
 public interface TaskMapper {
 
     TaskMapper INSTANCE = A2AMappers.getMapper(TaskMapper.class);
@@ -25,7 +31,10 @@ public interface TaskMapper {
      * Uses CommonFieldMapper for metadata conversion and ADDER_PREFERRED for lists.
      */
     @Mapping(target = "id", source = "id", conditionExpression = "java(domain.id() != null)")
-    @Mapping(target = "contextId", source = "contextId", conditionExpression = "java(domain.contextId() != null)")
+    @Mapping(
+            target = "contextId",
+            source = "contextId",
+            conditionExpression = "java(domain.contextId() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     org.a2aproject.sdk.grpc.Task toProto(Task domain);
 

@@ -36,7 +36,9 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc7235">RFC 7235 - HTTP Authentication</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record HTTPAuthSecurityScheme(@Nullable String bearerFormat, String scheme, @Nullable String description) implements SecurityScheme {
+public record HTTPAuthSecurityScheme(
+        @Nullable String bearerFormat, String scheme, @Nullable String description)
+        implements SecurityScheme {
 
     /** The HTTP security scheme type identifier. */
     public static final String TYPE = "httpAuthSecurityScheme";
@@ -81,8 +83,7 @@ public record HTTPAuthSecurityScheme(@Nullable String bearerFormat, String schem
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the bearer token format hint.
@@ -124,7 +125,8 @@ public record HTTPAuthSecurityScheme(@Nullable String bearerFormat, String schem
          * @throws IllegalArgumentException if required fields are missing
          */
         public HTTPAuthSecurityScheme build() {
-            return new HTTPAuthSecurityScheme(bearerFormat, Assert.checkNotNullParam("scheme", scheme), description);
+            return new HTTPAuthSecurityScheme(
+                    bearerFormat, Assert.checkNotNullParam("scheme", scheme), description);
         }
     }
 }

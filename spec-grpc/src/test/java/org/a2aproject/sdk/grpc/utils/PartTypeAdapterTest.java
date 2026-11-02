@@ -1,8 +1,5 @@
 package org.a2aproject.sdk.grpc.utils;
 
-import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
-import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,28 +9,27 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.Structs;
-import org.a2aproject.sdk.grpc.mapper.A2ACommonFieldMapper;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-
+import org.a2aproject.sdk.grpc.mapper.A2ACommonFieldMapper;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
 import org.a2aproject.sdk.spec.FileWithUri;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-
 public class PartTypeAdapterTest {
 
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     // -------------------------------------------------------------------------
     // TextPart
@@ -59,11 +55,16 @@ public class PartTypeAdapterTest {
     }
 
     @Test
-    public void shouldDeserializeTextPart() throws JsonProcessingException, InvalidProtocolBufferException {
+    public void shouldDeserializeTextPart()
+            throws JsonProcessingException, InvalidProtocolBufferException {
         org.a2aproject.sdk.grpc.Part.Builder builder = org.a2aproject.sdk.grpc.Part.newBuilder();
         builder.setText("Hello, world!");
-        String json = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
-        Part<?>part = JsonUtil.fromJson(json, Part.class);
+        String json =
+                JsonFormat.printer()
+                        .alwaysPrintFieldsWithNoPresence()
+                        .omittingInsignificantWhitespace()
+                        .print(builder);
+        Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(TextPart.class, part);
         TextPart textPart = (TextPart) part;
         assertEquals("Hello, world!", textPart.text());
@@ -72,11 +73,16 @@ public class PartTypeAdapterTest {
     }
 
     @Test
-    public void shouldDeserializeTextPartWithMetadata() throws JsonProcessingException, InvalidProtocolBufferException {
+    public void shouldDeserializeTextPartWithMetadata()
+            throws JsonProcessingException, InvalidProtocolBufferException {
         org.a2aproject.sdk.grpc.Part.Builder builder = org.a2aproject.sdk.grpc.Part.newBuilder();
         builder.setText("Hi");
         builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(Map.of("key", "value")));
-        String json = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
+        String json =
+                JsonFormat.printer()
+                        .alwaysPrintFieldsWithNoPresence()
+                        .omittingInsignificantWhitespace()
+                        .print(builder);
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(TextPart.class, part);
         TextPart textPart = (TextPart) part;
@@ -110,11 +116,18 @@ public class PartTypeAdapterTest {
     }
 
     @Test
-    public void shouldDeserializeFilePartWithBytes() throws JsonProcessingException, InvalidProtocolBufferException {
+    public void shouldDeserializeFilePartWithBytes()
+            throws JsonProcessingException, InvalidProtocolBufferException {
         org.a2aproject.sdk.grpc.Part.Builder builder = org.a2aproject.sdk.grpc.Part.newBuilder();
-        builder.setFilename("diagram.png").setMediaType("image/png").setRaw(ByteString.copyFrom(Base64.getDecoder().decode("abc12w==")));
+        builder.setFilename("diagram.png")
+                .setMediaType("image/png")
+                .setRaw(ByteString.copyFrom(Base64.getDecoder().decode("abc12w==")));
         builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(Map.of("key", "value")));
-        String json = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
+        String json =
+                JsonFormat.printer()
+                        .alwaysPrintFieldsWithNoPresence()
+                        .omittingInsignificantWhitespace()
+                        .print(builder);
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, part);
         FilePart filePart = (FilePart) part;
@@ -124,12 +137,12 @@ public class PartTypeAdapterTest {
         assertEquals("diagram.png", fileWithBytes.name());
         assertEquals("abc12w==", fileWithBytes.bytes());
         assertEquals("value", filePart.metadata().get("key"));
-
     }
 
     @Test
     public void shouldRoundTripFilePartWithBytes() throws JsonProcessingException {
-        FilePart original = new FilePart(new FileWithBytes("application/pdf", "report.pdf", "AAEC"));
+        FilePart original =
+                new FilePart(new FileWithBytes("application/pdf", "report.pdf", "AAEC"));
         String json = JsonUtil.toJson(original);
         Part<?> deserialized = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, deserialized);
@@ -142,29 +155,30 @@ public class PartTypeAdapterTest {
     }
 
     @Test
-    public void shouldRoundTripFilePartWithBytesFromRealFile() throws JsonProcessingException, IOException {
+    public void shouldRoundTripFilePartWithBytesFromRealFile()
+            throws JsonProcessingException, IOException {
         // Create a temporary file with some content
         Path testFile = tempDir.resolve("test-file.txt");
         String fileContent = "This is test content for lazy loading verification";
         Files.writeString(testFile, fileContent);
-        
+
         // Create FileWithBytes from the file path (lazy loading)
         FileWithBytes fileWithBytes = new FileWithBytes("text/plain", testFile);
         FilePart original = new FilePart(fileWithBytes);
-        
+
         // Serialize to JSON (this triggers lazy loading)
         String json = JsonUtil.toJson(original);
-        
+
         // Deserialize and verify
         Part<?> deserialized = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, deserialized);
         FilePart result = (FilePart) deserialized;
         assertInstanceOf(FileWithBytes.class, result.file());
         FileWithBytes bytes = (FileWithBytes) result.file();
-        
+
         assertEquals("text/plain", bytes.mimeType());
         assertEquals("test-file.txt", bytes.name());
-        
+
         // Verify the content by decoding the base64
         byte[] decodedBytes = Base64.getDecoder().decode(bytes.bytes());
         String decodedContent = new String(decodedBytes);
@@ -177,7 +191,9 @@ public class PartTypeAdapterTest {
 
     @Test
     public void shouldSerializeFilePartWithUri() throws JsonProcessingException {
-        FilePart part = new FilePart(new FileWithUri("image/png", "photo.png", "https://example.com/photo.png"));
+        FilePart part =
+                new FilePart(
+                        new FileWithUri("image/png", "photo.png", "https://example.com/photo.png"));
         String json = JsonUtil.toJson(part);
         // Verify the serialized JSON can be deserialized correctly (round-trip)
         Part<?> deserialized = JsonUtil.fromJson(json, Part.class);
@@ -189,11 +205,18 @@ public class PartTypeAdapterTest {
     }
 
     @Test
-    public void shouldDeserializeFilePartWithUri() throws JsonProcessingException, InvalidProtocolBufferException {
+    public void shouldDeserializeFilePartWithUri()
+            throws JsonProcessingException, InvalidProtocolBufferException {
         org.a2aproject.sdk.grpc.Part.Builder builder = org.a2aproject.sdk.grpc.Part.newBuilder();
-        builder.setFilename("photo.png").setMediaType("image/png").setUrl("https://example.com/photo.png");
+        builder.setFilename("photo.png")
+                .setMediaType("image/png")
+                .setUrl("https://example.com/photo.png");
         builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(Map.of("key", "value")));
-        String json = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
+        String json =
+                JsonFormat.printer()
+                        .alwaysPrintFieldsWithNoPresence()
+                        .omittingInsignificantWhitespace()
+                        .print(builder);
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, part);
         FilePart filePart = (FilePart) part;
@@ -207,7 +230,10 @@ public class PartTypeAdapterTest {
 
     @Test
     public void shouldRoundTripFilePartWithUri() throws JsonProcessingException {
-        FilePart original = new FilePart(new FileWithUri("text/plain", "notes.txt", "https://example.com/notes.txt"));
+        FilePart original =
+                new FilePart(
+                        new FileWithUri(
+                                "text/plain", "notes.txt", "https://example.com/notes.txt"));
         String json = JsonUtil.toJson(original);
         Part<?> deserialized = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, deserialized);
@@ -221,9 +247,10 @@ public class PartTypeAdapterTest {
 
     @Test
     public void shouldRoundTripFilePartWithMetadata() throws JsonProcessingException {
-        FilePart original = new FilePart(
-                new FileWithUri("image/jpeg", "pic.jpg", "https://example.com/pic.jpg"),
-                Map.of("source", "camera"));
+        FilePart original =
+                new FilePart(
+                        new FileWithUri("image/jpeg", "pic.jpg", "https://example.com/pic.jpg"),
+                        Map.of("source", "camera"));
         String json = JsonUtil.toJson(original);
         Part<?> deserialized = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(FilePart.class, deserialized);
@@ -248,11 +275,23 @@ public class PartTypeAdapterTest {
     }
 
     @Test
-    public void shouldDeserializeDataPartWithObject() throws JsonProcessingException, InvalidProtocolBufferException {
+    public void shouldDeserializeDataPartWithObject()
+            throws JsonProcessingException, InvalidProtocolBufferException {
         org.a2aproject.sdk.grpc.Part.Builder builder = org.a2aproject.sdk.grpc.Part.newBuilder();
-        builder.setData(Value.newBuilder().setStructValue(Structs.of("count", Value.newBuilder().setNumberValue(42).build(), "label", Value.newBuilder().setStringValue("items").build())));
+        builder.setData(
+                Value.newBuilder()
+                        .setStructValue(
+                                Structs.of(
+                                        "count",
+                                        Value.newBuilder().setNumberValue(42).build(),
+                                        "label",
+                                        Value.newBuilder().setStringValue("items").build())));
         builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(Map.of("key", "value")));
-        String json = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
+        String json =
+                JsonFormat.printer()
+                        .alwaysPrintFieldsWithNoPresence()
+                        .omittingInsignificantWhitespace()
+                        .print(builder);
         Part<?> part = JsonUtil.fromJson(json, Part.class);
         assertInstanceOf(DataPart.class, part);
         @SuppressWarnings("unchecked")

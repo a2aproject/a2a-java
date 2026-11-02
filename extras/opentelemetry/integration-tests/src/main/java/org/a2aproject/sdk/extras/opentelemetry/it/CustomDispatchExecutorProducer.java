@@ -1,15 +1,14 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Named;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import jakarta.annotation.PreDestroy;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Named;
 import org.a2aproject.sdk.server.tasks.BasePushNotificationSender;
 
 /**
@@ -31,11 +30,13 @@ public class CustomDispatchExecutorProducer {
 
     public CustomDispatchExecutorProducer() {
         AtomicInteger threadCounter = new AtomicInteger();
-        ThreadFactory threadFactory = r -> {
-            Thread t = new Thread(r, CUSTOM_THREAD_PREFIX + threadCounter.getAndIncrement());
-            t.setDaemon(true);
-            return t;
-        };
+        ThreadFactory threadFactory =
+                r -> {
+                    Thread t =
+                            new Thread(r, CUSTOM_THREAD_PREFIX + threadCounter.getAndIncrement());
+                    t.setDaemon(true);
+                    return t;
+                };
         this.pool = Executors.newFixedThreadPool(2, threadFactory);
     }
 

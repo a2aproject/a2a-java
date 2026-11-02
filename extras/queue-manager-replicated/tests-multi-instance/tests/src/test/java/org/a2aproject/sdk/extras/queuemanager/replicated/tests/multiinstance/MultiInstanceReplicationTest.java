@@ -9,15 +9,14 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
@@ -84,19 +83,22 @@ public class MultiInstanceReplicationTest {
         network = Network.newNetwork();
 
         // Start Kafka container
-        kafka = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE)
-                .asCompatibleSubstituteFor("apache/kafka"))
-                .withNetwork(network)
-                .withListener("kafka:19092");
+        kafka =
+                new KafkaContainer(
+                                DockerImageName.parse(KAFKA_IMAGE)
+                                        .asCompatibleSubstituteFor("apache/kafka"))
+                        .withNetwork(network)
+                        .withListener("kafka:19092");
         kafka.start();
 
         // Start PostgreSQL container
-        postgres = new PostgreSQLContainer<>(DockerImageName.parse(POSTGRES_IMAGE))
-                .withNetwork(network)
-                .withNetworkAliases("postgres")
-                .withDatabaseName("a2adb")
-                .withUsername("a2auser")
-                .withPassword("a2apass");
+        postgres =
+                new PostgreSQLContainer<>(DockerImageName.parse(POSTGRES_IMAGE))
+                        .withNetwork(network)
+                        .withNetworkAliases("postgres")
+                        .withDatabaseName("a2adb")
+                        .withUsername("a2auser")
+                        .withPassword("a2apass");
         postgres.start();
 
         // Get Kafka bootstrap servers for app configuration
@@ -109,36 +111,38 @@ public class MultiInstanceReplicationTest {
 
         // Build and start Quarkus app1 container
         File app1Dir = new File("../quarkus-app-1").getAbsoluteFile();
-        app1 = new GenericContainer<>(
-                new ImageFromDockerfile()
-                        .withFileFromPath(".", app1Dir.toPath()))
-                .withNetwork(network)
-                .withNetworkAliases("app1")
-                .withEnv("KAFKA_BOOTSTRAP_SERVERS", kafkaBootstrapServers)
-                .withEnv("DATABASE_URL", dbUrl)
-                .withEnv("DATABASE_USER", dbUser)
-                .withEnv("DATABASE_PASSWORD", dbPassword)
-                .withExposedPorts(8081)
-                .waitingFor(Wait.forHttp("/q/health/ready")
-                        .forPort(8081)
-                        .withStartupTimeout(Duration.ofMinutes(2)));
+        app1 =
+                new GenericContainer<>(
+                                new ImageFromDockerfile().withFileFromPath(".", app1Dir.toPath()))
+                        .withNetwork(network)
+                        .withNetworkAliases("app1")
+                        .withEnv("KAFKA_BOOTSTRAP_SERVERS", kafkaBootstrapServers)
+                        .withEnv("DATABASE_URL", dbUrl)
+                        .withEnv("DATABASE_USER", dbUser)
+                        .withEnv("DATABASE_PASSWORD", dbPassword)
+                        .withExposedPorts(8081)
+                        .waitingFor(
+                                Wait.forHttp("/q/health/ready")
+                                        .forPort(8081)
+                                        .withStartupTimeout(Duration.ofMinutes(2)));
         app1.start();
 
         // Build and start Quarkus app2 container
         File app2Dir = new File("../quarkus-app-2").getAbsoluteFile();
-        app2 = new GenericContainer<>(
-                new ImageFromDockerfile()
-                        .withFileFromPath(".", app2Dir.toPath()))
-                .withNetwork(network)
-                .withNetworkAliases("app2")
-                .withEnv("KAFKA_BOOTSTRAP_SERVERS", kafkaBootstrapServers)
-                .withEnv("DATABASE_URL", dbUrl)
-                .withEnv("DATABASE_USER", dbUser)
-                .withEnv("DATABASE_PASSWORD", dbPassword)
-                .withExposedPorts(8082)
-                .waitingFor(Wait.forHttp("/q/health/ready")
-                        .forPort(8082)
-                        .withStartupTimeout(Duration.ofMinutes(2)));
+        app2 =
+                new GenericContainer<>(
+                                new ImageFromDockerfile().withFileFromPath(".", app2Dir.toPath()))
+                        .withNetwork(network)
+                        .withNetworkAliases("app2")
+                        .withEnv("KAFKA_BOOTSTRAP_SERVERS", kafkaBootstrapServers)
+                        .withEnv("DATABASE_URL", dbUrl)
+                        .withEnv("DATABASE_USER", dbUser)
+                        .withEnv("DATABASE_PASSWORD", dbPassword)
+                        .withExposedPorts(8082)
+                        .waitingFor(
+                                Wait.forHttp("/q/health/ready")
+                                        .forPort(8082)
+                                        .withStartupTimeout(Duration.ofMinutes(2)));
         app2.start();
 
         // Store URLs for creating clients
@@ -151,17 +155,21 @@ public class MultiInstanceReplicationTest {
             AgentCard originalApp2Card = A2A.getAgentCard(app2Url);
 
             // Rebuild AgentCards with correct URLs (mapped ports, not container ports)
-            app1Card = AgentCard.builder(originalApp1Card)
-                    .supportedInterfaces(Collections.singletonList(
-                            new AgentInterface(TransportProtocol.JSONRPC.asString(), app1Url)
-                    ))
-                    .build();
+            app1Card =
+                    AgentCard.builder(originalApp1Card)
+                            .supportedInterfaces(
+                                    Collections.singletonList(
+                                            new AgentInterface(
+                                                    TransportProtocol.JSONRPC.asString(), app1Url)))
+                            .build();
 
-            app2Card = AgentCard.builder(originalApp2Card)
-                    .supportedInterfaces(Collections.singletonList(
-                            new AgentInterface(TransportProtocol.JSONRPC.asString(), app2Url)
-                    ))
-                    .build();
+            app2Card =
+                    AgentCard.builder(originalApp2Card)
+                            .supportedInterfaces(
+                                    Collections.singletonList(
+                                            new AgentInterface(
+                                                    TransportProtocol.JSONRPC.asString(), app2Url)))
+                            .build();
         } catch (Exception e) {
             System.err.println("=== Failed to get AgentCards ===");
             System.err.println("App1 logs:");
@@ -206,9 +214,7 @@ public class MultiInstanceReplicationTest {
     // Helper methods for creating A2A clients
 
     private Client createClient(AgentCard agentCard) throws A2AClientException {
-        ClientConfig config = ClientConfig.builder()
-                .setStreaming(true)
-                .build();
+        ClientConfig config = ClientConfig.builder().setStreaming(true).build();
 
         return Client.builder(agentCard)
                 .clientConfig(config)
@@ -261,215 +267,267 @@ public class MultiInstanceReplicationTest {
 
         try {
             // Step 1: Send initial message NON-streaming to create task (no client-provided taskId)
-            Message initialMessage = Message.builder(A2A.toUserMessage("Initial test message"))
-                .build();
+            Message initialMessage =
+                    Message.builder(A2A.toUserMessage("Initial test message")).build();
 
-        // Use NON-streaming client to create the task
-        // Note: app1Card has the correct URL from Testcontainers setup
-        Client nonStreamingClient = Client.builder(app1Card)
-                .clientConfig(ClientConfig.builder().setStreaming(false).build())
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
-                .build();
+            // Use NON-streaming client to create the task
+            // Note: app1Card has the correct URL from Testcontainers setup
+            Client nonStreamingClient =
+                    Client.builder(app1Card)
+                            .clientConfig(ClientConfig.builder().setStreaming(false).build())
+                            .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
+                            .build();
 
-        try {
-            CountDownLatch createLatch = new CountDownLatch(1);
-            AtomicReference<Task> taskRef = new AtomicReference<>();
-            nonStreamingClient.sendMessage(initialMessage, List.of((ClientEvent event, AgentCard card) -> {
-                if (event instanceof TaskEvent te) {
-                    taskRef.set(te.getTask());
-                }
-                createLatch.countDown();
-            }), (Throwable err) -> createLatch.countDown());
-            assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
+            try {
+                CountDownLatch createLatch = new CountDownLatch(1);
+                AtomicReference<Task> taskRef = new AtomicReference<>();
+                nonStreamingClient.sendMessage(
+                        initialMessage,
+                        List.of(
+                                (ClientEvent event, AgentCard card) -> {
+                                    if (event instanceof TaskEvent te) {
+                                        taskRef.set(te.getTask());
+                                    }
+                                    createLatch.countDown();
+                                }),
+                        (Throwable err) -> createLatch.countDown());
+                assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
 
-            Task createdTask = taskRef.get();
-            assertNotNull(createdTask, "Task should be created");
-            taskIdHolder[0] = createdTask.id();
-            contextIdHolder[0] = createdTask.contextId();
-            assertNotNull(taskIdHolder[0], "Server-generated task ID should not be null");
+                Task createdTask = taskRef.get();
+                assertNotNull(createdTask, "Task should be created");
+                taskIdHolder[0] = createdTask.id();
+                contextIdHolder[0] = createdTask.contextId();
+                assertNotNull(taskIdHolder[0], "Server-generated task ID should not be null");
 
-            // Task should be in a non-final state (SUBMITTED or WORKING are both valid)
-            TaskState state = createdTask.status().state();
-            assertTrue(state == TaskState.TASK_STATE_SUBMITTED || state == TaskState.TASK_STATE_WORKING,
-                "Task should be in SUBMITTED or WORKING state, but was: " + state);
-            nonStreamingClient.close();
-        } catch (Exception e) {
-            System.err.println("\n=== FAILED TO CREATE TASK ===");
-            System.err.println("Error: " + e.getMessage());
-            System.err.println("\n=== APP1 CONTAINER LOGS ===");
-            System.err.println(app1.getLogs());
+                // Task should be in a non-final state (SUBMITTED or WORKING are both valid)
+                TaskState state = createdTask.status().state();
+                assertTrue(
+                        state == TaskState.TASK_STATE_SUBMITTED
+                                || state == TaskState.TASK_STATE_WORKING,
+                        "Task should be in SUBMITTED or WORKING state, but was: " + state);
+                nonStreamingClient.close();
+            } catch (Exception e) {
+                System.err.println("\n=== FAILED TO CREATE TASK ===");
+                System.err.println("Error: " + e.getMessage());
+                System.err.println("\n=== APP1 CONTAINER LOGS ===");
+                System.err.println(app1.getLogs());
 
-            System.err.println("\n=== APP2 CONTAINER LOGS ===");
-            System.err.println(app2.getLogs());
+                System.err.println("\n=== APP2 CONTAINER LOGS ===");
+                System.err.println(app2.getLogs());
 
-            throw e;
-        }
-
-        final String taskId = taskIdHolder[0];
-        final String contextId = contextIdHolder[0];
-
-        // Step 2: Subscribe from both app1 and app2 with proper latches
-
-        // We need to wait for at least 3 new events after resubscription:
-        // 1. TaskArtifactUpdateEvent (message from app1)
-        // 2. TaskArtifactUpdateEvent (message from app2)
-        // 3. TaskStatusUpdateEvent(COMPLETED) (close message)
-        // Note: may also receive initial TaskEvent/TaskUpdateEvent when resubscribing
-        AtomicInteger app1EventCount = new AtomicInteger(0);
-        AtomicInteger app2EventCount = new AtomicInteger(0);
-
-        // Track events received
-        CopyOnWriteArrayList<ClientEvent> app1Events = new CopyOnWriteArrayList<>();
-        CopyOnWriteArrayList<ClientEvent> app2Events = new CopyOnWriteArrayList<>();
-
-        AtomicReference<Throwable> app1Error = new AtomicReference<>();
-        AtomicReference<Throwable> app2Error = new AtomicReference<>();
-        AtomicBoolean app1ReceivedInitialTask = new AtomicBoolean(false);
-        AtomicBoolean app2ReceivedInitialTask = new AtomicBoolean(false);
-
-        // App1 subscriber
-        BiConsumer<ClientEvent, AgentCard> app1Subscriber = (event, card) -> {
-            String eventDetail = event.getClass().getSimpleName();
-            if (event instanceof org.a2aproject.sdk.client.TaskUpdateEvent tue) {
-                eventDetail += " [" + tue.getUpdateEvent().getClass().getSimpleName();
-                if (tue.getUpdateEvent() instanceof org.a2aproject.sdk.spec.TaskStatusUpdateEvent statusEvent) {
-                    eventDetail += ", state=" + (statusEvent.status() != null ? statusEvent.status().state() : "null");
-                }
-                eventDetail += "]";
-            } else if (event instanceof org.a2aproject.sdk.client.TaskEvent te) {
-                eventDetail += " [state=" + (te.getTask().status() != null ? te.getTask().status().state() : "null") + "]";
+                throw e;
             }
-            System.out.println("APP1 received event: " + eventDetail);
 
-            // Per A2A spec 3.1.6: Handle initial TaskEvent on subscribe
-            if (!app1ReceivedInitialTask.get() && event instanceof org.a2aproject.sdk.client.TaskEvent) {
-                app1ReceivedInitialTask.set(true);
-                System.out.println("APP1 filtered initial TaskEvent");
-                // Don't count initial TaskEvent toward expected artifact/status events
-                return;
+            final String taskId = taskIdHolder[0];
+            final String contextId = contextIdHolder[0];
+
+            // Step 2: Subscribe from both app1 and app2 with proper latches
+
+            // We need to wait for at least 3 new events after resubscription:
+            // 1. TaskArtifactUpdateEvent (message from app1)
+            // 2. TaskArtifactUpdateEvent (message from app2)
+            // 3. TaskStatusUpdateEvent(COMPLETED) (close message)
+            // Note: may also receive initial TaskEvent/TaskUpdateEvent when resubscribing
+            AtomicInteger app1EventCount = new AtomicInteger(0);
+            AtomicInteger app2EventCount = new AtomicInteger(0);
+
+            // Track events received
+            CopyOnWriteArrayList<ClientEvent> app1Events = new CopyOnWriteArrayList<>();
+            CopyOnWriteArrayList<ClientEvent> app2Events = new CopyOnWriteArrayList<>();
+
+            AtomicReference<Throwable> app1Error = new AtomicReference<>();
+            AtomicReference<Throwable> app2Error = new AtomicReference<>();
+            AtomicBoolean app1ReceivedInitialTask = new AtomicBoolean(false);
+            AtomicBoolean app2ReceivedInitialTask = new AtomicBoolean(false);
+
+            // App1 subscriber
+            BiConsumer<ClientEvent, AgentCard> app1Subscriber =
+                    (event, card) -> {
+                        String eventDetail = event.getClass().getSimpleName();
+                        if (event instanceof org.a2aproject.sdk.client.TaskUpdateEvent tue) {
+                            eventDetail += " [" + tue.getUpdateEvent().getClass().getSimpleName();
+                            if (tue.getUpdateEvent()
+                                    instanceof
+                                    org.a2aproject.sdk.spec.TaskStatusUpdateEvent statusEvent) {
+                                eventDetail +=
+                                        ", state="
+                                                + (statusEvent.status() != null
+                                                        ? statusEvent.status().state()
+                                                        : "null");
+                            }
+                            eventDetail += "]";
+                        } else if (event instanceof org.a2aproject.sdk.client.TaskEvent te) {
+                            eventDetail +=
+                                    " [state="
+                                            + (te.getTask().status() != null
+                                                    ? te.getTask().status().state()
+                                                    : "null")
+                                            + "]";
+                        }
+                        System.out.println("APP1 received event: " + eventDetail);
+
+                        // Per A2A spec 3.1.6: Handle initial TaskEvent on subscribe
+                        if (!app1ReceivedInitialTask.get()
+                                && event instanceof org.a2aproject.sdk.client.TaskEvent) {
+                            app1ReceivedInitialTask.set(true);
+                            System.out.println("APP1 filtered initial TaskEvent");
+                            // Don't count initial TaskEvent toward expected artifact/status events
+                            return;
+                        }
+                        app1Events.add(event);
+                        int count = app1EventCount.incrementAndGet();
+                        System.out.println(
+                                "APP1 event count now: " + count + ", event: " + eventDetail);
+                    };
+
+            Consumer<Throwable> app1ErrorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            app1Error.set(error);
+                        }
+                    };
+
+            // App2 subscriber
+            BiConsumer<ClientEvent, AgentCard> app2Subscriber =
+                    (event, card) -> {
+                        String eventDetail = event.getClass().getSimpleName();
+                        if (event instanceof org.a2aproject.sdk.client.TaskUpdateEvent tue) {
+                            eventDetail += " [" + tue.getUpdateEvent().getClass().getSimpleName();
+                            if (tue.getUpdateEvent()
+                                    instanceof
+                                    org.a2aproject.sdk.spec.TaskStatusUpdateEvent statusEvent) {
+                                eventDetail +=
+                                        ", state="
+                                                + (statusEvent.status() != null
+                                                        ? statusEvent.status().state()
+                                                        : "null");
+                            }
+                            eventDetail += "]";
+                        } else if (event instanceof org.a2aproject.sdk.client.TaskEvent te) {
+                            eventDetail +=
+                                    " [state="
+                                            + (te.getTask().status() != null
+                                                    ? te.getTask().status().state()
+                                                    : "null")
+                                            + "]";
+                        }
+                        System.out.println("APP2 received event: " + eventDetail);
+
+                        // Per A2A spec 3.1.6: Handle initial TaskEvent on subscribe
+                        if (!app2ReceivedInitialTask.get()
+                                && event instanceof org.a2aproject.sdk.client.TaskEvent) {
+                            app2ReceivedInitialTask.set(true);
+                            System.out.println("APP2 filtered initial TaskEvent");
+                            // Don't count initial TaskEvent toward expected artifact/status events
+                            return;
+                        }
+                        app2Events.add(event);
+                        int count = app2EventCount.incrementAndGet();
+                        System.out.println(
+                                "APP2 event count now: " + count + ", event: " + eventDetail);
+                    };
+
+            Consumer<Throwable> app2ErrorHandler =
+                    error -> {
+                        if (!isStreamClosedError(error)) {
+                            app2Error.set(error);
+                        }
+                    };
+
+            // Start subscriptions (subscribe returns void)
+            getClient1()
+                    .subscribeToTask(
+                            new TaskIdParams(taskId), List.of(app1Subscriber), app1ErrorHandler);
+            getClient2()
+                    .subscribeToTask(
+                            new TaskIdParams(taskId), List.of(app2Subscriber), app2ErrorHandler);
+
+            // Wait for subscriptions to be established - initial TaskEvent should arrive on each
+            await().atMost(Duration.ofSeconds(10))
+                    .pollInterval(Duration.ofMillis(500))
+                    .until(() -> app1ReceivedInitialTask.get() && app2ReceivedInitialTask.get());
+
+            // Step 3: Send message on app1 (should generate TaskArtifactUpdateEvent)
+            int app1BeforeMsg1 = app1EventCount.get();
+            int app2BeforeMsg1 = app2EventCount.get();
+
+            Message messageFromApp1 =
+                    Message.builder(A2A.toUserMessage("Message from app1"))
+                            .taskId(taskId)
+                            .contextId(contextId)
+                            .build();
+            getClient1().sendMessage(messageFromApp1, List.of(), null);
+
+            // Wait for both subscribers to receive the replicated event
+            await().atMost(Duration.ofSeconds(10))
+                    .pollInterval(Duration.ofMillis(500))
+                    .until(
+                            () ->
+                                    app1EventCount.get() > app1BeforeMsg1
+                                            && app2EventCount.get() > app2BeforeMsg1);
+
+            // Step 4: Send message on app2 (should generate TaskArtifactUpdateEvent)
+            int app1BeforeMsg2 = app1EventCount.get();
+            int app2BeforeMsg2 = app2EventCount.get();
+
+            Message messageFromApp2 =
+                    Message.builder(A2A.toUserMessage("Message from app2"))
+                            .taskId(taskId)
+                            .contextId(contextId)
+                            .build();
+            getClient2().sendMessage(messageFromApp2, List.of(), null);
+
+            // Wait for both subscribers to receive the replicated event
+            await().atMost(Duration.ofSeconds(10))
+                    .pollInterval(Duration.ofMillis(500))
+                    .until(
+                            () ->
+                                    app1EventCount.get() > app1BeforeMsg2
+                                            && app2EventCount.get() > app2BeforeMsg2);
+
+            // Step 5: Send close message (should generate TaskStatusUpdateEvent with COMPLETED)
+            int app1BeforeClose = app1EventCount.get();
+            int app2BeforeClose = app2EventCount.get();
+
+            Message closeMessage =
+                    Message.builder(A2A.toUserMessage("close"))
+                            .taskId(taskId)
+                            .contextId(contextId)
+                            .build();
+            getClient1().sendMessage(closeMessage, List.of(), null);
+
+            // Wait for both subscribers to receive the completion event
+            await().atMost(Duration.ofSeconds(10))
+                    .pollInterval(Duration.ofMillis(500))
+                    .until(
+                            () ->
+                                    app1EventCount.get() > app1BeforeClose
+                                            && app2EventCount.get() > app2BeforeClose);
+
+            // Verify we got at least 3 new events after initial subscription (artifact1, artifact2,
+            // completed)
+            assertTrue(
+                    app1Events.size() >= 3,
+                    "App1 should receive at least 3 events (got " + app1Events.size() + ")");
+            assertTrue(
+                    app2Events.size() >= 3,
+                    "App2 should receive at least 3 events (got " + app2Events.size() + ")");
+
+            // Verify no errors
+            if (app1Error.get() != null) {
+                throw new AssertionError("App1 subscriber error", app1Error.get());
             }
-            app1Events.add(event);
-            int count = app1EventCount.incrementAndGet();
-            System.out.println("APP1 event count now: " + count + ", event: " + eventDetail);
-        };
-
-        Consumer<Throwable> app1ErrorHandler = error -> {
-            if (!isStreamClosedError(error)) {
-                app1Error.set(error);
+            if (app2Error.get() != null) {
+                throw new AssertionError("App2 subscriber error", app2Error.get());
             }
-        };
-
-        // App2 subscriber
-        BiConsumer<ClientEvent, AgentCard> app2Subscriber = (event, card) -> {
-            String eventDetail = event.getClass().getSimpleName();
-            if (event instanceof org.a2aproject.sdk.client.TaskUpdateEvent tue) {
-                eventDetail += " [" + tue.getUpdateEvent().getClass().getSimpleName();
-                if (tue.getUpdateEvent() instanceof org.a2aproject.sdk.spec.TaskStatusUpdateEvent statusEvent) {
-                    eventDetail += ", state=" + (statusEvent.status() != null ? statusEvent.status().state() : "null");
-                }
-                eventDetail += "]";
-            } else if (event instanceof org.a2aproject.sdk.client.TaskEvent te) {
-                eventDetail += " [state=" + (te.getTask().status() != null ? te.getTask().status().state() : "null") + "]";
-            }
-            System.out.println("APP2 received event: " + eventDetail);
-
-            // Per A2A spec 3.1.6: Handle initial TaskEvent on subscribe
-            if (!app2ReceivedInitialTask.get() && event instanceof org.a2aproject.sdk.client.TaskEvent) {
-                app2ReceivedInitialTask.set(true);
-                System.out.println("APP2 filtered initial TaskEvent");
-                // Don't count initial TaskEvent toward expected artifact/status events
-                return;
-            }
-            app2Events.add(event);
-            int count = app2EventCount.incrementAndGet();
-            System.out.println("APP2 event count now: " + count + ", event: " + eventDetail);
-        };
-
-        Consumer<Throwable> app2ErrorHandler = error -> {
-            if (!isStreamClosedError(error)) {
-                app2Error.set(error);
-            }
-        };
-
-        // Start subscriptions (subscribe returns void)
-        getClient1().subscribeToTask(new TaskIdParams(taskId), List.of(app1Subscriber), app1ErrorHandler);
-        getClient2().subscribeToTask(new TaskIdParams(taskId), List.of(app2Subscriber), app2ErrorHandler);
-
-        // Wait for subscriptions to be established - initial TaskEvent should arrive on each
-        await()
-            .atMost(Duration.ofSeconds(10))
-            .pollInterval(Duration.ofMillis(500))
-            .until(() -> app1ReceivedInitialTask.get() && app2ReceivedInitialTask.get());
-
-        // Step 3: Send message on app1 (should generate TaskArtifactUpdateEvent)
-        int app1BeforeMsg1 = app1EventCount.get();
-        int app2BeforeMsg1 = app2EventCount.get();
-
-        Message messageFromApp1 = Message.builder(A2A.toUserMessage("Message from app1"))
-                .taskId(taskId)
-                .contextId(contextId)
-                .build();
-        getClient1().sendMessage(messageFromApp1, List.of(), null);
-
-        // Wait for both subscribers to receive the replicated event
-        await()
-            .atMost(Duration.ofSeconds(10))
-            .pollInterval(Duration.ofMillis(500))
-            .until(() -> app1EventCount.get() > app1BeforeMsg1 &&
-                        app2EventCount.get() > app2BeforeMsg1);
-
-        // Step 4: Send message on app2 (should generate TaskArtifactUpdateEvent)
-        int app1BeforeMsg2 = app1EventCount.get();
-        int app2BeforeMsg2 = app2EventCount.get();
-
-        Message messageFromApp2 = Message.builder(A2A.toUserMessage("Message from app2"))
-                .taskId(taskId)
-                .contextId(contextId)
-                .build();
-        getClient2().sendMessage(messageFromApp2, List.of(), null);
-
-        // Wait for both subscribers to receive the replicated event
-        await()
-            .atMost(Duration.ofSeconds(10))
-            .pollInterval(Duration.ofMillis(500))
-            .until(() -> app1EventCount.get() > app1BeforeMsg2 &&
-                        app2EventCount.get() > app2BeforeMsg2);
-
-        // Step 5: Send close message (should generate TaskStatusUpdateEvent with COMPLETED)
-        int app1BeforeClose = app1EventCount.get();
-        int app2BeforeClose = app2EventCount.get();
-
-        Message closeMessage = Message.builder(A2A.toUserMessage("close"))
-                .taskId(taskId)
-                .contextId(contextId)
-                .build();
-        getClient1().sendMessage(closeMessage, List.of(), null);
-
-        // Wait for both subscribers to receive the completion event
-        await()
-            .atMost(Duration.ofSeconds(10))
-            .pollInterval(Duration.ofMillis(500))
-            .until(() -> app1EventCount.get() > app1BeforeClose &&
-                        app2EventCount.get() > app2BeforeClose);
-
-
-        // Verify we got at least 3 new events after initial subscription (artifact1, artifact2, completed)
-        assertTrue(app1Events.size() >= 3,
-                "App1 should receive at least 3 events (got " + app1Events.size() + ")");
-        assertTrue(app2Events.size() >= 3,
-                "App2 should receive at least 3 events (got " + app2Events.size() + ")");
-
-        // Verify no errors
-        if (app1Error.get() != null) {
-            throw new AssertionError("App1 subscriber error", app1Error.get());
-        }
-        if (app2Error.get() != null) {
-            throw new AssertionError("App2 subscriber error", app2Error.get());
-        }
 
             // Verify both received at least 3 events (could be more due to initial state events)
-            assertTrue(app1Events.size() >= 3, "App1 should receive at least 3 events, got: " + app1Events.size());
-            assertTrue(app2Events.size() >= 3, "App2 should receive at least 3 events, got: " + app2Events.size());
+            assertTrue(
+                    app1Events.size() >= 3,
+                    "App1 should receive at least 3 events, got: " + app1Events.size());
+            assertTrue(
+                    app2Events.size() >= 3,
+                    "App2 should receive at least 3 events, got: " + app2Events.size());
         } catch (Throwable t) {
             testFailure = t;
             throw t;
@@ -494,7 +552,10 @@ public class MultiInstanceReplicationTest {
     /**
      * Dumps the last N lines of logs from a container to stderr.
      */
-    private void dumpContainerLogs(String containerName, org.testcontainers.containers.ContainerState container, int lastLines) {
+    private void dumpContainerLogs(
+            String containerName,
+            org.testcontainers.containers.ContainerState container,
+            int lastLines) {
         System.err.println("\n--- " + containerName + " LOGS (last " + lastLines + " lines) ---");
         try {
             String logs = container.getLogs();
@@ -522,10 +583,10 @@ public class MultiInstanceReplicationTest {
             String message = error.getMessage();
             if (message != null) {
                 // Filter out normal stream closure/cancellation errors
-                if (message.contains("Stream closed") ||
-                    message.contains("Stream") && message.contains("cancelled") ||
-                    message.contains("EOF reached") ||
-                    message.contains("CANCEL")) {
+                if (message.contains("Stream closed")
+                        || message.contains("Stream") && message.contains("cancelled")
+                        || message.contains("EOF reached")
+                        || message.contains("CANCEL")) {
                     return true;
                 }
             }

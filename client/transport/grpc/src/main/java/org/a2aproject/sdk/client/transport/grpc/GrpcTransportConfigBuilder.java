@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.client.transport.grpc;
 
+import io.grpc.Channel;
 import java.util.function.Function;
-
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfigBuilder;
 import org.a2aproject.sdk.util.Assert;
-import io.grpc.Channel;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -145,7 +144,8 @@ import org.jspecify.annotations.Nullable;
  * @see io.grpc.ManagedChannelBuilder
  * @see io.grpc.Channel
  */
-public class GrpcTransportConfigBuilder extends ClientTransportConfigBuilder<GrpcTransportConfig, GrpcTransportConfigBuilder> {
+public class GrpcTransportConfigBuilder
+        extends ClientTransportConfigBuilder<GrpcTransportConfig, GrpcTransportConfigBuilder> {
 
     private @Nullable Function<String, Channel> channelFactory;
 

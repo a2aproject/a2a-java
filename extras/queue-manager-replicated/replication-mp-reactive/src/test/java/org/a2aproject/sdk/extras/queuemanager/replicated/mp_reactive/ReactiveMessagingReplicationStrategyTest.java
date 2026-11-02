@@ -9,7 +9,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import jakarta.enterprise.event.Event;
-
 import org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -27,33 +26,32 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ReactiveMessagingReplicationStrategyTest {
 
-    @Mock
-    private Emitter<String> emitter;
+    @Mock private Emitter<String> emitter;
 
-    @Mock
-    private Event<ReplicatedEventQueueItem> cdiEvent;
+    @Mock private Event<ReplicatedEventQueueItem> cdiEvent;
 
-    @InjectMocks
-    private ReactiveMessagingReplicationStrategy strategy;
+    @InjectMocks private ReactiveMessagingReplicationStrategy strategy;
 
     private StreamingEventKind testEvent;
 
     @BeforeEach
     public void setUp() {
-        testEvent = TaskStatusUpdateEvent.builder()
-                .taskId("test-task")
-                .contextId("test-context")
-                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
-                .build();
+        testEvent =
+                TaskStatusUpdateEvent.builder()
+                        .taskId("test-task")
+                        .contextId("test-context")
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                        .build();
     }
 
     private String createValidJsonMessage(String taskId, String contextId) throws Exception {
         // Create a proper ReplicatedEventQueueItem JSON with StreamingEventKind
-        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
-                .taskId(taskId)
-                .contextId(contextId)
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .build();
+        TaskStatusUpdateEvent event =
+                TaskStatusUpdateEvent.builder()
+                        .taskId(taskId)
+                        .contextId(contextId)
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .build();
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
         return JsonUtil.toJson(replicatedEvent);
     }
@@ -75,9 +73,8 @@ class ReactiveMessagingReplicationStrategyTest {
 
         doThrow(emitterException).when(emitter).send(any(String.class));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                strategy.send(taskId, testEvent)
-        );
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> strategy.send(taskId, testEvent));
 
         // The implementation wraps the original exception, so check the cause
         assertEquals(emitterException, exception.getCause());
@@ -95,7 +92,6 @@ class ReactiveMessagingReplicationStrategyTest {
         // Unit tests here focus on error handling and basic flow
     }
 
-
     @Test
     public void testOnReplicatedEventHandlesInvalidJson() {
         String invalidJsonMessage = "invalid-json";
@@ -106,6 +102,4 @@ class ReactiveMessagingReplicationStrategyTest {
         // CDI event should not be fired for invalid JSON
         verify(cdiEvent, never()).fire(any(ReplicatedEventQueueItem.class));
     }
-
-
 }

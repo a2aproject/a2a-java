@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.server.config;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -8,10 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +38,11 @@ public class DefaultValuesConfigProvider implements A2AConfigProvider {
 
     private void loadDefaultsFromClasspath() {
         try {
-            Enumeration<URL> resources = Thread.currentThread()
-                    .getContextClassLoader()
-                    .getResources(DEFAULTS_RESOURCE);
+            Enumeration<URL> resources =
+                    Thread.currentThread().getContextClassLoader().getResources(DEFAULTS_RESOURCE);
 
-            Map<String, String> sourceTracker = new HashMap<>(); // Track which file each key came from
+            Map<String, String> sourceTracker =
+                    new HashMap<>(); // Track which file each key came from
 
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
@@ -60,9 +58,11 @@ public class DefaultValuesConfigProvider implements A2AConfigProvider {
                         String existingSource = sourceTracker.get(key);
 
                         if (existingSource != null) {
-                            throw new IllegalStateException(String.format(
-                                    "Duplicate configuration key '%s' found in multiple a2a-defaults.properties files: %s and %s",
-                                    key, existingSource, url));
+                            throw new IllegalStateException(
+                                    String.format(
+                                            "Duplicate configuration key '%s' found in multiple"
+                                                    + " a2a-defaults.properties files: %s and %s",
+                                            key, existingSource, url));
                         }
 
                         defaults.put(key, value);
@@ -72,11 +72,14 @@ public class DefaultValuesConfigProvider implements A2AConfigProvider {
                 }
             }
 
-            LOGGER.info("Loaded {} A2A default configuration values from {} resource(s)",
-                    defaults.size(), sourceTracker.values().stream().distinct().count());
+            LOGGER.info(
+                    "Loaded {} A2A default configuration values from {} resource(s)",
+                    defaults.size(),
+                    sourceTracker.values().stream().distinct().count());
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load A2A default configuration from classpath", e);
+            throw new RuntimeException(
+                    "Failed to load A2A default configuration from classpath", e);
         }
     }
 

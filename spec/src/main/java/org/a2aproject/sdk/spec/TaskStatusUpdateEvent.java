@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.spec.util.CollectionCopies;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Map;
+import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
@@ -15,8 +14,9 @@ import java.util.Map;
  * @param contextId the context identifier (required)
  * @param metadata additional metadata (optional)
  */
-public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String contextId,
-        @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind, UpdateEvent {
+public record TaskStatusUpdateEvent(
+        String taskId, TaskStatus status, String contextId, @Nullable Map<String, Object> metadata)
+        implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The identifier when used in streaming responses
@@ -89,8 +89,7 @@ public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String con
         private @Nullable String contextId;
         private @Nullable Map<String, Object> metadata;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         private Builder(TaskStatusUpdateEvent existingTaskStatusUpdateEvent) {
             this.taskId = existingTaskStatusUpdateEvent.taskId;

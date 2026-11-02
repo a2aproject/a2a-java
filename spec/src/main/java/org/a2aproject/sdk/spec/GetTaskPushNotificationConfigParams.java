@@ -1,9 +1,7 @@
 package org.a2aproject.sdk.spec;
 
-
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -18,7 +16,8 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the returned configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record GetTaskPushNotificationConfigParams(String taskId, @Nullable String id, @Nullable String tenant) {
+public record GetTaskPushNotificationConfigParams(
+        String taskId, @Nullable String id, @Nullable String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -72,8 +71,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, @Nullable Strin
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the task ID.
@@ -115,9 +113,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, @Nullable Strin
          */
         public GetTaskPushNotificationConfigParams build() {
             return new GetTaskPushNotificationConfigParams(
-                    Assert.checkNotNullParam("taskId", taskId),
-                    id,
-                    tenant);
+                    Assert.checkNotNullParam("taskId", taskId), id, tenant);
         }
     }
 }

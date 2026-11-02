@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 
@@ -23,9 +22,7 @@ import org.a2aproject.sdk.spec.TaskQueryParams;
  */
 public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryParams> {
 
-    private GetTaskRequest() {
-    }
-
+    private GetTaskRequest() {}
 
     /**
      * Constructs request with all parameters.
@@ -68,8 +65,7 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC version.

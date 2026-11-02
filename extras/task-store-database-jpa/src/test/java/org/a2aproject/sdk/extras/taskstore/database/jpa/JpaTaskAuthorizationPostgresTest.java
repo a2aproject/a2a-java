@@ -8,5 +8,8 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 @TestProfile(JpaTaskAuthorizationDatabaseProfile.Postgres.class)
 @DisabledIfSystemProperty(named = "skipDockerTests", matches = "true")
 public class JpaTaskAuthorizationPostgresTest extends JpaTaskAuthorizationDatabaseTest {
-    @Override protected boolean mysql() { return false; }
+    @Override
+    protected boolean mysql() {
+        return false;
+    }
 }

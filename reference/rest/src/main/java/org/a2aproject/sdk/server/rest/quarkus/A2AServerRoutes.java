@@ -1,14 +1,38 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.HEADERS_KEY;
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_KEY;
 
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
+import io.smallrye.mutiny.Multi;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
+import jakarta.annotation.Priority;
+import jakarta.annotation.security.PermitAll;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,22 +41,16 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-
-import org.a2aproject.sdk.server.util.sse.SseFormatter;
-
-import jakarta.annotation.Priority;
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
+import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
+import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.util.async.Internal;
+import org.a2aproject.sdk.server.util.sse.SseFormatter;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.InternalError;
@@ -41,32 +59,9 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
-import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
-import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
-import io.quarkus.security.Authenticated;
-import io.quarkus.security.ForbiddenException;
-import io.quarkus.security.UnauthorizedException;
-import io.smallrye.mutiny.Multi;
-import jakarta.annotation.security.PermitAll;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
-
-import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_KEY;
 
 /**
  * Vert.x Web Router routes for A2A protocol REST endpoints.
@@ -133,23 +128,17 @@ public class A2AServerRoutes {
     private static final String PAGE_TOKEN_PARAM = "pageToken";
     private static final String STATUS_TIMESTAMP_AFTER = "statusTimestampAfter";
 
-    @Inject
-    RestHandler jsonRestHandler;
+    @Inject RestHandler jsonRestHandler;
 
     // Hook so testing can wait until the SSE subscriber is attached.
     // Without this we get intermittent failures
-    private static volatile @Nullable
-    Runnable streamingMultiSseSupportSubscribedRunnable;
+    private static volatile @Nullable Runnable streamingMultiSseSupportSubscribedRunnable;
 
-    @Inject
-    @Internal
-    Executor executor;
+    @Inject @Internal Executor executor;
 
-    @Inject
-    Instance<CallContextFactory> callContextFactory;
+    @Inject Instance<CallContextFactory> callContextFactory;
 
-    @Inject
-    VertxSecurityHelper vertxSecurityHelper;
+    @Inject VertxSecurityHelper vertxSecurityHelper;
 
     /**
      * Initializes Vert.x Web Router with all A2A REST endpoints.
@@ -171,91 +160,110 @@ public class A2AServerRoutes {
 
         // POST /{tenant}/message:send - Non-streaming message send
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:send$")
-            .handler(BodyHandler.create())
-            .blockingHandler(authenticated(ctx -> {
-                String body = extractBody(ctx);
-                sendMessage(body, ctx);
-            }), false);
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        authenticated(
+                                ctx -> {
+                                    String body = extractBody(ctx);
+                                    sendMessage(body, ctx);
+                                }),
+                        false);
 
         // POST /{tenant}/message:stream - Streaming message with SSE
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:stream$")
-            .handler(BodyHandler.create())
-            .blockingHandler(authenticatedStreaming(ctx -> {
-                String body = extractBody(ctx);
-                sendMessageStreaming(body, ctx);
-            }), false);
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        authenticatedStreaming(
+                                ctx -> {
+                                    String body = extractBody(ctx);
+                                    sendMessageStreaming(body, ctx);
+                                }),
+                        false);
 
         // Task Routes
 
         // GET /{tenant}/tasks - List tasks with query params
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\??")
-            .order(0)
-            .blockingHandler(authenticated(this::listTasks), false);
+                .order(0)
+                .blockingHandler(authenticated(this::listTasks), false);
 
         // GET /{tenant}/tasks/{taskId} - Get specific task
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$")
-            .order(1)
-            .blockingHandler(authenticated(this::getTask), false);
+                .order(1)
+                .blockingHandler(authenticated(this::getTask), false);
 
         // POST /{tenant}/tasks/{taskId}:cancel - Cancel task
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$")
-            .order(1)
-            .handler(BodyHandler.create())
-            .blockingHandler(authenticated(ctx -> {
-                String body = extractBody(ctx);
-                cancelTask(body, ctx);
-            }), false);
+                .order(1)
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        authenticated(
+                                ctx -> {
+                                    String body = extractBody(ctx);
+                                    cancelTask(body, ctx);
+                                }),
+                        false);
 
         // POST /{tenant}/tasks/{taskId}:subscribe - Subscribe to task updates (SSE)
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$")
-            .order(1)
-            .blockingHandler(authenticatedStreaming(this::subscribeToTask), false);
+                .order(1)
+                .blockingHandler(authenticatedStreaming(this::subscribeToTask), false);
 
         // Push Notification Routes
 
         // POST /{tenant}/tasks/{taskId}/pushNotificationConfigs
-        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$")
-            .order(1)
-            .handler(BodyHandler.create())
-            .blockingHandler(authenticated(ctx -> {
-                String body = extractBody(ctx);
-                createTaskPushNotificationConfiguration(body, ctx);
-            }), false);
+        router.postWithRegex(
+                        "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$")
+                .order(1)
+                .handler(BodyHandler.create())
+                .blockingHandler(
+                        authenticated(
+                                ctx -> {
+                                    String body = extractBody(ctx);
+                                    createTaskPushNotificationConfiguration(body, ctx);
+                                }),
+                        false);
 
         // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)")
-            .order(2)
-            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration), false);
+        router.getWithRegex(
+                        "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)")
+                .order(2)
+                .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration), false);
 
         // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs
-        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$")
-            .order(3)
-            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations), false);
+        router.getWithRegex(
+                        "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$")
+                .order(3)
+                .blockingHandler(
+                        authenticated(this::listTaskPushNotificationConfigurations), false);
 
         // DELETE /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
-        router.deleteWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)")
-            .order(1)
-            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration), false);
+        router.deleteWithRegex(
+                        "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)")
+                .order(1)
+                .blockingHandler(
+                        authenticated(this::deleteTaskPushNotificationConfiguration), false);
 
         // Discovery Routes
 
         // GET /.well-known/agent-card.json - Public agent card (no auth required)
         router.get("/.well-known/agent-card.json")
-            .order(1)
-            .produces(APPLICATION_JSON)
-            .handler(this::getAgentCard);
+                .order(1)
+                .produces(APPLICATION_JSON)
+                .handler(this::getAgentCard);
 
-        // GET /.well-known/{tenant}/agent-card.json - Tenant-specific public agent card (no auth required)
+        // GET /.well-known/{tenant}/agent-card.json - Tenant-specific public agent card (no auth
+        // required)
         router.getWithRegex("^\\/\\.well-known\\/(?<tenant>[^\\/]+)\\/agent-card\\.json$")
-            .order(1)
-            .produces(APPLICATION_JSON)
-            .handler(this::getTenantAgentCard);
+                .order(1)
+                .produces(APPLICATION_JSON)
+                .handler(this::getTenantAgentCard);
 
         // GET /{tenant}/extendedAgentCard - Extended agent card (auth required)
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
-            .order(1)
-            .produces(APPLICATION_JSON)
-            .blockingHandler(authenticated(this::getExtendedAgentCard), false);
+                .order(1)
+                .produces(APPLICATION_JSON)
+                .blockingHandler(authenticated(this::getExtendedAgentCard), false);
     }
 
     private Handler<RoutingContext> authenticated(Consumer<RoutingContext> action) {
@@ -307,7 +315,7 @@ public class A2AServerRoutes {
      */
     @Authenticated
     public void sendMessage(String body, RoutingContext rc) {
-        if(!validateContentType(rc)) {
+        if (!validateContentType(rc)) {
             return;
         }
         ServerCallContext context = createCallContext(rc, SEND_MESSAGE_METHOD);
@@ -344,14 +352,15 @@ public class A2AServerRoutes {
      */
     @Authenticated
     public void sendMessageStreaming(String body, RoutingContext rc) {
-        if(!validateContentType(rc)) {
+        if (!validateContentType(rc)) {
             return;
         }
         ServerCallContext context = createCallContext(rc, SEND_STREAMING_MESSAGE_METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(context, extractTenant(rc), body);
+            HTTPRestResponse response =
+                    jsonRestHandler.sendStreamingMessage(context, extractTenant(rc), body);
             if (response instanceof HTTPRestStreamingResponse httpRestStreamingResponse) {
                 streamingResponse = httpRestStreamingResponse;
             } else {
@@ -363,13 +372,20 @@ public class A2AServerRoutes {
             } else if (streamingResponse != null) {
                 // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
                 // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
-                // starts emitting events before the SSE subscriber is attached. The executor.execute()
+                // starts emitting events before the SSE subscriber is attached. The
+                // executor.execute()
                 // wrapper caused 100-600ms delays before subscription, causing events to be lost.
                 AtomicLong eventIdCounter = new AtomicLong(0);
-                Multi<String> sseEvents = Multi.createFrom().publisher(streamingResponse.getPublisher())
-                        .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
+                Multi<String> sseEvents =
+                        Multi.createFrom()
+                                .publisher(streamingResponse.getPublisher())
+                                .map(
+                                        json ->
+                                                SseFormatter.formatJsonAsSSE(
+                                                        json, eventIdCounter.getAndIncrement()));
                 // Write SSE-formatted strings to HTTP response
-                SseResponseWriter.writeSseStrings(sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
+                SseResponseWriter.writeSseStrings(
+                        sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
             }
         }
     }
@@ -400,10 +416,17 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, LIST_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.listTasks(context, extractTenant(rc), rc.request().params().get("contextId"),
-                    rc.request().params().get("status"), rc.request().params().get(PAGE_SIZE_PARAM),
-                    rc.request().params().get(PAGE_TOKEN_PARAM), rc.request().params().get(HISTORY_LENGTH_PARAM),
-                    rc.request().params().get(STATUS_TIMESTAMP_AFTER), rc.request().params().get("includeArtifacts"));
+            response =
+                    jsonRestHandler.listTasks(
+                            context,
+                            extractTenant(rc),
+                            rc.request().params().get("contextId"),
+                            rc.request().params().get("status"),
+                            rc.request().params().get(PAGE_SIZE_PARAM),
+                            rc.request().params().get(PAGE_TOKEN_PARAM),
+                            rc.request().params().get(HISTORY_LENGTH_PARAM),
+                            rc.request().params().get(STATUS_TIMESTAMP_AFTER),
+                            rc.request().params().get("includeArtifacts"));
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -428,8 +451,12 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, GET_TASK_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.getTask(context, extractTenant(rc), taskId,
-                    rc.request().params().get(HISTORY_LENGTH_PARAM));
+            response =
+                    jsonRestHandler.getTask(
+                            context,
+                            extractTenant(rc),
+                            taskId,
+                            rc.request().params().get(HISTORY_LENGTH_PARAM));
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -481,9 +508,10 @@ public class A2AServerRoutes {
      */
     private void sendResponse(RoutingContext rc, @Nullable HTTPRestResponse response) {
         if (response != null) {
-            var httpResponse = rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType());
+            var httpResponse =
+                    rc.response()
+                            .setStatusCode(response.getStatusCode())
+                            .putHeader(CONTENT_TYPE, response.getContentType());
 
             // Add any additional headers from the response
             response.getHeaders().forEach(httpResponse::putHeader);
@@ -518,7 +546,8 @@ public class A2AServerRoutes {
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            HTTPRestResponse response = jsonRestHandler.subscribeToTask(context, extractTenant(rc), taskId);
+            HTTPRestResponse response =
+                    jsonRestHandler.subscribeToTask(context, extractTenant(rc), taskId);
             if (response instanceof HTTPRestStreamingResponse httpRestStreamingResponse) {
                 streamingResponse = httpRestStreamingResponse;
             } else {
@@ -530,13 +559,20 @@ public class A2AServerRoutes {
             } else if (streamingResponse != null) {
                 // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
                 // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
-                // starts emitting events before the SSE subscriber is attached. The executor.execute()
+                // starts emitting events before the SSE subscriber is attached. The
+                // executor.execute()
                 // wrapper caused 100-600ms delays before subscription, causing events to be lost.
                 AtomicLong eventIdCounter = new AtomicLong(0);
-                Multi<String> sseEvents = Multi.createFrom().publisher(streamingResponse.getPublisher())
-                        .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
+                Multi<String> sseEvents =
+                        Multi.createFrom()
+                                .publisher(streamingResponse.getPublisher())
+                                .map(
+                                        json ->
+                                                SseFormatter.formatJsonAsSSE(
+                                                        json, eventIdCounter.getAndIncrement()));
                 // Write SSE-formatted strings to HTTP response
-                SseResponseWriter.writeSseStrings(sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
+                SseResponseWriter.writeSseStrings(
+                        sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
             }
         }
     }
@@ -556,14 +592,16 @@ public class A2AServerRoutes {
      */
     @Authenticated
     public void createTaskPushNotificationConfiguration(String body, RoutingContext rc) {
-        if(!validateContentType(rc)) {
+        if (!validateContentType(rc)) {
             return;
         }
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.createTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
+            response =
+                    jsonRestHandler.createTaskPushNotificationConfiguration(
+                            context, extractTenant(rc), body, taskId);
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -589,7 +627,9 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
+            response =
+                    jsonRestHandler.getTaskPushNotificationConfiguration(
+                            context, extractTenant(rc), taskId, configId);
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -618,11 +658,17 @@ public class A2AServerRoutes {
     @Authenticated
     public void listTaskPushNotificationConfigurations(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
-        ServerCallContext context = createCallContext(rc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        ServerCallContext context =
+                createCallContext(rc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.listTaskPushNotificationConfigurations(context, extractTenant(rc), taskId,
-                    rc.request().params().get(PAGE_SIZE_PARAM), rc.request().params().get(PAGE_TOKEN_PARAM));
+            response =
+                    jsonRestHandler.listTaskPushNotificationConfigurations(
+                            context,
+                            extractTenant(rc),
+                            taskId,
+                            rc.request().params().get(PAGE_SIZE_PARAM),
+                            rc.request().params().get(PAGE_TOKEN_PARAM));
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -647,10 +693,13 @@ public class A2AServerRoutes {
     public void deleteTaskPushNotificationConfiguration(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
-        ServerCallContext context = createCallContext(rc, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        ServerCallContext context =
+                createCallContext(rc, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
+            response =
+                    jsonRestHandler.deleteTaskPushNotificationConfiguration(
+                            context, extractTenant(rc), taskId, configId);
         } catch (Throwable t) {
             LOGGER.error("Internal error while processing request", t);
             response = jsonRestHandler.createErrorResponse(new InternalError("Internal error"));
@@ -704,9 +753,13 @@ public class A2AServerRoutes {
      */
     private boolean validateContentType(RoutingContext rc) {
         String contentType = rc.request().getHeader(CONTENT_TYPE);
-        if (contentType == null || !(contentType.trim().startsWith(APPLICATION_JSON)
-                || contentType.trim().startsWith(APPLICATION_A2A_JSON))) {
-            sendResponse(rc, jsonRestHandler.createErrorResponse(new ContentTypeNotSupportedError(null, null, null)));
+        if (contentType == null
+                || !(contentType.trim().startsWith(APPLICATION_JSON)
+                        || contentType.trim().startsWith(APPLICATION_A2A_JSON))) {
+            sendResponse(
+                    rc,
+                    jsonRestHandler.createErrorResponse(
+                            new ContentTypeNotSupportedError(null, null, null)));
             return false;
         }
         return true;
@@ -788,7 +841,9 @@ public class A2AServerRoutes {
      */
     @Authenticated
     public void getExtendedAgentCard(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD), extractTenant(rc));
+        HTTPRestResponse response =
+                jsonRestHandler.getExtendedAgentCard(
+                        createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD), extractTenant(rc));
         sendResponse(rc, response);
     }
 
@@ -849,7 +904,10 @@ public class A2AServerRoutes {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 String subject = rc.user().subject();
-                user = subject != null ? new AuthenticatedUser(subject) : UnauthenticatedUser.INSTANCE;
+                user =
+                        subject != null
+                                ? new AuthenticatedUser(subject)
+                                : UnauthenticatedUser.INSTANCE;
             }
             Map<String, Object> state = new HashMap<>();
 
@@ -865,8 +923,10 @@ public class A2AServerRoutes {
             String requestedVersion = rc.request().getHeader(A2AHeaders.A2A_VERSION);
 
             // Extract requested extensions from A2A-Extensions header
-            List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.A2A_EXTENSIONS);
-            Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
+            List<String> extensionHeaderValues =
+                    rc.request().headers().getAll(A2AHeaders.A2A_EXTENSIONS);
+            Set<String> requestedExtensions =
+                    A2AExtensions.getRequestedExtensions(extensionHeaderValues);
 
             return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
@@ -874,6 +934,4 @@ public class A2AServerRoutes {
             return builder.build(rc);
         }
     }
-
-
 }

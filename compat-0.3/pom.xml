@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -15,6 +13,38 @@
 
     <name>Java SDK A2A Compat 0.3 Parent</name>
     <description>A2A Protocol v0.3 backward compatibility layer for v1.0 SDK</description>
+
+    <modules>
+        <!-- Spec modules -->
+        <module>spec</module>
+        <module>spec-grpc</module>
+
+        <!-- Server conversion (0.3 to 1.0 translation layer) -->
+        <module>server-conversion</module>
+
+        <!-- Test infrastructure -->
+        <module>tests/server-common</module>
+
+        <!-- Client modules -->
+        <module>client/base</module>
+        <module>client/transport/spi</module>
+        <module>client/transport/jsonrpc</module>
+        <module>client/transport/grpc</module>
+        <module>client/transport/rest</module>
+
+        <!-- Server transport modules -->
+        <module>transport/jsonrpc</module>
+        <module>transport/grpc</module>
+        <module>transport/rest</module>
+
+        <!-- Reference server modules -->
+        <module>reference/jsonrpc</module>
+        <module>reference/grpc</module>
+        <module>reference/rest</module>
+
+        <!-- TCK -->
+        <module>tck</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -102,8 +132,8 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-compat-0.3-server-conversion</artifactId>
-                <type>test-jar</type>
                 <version>${project.version}</version>
+                <type>test-jar</type>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
@@ -112,37 +142,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <modules>
-        <!-- Spec modules -->
-        <module>spec</module>
-        <module>spec-grpc</module>
-
-        <!-- Server conversion (0.3 to 1.0 translation layer) -->
-        <module>server-conversion</module>
-
-        <!-- Test infrastructure -->
-        <module>tests/server-common</module>
-
-        <!-- Client modules -->
-        <module>client/base</module>
-        <module>client/transport/spi</module>
-        <module>client/transport/jsonrpc</module>
-        <module>client/transport/grpc</module>
-        <module>client/transport/rest</module>
-
-        <!-- Server transport modules -->
-        <module>transport/jsonrpc</module>
-        <module>transport/grpc</module>
-        <module>transport/rest</module>
-
-        <!-- Reference server modules -->
-        <module>reference/jsonrpc</module>
-        <module>reference/grpc</module>
-        <module>reference/rest</module>
-
-        <!-- TCK -->
-        <module>tck</module>
-    </modules>
 
 </project>

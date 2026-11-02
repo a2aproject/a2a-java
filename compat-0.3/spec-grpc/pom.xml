@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -94,65 +92,65 @@
     <profiles>
         <profile>
             <id>proto-compile</id>
-                <build>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-clean-plugin</artifactId>
-                            <version>${maven-clean-plugin.version}</version>
-                            <executions>
-                                <execution>
-                                    <id>remove-generated-files</id>
-                                    <phase>initialize</phase>
-                                    <goals>
-                                        <goal>clean</goal>
-                                    </goals>
-                                    <configuration>
-                                        <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                                        <filesets>
-                                            <fileset>
-                                                <directory>${project.basedir}/src/main/java/io/a2a/grpc</directory>
-                                                <followSymlinks>false</followSymlinks>
-                                                <includes>
-                                                    <include>*.java</include>
-                                                </includes>
-                                            </fileset>
-                                        </filesets>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>
-                        <!-- Protocol Buffers Compiler Plugin -->
-                        <plugin>
-                            <groupId>io.github.ascopes</groupId>
-                            <artifactId>protobuf-maven-plugin</artifactId>
-                            <version>${protobuf-maven-plugin.version}</version>
-                            <configuration>
-                                <skip>${skip.protobuf.generate}</skip>
-                                <cleanOutputDirectories>true</cleanOutputDirectories>
-                                <protoc kind="binary-maven">
-                                    <version>${protobuf-protoc.version}</version>
-                                </protoc>
-                                <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-                                <plugins>
-                                    <plugin kind="binary-maven">
-                                        <groupId>io.grpc</groupId>
-                                        <artifactId>protoc-gen-grpc-java</artifactId>
-                                        <version>${grpc.version}</version>
-                                    </plugin>
-                                </plugins>
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <phase>generate-sources</phase>
-                                    <goals>
-                                        <goal>generate</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </build>
+            <build>
+                <plugins>
+                    <!-- Protocol Buffers Compiler Plugin -->
+                    <plugin>
+                        <groupId>io.github.ascopes</groupId>
+                        <artifactId>protobuf-maven-plugin</artifactId>
+                        <version>${protobuf-maven-plugin.version}</version>
+                        <configuration>
+                            <skip>${skip.protobuf.generate}</skip>
+                            <cleanOutputDirectories>true</cleanOutputDirectories>
+                            <protoc kind="binary-maven">
+                                <version>${protobuf-protoc.version}</version>
+                            </protoc>
+                            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                            <plugins>
+                                <plugin kind="binary-maven">
+                                    <groupId>io.grpc</groupId>
+                                    <artifactId>protoc-gen-grpc-java</artifactId>
+                                    <version>${grpc.version}</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>${maven-clean-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>remove-generated-files</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${project.basedir}/src/main/java/io/a2a/grpc</directory>
+                                            <followSymlinks>false</followSymlinks>
+                                            <includes>
+                                                <include>*.java</include>
+                                            </includes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
 
         </profile>
     </profiles>

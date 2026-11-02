@@ -3,12 +3,13 @@ package org.a2aproject.sdk.compat03.spec;
 /**
  * A response for a delete task push notification config request.
  */
-public final class DeleteTaskPushNotificationConfigResponse_v0_3 extends JSONRPCResponse_v0_3<Void> {
+public final class DeleteTaskPushNotificationConfigResponse_v0_3
+        extends JSONRPCResponse_v0_3<Void> {
 
-    private DeleteTaskPushNotificationConfigResponse_v0_3() {
-    }
+    private DeleteTaskPushNotificationConfigResponse_v0_3() {}
 
-    public DeleteTaskPushNotificationConfigResponse_v0_3(String jsonrpc, Object id, Void result, JSONRPCError_v0_3 error) {
+    public DeleteTaskPushNotificationConfigResponse_v0_3(
+            String jsonrpc, Object id, Void result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, Void.class);
     }
 
@@ -19,5 +20,4 @@ public final class DeleteTaskPushNotificationConfigResponse_v0_3 extends JSONRPC
     public DeleteTaskPushNotificationConfigResponse_v0_3(Object id) {
         this(null, id, null, null);
     }
-
 }

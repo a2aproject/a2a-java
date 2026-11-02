@@ -1,14 +1,12 @@
 package org.a2aproject.sdk.server.common.quarkus;
 
-import java.util.concurrent.Executor;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-
+import java.util.concurrent.Executor;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.slf4j.Logger;
@@ -30,16 +28,18 @@ import org.slf4j.LoggerFactory;
 @Alternative
 @Priority(20)
 public class AsyncManagedExecutorProducer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncManagedExecutorProducer.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AsyncManagedExecutorProducer.class);
 
-    @Inject
-    ManagedExecutor managedExecutor;
+    @Inject ManagedExecutor managedExecutor;
 
     @PostConstruct
     public void init() {
-        LOGGER.info("Initializing ManagedExecutor for async operations with CDI context propagation");
+        LOGGER.info(
+                "Initializing ManagedExecutor for async operations with CDI context propagation");
         if (managedExecutor == null) {
-            LOGGER.warn("ManagedExecutor not available - context propagation may not work correctly");
+            LOGGER.warn(
+                    "ManagedExecutor not available - context propagation may not work correctly");
         }
     }
 
@@ -48,7 +48,9 @@ public class AsyncManagedExecutorProducer {
     public Executor produce() {
         LOGGER.debug("Using ManagedExecutor for async operations with CDI context propagation");
         if (managedExecutor == null) {
-            throw new IllegalStateException("ManagedExecutor not injected - ensure MicroProfile Context Propagation is available");
+            throw new IllegalStateException(
+                    "ManagedExecutor not injected - ensure MicroProfile Context Propagation is"
+                            + " available");
         }
         return managedExecutor;
     }

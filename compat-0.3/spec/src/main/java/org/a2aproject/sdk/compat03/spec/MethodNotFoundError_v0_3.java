@@ -8,10 +8,13 @@ import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
  */
 public class MethodNotFoundError_v0_3 extends JSONRPCError_v0_3 {
 
-    public final static Integer DEFAULT_CODE = METHOD_NOT_FOUND_ERROR_CODE;
+    public static final Integer DEFAULT_CODE = METHOD_NOT_FOUND_ERROR_CODE;
 
     public MethodNotFoundError_v0_3(Integer code, String message, Object data) {
-        super(defaultIfNull(code, METHOD_NOT_FOUND_ERROR_CODE), defaultIfNull(message, "Method not found"), data);
+        super(
+                defaultIfNull(code, METHOD_NOT_FOUND_ERROR_CODE),
+                defaultIfNull(message, "Method not found"),
+                data);
     }
 
     public MethodNotFoundError_v0_3() {

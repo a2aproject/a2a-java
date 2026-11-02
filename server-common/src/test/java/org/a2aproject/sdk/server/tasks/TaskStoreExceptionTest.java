@@ -77,7 +77,8 @@ class TaskStoreExceptionTest extends AbstractTaskStoreExceptionTest<TaskStoreExc
     @Test
     void testConstructor_taskIdMessageAndCause() {
         RuntimeException cause = new RuntimeException("Connection timeout");
-        TaskStoreException exception = new TaskStoreException("task-456", "Save operation failed", cause);
+        TaskStoreException exception =
+                new TaskStoreException("task-456", "Save operation failed", cause);
 
         assertEquals("Save operation failed", exception.getMessage());
         assertEquals("task-456", exception.getTaskId());
@@ -126,9 +127,10 @@ class TaskStoreExceptionTest extends AbstractTaskStoreExceptionTest<TaskStoreExc
 
     @Test
     void testMessage_descriptive() {
-        TaskStoreException exception = new TaskStoreException(
-                "task-123",
-                "Failed to persist task to database: connection timeout after 30s");
+        TaskStoreException exception =
+                new TaskStoreException(
+                        "task-123",
+                        "Failed to persist task to database: connection timeout after 30s");
 
         assertNotNull(exception.getMessage());
         assertMessageContains(exception, "Failed to persist");
@@ -138,9 +140,9 @@ class TaskStoreExceptionTest extends AbstractTaskStoreExceptionTest<TaskStoreExc
 
     @Test
     void testMessage_actionable() {
-        TaskStoreException exception = new TaskStoreException(
-                "task-123",
-                "Task not found in store. Verify taskId and retry operation.");
+        TaskStoreException exception =
+                new TaskStoreException(
+                        "task-123", "Task not found in store. Verify taskId and retry operation.");
 
         assertNotNull(exception.getMessage());
         assertMessageContains(exception, "Task not found");
@@ -154,7 +156,8 @@ class TaskStoreExceptionTest extends AbstractTaskStoreExceptionTest<TaskStoreExc
         RuntimeException rootCause = new RuntimeException("Disk full");
         IllegalStateException level1 = new IllegalStateException("Write failed", rootCause);
         IllegalArgumentException level2 = new IllegalArgumentException("Validation failed", level1);
-        TaskStoreException exception = new TaskStoreException("task-789", "Complete failure", level2);
+        TaskStoreException exception =
+                new TaskStoreException("task-789", "Complete failure", level2);
 
         // Verify full chain
         assertEquals("Complete failure", exception.getMessage());
@@ -175,7 +178,8 @@ class TaskStoreExceptionTest extends AbstractTaskStoreExceptionTest<TaskStoreExc
 
     @Test
     void testNullSafety_nullCause() {
-        TaskStoreException exception = new TaskStoreException("task-123", "Message", (Throwable) null);
+        TaskStoreException exception =
+                new TaskStoreException("task-123", "Message", (Throwable) null);
         assertEquals("task-123", exception.getTaskId());
         assertEquals("Message", exception.getMessage());
         assertNull(exception.getCause());
@@ -183,7 +187,8 @@ class TaskStoreExceptionTest extends AbstractTaskStoreExceptionTest<TaskStoreExc
 
     @Test
     void testNullSafety_allNulls() {
-        TaskStoreException exception = new TaskStoreException(null, (String) null, (Throwable) null);
+        TaskStoreException exception =
+                new TaskStoreException(null, (String) null, (Throwable) null);
         assertNull(exception.getTaskId());
         assertNull(exception.getMessage());
         assertNull(exception.getCause());

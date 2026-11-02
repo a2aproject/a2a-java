@@ -8,6 +8,5 @@ public final class Tenants {
     public static final String UNKNOWN = "unknown-corp";
     public static final String DEFAULT_LABEL = "default";
 
-    private Tenants() {
-    }
+    private Tenants() {}
 }

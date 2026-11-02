@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.events.EventQueue;
 import org.a2aproject.sdk.server.events.EventQueueItem;
@@ -34,12 +33,13 @@ public class AgentEmitterTest {
     public static final String TEST_TASK_ID = "test-task-id";
     public static final String TEST_TASK_CONTEXT_ID = "test-task-context-id";
 
-    private static final Message SAMPLE_MESSAGE = Message.builder()
-            .taskId(TEST_TASK_ID)
-            .contextId(TEST_TASK_CONTEXT_ID)
-            .parts(new TextPart("Test message"))
-            .role(ROLE_AGENT)
-            .build();
+    private static final Message SAMPLE_MESSAGE =
+            Message.builder()
+                    .taskId(TEST_TASK_ID)
+                    .contextId(TEST_TASK_CONTEXT_ID)
+                    .parts(new TextPart("Test message"))
+                    .role(ROLE_AGENT)
+                    .build();
 
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
 
@@ -50,25 +50,28 @@ public class AgentEmitterTest {
     private MainEventBusProcessor mainEventBusProcessor;
     private AgentEmitter agentEmitter;
 
-
-
     @BeforeEach
     public void init() {
         // Set up MainEventBus and processor for production-like test environment
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
-        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
+        mainEventBusProcessor =
+                new MainEventBusProcessor(
+                        mainEventBus, taskStore, PushNotificationSender.NOOP, queueManager);
         EventQueueUtil.start(mainEventBusProcessor);
 
-        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
-                .taskId(TEST_TASK_ID)
-                .mainEventBus(mainEventBus)
-                .build().tap();
-        RequestContext context = new RequestContext.Builder()
-                .setTaskId(TEST_TASK_ID)
-                .setContextId(TEST_TASK_CONTEXT_ID)
-                .build();
+        eventQueue =
+                EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                        .taskId(TEST_TASK_ID)
+                        .mainEventBus(mainEventBus)
+                        .build()
+                        .tap();
+        RequestContext context =
+                new RequestContext.Builder()
+                        .setTaskId(TEST_TASK_ID)
+                        .setContextId(TEST_TASK_CONTEXT_ID)
+                        .build();
         agentEmitter = new AgentEmitter(context, eventQueue);
     }
 
@@ -94,7 +97,6 @@ public class AgentEmitterTest {
         assertEquals("custom-artifact-id", taue.artifact().artifactId());
         assertEquals("Custom Artifact", taue.artifact().name());
         assertSame(SAMPLE_PARTS, taue.artifact().parts());
-
 
         assertNull(eventQueue.dequeueEventItem(0));
     }
@@ -180,7 +182,8 @@ public class AgentEmitterTest {
     @Test
     public void testRequiresInputWithMessage() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(
+                false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @SuppressWarnings("deprecation")
@@ -194,7 +197,8 @@ public class AgentEmitterTest {
     @Test
     public void testRequiresInputWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(
+                false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
@@ -206,7 +210,8 @@ public class AgentEmitterTest {
     @Test
     public void testRequiresAuthWithMessage() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(
+                false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @SuppressWarnings("deprecation")
@@ -220,7 +225,8 @@ public class AgentEmitterTest {
     @Test
     public void testRequiresAuthWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(
+                false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
@@ -336,7 +342,9 @@ public class AgentEmitterTest {
         // Check that it's a valid UUID format
         String artifactId = taue.artifact().artifactId();
         assertEquals(36, artifactId.length()); // Standard UUID length
-        assertTrue(artifactId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+        assertTrue(
+                artifactId.matches(
+                        "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
 
         assertNull(eventQueue.dequeueEventItem(0));
     }
@@ -348,8 +356,11 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_COMPLETED, null);
 
         // Try to update status again - should throw RuntimeException
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.startWork());
-        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> agentEmitter.startWork());
+        assertEquals(
+                "Cannot update task status - terminal state already reached",
+                exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEventItem(0));
@@ -362,8 +373,11 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_FAILED, null);
 
         // Try to update status again - should throw RuntimeException
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.complete());
-        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> agentEmitter.complete());
+        assertEquals(
+                "Cannot update task status - terminal state already reached",
+                exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEventItem(0));
@@ -376,8 +390,11 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_REJECTED, null);
 
         // Try to update status again - should throw RuntimeException
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.startWork());
-        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> agentEmitter.startWork());
+        assertEquals(
+                "Cannot update task status - terminal state already reached",
+                exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEventItem(0));
@@ -390,8 +407,11 @@ public class AgentEmitterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_CANCELED, null);
 
         // Try to update status again - should throw RuntimeException
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.submit());
-        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> agentEmitter.submit());
+        assertEquals(
+                "Cannot update task status - terminal state already reached",
+                exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEventItem(0));
@@ -400,21 +420,25 @@ public class AgentEmitterTest {
     @Test
     public void testConcurrentCompletionAttempts() throws Exception {
         // This test simulates race condition between multiple completion attempts
-        Thread thread1 = new Thread(() -> {
-            try {
-                agentEmitter.complete();
-            } catch (RuntimeException e) {
-                // Expected for one of the threads
-            }
-        });
+        Thread thread1 =
+                new Thread(
+                        () -> {
+                            try {
+                                agentEmitter.complete();
+                            } catch (RuntimeException e) {
+                                // Expected for one of the threads
+                            }
+                        });
 
-        Thread thread2 = new Thread(() -> {
-            try {
-                agentEmitter.fail();
-            } catch (RuntimeException e) {
-                // Expected for one of the threads
-            }
-        });
+        Thread thread2 =
+                new Thread(
+                        () -> {
+                            try {
+                                agentEmitter.fail();
+                            } catch (RuntimeException e) {
+                                // Expected for one of the threads
+                            }
+                        });
 
         thread1.start();
         thread2.start();
@@ -431,7 +455,9 @@ public class AgentEmitterTest {
 
         TaskStatusUpdateEvent tsue = (TaskStatusUpdateEvent) event;
         assertTrue(tsue.isFinal());
-        assertTrue(tsue.status().state() == TaskState.TASK_STATE_COMPLETED || tsue.status().state() == TaskState.TASK_STATE_FAILED);
+        assertTrue(
+                tsue.status().state() == TaskState.TASK_STATE_COMPLETED
+                        || tsue.status().state() == TaskState.TASK_STATE_FAILED);
 
         // No additional events should be queued
         assertNull(eventQueue.dequeueEventItem(0));
@@ -451,10 +477,7 @@ public class AgentEmitterTest {
 
     @Test
     public void sendMessageWithNullIdsSucceeds() throws Exception {
-        Message message = Message.builder()
-                .role(ROLE_AGENT)
-                .parts(new TextPart("no ids"))
-                .build();
+        Message message = Message.builder().role(ROLE_AGENT).parts(new TextPart("no ids")).build();
         agentEmitter.sendMessage(message);
 
         EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
@@ -464,31 +487,38 @@ public class AgentEmitterTest {
 
     @Test
     public void sendMessageWithMismatchedTaskIdThrows() {
-        Message mismatchedMessage = Message.builder()
-                .taskId("wrong-task-id")
-                .contextId(TEST_TASK_CONTEXT_ID)
-                .role(ROLE_AGENT)
-                .parts(new TextPart("mismatched"))
-                .build();
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> agentEmitter.sendMessage(mismatchedMessage));
+        Message mismatchedMessage =
+                Message.builder()
+                        .taskId("wrong-task-id")
+                        .contextId(TEST_TASK_CONTEXT_ID)
+                        .role(ROLE_AGENT)
+                        .parts(new TextPart("mismatched"))
+                        .build();
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> agentEmitter.sendMessage(mismatchedMessage));
         assertTrue(ex.getMessage().contains("Message taskId does not match"));
     }
 
     @Test
     public void sendMessageWithMismatchedContextIdThrows() {
-        Message mismatchedMessage = Message.builder()
-                .taskId(TEST_TASK_ID)
-                .contextId("wrong-context-id")
-                .role(ROLE_AGENT)
-                .parts(new TextPart("mismatched"))
-                .build();
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> agentEmitter.sendMessage(mismatchedMessage));
+        Message mismatchedMessage =
+                Message.builder()
+                        .taskId(TEST_TASK_ID)
+                        .contextId("wrong-context-id")
+                        .role(ROLE_AGENT)
+                        .parts(new TextPart("mismatched"))
+                        .build();
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> agentEmitter.sendMessage(mismatchedMessage));
         assertTrue(ex.getMessage().contains("Message contextId does not match"));
     }
 
-    private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage) throws Exception {
+    private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(
+            boolean isFinal, TaskState state, Message statusMessage) throws Exception {
         // Wait up to 5 seconds for event (async MainEventBusProcessor needs time to distribute)
         EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);

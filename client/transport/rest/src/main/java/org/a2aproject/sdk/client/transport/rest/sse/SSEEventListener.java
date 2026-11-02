@@ -1,14 +1,13 @@
 package org.a2aproject.sdk.client.transport.rest.sse;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
-import org.a2aproject.sdk.client.transport.spi.sse.AbstractSSEEventListener;
 import org.a2aproject.sdk.client.transport.rest.RestErrorMapper;
+import org.a2aproject.sdk.client.transport.spi.sse.AbstractSSEEventListener;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -22,13 +21,14 @@ public class SSEEventListener extends AbstractSSEEventListener {
 
     private static final Logger LOGGER = Logger.getLogger(SSEEventListener.class.getName());
 
-    public SSEEventListener(Consumer<StreamingEventKind> eventHandler,
-            @Nullable Consumer<Throwable> errorHandler) {
+    public SSEEventListener(
+            Consumer<StreamingEventKind> eventHandler, @Nullable Consumer<Throwable> errorHandler) {
         super(eventHandler, errorHandler);
     }
 
     public void onComplete() {
-        LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
+        LOGGER.fine(
+                "SSEEventListener.onComplete() called - signaling successful stream completion");
         signalTerminal(null);
     }
 
@@ -36,7 +36,8 @@ public class SSEEventListener extends AbstractSSEEventListener {
     public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
         try {
             LOGGER.fine("REST SSE raw data: " + event.data());
-            org.a2aproject.sdk.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
+            org.a2aproject.sdk.grpc.StreamResponse.Builder builder =
+                    org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(event.data(), builder);
             parseAndHandleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
@@ -53,23 +54,25 @@ public class SSEEventListener extends AbstractSSEEventListener {
     private void parseAndHandleMessage(StreamResponse response, @Nullable Future<Void> future) {
         StreamingEventKind event;
         switch (response.getPayloadCase()) {
-            case MESSAGE ->
-                event = ProtoUtils.FromProto.message(response.getMessage());
-            case TASK ->
-                event = ProtoUtils.FromProto.task(response.getTask());
+            case MESSAGE -> event = ProtoUtils.FromProto.message(response.getMessage());
+            case TASK -> event = ProtoUtils.FromProto.task(response.getTask());
             case STATUS_UPDATE ->
-                event = ProtoUtils.FromProto.taskStatusUpdateEvent(response.getStatusUpdate());
+                    event = ProtoUtils.FromProto.taskStatusUpdateEvent(response.getStatusUpdate());
             case ARTIFACT_UPDATE ->
-                event = ProtoUtils.FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
+                    event =
+                            ProtoUtils.FromProto.taskArtifactUpdateEvent(
+                                    response.getArtifactUpdate());
             default -> {
                 LOGGER.warning("Invalid stream response " + response.getPayloadCase());
-                signalTerminal(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
+                signalTerminal(
+                        new IllegalStateException(
+                                "Invalid stream response from server: "
+                                        + response.getPayloadCase()));
                 return;
             }
         }
-        
+
         // Delegate to base class for common event handling and auto-close logic
         handleEvent(event, future);
     }
-
 }

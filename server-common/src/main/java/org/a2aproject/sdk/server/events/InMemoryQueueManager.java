@@ -1,11 +1,9 @@
 package org.a2aproject.sdk.server.events;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -43,8 +41,10 @@ public class InMemoryQueueManager implements QueueManager {
     }
 
     @Inject
-    public InMemoryQueueManager(TaskStateProvider taskStateProvider, MainEventBus mainEventBus,
-                                TaskStreamLifecycleHook streamLifecycleHook) {
+    public InMemoryQueueManager(
+            TaskStateProvider taskStateProvider,
+            MainEventBus mainEventBus,
+            TaskStreamLifecycleHook streamLifecycleHook) {
         this.mainEventBus = mainEventBus;
         this.factory = new DefaultEventQueueFactory();
         this.taskStateProvider = taskStateProvider;
@@ -52,12 +52,18 @@ public class InMemoryQueueManager implements QueueManager {
     }
 
     // For testing/extensions with custom factory and MainEventBus
-    public InMemoryQueueManager(EventQueueFactory factory, TaskStateProvider taskStateProvider, MainEventBus mainEventBus) {
+    public InMemoryQueueManager(
+            EventQueueFactory factory,
+            TaskStateProvider taskStateProvider,
+            MainEventBus mainEventBus) {
         this(factory, taskStateProvider, mainEventBus, new DefaultTaskStreamLifecycleHook());
     }
 
-    public InMemoryQueueManager(EventQueueFactory factory, TaskStateProvider taskStateProvider,
-                                MainEventBus mainEventBus, TaskStreamLifecycleHook streamLifecycleHook) {
+    public InMemoryQueueManager(
+            EventQueueFactory factory,
+            TaskStateProvider taskStateProvider,
+            MainEventBus mainEventBus,
+            TaskStreamLifecycleHook streamLifecycleHook) {
         this.factory = factory;
         this.taskStateProvider = taskStateProvider;
         this.mainEventBus = mainEventBus;
@@ -102,14 +108,21 @@ public class InMemoryQueueManager implements QueueManager {
         // Lazy cleanup: only remove closed queues if task is finalized
         // Don't remove queues for non-finalized tasks - they must stay for late-arriving events
         if (existing != null && existing.isClosed()) {
-            boolean isFinalized = (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
+            boolean isFinalized =
+                    (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
             if (isFinalized) {
-                LOGGER.debug("Removing closed queue {} for finalized task {}", System.identityHashCode(existing), taskId);
+                LOGGER.debug(
+                        "Removing closed queue {} for finalized task {}",
+                        System.identityHashCode(existing),
+                        taskId);
                 queues.remove(taskId);
                 existing = null;
             } else {
-                LOGGER.debug("Queue {} for task {} is closed but task not finalized - keeping for late-arriving events",
-                        System.identityHashCode(existing), taskId);
+                LOGGER.debug(
+                        "Queue {} for task {} is closed but task not finalized - keeping for"
+                                + " late-arriving events",
+                        System.identityHashCode(existing),
+                        taskId);
                 // Don't remove or recreate - existing closed queue stays in map
                 // This is critical for replication where events may arrive after MainQueue closes
                 // The closed MainQueue can still receive enqueued events via enqueueEvent()
@@ -124,16 +137,24 @@ public class InMemoryQueueManager implements QueueManager {
 
         EventQueue main = existing == null ? newQueue : existing;
         if (main == null) {
-            throw new IllegalStateException("Failed to create or retrieve queue for task " + taskId);
+            throw new IllegalStateException(
+                    "Failed to create or retrieve queue for task " + taskId);
         }
-        EventQueue result = main.tap();  // Always return ChildQueue
+        EventQueue result = main.tap(); // Always return ChildQueue
 
         if (existing == null) {
-            LOGGER.debug("Created new MainQueue {} for task {}, returning ChildQueue {} (map size: {})",
-                System.identityHashCode(main), taskId, System.identityHashCode(result), queues.size());
+            LOGGER.debug(
+                    "Created new MainQueue {} for task {}, returning ChildQueue {} (map size: {})",
+                    System.identityHashCode(main),
+                    taskId,
+                    System.identityHashCode(result),
+                    queues.size());
         } else {
-            LOGGER.debug("Tapped existing MainQueue {} -> ChildQueue {} for task {}",
-                System.identityHashCode(main), System.identityHashCode(result), taskId);
+            LOGGER.debug(
+                    "Tapped existing MainQueue {} -> ChildQueue {} for task {}",
+                    System.identityHashCode(main),
+                    System.identityHashCode(result),
+                    taskId);
         }
         return result;
     }
@@ -189,19 +210,24 @@ public class InMemoryQueueManager implements QueueManager {
             LOGGER.debug("Queue close callback invoked for task {}", taskId);
 
             // Check if task is finalized before removing queue
-            boolean isFinalized = (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
+            boolean isFinalized =
+                    (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
 
             if (!isFinalized) {
-                LOGGER.debug("Task {} is not finalized, keeping queue in map for late-arriving events", taskId);
-                return;  // Don't remove from map - task is still active
+                LOGGER.debug(
+                        "Task {} is not finalized, keeping queue in map for late-arriving events",
+                        taskId);
+                return; // Don't remove from map - task is still active
             }
 
             LOGGER.debug("Task {} is finalized, removing queue from map", taskId);
 
             EventQueue removed = queues.remove(taskId);
             if (removed != null) {
-                LOGGER.debug("Removed closed queue for task {} from QueueManager (map size: {})",
-                        taskId, queues.size());
+                LOGGER.debug(
+                        "Removed closed queue for task {} from QueueManager (map size: {})",
+                        taskId,
+                        queues.size());
             } else {
                 LOGGER.debug("Queue for task {} was already removed from map", taskId);
             }

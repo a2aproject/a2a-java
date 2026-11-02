@@ -3,9 +3,7 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * JSON-RPC error indicating an internal error occurred on the server.
@@ -37,7 +35,10 @@ public class InternalError extends A2AError {
      * @param message the error message
      * @param details additional error details
      */
-    public InternalError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public InternalError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.INTERNAL.code()),
                 defaultIfNull(message, "Internal Error"),

@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.jsonrpc.common.wrappers;
 
 import java.util.List;
-
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
@@ -16,11 +15,7 @@ import org.jspecify.annotations.Nullable;
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */
 public record ListTasksResult(
-        List<Task> tasks,
-        int totalSize,
-        int pageSize,
-        @Nullable String nextPageToken
-) {
+        List<Task> tasks, int totalSize, int pageSize, @Nullable String nextPageToken) {
     /**
      * Compact constructor for validation.
      * Validates parameters and creates a defensive copy of the tasks list.
@@ -40,7 +35,12 @@ public record ListTasksResult(
             throw new IllegalArgumentException("pageSize must be non-negative");
         }
         if (pageSize != tasks.size()) {
-            throw new IllegalArgumentException("pageSize must be equal to the number of tasks in the list. Got " + pageSize + ", but list has " + tasks.size() + " tasks.");
+            throw new IllegalArgumentException(
+                    "pageSize must be equal to the number of tasks in the list. Got "
+                            + pageSize
+                            + ", but list has "
+                            + tasks.size()
+                            + " tasks.");
         }
         // Make defensive copy
         tasks = List.copyOf(tasks);
@@ -85,8 +85,7 @@ public record ListTasksResult(
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the tasks list.

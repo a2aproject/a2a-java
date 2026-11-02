@@ -1,11 +1,9 @@
 package org.a2aproject.sdk.jsonrpc.common.wrappers;
 
+import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
-
-import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 
 /**
  * JSON-RPC request to delete a push notification configuration from a task.
@@ -20,11 +18,10 @@ import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_C
  * @see DeleteTaskPushNotificationConfigParams for the parameter structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
+public final class DeleteTaskPushNotificationConfigRequest
+        extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
 
-    private DeleteTaskPushNotificationConfigRequest() {
-    }
-
+    private DeleteTaskPushNotificationConfigRequest() {}
 
     /**
      * Creates a new DeleteTaskPushNotificationConfigRequest with the specified JSON-RPC parameters.
@@ -34,7 +31,8 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
      * @param params the request parameters containing task and config IDs
      * @throws IllegalArgumentException if jsonrpc version is invalid, method is not "DeleteTaskPushNotificationConfig", or id is not a string/integer/null
      */
-    public DeleteTaskPushNotificationConfigRequest(String jsonrpc, Object id, DeleteTaskPushNotificationConfigParams params) {
+    public DeleteTaskPushNotificationConfigRequest(
+            String jsonrpc, Object id, DeleteTaskPushNotificationConfigParams params) {
         super(jsonrpc, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, id, params);
     }
 
@@ -45,7 +43,8 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
      * @param params the request parameters containing task and config IDs
      * @throws IllegalArgumentException if id is not a string/integer/null
      */
-    public DeleteTaskPushNotificationConfigRequest(String id, DeleteTaskPushNotificationConfigParams params) {
+    public DeleteTaskPushNotificationConfigRequest(
+            String id, DeleteTaskPushNotificationConfigParams params) {
         this(null, id, params);
     }
 
@@ -72,8 +71,7 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC protocol version.

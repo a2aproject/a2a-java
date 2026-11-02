@@ -17,5 +17,4 @@ public class RestTestTransportMetadata implements TransportMetadata {
     public String getTransportProtocol() {
         return TransportProtocol.HTTP_JSON.asString();
     }
-
 }

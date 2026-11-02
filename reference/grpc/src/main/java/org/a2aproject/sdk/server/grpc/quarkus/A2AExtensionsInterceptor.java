@@ -1,15 +1,14 @@
 package org.a2aproject.sdk.server.grpc.quarkus;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-import org.a2aproject.sdk.common.A2AHeaders;
-import org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import jakarta.enterprise.context.ApplicationScoped;
+import org.a2aproject.sdk.common.A2AHeaders;
+import org.a2aproject.sdk.transport.grpc.context.GrpcContextKeys;
 
 /**
  * gRPC server interceptor that captures request metadata and context information,
@@ -60,12 +59,11 @@ import io.grpc.ServerInterceptor;
 @ApplicationScoped
 public class A2AExtensionsInterceptor implements ServerInterceptor {
 
-    private static final Metadata.Key<String> EXTENSIONS_KEY = Metadata.Key.of(
-            A2AHeaders.A2A_EXTENSIONS.toLowerCase(),
-            Metadata.ASCII_STRING_MARSHALLER);
-    private static final Metadata.Key<String> VERSION_KEY = Metadata.Key.of(
-            A2AHeaders.A2A_VERSION.toLowerCase(),
-            Metadata.ASCII_STRING_MARSHALLER);
+    private static final Metadata.Key<String> EXTENSIONS_KEY =
+            Metadata.Key.of(
+                    A2AHeaders.A2A_EXTENSIONS.toLowerCase(), Metadata.ASCII_STRING_MARSHALLER);
+    private static final Metadata.Key<String> VERSION_KEY =
+            Metadata.Key.of(A2AHeaders.A2A_VERSION.toLowerCase(), Metadata.ASCII_STRING_MARSHALLER);
 
     /**
      * Intercepts incoming gRPC calls to capture metadata and context information.
@@ -104,15 +102,21 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
         String extensions = metadata.get(EXTENSIONS_KEY);
 
         // Create enhanced context with rich information (equivalent to Python's ServicerContext)
-        Context context = Context.current()
-                // Store complete metadata for full header access
-                .withValue(GrpcContextKeys.METADATA_KEY, metadata)
-                // Store Grpc method name 
-                .withValue(GrpcContextKeys.GRPC_METHOD_NAME_KEY, serverCall.getMethodDescriptor().getFullMethodName())
-                // Store method name (equivalent to Python's context.method())
-                .withValue(GrpcContextKeys.METHOD_NAME_KEY, GrpcContextKeys.METHOD_MAPPING.get(serverCall.getMethodDescriptor().getBareMethodName()))
-                // Store peer information for client connection details
-                .withValue(GrpcContextKeys.PEER_INFO_KEY, getPeerInfo(serverCall));
+        Context context =
+                Context.current()
+                        // Store complete metadata for full header access
+                        .withValue(GrpcContextKeys.METADATA_KEY, metadata)
+                        // Store Grpc method name
+                        .withValue(
+                                GrpcContextKeys.GRPC_METHOD_NAME_KEY,
+                                serverCall.getMethodDescriptor().getFullMethodName())
+                        // Store method name (equivalent to Python's context.method())
+                        .withValue(
+                                GrpcContextKeys.METHOD_NAME_KEY,
+                                GrpcContextKeys.METHOD_MAPPING.get(
+                                        serverCall.getMethodDescriptor().getBareMethodName()))
+                        // Store peer information for client connection details
+                        .withValue(GrpcContextKeys.PEER_INFO_KEY, getPeerInfo(serverCall));
 
         // Store A2A version if present
         if (version != null) {
@@ -136,7 +140,8 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
      */
     private String getPeerInfo(ServerCall<?, ?> serverCall) {
         try {
-            Object remoteAddr = serverCall.getAttributes().get(io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+            Object remoteAddr =
+                    serverCall.getAttributes().get(io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
             return remoteAddr != null ? remoteAddr.toString() : "unknown";
         } catch (Exception e) {
             return "unknown";

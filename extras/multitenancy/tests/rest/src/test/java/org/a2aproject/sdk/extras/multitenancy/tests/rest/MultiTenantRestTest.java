@@ -27,7 +27,8 @@ public class MultiTenantRestTest extends AbstractMultiTenantServerTest {
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(RestTransport.class,
+        builder.withTransport(
+                RestTransport.class,
                 new RestTransportConfigBuilder().httpClient(new JdkA2AHttpClient()));
     }
 }

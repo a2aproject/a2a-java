@@ -5,7 +5,11 @@ import org.a2aproject.sdk.util.Assert;
 /**
  * Defines the configuration for setting up push notifications for task updates.
  */
-public record PushNotificationConfig_v0_3(String url, String token, PushNotificationAuthenticationInfo_v0_3 authentication, String id) {
+public record PushNotificationConfig_v0_3(
+        String url,
+        String token,
+        PushNotificationAuthenticationInfo_v0_3 authentication,
+        String id) {
 
     public PushNotificationConfig_v0_3 {
         Assert.checkNotNullParam("url", url);
@@ -17,8 +21,7 @@ public record PushNotificationConfig_v0_3(String url, String token, PushNotifica
         private PushNotificationAuthenticationInfo_v0_3 authentication;
         private String id;
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder(PushNotificationConfig_v0_3 notificationConfig) {
             this.url = notificationConfig.url;
@@ -37,7 +40,8 @@ public record PushNotificationConfig_v0_3(String url, String token, PushNotifica
             return this;
         }
 
-        public Builder authenticationInfo(PushNotificationAuthenticationInfo_v0_3 authenticationInfo) {
+        public Builder authenticationInfo(
+                PushNotificationAuthenticationInfo_v0_3 authenticationInfo) {
             this.authentication = authenticationInfo;
             return this;
         }

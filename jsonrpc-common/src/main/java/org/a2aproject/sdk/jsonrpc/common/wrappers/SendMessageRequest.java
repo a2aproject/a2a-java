@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.Task;
 
@@ -34,9 +33,7 @@ import org.a2aproject.sdk.spec.Task;
  */
 public final class SendMessageRequest extends NonStreamingJSONRPCRequest<MessageSendParams> {
 
-    private SendMessageRequest() {
-    }
-
+    private SendMessageRequest() {}
 
     /**
      * Constructs a SendMessageRequest with the specified JSON-RPC fields.
@@ -93,8 +90,7 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC version.

@@ -15,5 +15,4 @@ package org.a2aproject.sdk.compat03.transport.jsonrpc.handler;
 /**
  * Placeholder stub - awaiting server-common port.
  */
-public class JSONRPCTestTransportMetadata_v0_3 {
-}
+public class JSONRPCTestTransportMetadata_v0_3 {}

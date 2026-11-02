@@ -1,13 +1,11 @@
 package org.a2aproject.sdk.server;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.Iterator;
-
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.UnsatisfiedResolutionException;
 import jakarta.enterprise.util.TypeLiteral;
-
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.Iterator;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -69,12 +67,13 @@ public class FixedInstance<T> implements Instance<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return value != null ? Collections.singleton(value).iterator() : Collections.emptyIterator();
+        return value != null
+                ? Collections.singleton(value).iterator()
+                : Collections.emptyIterator();
     }
 
     @Override
-    public void destroy(T instance) {
-    }
+    public void destroy(T instance) {}
 
     @Override
     public Instance<T> select(Annotation... qualifiers) {

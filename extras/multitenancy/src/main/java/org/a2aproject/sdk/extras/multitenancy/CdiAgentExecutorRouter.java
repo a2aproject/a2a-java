@@ -5,7 +5,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.multitenancy.AgentExecutorRouter;
 import org.a2aproject.sdk.server.multitenancy.Tenant;
@@ -22,16 +21,14 @@ import org.jspecify.annotations.Nullable;
 @ApplicationScoped
 public class CdiAgentExecutorRouter implements AgentExecutorRouter {
 
-    @Inject
-    @Any
-    Instance<AgentExecutor> allExecutors;
+    @Inject @Any Instance<AgentExecutor> allExecutors;
 
     private @Nullable AgentExecutor defaultExecutor;
 
     @PostConstruct
     void init() {
-        defaultExecutor = CdiUtils.resolveDefaultBean(
-                allExecutors, Tenant.class, null, "AgentExecutor");
+        defaultExecutor =
+                CdiUtils.resolveDefaultBean(allExecutors, Tenant.class, null, "AgentExecutor");
     }
 
     @Override
@@ -55,7 +52,8 @@ public class CdiAgentExecutorRouter implements AgentExecutorRouter {
     private AgentExecutor requireDefaultExecutor() {
         if (defaultExecutor == null) {
             throw new IllegalStateException(
-                    "No default AgentExecutor bean found — provide an AgentExecutor bean without @Tenant qualifier");
+                    "No default AgentExecutor bean found — provide an AgentExecutor bean without"
+                            + " @Tenant qualifier");
         }
         return defaultExecutor;
     }

@@ -63,7 +63,9 @@ import org.jspecify.annotations.Nullable;
  * @see A2AHttpClient
  * @see org.a2aproject.sdk.client.http.JdkA2AHttpClient
  */
-public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<JSONRPCTransportConfig, JSONRPCTransportConfigBuilder> {
+public class JSONRPCTransportConfigBuilder
+        extends ClientTransportConfigBuilder<
+                JSONRPCTransportConfig, JSONRPCTransportConfigBuilder> {
 
     private @Nullable A2AHttpClient httpClient;
     private A2AHttpClientConfiguration httpClientConfiguration = A2AHttpClientConfiguration.DEFAULT;
@@ -102,9 +104,11 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
     }
 
     /** Sets the configuration used when this builder creates the HTTP client. */
-    public JSONRPCTransportConfigBuilder httpClientConfiguration(A2AHttpClientConfiguration httpClientConfiguration) {
-        this.httpClientConfiguration = org.a2aproject.sdk.util.Assert.checkNotNullParam(
-                "httpClientConfiguration", httpClientConfiguration);
+    public JSONRPCTransportConfigBuilder httpClientConfiguration(
+            A2AHttpClientConfiguration httpClientConfiguration) {
+        this.httpClientConfiguration =
+                org.a2aproject.sdk.util.Assert.checkNotNullParam(
+                        "httpClientConfiguration", httpClientConfiguration);
         return this;
     }
 

@@ -249,9 +249,12 @@ public interface TaskStore {
      * @param authorizationProvider provider used for per-task read checks
      * @return the authorized page and its pagination metadata
      */
-    default ListTasksResult listAuthorized(ListTasksParams params, ServerCallContext context,
+    default ListTasksResult listAuthorized(
+            ListTasksParams params,
+            ServerCallContext context,
             TaskAuthorizationProvider authorizationProvider) {
-        return TaskStoreAuthorizationFallback.listAuthorized(this, params, context, authorizationProvider);
+        return TaskStoreAuthorizationFallback.listAuthorized(
+                this, params, context, authorizationProvider);
     }
 
     /**
@@ -266,8 +269,11 @@ public interface TaskStore {
      * @param taskId    the task being checked
      * @return {@code true} to include the task, {@code false} to exclude it
      */
-    default boolean isReadAuthorized(@Nullable TaskAuthorizationProvider provider,
-            @Nullable ServerCallContext context, String taskId) {
-        return TaskAuthorizationProvider.checkReadAccess(provider, context, taskId, TaskOperation.LIST_TASKS);
+    default boolean isReadAuthorized(
+            @Nullable TaskAuthorizationProvider provider,
+            @Nullable ServerCallContext context,
+            String taskId) {
+        return TaskAuthorizationProvider.checkReadAccess(
+                provider, context, taskId, TaskOperation.LIST_TASKS);
     }
 }

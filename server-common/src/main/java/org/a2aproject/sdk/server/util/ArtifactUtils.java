@@ -2,7 +2,6 @@ package org.a2aproject.sdk.server.util;
 
 import java.util.List;
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.Part;
@@ -26,15 +25,9 @@ public final class ArtifactUtils {
      * @param description An optional description of the artifact.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newArtifact(String name, List<Part<?>> parts, @Nullable String description) {
-        return new Artifact(
-            UUID.randomUUID().toString(),
-            name,
-            description,
-            parts,
-            null,
-            null
-        );
+    public static Artifact newArtifact(
+            String name, List<Part<?>> parts, @Nullable String description) {
+        return new Artifact(UUID.randomUUID().toString(), name, description, parts, null, null);
     }
 
     /**
@@ -57,11 +50,7 @@ public final class ArtifactUtils {
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
     public static Artifact newTextArtifact(String name, String text, @Nullable String description) {
-        return newArtifact(
-            name,
-            List.of(new TextPart(text)),
-            description
-        );
+        return newArtifact(name, List.of(new TextPart(text)), description);
     }
 
     /**
@@ -86,11 +75,7 @@ public final class ArtifactUtils {
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
     public static Artifact newDataArtifact(String name, Object data, @Nullable String description) {
-        return newArtifact(
-            name,
-            List.of(new DataPart(data)),
-            description
-        );
+        return newArtifact(name, List.of(new DataPart(data)), description);
     }
 
     /**

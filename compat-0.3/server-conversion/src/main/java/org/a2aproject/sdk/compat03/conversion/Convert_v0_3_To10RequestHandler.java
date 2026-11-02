@@ -1,11 +1,9 @@
 package org.a2aproject.sdk.compat03.conversion;
 
-import java.util.List;
-import java.util.concurrent.Flow;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
+import java.util.List;
+import java.util.concurrent.Flow;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.EventKindMapper_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.StreamingEventKindMapper_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
@@ -79,7 +77,8 @@ public class Convert_v0_3_To10RequestHandler {
     }
 
     @Inject
-    public Convert_v0_3_To10RequestHandler(org.a2aproject.sdk.server.requesthandlers.RequestHandler v10Handler) {
+    public Convert_v0_3_To10RequestHandler(
+            org.a2aproject.sdk.server.requesthandlers.RequestHandler v10Handler) {
         this.v10Handler = v10Handler;
     }
 
@@ -93,9 +92,8 @@ public class Convert_v0_3_To10RequestHandler {
      * @return the v0.3 task
      * @throws A2AError if an error occurs
      */
-    public Task_v0_3 onGetTask(
-            TaskQueryParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+    public Task_v0_3 onGetTask(TaskQueryParams_v0_3 v03Params, ServerCallContext context)
+            throws A2AError {
 
         // Convert v0.3 params → v1.0 params
         TaskQueryParams v10Params = TaskQueryParamsMapper_v0_3.INSTANCE.toV10(v03Params);
@@ -117,9 +115,8 @@ public class Convert_v0_3_To10RequestHandler {
      * @return the v0.3 task
      * @throws A2AError if an error occurs
      */
-    public Task_v0_3 onCancelTask(
-            TaskIdParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+    public Task_v0_3 onCancelTask(TaskIdParams_v0_3 v03Params, ServerCallContext context)
+            throws A2AError {
 
         // Convert v0.3 TaskIdParams → v1.0 CancelTaskParams
         CancelTaskParams v10Params = CancelTaskParamsMapper_v0_3.INSTANCE.toV10(v03Params);
@@ -141,9 +138,8 @@ public class Convert_v0_3_To10RequestHandler {
      * @return the v0.3 event kind (Task or Message)
      * @throws A2AError if an error occurs
      */
-    public EventKind_v0_3 onMessageSend(
-            MessageSendParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+    public EventKind_v0_3 onMessageSend(MessageSendParams_v0_3 v03Params, ServerCallContext context)
+            throws A2AError {
 
         // Convert v0.3 params → v1.0 params
         MessageSendParams v10Params = MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
@@ -170,8 +166,7 @@ public class Convert_v0_3_To10RequestHandler {
      * @throws A2AError if an error occurs
      */
     public Flow.Publisher<StreamingEventKind_v0_3> onMessageSendStream(
-            MessageSendParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+            MessageSendParams_v0_3 v03Params, ServerCallContext context) throws A2AError {
 
         // Convert v0.3 params → v1.0 params
         MessageSendParams v10Params = MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
@@ -182,7 +177,7 @@ public class Convert_v0_3_To10RequestHandler {
 
         // Get v1.0 publisher
         Flow.Publisher<StreamingEventKind> v10Publisher =
-            v10Handler.onMessageSendStream(v10Params, context);
+                v10Handler.onMessageSendStream(v10Params, context);
 
         // Convert each event using a mapping processor
         return convertPublisher(v10Publisher, StreamingEventKindMapper_v0_3.INSTANCE::fromV10);
@@ -200,16 +195,15 @@ public class Convert_v0_3_To10RequestHandler {
      * @throws A2AError if an error occurs
      */
     public TaskPushNotificationConfig_v0_3 onSetTaskPushNotificationConfig(
-            TaskPushNotificationConfig_v0_3 v03Config,
-            ServerCallContext context) throws A2AError {
+            TaskPushNotificationConfig_v0_3 v03Config, ServerCallContext context) throws A2AError {
 
         // Convert v0.3 config → v1.0 config
         TaskPushNotificationConfig v10Config =
-            TaskPushNotificationConfigMapper_v0_3.INSTANCE.toV10(v03Config);
+                TaskPushNotificationConfigMapper_v0_3.INSTANCE.toV10(v03Config);
 
         // Call v1.0 handler
         TaskPushNotificationConfig v10Result =
-            v10Handler.onCreateTaskPushNotificationConfig(v10Config, context);
+                v10Handler.onCreateTaskPushNotificationConfig(v10Config, context);
 
         // Convert v1.0 result → v0.3 result
         return TaskPushNotificationConfigMapper_v0_3.INSTANCE.fromV10(v10Result);
@@ -229,18 +223,19 @@ public class Convert_v0_3_To10RequestHandler {
      * @throws A2AError if an error occurs
      */
     public TaskPushNotificationConfig_v0_3 onGetTaskPushNotificationConfig(
-            GetTaskPushNotificationConfigParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+            GetTaskPushNotificationConfigParams_v0_3 v03Params, ServerCallContext context)
+            throws A2AError {
 
         // Convert v0.3 params → v1.0 params
         // v0.3: id = taskId, pushNotificationConfigId = optional config id
         // v1.0: taskId = taskId, id = config id (defaults to taskId if not specified)
-        String configId = v03Params.pushNotificationConfigId() != null
-            ? v03Params.pushNotificationConfigId()
-            : v03Params.id(); // Default to taskId when config id not specified
+        String configId =
+                v03Params.pushNotificationConfigId() != null
+                        ? v03Params.pushNotificationConfigId()
+                        : v03Params.id(); // Default to taskId when config id not specified
 
         GetTaskPushNotificationConfigParams v10Params =
-            new GetTaskPushNotificationConfigParams(v03Params.id(), configId);
+                new GetTaskPushNotificationConfigParams(v03Params.id(), configId);
 
         TaskPushNotificationConfig v10Result;
         try {
@@ -251,9 +246,9 @@ public class Convert_v0_3_To10RequestHandler {
             // This matches v0.3 DefaultRequestHandler.getPushNotificationConfig() behavior
             if (v03Params.pushNotificationConfigId() != null) {
                 ListTaskPushNotificationConfigsParams listParams =
-                    new ListTaskPushNotificationConfigsParams(v03Params.id());
+                        new ListTaskPushNotificationConfigsParams(v03Params.id());
                 ListTaskPushNotificationConfigsResult listResult =
-                    v10Handler.onListTaskPushNotificationConfigs(listParams, context);
+                        v10Handler.onListTaskPushNotificationConfigs(listParams, context);
 
                 if (listResult.configs().isEmpty()) {
                     throw e; // Re-throw if no configs exist at all
@@ -281,15 +276,14 @@ public class Convert_v0_3_To10RequestHandler {
      * @throws A2AError if an error occurs
      */
     public Flow.Publisher<StreamingEventKind_v0_3> onResubscribeToTask(
-            TaskIdParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+            TaskIdParams_v0_3 v03Params, ServerCallContext context) throws A2AError {
 
         // Convert v0.3 params → v1.0 params
         TaskIdParams v10Params = TaskIdParamsMapper_v0_3.INSTANCE.toV10(v03Params);
 
         // Get v1.0 publisher
         Flow.Publisher<StreamingEventKind> v10Publisher =
-            v10Handler.onSubscribeToTask(v10Params, context);
+                v10Handler.onSubscribeToTask(v10Params, context);
 
         // Convert each event using a mapping processor
         return convertPublisher(v10Publisher, StreamingEventKindMapper_v0_3.INSTANCE::fromV10);
@@ -306,22 +300,23 @@ public class Convert_v0_3_To10RequestHandler {
      * @throws A2AError if an error occurs
      */
     public List<TaskPushNotificationConfig_v0_3> onListTaskPushNotificationConfig(
-            ListTaskPushNotificationConfigParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+            ListTaskPushNotificationConfigParams_v0_3 v03Params, ServerCallContext context)
+            throws A2AError {
 
         // Convert v0.3 params → v1.0 params
-        // ListTaskPushNotificationConfigParams has different structure - v0.3 has id, v1.0 has more fields
+        // ListTaskPushNotificationConfigParams has different structure - v0.3 has id, v1.0 has more
+        // fields
         ListTaskPushNotificationConfigsParams v10Params =
-            new ListTaskPushNotificationConfigsParams(
-                v03Params.id(),
-                0,      // No pageSize in v0.3 - use 0 (will use default)
-                "",     // No pageToken in v0.3 - use empty string
-                ""      // Default tenant
-            );
+                new ListTaskPushNotificationConfigsParams(
+                        v03Params.id(),
+                        0, // No pageSize in v0.3 - use 0 (will use default)
+                        "", // No pageToken in v0.3 - use empty string
+                        "" // Default tenant
+                        );
 
         // Call v1.0 handler
         ListTaskPushNotificationConfigsResult v10Result =
-            v10Handler.onListTaskPushNotificationConfigs(v10Params, context);
+                v10Handler.onListTaskPushNotificationConfigs(v10Params, context);
 
         // Convert v1.0 result → v0.3 result (extract list from result wrapper)
         return ListTaskPushNotificationConfigsResultMapper_v0_3.INSTANCE.fromV10(v10Result);
@@ -337,16 +332,14 @@ public class Convert_v0_3_To10RequestHandler {
      * @throws A2AError if an error occurs
      */
     public void onDeleteTaskPushNotificationConfig(
-            DeleteTaskPushNotificationConfigParams_v0_3 v03Params,
-            ServerCallContext context) throws A2AError {
+            DeleteTaskPushNotificationConfigParams_v0_3 v03Params, ServerCallContext context)
+            throws A2AError {
 
         // Convert v0.3 params → v1.0 params (add tenant field)
         DeleteTaskPushNotificationConfigParams v10Params =
-            new DeleteTaskPushNotificationConfigParams(
-                v03Params.id(),
-                v03Params.pushNotificationConfigId(),
-                ""  // Default tenant
-            );
+                new DeleteTaskPushNotificationConfigParams(
+                        v03Params.id(), v03Params.pushNotificationConfigId(), "" // Default tenant
+                        );
 
         // Call v1.0 handler
         v10Handler.onDeleteTaskPushNotificationConfig(v10Params, context);
@@ -362,34 +355,35 @@ public class Convert_v0_3_To10RequestHandler {
      * @return publisher of v0.3 elements
      */
     private <V10, V03> Flow.Publisher<V03> convertPublisher(
-            Flow.Publisher<V10> v10Publisher,
-            java.util.function.Function<V10, V03> mapper) {
+            Flow.Publisher<V10> v10Publisher, java.util.function.Function<V10, V03> mapper) {
 
-        return subscriber -> v10Publisher.subscribe(new Flow.Subscriber<V10>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscriber.onSubscribe(subscription);
-            }
+        return subscriber ->
+                v10Publisher.subscribe(
+                        new Flow.Subscriber<V10>() {
+                            @Override
+                            public void onSubscribe(Flow.Subscription subscription) {
+                                subscriber.onSubscribe(subscription);
+                            }
 
-            @Override
-            public void onNext(V10 v10Item) {
-                try {
-                    V03 v03Item = mapper.apply(v10Item);
-                    subscriber.onNext(v03Item);
-                } catch (Exception e) {
-                    subscriber.onError(e);
-                }
-            }
+                            @Override
+                            public void onNext(V10 v10Item) {
+                                try {
+                                    V03 v03Item = mapper.apply(v10Item);
+                                    subscriber.onNext(v03Item);
+                                } catch (Exception e) {
+                                    subscriber.onError(e);
+                                }
+                            }
 
-            @Override
-            public void onError(Throwable throwable) {
-                subscriber.onError(throwable);
-            }
+                            @Override
+                            public void onError(Throwable throwable) {
+                                subscriber.onError(throwable);
+                            }
 
-            @Override
-            public void onComplete() {
-                subscriber.onComplete();
-            }
-        });
+                            @Override
+                            public void onComplete() {
+                                subscriber.onComplete();
+                            }
+                        });
     }
 }

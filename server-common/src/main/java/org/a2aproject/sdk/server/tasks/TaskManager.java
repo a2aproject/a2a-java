@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AServerException;
 import org.a2aproject.sdk.spec.Event;
@@ -36,7 +35,11 @@ public class TaskManager {
     private final @Nullable Message initialMessage;
     private volatile @Nullable Task currentTask;
 
-    public TaskManager(@Nullable String taskId, @Nullable String contextId, TaskStore taskStore, @Nullable Message initialMessage) {
+    public TaskManager(
+            @Nullable String taskId,
+            @Nullable String contextId,
+            TaskStore taskStore,
+            @Nullable Message initialMessage) {
         checkNotNullParam("taskStore", taskStore);
         this.taskId = taskId;
         this.contextId = contextId;
@@ -67,28 +70,38 @@ public class TaskManager {
         return saveTaskEvent(task, isReplicated, null);
     }
 
-    boolean saveTaskEvent(Task task, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
+    boolean saveTaskEvent(
+            Task task, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
         checkIdsAndUpdateIfNecessary(task.id(), task.contextId());
         // Defensive state-machine check: a task that already reached a terminal state must
         // not be overwritten by a task snapshot carrying a different state.
         Task current = getTask();
-        if (current != null && current.status() != null && current.status().state() != null
-                && task.status() != null && task.status().state() != null) {
+        if (current != null
+                && current.status() != null
+                && current.status().state() != null
+                && task.status() != null
+                && task.status().state() != null) {
             validateStateTransition(current.status().state(), task.status().state(), task.id());
         }
         Task savedTask = saveTask(task, isReplicated);
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);
         }
-        return savedTask.status() != null && savedTask.status().state() != null && savedTask.status().state().isFinal();
+        return savedTask.status() != null
+                && savedTask.status().state() != null
+                && savedTask.status().state().isFinal();
     }
 
-    boolean saveTaskEvent(TaskStatusUpdateEvent event, boolean isReplicated) throws A2AServerException {
+    boolean saveTaskEvent(TaskStatusUpdateEvent event, boolean isReplicated)
+            throws A2AServerException {
         return saveTaskEvent(event, isReplicated, null);
     }
 
-    boolean saveTaskEvent(TaskStatusUpdateEvent event, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
+    boolean saveTaskEvent(
+            TaskStatusUpdateEvent event,
+            boolean isReplicated,
+            @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
         checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
         Task task = ensureTask(event.taskId(), event.contextId());
@@ -100,18 +113,19 @@ public class TaskManager {
         TaskState newState = event.status() != null ? event.status().state() : null;
         validateStateTransition(currentState, newState, event.taskId());
 
-        Task.Builder builder = Task.builder(task)
-                .status(event.status());
+        Task.Builder builder = Task.builder(task).status(event.status());
 
         if (task.status().message() != null) {
-            List<Message> newHistory = task.history() == null ? new ArrayList<>() : new ArrayList<>(task.history());
+            List<Message> newHistory =
+                    task.history() == null ? new ArrayList<>() : new ArrayList<>(task.history());
             newHistory.add(task.status().message());
             builder.history(newHistory);
         }
 
         // Handle metadata from the event
         if (event.metadata() != null) {
-            Map<String, Object> metadata = task.metadata() == null ? new HashMap<>() : new HashMap<>(task.metadata());
+            Map<String, Object> metadata =
+                    task.metadata() == null ? new HashMap<>() : new HashMap<>(task.metadata());
             metadata.putAll(event.metadata());
             builder.metadata(metadata);
         }
@@ -121,35 +135,45 @@ public class TaskManager {
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);
         }
-        return savedTask.status() != null && savedTask.status().state() != null && savedTask.status().state().isFinal();
+        return savedTask.status() != null
+                && savedTask.status().state() != null
+                && savedTask.status().state().isFinal();
     }
 
-    boolean saveTaskEvent(TaskArtifactUpdateEvent event, boolean isReplicated) throws A2AServerException {
+    boolean saveTaskEvent(TaskArtifactUpdateEvent event, boolean isReplicated)
+            throws A2AServerException {
         return saveTaskEvent(event, isReplicated, null);
     }
 
-    boolean saveTaskEvent(TaskArtifactUpdateEvent event, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
+    boolean saveTaskEvent(
+            TaskArtifactUpdateEvent event,
+            boolean isReplicated,
+            @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
         checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
         Task task = ensureTask(event.taskId(), event.contextId());
         // taskId is guaranteed to be non-null after checkIdsAndUpdateIfNecessary
         String nonNullTaskId = taskId;
         if (nonNullTaskId == null) {
-            throw new IllegalStateException("taskId should not be null after checkIdsAndUpdateIfNecessary");
+            throw new IllegalStateException(
+                    "taskId should not be null after checkIdsAndUpdateIfNecessary");
         }
         task = appendArtifactToTask(task, event, nonNullTaskId);
         Task savedTask = saveTask(task, isReplicated);
         if (taskSnapshot != null) {
             taskSnapshot.set(savedTask);
         }
-        return savedTask.status() != null && savedTask.status().state() != null && savedTask.status().state().isFinal();
+        return savedTask.status() != null
+                && savedTask.status().state() != null
+                && savedTask.status().state().isFinal();
     }
 
     public boolean process(Event event, boolean isReplicated) throws A2AServerException {
         return process(event, isReplicated, null);
     }
 
-    public boolean process(Event event, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
+    public boolean process(
+            Event event, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
         boolean isFinal = false;
         if (event instanceof Task task) {
@@ -166,9 +190,10 @@ public class TaskManager {
             // A2AError events don't have taskId/contextId fields, so we need to ensure
             // we have these from the existing task or TaskManager state
             if (taskId == null) {
-                // No task context - A2AError event will be distributed to clients but no state update
+                // No task context - A2AError event will be distributed to clients but no state
+                // update
                 LOGGER.debug("A2AError event without task context - skipping state update");
-                return true;  // Return true (is final) to stop event consumption
+                return true; // Return true (is final) to stop event consumption
             }
 
             // Ensure we have contextId - get from existing task if not set
@@ -183,11 +208,12 @@ public class TaskManager {
             // Only create status update if we have contextId
             if (errorContextId != null) {
                 LOGGER.debug("A2AError event detected, transitioning task {} to FAILED", taskId);
-                TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
-                        .taskId(taskId)
-                        .contextId(errorContextId)
-                        .status(new TaskStatus(TASK_STATE_FAILED))
-                        .build();
+                TaskStatusUpdateEvent failedEvent =
+                        TaskStatusUpdateEvent.builder()
+                                .taskId(taskId)
+                                .contextId(errorContextId)
+                                .status(new TaskStatus(TASK_STATE_FAILED))
+                                .build();
                 try {
                     isFinal = saveTaskEvent(failedEvent, isReplicated, taskSnapshot);
                 } catch (A2AServerException e) {
@@ -195,12 +221,17 @@ public class TaskManager {
                     // validateStateTransition rejected the synthesized FAILED event
                     // (terminal -> FAILED). No state update is needed — the A2AError
                     // itself still signals finality to clients.
-                    LOGGER.debug("A2AError for task {} already in terminal state - skipping state update", taskId);
+                    LOGGER.debug(
+                            "A2AError for task {} already in terminal state - skipping state"
+                                    + " update",
+                            taskId);
                     isFinal = true;
                 }
             } else {
                 // Can't update status without contextId, but error is still terminal
-                LOGGER.debug("A2AError event for task {} without contextId - skipping state update", taskId);
+                LOGGER.debug(
+                        "A2AError event for task {} without contextId - skipping state update",
+                        taskId);
                 isFinal = true;
             }
         }
@@ -216,19 +247,20 @@ public class TaskManager {
             status = new TaskStatus(status.state(), null, status.timestamp());
         }
         history.add(message);
-        task = Task.builder(task)
-                .status(status)
-                .history(history)
-                .build();
-        saveTask(task, false);  // Local operation, not replicated
+        task = Task.builder(task).status(status).history(history).build();
+        saveTask(task, false); // Local operation, not replicated
         return task;
     }
 
-    private void checkIdsAndUpdateIfNecessary(String eventTaskId, String eventContextId) throws A2AServerException {
+    private void checkIdsAndUpdateIfNecessary(String eventTaskId, String eventContextId)
+            throws A2AServerException {
         if (taskId != null && !eventTaskId.equals(taskId)) {
             throw new A2AServerException(
                     "Invalid task id",
-                    new InternalError(String.format("Task event has taskId %s but TaskManager has %s", eventTaskId, taskId)));
+                    new InternalError(
+                            String.format(
+                                    "Task event has taskId %s but TaskManager has %s",
+                                    eventTaskId, taskId)));
         }
         if (taskId == null) {
             taskId = eventTaskId;
@@ -250,7 +282,7 @@ public class TaskManager {
         }
         if (task == null) {
             task = createTask(eventTaskId, eventContextId);
-            saveTask(task, false);  // Local operation, not replicated
+            saveTask(task, false); // Local operation, not replicated
         }
         return task;
     }
@@ -272,21 +304,28 @@ public class TaskManager {
      * @param taskId       the task identifier, used in the error message
      * @throws A2AServerException if the transition would overwrite a terminal state
      */
-    private static void validateStateTransition(@Nullable TaskState currentState, @Nullable TaskState newState,
-            String taskId) throws A2AServerException {
+    private static void validateStateTransition(
+            @Nullable TaskState currentState, @Nullable TaskState newState, String taskId)
+            throws A2AServerException {
         if (currentState == null || newState == null) {
             return;
         }
         if (currentState.isFinal() && currentState != newState) {
             throw new A2AServerException(
-                    "Task " + taskId + " is already in terminal state " + currentState
-                            + " and cannot transition to " + newState,
-                    new InternalError("Task " + taskId + " is already in terminal state " + currentState));
+                    "Task "
+                            + taskId
+                            + " is already in terminal state "
+                            + currentState
+                            + " and cannot transition to "
+                            + newState,
+                    new InternalError(
+                            "Task " + taskId + " is already in terminal state " + currentState));
         }
     }
 
     private Task createTask(String taskId, String contextId) {
-        List<Message> history = initialMessage != null ? List.of(initialMessage) : Collections.emptyList();
+        List<Message> history =
+                initialMessage != null ? List.of(initialMessage) : Collections.emptyList();
         return Task.builder()
                 .id(taskId)
                 .contextId(contextId)

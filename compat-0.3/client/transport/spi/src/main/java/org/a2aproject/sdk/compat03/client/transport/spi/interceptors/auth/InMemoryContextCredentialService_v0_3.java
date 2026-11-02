@@ -3,7 +3,6 @@ package org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
 import org.jspecify.annotations.Nullable;
 
@@ -24,15 +23,15 @@ public class InMemoryContextCredentialService_v0_3 implements CredentialService_
     }
 
     @Override
-    public @Nullable String getCredential(String securitySchemeName,
-                                @Nullable ClientCallContext_v0_3 clientCallContext) {
+    public @Nullable String getCredential(
+            String securitySchemeName, @Nullable ClientCallContext_v0_3 clientCallContext) {
         if (clientCallContext == null || !clientCallContext.getState().containsKey(SESSION_ID)) {
             // no credential to retrieve
             return null;
         }
 
         Object sessionIdObj = clientCallContext.getState().get(SESSION_ID);
-        if (! (sessionIdObj instanceof String sessionId)) {
+        if (!(sessionIdObj instanceof String sessionId)) {
             return null;
         }
         Map<String, String> sessionCredentials = credentialStore.get(sessionId);
@@ -50,6 +49,8 @@ public class InMemoryContextCredentialService_v0_3 implements CredentialService_
      * @param credential the credential string
      */
     public void setCredential(String sessionId, String securitySchemeName, String credential) {
-        credentialStore.computeIfAbsent(sessionId, k -> new ConcurrentHashMap<>()).put(securitySchemeName, credential);
+        credentialStore
+                .computeIfAbsent(sessionId, k -> new ConcurrentHashMap<>())
+                .put(securitySchemeName, credential);
     }
 }

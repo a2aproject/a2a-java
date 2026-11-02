@@ -3,7 +3,6 @@ package org.a2aproject.sdk.extras.queuemanager.replicated.mp_reactive;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import org.a2aproject.sdk.extras.queuemanager.replicated.core.ReplicationStrategy;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
@@ -16,14 +15,14 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveMessagingReplicationStrategy.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ReactiveMessagingReplicationStrategy.class);
 
     @Inject
     @Channel("replicated-events-out")
     private Emitter<String> emitter;
 
-    @Inject
-    private Event<ReplicatedEventQueueItem> cdiEvent;
+    @Inject private Event<ReplicatedEventQueueItem> cdiEvent;
 
     @Override
     public void send(String taskId, org.a2aproject.sdk.spec.Event event) {
@@ -35,7 +34,8 @@ public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy
             emitter.send(json);
             LOGGER.debug("Successfully sent replicated event for task: {}", taskId);
         } catch (Exception e) {
-            LOGGER.error("Failed to send replicated event for task: {}, event: {}", taskId, event, e);
+            LOGGER.error(
+                    "Failed to send replicated event for task: {}, event: {}", taskId, event, e);
             throw new RuntimeException("Failed to send replicated event", e);
         }
     }
@@ -45,9 +45,12 @@ public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy
         LOGGER.debug("Received replicated event JSON: {}", jsonMessage);
 
         try {
-            ReplicatedEventQueueItem replicatedEvent = JsonUtil.fromJson(jsonMessage, ReplicatedEventQueueItem.class);
-            LOGGER.debug("Deserialized replicated event for task: {}, event: {}",
-                    replicatedEvent.getTaskId(), replicatedEvent.getEvent());
+            ReplicatedEventQueueItem replicatedEvent =
+                    JsonUtil.fromJson(jsonMessage, ReplicatedEventQueueItem.class);
+            LOGGER.debug(
+                    "Deserialized replicated event for task: {}, event: {}",
+                    replicatedEvent.getTaskId(),
+                    replicatedEvent.getEvent());
 
             // Fire the CDI event directly
             cdiEvent.fire(replicatedEvent);

@@ -1,9 +1,9 @@
 package org.a2aproject.sdk.extras.opentelemetry.client.propagation;
 
+import io.opentelemetry.api.OpenTelemetry;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportWrapper;
-import io.opentelemetry.api.OpenTelemetry;
 
 /**
  * OpenTelemetry client transport wrapper that injects W3C Trace Context headers into outbound A2A client requests.
@@ -23,7 +23,8 @@ public class OpenTelemetryClientPropagatorTransportWrapper implements ClientTran
     /**
      * Configuration key for the {@link OpenTelemetry} instance used for context propagation.
      */
-    public static final String OTEL_OPEN_TELEMETRY_KEY = "org.a2aproject.sdk.extras.opentelemetry.OpenTelemetry";
+    public static final String OTEL_OPEN_TELEMETRY_KEY =
+            "org.a2aproject.sdk.extras.opentelemetry.OpenTelemetry";
 
     @Override
     public ClientTransport wrap(ClientTransport transport, ClientTransportConfig<?> config) {

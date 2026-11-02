@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
+import io.quarkus.test.junit.QuarkusTestProfile;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import io.quarkus.test.junit.QuarkusTestProfile;
 
 public abstract class JpaTaskAuthorizationDatabaseProfile implements QuarkusTestProfile {
     protected abstract String kind();
@@ -18,7 +17,8 @@ public abstract class JpaTaskAuthorizationDatabaseProfile implements QuarkusTest
         properties.put("quarkus.datasource.\"a2a-java\".devservices.enabled", "false");
         properties.put("quarkus.datasource.\"a2a-java\".jdbc.max-size", "12");
         properties.put("quarkus.hibernate-orm.\"a2a-java\".datasource", "a2a-java");
-        properties.put("quarkus.hibernate-orm.\"a2a-java\".packages", JpaTask.class.getPackageName());
+        properties.put(
+                "quarkus.hibernate-orm.\"a2a-java\".packages", JpaTask.class.getPackageName());
         properties.put("quarkus.hibernate-orm.\"a2a-java\".database.generation", "drop-and-create");
         properties.put("quarkus.hibernate-orm.log.sql", "false");
         properties.put("quarkus.hibernate-orm.\"a2a-java\".log.sql", "false");
@@ -32,16 +32,23 @@ public abstract class JpaTaskAuthorizationDatabaseProfile implements QuarkusTest
     }
 
     public static final class Postgres extends JpaTaskAuthorizationDatabaseProfile {
-        @Override protected String kind() { return "postgresql"; }
+        @Override
+        protected String kind() {
+            return "postgresql";
+        }
 
         @Override
         public List<TestResourceEntry> testResources() {
-            return List.of(new TestResourceEntry(JpaTaskAuthorizationDatabaseResource.Postgres.class));
+            return List.of(
+                    new TestResourceEntry(JpaTaskAuthorizationDatabaseResource.Postgres.class));
         }
     }
 
     public static final class MySql extends JpaTaskAuthorizationDatabaseProfile {
-        @Override protected String kind() { return "mysql"; }
+        @Override
+        protected String kind() {
+            return "mysql";
+        }
 
         @Override
         public List<TestResourceEntry> testResources() {

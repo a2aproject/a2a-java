@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,7 +24,11 @@ import org.jspecify.annotations.Nullable;
  * @see AgentCard
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentExtension (@Nullable String description, @Nullable Map<String, Object> params, boolean required, String uri) {
+public record AgentExtension(
+        @Nullable String description,
+        @Nullable Map<String, Object> params,
+        boolean required,
+        String uri) {
 
     /**
      * Compact constructor that validates required fields.
@@ -64,7 +67,7 @@ public record AgentExtension (@Nullable String description, @Nullable Map<String
      * }</pre>
      */
     public static class Builder {
-        @Nullable  String description;
+        @Nullable String description;
         @Nullable Map<String, Object> params;
         boolean required;
         @Nullable String uri;
@@ -72,8 +75,7 @@ public record AgentExtension (@Nullable String description, @Nullable Map<String
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets a human-readable description of the extension's purpose.
@@ -126,8 +128,8 @@ public record AgentExtension (@Nullable String description, @Nullable Map<String
          * @throws IllegalArgumentException if uri is null
          */
         public AgentExtension build() {
-            return new AgentExtension(description, params, required, Assert.checkNotNullParam("uri", uri));
+            return new AgentExtension(
+                    description, params, required, Assert.checkNotNullParam("uri", uri));
         }
     }
-
 }

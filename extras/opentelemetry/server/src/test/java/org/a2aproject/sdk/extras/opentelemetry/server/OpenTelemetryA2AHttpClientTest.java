@@ -8,15 +8,14 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.util.Map;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.io.IOException;
+import java.util.Map;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,29 +31,21 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class OpenTelemetryA2AHttpClientTest {
 
-    @Mock
-    private A2AHttpClient delegate;
+    @Mock private A2AHttpClient delegate;
 
-    @Mock
-    private OpenTelemetry openTelemetry;
+    @Mock private OpenTelemetry openTelemetry;
 
-    @Mock
-    private ContextPropagators propagators;
+    @Mock private ContextPropagators propagators;
 
-    @Mock
-    private TextMapPropagator textMapPropagator;
+    @Mock private TextMapPropagator textMapPropagator;
 
-    @Mock
-    private A2AHttpClient.PostBuilder delegatePostBuilder;
+    @Mock private A2AHttpClient.PostBuilder delegatePostBuilder;
 
-    @Mock
-    private A2AHttpClient.GetBuilder delegateGetBuilder;
+    @Mock private A2AHttpClient.GetBuilder delegateGetBuilder;
 
-    @Mock
-    private A2AHttpClient.DeleteBuilder delegateDeleteBuilder;
+    @Mock private A2AHttpClient.DeleteBuilder delegateDeleteBuilder;
 
-    @Mock
-    private A2AHttpResponse response;
+    @Mock private A2AHttpResponse response;
 
     private OpenTelemetryA2AHttpClient client;
 
@@ -69,7 +60,8 @@ class OpenTelemetryA2AHttpClientTest {
 
         stubBuilderDefaults(delegatePostBuilder);
         when(delegatePostBuilder.body(any())).thenReturn(delegatePostBuilder);
-        when(delegatePostBuilder.followRedirects(any(boolean.class))).thenReturn(delegatePostBuilder);
+        when(delegatePostBuilder.followRedirects(any(boolean.class)))
+                .thenReturn(delegatePostBuilder);
 
         stubBuilderDefaults(delegateGetBuilder);
         stubBuilderDefaults(delegateDeleteBuilder);
@@ -89,11 +81,11 @@ class OpenTelemetryA2AHttpClientTest {
         when(delegatePostBuilder.post()).thenReturn(response);
 
         A2AHttpClient.PostBuilder builder = client.createPost();
-        A2AHttpResponse result = builder
-                .url("http://example.com/push")
-                .addHeader("Content-Type", "application/json")
-                .body("{}")
-                .post();
+        A2AHttpResponse result =
+                builder.url("http://example.com/push")
+                        .addHeader("Content-Type", "application/json")
+                        .body("{}")
+                        .post();
 
         assertSame(response, result);
 
@@ -107,12 +99,10 @@ class OpenTelemetryA2AHttpClientTest {
     void post_propagatesCurrentSpanContext() throws IOException, InterruptedException {
         when(delegatePostBuilder.post()).thenReturn(response);
 
-        Context testContext = Context.current().with(io.opentelemetry.context.ContextKey.named("test"), "value");
+        Context testContext =
+                Context.current().with(io.opentelemetry.context.ContextKey.named("test"), "value");
         try (Scope ignored = testContext.makeCurrent()) {
-            client.createPost()
-                    .url("http://example.com/push")
-                    .body("{}")
-                    .post();
+            client.createPost().url("http://example.com/push").body("{}").post();
         }
 
         verify(textMapPropagator).inject(any(Context.class), any(), any(TextMapSetter.class));
@@ -124,9 +114,7 @@ class OpenTelemetryA2AHttpClientTest {
         when(delegateGetBuilder.get()).thenReturn(response);
 
         A2AHttpClient.GetBuilder builder = client.createGet();
-        A2AHttpResponse result = builder
-                .url("http://example.com/api")
-                .get();
+        A2AHttpResponse result = builder.url("http://example.com/api").get();
 
         assertSame(response, result);
 
@@ -141,9 +129,7 @@ class OpenTelemetryA2AHttpClientTest {
         when(delegateDeleteBuilder.delete()).thenReturn(response);
 
         A2AHttpClient.DeleteBuilder builder = client.createDelete();
-        A2AHttpResponse result = builder
-                .url("http://example.com/resource")
-                .delete();
+        A2AHttpResponse result = builder.url("http://example.com/resource").delete();
 
         assertSame(response, result);
 
@@ -156,11 +142,11 @@ class OpenTelemetryA2AHttpClientTest {
     void postBuilder_chainsCorrectly() {
         A2AHttpClient.PostBuilder builder = client.createPost();
 
-        A2AHttpClient.PostBuilder chained = builder
-                .url("http://example.com")
-                .addHeader("X-Custom", "value")
-                .body("{}")
-                .followRedirects(false);
+        A2AHttpClient.PostBuilder chained =
+                builder.url("http://example.com")
+                        .addHeader("X-Custom", "value")
+                        .body("{}")
+                        .followRedirects(false);
 
         assertNotNull(chained);
     }
@@ -175,20 +161,21 @@ class OpenTelemetryA2AHttpClientTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void contextInjection_propagatesHeadersViaAddHeaders() throws IOException, InterruptedException {
+    void contextInjection_propagatesHeadersViaAddHeaders()
+            throws IOException, InterruptedException {
         when(delegatePostBuilder.post()).thenReturn(response);
 
-        doAnswer(invocation -> {
-            Map<String, String> carrier = invocation.getArgument(1);
-            TextMapSetter<Map<String, String>> setter = invocation.getArgument(2);
-            setter.set(carrier, "traceparent", "00-abc-def-01");
-            return null;
-        }).when(textMapPropagator).inject(any(Context.class), any(), any(TextMapSetter.class));
+        doAnswer(
+                        invocation -> {
+                            Map<String, String> carrier = invocation.getArgument(1);
+                            TextMapSetter<Map<String, String>> setter = invocation.getArgument(2);
+                            setter.set(carrier, "traceparent", "00-abc-def-01");
+                            return null;
+                        })
+                .when(textMapPropagator)
+                .inject(any(Context.class), any(), any(TextMapSetter.class));
 
-        client.createPost()
-                .url("http://example.com")
-                .body("{}")
-                .post();
+        client.createPost().url("http://example.com").body("{}").post();
 
         verify(delegatePostBuilder).addHeaders(Map.of("traceparent", "00-abc-def-01"));
     }

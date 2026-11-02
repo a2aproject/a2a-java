@@ -22,8 +22,14 @@ import org.mapstruct.Mapper;
  * This mapper provides bidirectional conversion using instanceof checks (toProto)
  * and switch expressions on the oneof case (fromProto).
  */
-@Mapper(config = A2AProtoMapperConfig.class,
-        uses = {TaskMapper.class, MessageMapper.class, TaskStatusUpdateEventMapper.class, TaskArtifactUpdateEventMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {
+            TaskMapper.class,
+            MessageMapper.class,
+            TaskStatusUpdateEventMapper.class,
+            TaskArtifactUpdateEventMapper.class
+        })
 public interface StreamResponseMapper {
 
     StreamResponseMapper INSTANCE = A2AMappers.getMapper(StreamResponseMapper.class);
@@ -41,20 +47,29 @@ public interface StreamResponseMapper {
         }
 
         return switch (domain.kind()) {
-            case Task.STREAMING_EVENT_ID -> org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
-                    .setTask(TaskMapper.INSTANCE.toProto((Task) domain))
-                    .build();
-            case Message.STREAMING_EVENT_ID -> org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
-                    .setMessage(MessageMapper.INSTANCE.toProto((Message) domain))
-                    .build();
-            case TaskStatusUpdateEvent.STREAMING_EVENT_ID -> org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
-                    .setStatusUpdate(TaskStatusUpdateEventMapper.INSTANCE.toProto((TaskStatusUpdateEvent) domain))
-                    .build();
-            case TaskArtifactUpdateEvent.STREAMING_EVENT_ID -> org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
-                    .setArtifactUpdate(TaskArtifactUpdateEventMapper.INSTANCE.toProto((TaskArtifactUpdateEvent) domain))
-                    .build();
+            case Task.STREAMING_EVENT_ID ->
+                    org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
+                            .setTask(TaskMapper.INSTANCE.toProto((Task) domain))
+                            .build();
+            case Message.STREAMING_EVENT_ID ->
+                    org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
+                            .setMessage(MessageMapper.INSTANCE.toProto((Message) domain))
+                            .build();
+            case TaskStatusUpdateEvent.STREAMING_EVENT_ID ->
+                    org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
+                            .setStatusUpdate(
+                                    TaskStatusUpdateEventMapper.INSTANCE.toProto(
+                                            (TaskStatusUpdateEvent) domain))
+                            .build();
+            case TaskArtifactUpdateEvent.STREAMING_EVENT_ID ->
+                    org.a2aproject.sdk.grpc.StreamResponse.newBuilder()
+                            .setArtifactUpdate(
+                                    TaskArtifactUpdateEventMapper.INSTANCE.toProto(
+                                            (TaskArtifactUpdateEvent) domain))
+                            .build();
             default ->
-                    throw new IllegalArgumentException("Unknown StreamingEventKind type: " + domain.getClass().getName());
+                    throw new IllegalArgumentException(
+                            "Unknown StreamingEventKind type: " + domain.getClass().getName());
         };
     }
 
@@ -72,16 +87,15 @@ public interface StreamResponseMapper {
         }
 
         return switch (proto.getPayloadCase()) {
-            case TASK ->
-                TaskMapper.INSTANCE.fromProto(proto.getTask());
-            case MESSAGE ->
-                MessageMapper.INSTANCE.fromProto(proto.getMessage());
+            case TASK -> TaskMapper.INSTANCE.fromProto(proto.getTask());
+            case MESSAGE -> MessageMapper.INSTANCE.fromProto(proto.getMessage());
             case STATUS_UPDATE ->
-                TaskStatusUpdateEventMapper.INSTANCE.fromProto(proto.getStatusUpdate());
+                    TaskStatusUpdateEventMapper.INSTANCE.fromProto(proto.getStatusUpdate());
             case ARTIFACT_UPDATE ->
-                TaskArtifactUpdateEventMapper.INSTANCE.fromProto(proto.getArtifactUpdate());
+                    TaskArtifactUpdateEventMapper.INSTANCE.fromProto(proto.getArtifactUpdate());
             case PAYLOAD_NOT_SET ->
-                throw new IllegalArgumentException("StreamResponse payload oneof field not set");
+                    throw new IllegalArgumentException(
+                            "StreamResponse payload oneof field not set");
         };
     }
 }

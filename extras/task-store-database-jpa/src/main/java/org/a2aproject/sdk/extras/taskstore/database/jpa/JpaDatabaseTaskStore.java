@@ -1,11 +1,5 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,7 +13,11 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
-
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
@@ -59,19 +57,19 @@ import org.slf4j.LoggerFactory;
 public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabaseTaskStore.class);
-    private static final String A2A_REPLICATION_GRACE_PERIOD_SECONDS = "a2a.replication.grace-period-seconds";
+    private static final String A2A_REPLICATION_GRACE_PERIOD_SECONDS =
+            "a2a.replication.grace-period-seconds";
     private static final String A2A_REPLICATION_MAX_SCANNED_TASKS = "a2a.max-scanned-tasks";
-    private static final String A2A_AUTHORIZATION_SCAN_BATCH_SIZE = "a2a.authorization-scan-batch-size";
+    private static final String A2A_AUTHORIZATION_SCAN_BATCH_SIZE =
+            "a2a.authorization-scan-batch-size";
     private static final int DEFAULT_AUTHORIZATION_SCAN_BATCH_SIZE = 100;
 
     @PersistenceContext(unitName = "a2a-java")
     private EntityManager em;
 
-    @Inject
-    private Event<TaskFinalizedEvent> taskFinalizedEvent;
+    @Inject private Event<TaskFinalizedEvent> taskFinalizedEvent;
 
-    @Inject
-    private A2AConfigProvider configProvider;
+    @Inject private A2AConfigProvider configProvider;
 
     private final @Nullable TaskAuthorizationProvider authorizationProvider;
 
@@ -80,7 +78,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     }
 
     @Inject
-    public JpaDatabaseTaskStore(@Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
+    public JpaDatabaseTaskStore(
+            @Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
         this.authorizationProvider = CdiUtils.getIfResolvable(authorizationProviderInstance);
     }
 
@@ -94,6 +93,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
      * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
      */
     private long gracePeriodSeconds;
+
     /**
      * Maximum number of candidate rows inspected by the iterative authorization fallback.
      * Capability-based database queries do not use this limit.
@@ -101,6 +101,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
      * fails instead of returning a partial count.
      */
     private long maxScanned;
+
     /**
      * Number of candidate rows per iterative authorization fallback query only.
      */
@@ -108,17 +109,19 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     @PostConstruct
     void initConfig() {
-        gracePeriodSeconds = Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
+        gracePeriodSeconds =
+                Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
         maxScanned = Long.parseLong(configProvider.getValue(A2A_REPLICATION_MAX_SCANNED_TASKS));
-        authorizationScanBatchSize = Integer.parseInt(configProvider.getValue(A2A_AUTHORIZATION_SCAN_BATCH_SIZE));
+        authorizationScanBatchSize =
+                Integer.parseInt(configProvider.getValue(A2A_AUTHORIZATION_SCAN_BATCH_SIZE));
         if (maxScanned <= 0) {
             throw new TaskStoreException("a2a.max-scanned-tasks must be greater than zero");
         }
         if (authorizationScanBatchSize <= 0) {
-            throw new TaskStoreException("a2a.authorization-scan-batch-size must be greater than zero");
+            throw new TaskStoreException(
+                    "a2a.authorization-scan-batch-size must be greater than zero");
         }
     }
-
 
     @Transactional
     @Override
@@ -129,25 +132,39 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             em.merge(jpaTask);
             LOGGER.debug("Persisted/updated task with ID: {}", task.id());
 
-            // Only fire TaskFinalizedEvent for locally-generated final states, NOT for replicated events
-            // This prevents feedback loops where receiving a replicated final task triggers another replication
-            if (!isReplicated && task.status() != null && task.status().state() != null && task.status().state().isFinal()) {
+            // Only fire TaskFinalizedEvent for locally-generated final states, NOT for replicated
+            // events
+            // This prevents feedback loops where receiving a replicated final task triggers another
+            // replication
+            if (!isReplicated
+                    && task.status() != null
+                    && task.status().state() != null
+                    && task.status().state().isFinal()) {
                 // Fire CDI event if task reached final state
-                // IMPORTANT: The event will be delivered AFTER transaction commits (AFTER_SUCCESS observers)
-                // This ensures the task's final state is durably stored before the final task and poison pill are sent
-                LOGGER.debug("Task {} is in final state, firing TaskFinalizedEvent with full Task", task.id());
+                // IMPORTANT: The event will be delivered AFTER transaction commits (AFTER_SUCCESS
+                // observers)
+                // This ensures the task's final state is durably stored before the final task and
+                // poison pill are sent
+                LOGGER.debug(
+                        "Task {} is in final state, firing TaskFinalizedEvent with full Task",
+                        task.id());
                 taskFinalizedEvent.fire(new TaskFinalizedEvent(task.id(), task));
-            } else if (isReplicated && task.status() != null && task.status().state() != null && task.status().state().isFinal()) {
-                LOGGER.debug("Task {} is in final state but from replication - NOT firing TaskFinalizedEvent (prevents feedback loop)", task.id());
+            } else if (isReplicated
+                    && task.status() != null
+                    && task.status().state() != null
+                    && task.status().state().isFinal()) {
+                LOGGER.debug(
+                        "Task {} is in final state but from replication - NOT firing"
+                                + " TaskFinalizedEvent (prevents feedback loop)",
+                        task.id());
             }
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to serialize task with ID: {}", task.id(), e);
-            throw new TaskSerializationException(task.id(),
-                "Failed to serialize task for persistence", e);
+            throw new TaskSerializationException(
+                    task.id(), "Failed to serialize task for persistence", e);
         } catch (PersistenceException e) {
             LOGGER.error("Database save failed for task with ID: {}", task.id(), e);
-            throw new TaskPersistenceException(task.id(),
-                "Database save failed for task", e);
+            throw new TaskPersistenceException(task.id(), "Database save failed for task", e);
         }
     }
 
@@ -168,14 +185,13 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 return task;
             } catch (JsonProcessingException e) {
                 LOGGER.error("Failed to deserialize task with ID: {}", taskId, e);
-                throw new TaskSerializationException(taskId,
-                    "Failed to deserialize task from database", e);
+                throw new TaskSerializationException(
+                        taskId, "Failed to deserialize task from database", e);
             }
 
         } catch (PersistenceException e) {
             LOGGER.error("Database retrieval failed for task with ID: {}", taskId, e);
-            throw new TaskPersistenceException(taskId,
-                "Database retrieval failed for task", e);
+            throw new TaskPersistenceException(taskId, "Database retrieval failed for task", e);
         }
     }
 
@@ -185,7 +201,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         LOGGER.debug("Deleting task with ID: {}", taskId);
         try {
             em.createQuery("DELETE FROM JpaTaskOwner o WHERE o.taskId = :taskId")
-                    .setParameter("taskId", taskId).executeUpdate();
+                    .setParameter("taskId", taskId)
+                    .executeUpdate();
             JpaTask jpaTask = em.find(JpaTask.class, taskId);
             if (jpaTask != null) {
                 em.remove(jpaTask);
@@ -195,8 +212,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             }
         } catch (PersistenceException e) {
             LOGGER.error("Database deletion failed for task with ID: {}", taskId, e);
-            throw new TaskPersistenceException(taskId,
-                "Database deletion failed for task", e);
+            throw new TaskPersistenceException(taskId, "Database deletion failed for task", e);
         }
     }
 
@@ -230,7 +246,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             Task task = jpaTask.getTask();
 
             // Task is active if not in final state
-            if (task.status() == null || task.status().state() == null || !task.status().state().isFinal()) {
+            if (task.status() == null
+                    || task.status().state() == null
+                    || !task.status().state().isFinal()) {
                 LOGGER.debug("Task is not in final state, considering active: {}", taskId);
                 return true;
             }
@@ -238,8 +256,12 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             // Task is in final state - check grace period
             Instant finalizedAt = jpaTask.getFinalizedAt();
             if (finalizedAt == null) {
-                // Should not happen, but defensive: if final state but no timestamp, consider inactive
-                LOGGER.warn("Task {} is in final state but has no finalizedAt timestamp, considering inactive", taskId);
+                // Should not happen, but defensive: if final state but no timestamp, consider
+                // inactive
+                LOGGER.warn(
+                        "Task {} is in final state but has no finalizedAt timestamp, considering"
+                                + " inactive",
+                        taskId);
                 return false;
             }
 
@@ -247,8 +269,13 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             Instant now = Instant.now();
 
             boolean withinGracePeriod = now.isBefore(gracePeriodEnd);
-            LOGGER.debug("Task {} is final. FinalizedAt: {}, GracePeriodEnd: {}, Now: {}, Active: {}",
-                    taskId, finalizedAt, gracePeriodEnd, now, withinGracePeriod);
+            LOGGER.debug(
+                    "Task {} is final. FinalizedAt: {}, GracePeriodEnd: {}, Now: {}, Active: {}",
+                    taskId,
+                    finalizedAt,
+                    gracePeriodEnd,
+                    now,
+                    withinGracePeriod);
 
             return withinGracePeriod;
 
@@ -290,15 +317,17 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             Task task = jpaTask.getTask();
 
             // Task is finalized if in final state (ignore grace period)
-            boolean isFinalized = task.status() != null
-                && task.status().state() != null
-                && task.status().state().isFinal();
+            boolean isFinalized =
+                    task.status() != null
+                            && task.status().state() != null
+                            && task.status().state().isFinal();
 
             LOGGER.debug("Task {} finalization check: {}", taskId, isFinalized);
             return isFinalized;
 
         } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to deserialize task with ID: {}, considering not finalized", taskId, e);
+            LOGGER.error(
+                    "Failed to deserialize task with ID: {}, considering not finalized", taskId, e);
             return false;
         }
     }
@@ -311,38 +340,53 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     @Transactional
     @Override
-    public ListTasksResult listAuthorized(ListTasksParams params, ServerCallContext context,
-            TaskAuthorizationProvider provider) {
+    public ListTasksResult listAuthorized(
+            ListTasksParams params, ServerCallContext context, TaskAuthorizationProvider provider) {
         return listWithAuthorization(params, context, provider);
     }
 
-    private ListTasksResult listWithAuthorization(ListTasksParams params, @Nullable ServerCallContext context,
+    private ListTasksResult listWithAuthorization(
+            ListTasksParams params,
+            @Nullable ServerCallContext context,
             @Nullable TaskAuthorizationProvider provider) {
-        LOGGER.debug("Listing tasks with params: contextId={}, status={}, pageSize={}, pageToken={}",
-                params.contextId(), params.status(), params.pageSize(), params.pageToken());
+        LOGGER.debug(
+                "Listing tasks with params: contextId={}, status={}, pageSize={}, pageToken={}",
+                params.contextId(),
+                params.status(),
+                params.pageSize(),
+                params.pageToken());
 
         try {
             if (provider != null && context == null) {
-                LOGGER.warn("Authorization provider is configured but no ServerCallContext available — "
-                        + "returning empty result (fail-closed)");
+                LOGGER.warn(
+                        "Authorization provider is configured but no ServerCallContext available — "
+                                + "returning empty result (fail-closed)");
                 return new ListTasksResult(List.of(), 0, 0, null);
             }
-            Optional<JpaTaskAuthorizationCapability> capability = provider == null ? Optional.empty()
-                    : provider.getCapability(JpaTaskAuthorizationCapability.class);
-            JpaTaskReadScope scope = capability.isPresent()
-                    ? java.util.Objects.requireNonNull(capability.get().readScope(context, TaskOperation.LIST_TASKS)) : null;
+            Optional<JpaTaskAuthorizationCapability> capability =
+                    provider == null
+                            ? Optional.empty()
+                            : provider.getCapability(JpaTaskAuthorizationCapability.class);
+            JpaTaskReadScope scope =
+                    capability.isPresent()
+                            ? java.util.Objects.requireNonNull(
+                                    capability.get().readScope(context, TaskOperation.LIST_TASKS))
+                            : null;
             if (scope instanceof JpaTaskReadScope.None) {
                 return new ListTasksResult(List.of(), 0, 0, null);
             }
-            byte[] subjectKey = scope instanceof JpaTaskReadScope.OwnedBy owned
-                    ? JpaSubjectKey.encode(owned.subjectKey()) : null;
+            byte[] subjectKey =
+                    scope instanceof JpaTaskReadScope.OwnedBy owned
+                            ? JpaSubjectKey.encode(owned.subjectKey())
+                            : null;
             int pageSize = params.getEffectivePageSize();
 
             // Build base WHERE clause (without cursor — shared across iterations)
             String baseWhereClause = buildBaseWhereClause(params);
             if (subjectKey != null) {
-                baseWhereClause += " AND EXISTS (SELECT 1 FROM JpaTaskOwner o"
-                        + " WHERE o.taskId = t.id AND o.subjectKey = :subjectKey)";
+                baseWhereClause +=
+                        " AND EXISTS (SELECT 1 FROM JpaTaskOwner o"
+                                + " WHERE o.taskId = t.id AND o.subjectKey = :subjectKey)";
             }
 
             List<Task> tasks;
@@ -352,8 +396,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             PageToken scanCursor = cursor;
 
             if (provider != null && capability.isEmpty()) {
-                AuthorizedTaskCount authorizedTaskCount = countAuthorizedTasks(
-                        baseWhereClause, params, cursor, context, provider);
+                AuthorizedTaskCount authorizedTaskCount =
+                        countAuthorizedTasks(baseWhereClause, params, cursor, context, provider);
                 tasks = new ArrayList<>(pageSize);
                 boolean dbExhausted = false;
                 long totalScanned = 0;
@@ -361,8 +405,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 while (tasks.size() < pageSize && !dbExhausted && totalScanned < maxScanned) {
                     long remaining = maxScanned - totalScanned;
                     int limit = (int) Math.min(remaining, authorizationScanBatchSize);
-                    TypedQuery<JpaTask> query = createPageQuery(
-                            baseWhereClause, params, scanCursor, limit);
+                    TypedQuery<JpaTask> query =
+                            createPageQuery(baseWhereClause, params, scanCursor, limit);
                     List<JpaTask> batch = query.getResultList();
 
                     dbExhausted = batch.size() < limit;
@@ -386,13 +430,15 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                     }
                 }
 
-                hasMore = authorizedTaskCount.totalSize() > authorizedTaskCount.beforePage() + tasks.size();
+                hasMore =
+                        authorizedTaskCount.totalSize()
+                                > authorizedTaskCount.beforePage() + tasks.size();
                 totalSize = authorizedTaskCount.totalSize();
             } else {
                 // Supported authorization scopes are enforced by the database.
                 totalSize = executeCountQuery(baseWhereClause, params, subjectKey);
-                TypedQuery<JpaTask> query = createPageQuery(
-                        baseWhereClause, params, cursor, pageSize + 1, subjectKey);
+                TypedQuery<JpaTask> query =
+                        createPageQuery(baseWhereClause, params, cursor, pageSize + 1, subjectKey);
                 List<JpaTask> jpaTasksPage = query.getResultList();
 
                 hasMore = jpaTasksPage.size() > pageSize;
@@ -418,17 +464,19 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             int historyLength = params.getEffectiveHistoryLength();
             boolean includeArtifacts = params.shouldIncludeArtifacts();
 
-            List<Task> transformedTasks = tasks.stream()
-                    .map(task -> transformTask(task, historyLength, includeArtifacts))
-                    .toList();
+            List<Task> transformedTasks =
+                    tasks.stream()
+                            .map(task -> transformTask(task, historyLength, includeArtifacts))
+                            .toList();
 
             LOGGER.debug("Returning {} tasks out of {} total", transformedTasks.size(), totalSize);
-            return new ListTasksResult(transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
+            return new ListTasksResult(
+                    transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
 
         } catch (PersistenceException e) {
             LOGGER.error("Database query failed during list operation", e);
-            throw new TaskPersistenceException(null,
-                "Database query failed during list operation", e);
+            throw new TaskPersistenceException(
+                    null, "Database query failed during list operation", e);
         }
     }
 
@@ -446,23 +494,33 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         return sb.toString();
     }
 
-    private TypedQuery<JpaTask> createPageQuery(String baseWhereClause,
-            ListTasksParams params, @org.jspecify.annotations.Nullable PageToken cursor, int maxResults) {
+    private TypedQuery<JpaTask> createPageQuery(
+            String baseWhereClause,
+            ListTasksParams params,
+            @org.jspecify.annotations.Nullable PageToken cursor,
+            int maxResults) {
         return createPageQuery(baseWhereClause, params, cursor, maxResults, null);
     }
 
-    private TypedQuery<JpaTask> createPageQuery(String baseWhereClause,
-            ListTasksParams params, @Nullable PageToken cursor, int maxResults, byte @Nullable [] subjectKey) {
+    private TypedQuery<JpaTask> createPageQuery(
+            String baseWhereClause,
+            ListTasksParams params,
+            @Nullable PageToken cursor,
+            int maxResults,
+            byte @Nullable [] subjectKey) {
         StringBuilder jpql = new StringBuilder("SELECT t FROM JpaTask t").append(baseWhereClause);
         if (cursor != null) {
-            jpql.append(" AND (t.statusTimestamp < :tokenTimestamp"
-                    + " OR (t.statusTimestamp = :tokenTimestamp AND t.id > :tokenId))");
+            jpql.append(
+                    " AND (t.statusTimestamp < :tokenTimestamp"
+                            + " OR (t.statusTimestamp = :tokenTimestamp AND t.id > :tokenId))");
         }
         jpql.append(" ORDER BY t.statusTimestamp DESC, t.id ASC");
 
         TypedQuery<JpaTask> query = em.createQuery(jpql.toString(), JpaTask.class);
         setFilterParameters(query, params);
-        if (subjectKey != null) { query.setParameter("subjectKey", subjectKey); }
+        if (subjectKey != null) {
+            query.setParameter("subjectKey", subjectKey);
+        }
         if (cursor != null) {
             query.setParameter("tokenTimestamp", cursor.timestamp());
             query.setParameter("tokenId", cursor.id());
@@ -471,11 +529,14 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         return query;
     }
 
-    private int executeCountQuery(String baseWhereClause, ListTasksParams params, byte @Nullable [] subjectKey) {
+    private int executeCountQuery(
+            String baseWhereClause, ListTasksParams params, byte @Nullable [] subjectKey) {
         String jpql = "SELECT COUNT(t) FROM JpaTask t" + baseWhereClause;
         TypedQuery<Long> countQuery = em.createQuery(jpql, Long.class);
         setFilterParameters(countQuery, params);
-        if (subjectKey != null) { countQuery.setParameter("subjectKey", subjectKey); }
+        if (subjectKey != null) {
+            countQuery.setParameter("subjectKey", subjectKey);
+        }
         return countQuery.getSingleResult().intValue();
     }
 
@@ -484,8 +545,12 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
      * cursor. The latter lets the page scan determine whether another authorized task exists
      * without advertising a token that can only lead to an empty page.
      */
-    private AuthorizedTaskCount countAuthorizedTasks(String baseWhereClause, ListTasksParams params,
-            @Nullable PageToken pageCursor, ServerCallContext context, TaskAuthorizationProvider provider) {
+    private AuthorizedTaskCount countAuthorizedTasks(
+            String baseWhereClause,
+            ListTasksParams params,
+            @Nullable PageToken pageCursor,
+            ServerCallContext context,
+            TaskAuthorizationProvider provider) {
         PageToken countCursor = null;
         long scanned = 0;
         int totalSize = 0;
@@ -499,8 +564,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             int batchSize = (int) Math.min(remaining, authorizationScanBatchSize);
             // Fetch a look-ahead row. It distinguishes an exhausted database from a full final
             // batch without inspecting an additional candidate for authorization.
-            List<JpaTask> batch = createPageQuery(baseWhereClause, params, countCursor, batchSize + 1)
-                    .getResultList();
+            List<JpaTask> batch =
+                    createPageQuery(baseWhereClause, params, countCursor, batchSize + 1)
+                            .getResultList();
             int processedCount = Math.min(batch.size(), batchSize);
             for (int i = 0; i < processedCount; i++) {
                 JpaTask jpaTask = batch.get(i);
@@ -529,8 +595,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 || (timestampComparison == 0 && task.getId().compareTo(cursor.id()) <= 0);
     }
 
-    private record AuthorizedTaskCount(int totalSize, int beforePage) {
-    }
+    private record AuthorizedTaskCount(int totalSize, int beforePage) {}
 
     private void setFilterParameters(TypedQuery<?> query, ListTasksParams params) {
         if (params.contextId() != null) {
@@ -549,8 +614,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             return jpaTask.getTask();
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to deserialize task with ID: {}", jpaTask.getId(), e);
-            throw new TaskSerializationException(jpaTask.getId(),
-                    "Failed to deserialize task during list operation", e);
+            throw new TaskSerializationException(
+                    jpaTask.getId(), "Failed to deserialize task during list operation", e);
         }
     }
 
@@ -573,9 +638,6 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         }
 
         // Build new task with transformed data
-        return Task.builder(task)
-                .artifacts(artifacts)
-                .history(history)
-                .build();
+        return Task.builder(task).artifacts(artifacts).history(history).build();
     }
 }

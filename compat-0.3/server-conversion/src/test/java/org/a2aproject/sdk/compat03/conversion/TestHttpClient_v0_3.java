@@ -1,5 +1,8 @@
 package org.a2aproject.sdk.compat03.conversion;
 
+import io.quarkus.arc.profile.IfBuildProfile;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Alternative;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,18 +11,12 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Alternative;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Task;
-
-import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
  * Test implementation of A2AHttpClient for push notification testing.
@@ -49,6 +46,7 @@ public class TestHttpClient_v0_3 implements A2AHttpClient {
 
     class TestPostBuilder implements A2AHttpClient.PostBuilder {
         private volatile String body;
+
         @Override
         public PostBuilder body(String body) {
             this.body = body;
@@ -85,7 +83,11 @@ public class TestHttpClient_v0_3 implements A2AHttpClient {
         }
 
         @Override
-        public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
+        public CompletableFuture<Void> postAsyncSSE(
+                Consumer<ServerSentEvent> messageConsumer,
+                Consumer<Throwable> errorConsumer,
+                Runnable completeRunnable)
+                throws IOException, InterruptedException {
             return null;
         }
 

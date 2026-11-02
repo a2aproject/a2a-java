@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -60,14 +59,15 @@ public class InMemoryTaskStoreTest {
     @Test
     public void testListTransformsHistoryAndArtifacts() {
         InMemoryTaskStore store = new InMemoryTaskStore();
-        Task task = Task.builder()
-                .id("task-abc")
-                .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
-                .history(List.of(sampleMessage("msg-1"), sampleMessage("msg-2")))
-                .artifacts(List.of(sampleArtifact("artifact-1")))
-                .metadata(Map.of("origin", "test"))
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-abc")
+                        .contextId("session-xyz")
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                        .history(List.of(sampleMessage("msg-1"), sampleMessage("msg-2")))
+                        .artifacts(List.of(sampleArtifact("artifact-1")))
+                        .metadata(Map.of("origin", "test"))
+                        .build();
 
         store.save(task, false);
 
@@ -106,4 +106,3 @@ public class InMemoryTaskStoreTest {
                 .build();
     }
 }
-

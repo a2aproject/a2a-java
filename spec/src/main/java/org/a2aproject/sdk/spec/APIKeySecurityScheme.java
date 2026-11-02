@@ -18,8 +18,8 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record APIKeySecurityScheme(Location location, String name, @Nullable
-        String description) implements SecurityScheme {
+public record APIKeySecurityScheme(Location location, String name, @Nullable String description)
+        implements SecurityScheme {
 
     /**
      * The security scheme type identifier for API key authentication.
@@ -95,7 +95,7 @@ public record APIKeySecurityScheme(Location location, String name, @Nullable
                     return QUERY;
                 }
                 default ->
-                    throw new IllegalArgumentException("Invalid API key location: " + location);
+                        throw new IllegalArgumentException("Invalid API key location: " + location);
             }
         }
     }
@@ -130,8 +130,7 @@ public record APIKeySecurityScheme(Location location, String name, @Nullable
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the location where the API key should be sent.
@@ -173,8 +172,10 @@ public record APIKeySecurityScheme(Location location, String name, @Nullable
          * @throws IllegalArgumentException if location or name is null
          */
         public APIKeySecurityScheme build() {
-            return new APIKeySecurityScheme(Assert.checkNotNullParam("location", location), 
-                    Assert.checkNotNullParam("name", name), description);
+            return new APIKeySecurityScheme(
+                    Assert.checkNotNullParam("location", location),
+                    Assert.checkNotNullParam("name", name),
+                    description);
         }
     }
 }

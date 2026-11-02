@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -55,7 +54,8 @@ public class A2AError extends RuntimeException implements Event {
     public A2AError(Integer code, String message, @Nullable Map<String, Object> details) {
         super(Assert.checkNotNullParam("message", message));
         this.code = Assert.checkNotNullParam("code", code);
-        this.details = details == null ? Map.of() : CollectionCopies.unmodifiableShallowMap(details);
+        this.details =
+                details == null ? Map.of() : CollectionCopies.unmodifiableShallowMap(details);
     }
 
     /**

@@ -1,7 +1,7 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.domain;
 
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileContent_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
@@ -58,7 +58,8 @@ public interface FileContentMapper_v0_3 {
             return new FileWithUri(v03Uri.mimeType(), name, v03Uri.uri());
         }
 
-        throw new InvalidRequestError(null, "Unrecognized FileContent type: " + v03.getClass().getName(), null);
+        throw new InvalidRequestError(
+                null, "Unrecognized FileContent type: " + v03.getClass().getName(), null);
     }
 
     /**
@@ -76,19 +77,12 @@ public interface FileContentMapper_v0_3 {
         }
 
         if (v10 instanceof FileWithBytes v10Bytes) {
-            return new FileWithBytes_v0_3(
-                v10Bytes.mimeType(),
-                v10Bytes.name(),
-                v10Bytes.bytes()
-            );
+            return new FileWithBytes_v0_3(v10Bytes.mimeType(), v10Bytes.name(), v10Bytes.bytes());
         } else if (v10 instanceof FileWithUri v10Uri) {
-            return new FileWithUri_v0_3(
-                v10Uri.mimeType(),
-                v10Uri.name(),
-                v10Uri.uri()
-            );
+            return new FileWithUri_v0_3(v10Uri.mimeType(), v10Uri.name(), v10Uri.uri());
         }
 
-        throw new InvalidRequestError(null, "Unrecognized FileContent type: " + v10.getClass().getName(), null);
+        throw new InvalidRequestError(
+                null, "Unrecognized FileContent type: " + v10.getClass().getName(), null);
     }
 }

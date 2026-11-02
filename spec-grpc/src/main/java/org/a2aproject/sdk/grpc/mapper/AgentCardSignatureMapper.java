@@ -9,7 +9,8 @@ import org.mapstruct.Mapping;
  * <p>
  * Uses CommonFieldMapper for struct conversion (header field).
  */
-@Mapper(config = A2AProtoMapperConfig.class,
+@Mapper(
+        config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {A2ACommonFieldMapper.class})
 public interface AgentCardSignatureMapper {
@@ -22,8 +23,13 @@ public interface AgentCardSignatureMapper {
      * Maps protectedHeader → protected field and header via struct conversion.
      */
     @Mapping(source = "protectedHeader", target = "protected")
-    @Mapping(target = "header", source = "header", conditionExpression = "java(domain.header() != null)", qualifiedByName = "mapToStruct")
-    org.a2aproject.sdk.grpc.AgentCardSignature toProto(org.a2aproject.sdk.spec.AgentCardSignature domain);
+    @Mapping(
+            target = "header",
+            source = "header",
+            conditionExpression = "java(domain.header() != null)",
+            qualifiedByName = "mapToStruct")
+    org.a2aproject.sdk.grpc.AgentCardSignature toProto(
+            org.a2aproject.sdk.spec.AgentCardSignature domain);
 
     /**
      * Converts proto AgentCardSignature to domain AgentCardSignature.
@@ -32,5 +38,6 @@ public interface AgentCardSignatureMapper {
      */
     @Mapping(source = "protected", target = "protectedHeader")
     @Mapping(target = "header", source = "header", qualifiedByName = "structToMap")
-    org.a2aproject.sdk.spec.AgentCardSignature fromProto(org.a2aproject.sdk.grpc.AgentCardSignature proto);
+    org.a2aproject.sdk.spec.AgentCardSignature fromProto(
+            org.a2aproject.sdk.grpc.AgentCardSignature proto);
 }

@@ -11,7 +11,13 @@ import org.mapstruct.Mapping;
  * <p>
  * Handles bidirectional mapping with message/request field name difference and Struct conversions.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {MessageMapper.class, MessageSendConfigurationMapper.class, A2ACommonFieldMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {
+            MessageMapper.class,
+            MessageSendConfigurationMapper.class,
+            A2ACommonFieldMapper.class
+        })
 public interface MessageSendParamsMapper {
 
     MessageSendParamsMapper INSTANCE = A2AMappers.getMapper(MessageSendParamsMapper.class);
@@ -20,9 +26,15 @@ public interface MessageSendParamsMapper {
      * Converts domain MessageSendParams to proto SendMessageRequest.
      * Maps domain "message" field to proto "message" field.
      */
-    @Mapping(target = "configuration", source = "configuration", conditionExpression = "java(domain.configuration() != null)")
+    @Mapping(
+            target = "configuration",
+            source = "configuration",
+            conditionExpression = "java(domain.configuration() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
-    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
+    @Mapping(
+            target = "tenant",
+            source = "tenant",
+            conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.SendMessageRequest toProto(MessageSendParams domain);
 
     /**

@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 
 /**
  * Configuration for the OAuth 2.0 Authorization Code flow.
@@ -26,8 +25,12 @@ import org.a2aproject.sdk.spec.util.CollectionCopies;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.1">RFC 6749 - Authorization Code Grant</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refreshUrl, Map<String, String> scopes,
-                                         String tokenUrl, boolean pkceRequired) {
+public record AuthorizationCodeOAuthFlow(
+        String authorizationUrl,
+        String refreshUrl,
+        Map<String, String> scopes,
+        String tokenUrl,
+        boolean pkceRequired) {
 
     /**
      * Compact constructor that validates required fields.

@@ -1,17 +1,16 @@
 package org.a2aproject.sdk.examples.helloworld.server;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import java.util.Collections;
+import java.util.List;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import java.util.Collections;
-import java.util.List;
 
 @ApplicationScoped
 public class AgentCardProducer {
@@ -31,28 +30,29 @@ public class AgentCardProducer {
                 .supportedInterfaces(Collections.singletonList(getAgentInterface()))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(AgentCapabilities.builder()
-                        .streaming(true)
-                        .pushNotifications(true)
-                        .build())
+                .capabilities(
+                        AgentCapabilities.builder().streaming(true).pushNotifications(true).build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(AgentSkill.builder()
-                        .id("hello_world")
-                        .name("Returns hello world")
-                        .description("just returns hello world")
-                        .tags(Collections.singletonList("hello world"))
-                        .examples(List.of("hi", "hello world"))
-                        .build()))
+                .skills(
+                        Collections.singletonList(
+                                AgentSkill.builder()
+                                        .id("hello_world")
+                                        .name("Returns hello world")
+                                        .description("just returns hello world")
+                                        .tags(Collections.singletonList("hello world"))
+                                        .examples(List.of("hi", "hello world"))
+                                        .build()))
                 .build();
     }
 
     private AgentInterface getAgentInterface() {
         TransportProtocol protocol = TransportProtocol.fromString(protocolStr);
-        String url = switch (protocol) {
-            case GRPC -> "localhost:9000";
-            case JSONRPC, HTTP_JSON -> "http://localhost:9999";
-        };
+        String url =
+                switch (protocol) {
+                    case GRPC -> "localhost:9000";
+                    case JSONRPC, HTTP_JSON -> "http://localhost:9999";
+                };
         return new AgentInterface(protocol.asString(), url);
     }
 }

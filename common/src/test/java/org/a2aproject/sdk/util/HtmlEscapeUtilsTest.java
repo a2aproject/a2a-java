@@ -8,7 +8,8 @@ public class HtmlEscapeUtilsTest {
 
     @Test
     public void removeHtmlEscaping_restoresAngleBrackets() {
-        assertEquals("<event-topic>", HtmlEscapeUtils.removeHtmlEscaping("\\u003cevent-topic\\u003e"));
+        assertEquals(
+                "<event-topic>", HtmlEscapeUtils.removeHtmlEscaping("\\u003cevent-topic\\u003e"));
     }
 
     @Test
@@ -28,7 +29,8 @@ public class HtmlEscapeUtilsTest {
 
     @Test
     public void removeHtmlEscaping_handlesMultipleEscapes() {
-        assertEquals("<tag>&</tag>",
+        assertEquals(
+                "<tag>&</tag>",
                 HtmlEscapeUtils.removeHtmlEscaping("\\u003ctag\\u003e\\u0026\\u003c/tag\\u003e"));
     }
 
@@ -45,7 +47,8 @@ public class HtmlEscapeUtilsTest {
 
     @Test
     public void removeHtmlEscaping_restoresUppercaseAngleBrackets() {
-        assertEquals("<event-topic>", HtmlEscapeUtils.removeHtmlEscaping("\\u003Cevent-topic\\u003E"));
+        assertEquals(
+                "<event-topic>", HtmlEscapeUtils.removeHtmlEscaping("\\u003Cevent-topic\\u003E"));
     }
 
     @Test
@@ -55,7 +58,7 @@ public class HtmlEscapeUtilsTest {
 
     @Test
     public void removeHtmlEscaping_handlesMixedCase() {
-        assertEquals("<tag>=value", HtmlEscapeUtils.removeHtmlEscaping("\\u003ctag\\u003E\\u003Dvalue"));
+        assertEquals(
+                "<tag>=value", HtmlEscapeUtils.removeHtmlEscaping("\\u003ctag\\u003E\\u003Dvalue"));
     }
-
 }

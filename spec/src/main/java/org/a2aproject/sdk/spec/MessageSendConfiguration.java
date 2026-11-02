@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.List;
-
 import org.a2aproject.sdk.spec.util.CollectionCopies;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,8 +22,11 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for push notification options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record MessageSendConfiguration(@Nullable List<String> acceptedOutputModes, @Nullable Integer historyLength,
-        @Nullable TaskPushNotificationConfig taskPushNotificationConfig, Boolean returnImmediately) {
+public record MessageSendConfiguration(
+        @Nullable List<String> acceptedOutputModes,
+        @Nullable Integer historyLength,
+        @Nullable TaskPushNotificationConfig taskPushNotificationConfig,
+        Boolean returnImmediately) {
 
     /**
      * Compact constructor for validation.
@@ -67,8 +69,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the accepted output modes.
@@ -88,7 +89,8 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
          * @param taskPushNotificationConfig configuration for push notifications
          * @return this builder
          */
-        public Builder taskPushNotificationConfig(@Nullable TaskPushNotificationConfig taskPushNotificationConfig) {
+        public Builder taskPushNotificationConfig(
+                @Nullable TaskPushNotificationConfig taskPushNotificationConfig) {
             this.taskPushNotificationConfig = taskPushNotificationConfig;
             return this;
         }

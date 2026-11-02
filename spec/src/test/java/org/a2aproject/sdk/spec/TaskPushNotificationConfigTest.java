@@ -9,10 +9,11 @@ class TaskPushNotificationConfigTest {
 
     @Test
     void builderAllowsAnOmittedConfigurationId() {
-        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
-                .taskId("task-123")
-                .url("https://example.com/callback")
-                .build();
+        TaskPushNotificationConfig config =
+                TaskPushNotificationConfig.builder()
+                        .taskId("task-123")
+                        .url("https://example.com/callback")
+                        .build();
 
         assertNull(config.id());
         assertEquals("task-123", config.taskId());

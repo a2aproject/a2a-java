@@ -1,9 +1,10 @@
 package org.a2aproject.sdk.server.apps.common;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.ClientEvent;
@@ -20,8 +21,6 @@ import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
 /**
  * Helper class for creating A2A clients for agent-to-agent communication testing.
@@ -66,19 +65,19 @@ public class AgentToAgentClientFactory {
      */
     public static Client createClient(AgentCard agentCard, TransportProtocol transportProtocol)
             throws A2AClientException {
-        ClientConfig clientConfig = ClientConfig.builder()
-            .setStreaming(false)
-            .build();
+        ClientConfig clientConfig = ClientConfig.builder().setStreaming(false).build();
 
-        ClientBuilder clientBuilder = Client.builder(agentCard)
-            .clientConfig(clientConfig);
+        ClientBuilder clientBuilder = Client.builder(agentCard).clientConfig(clientConfig);
 
-        ClientTransportEnhancer enhancer = switch (transportProtocol) {
-            case JSONRPC -> new JsonRpcClientEnhancer();
-            case GRPC -> new GrpcClientEnhancer();
-            case HTTP_JSON -> new RestClientEnhancer();
-            default -> throw new IllegalArgumentException("Unsupported transport: " + transportProtocol);
-        };
+        ClientTransportEnhancer enhancer =
+                switch (transportProtocol) {
+                    case JSONRPC -> new JsonRpcClientEnhancer();
+                    case GRPC -> new GrpcClientEnhancer();
+                    case HTTP_JSON -> new RestClientEnhancer();
+                    default ->
+                            throw new IllegalArgumentException(
+                                    "Unsupported transport: " + transportProtocol);
+                };
 
         enhancer.enhance(clientBuilder);
         return clientBuilder.build();
@@ -92,28 +91,38 @@ public class AgentToAgentClientFactory {
         void enhance(ClientBuilder clientBuilder);
     }
 
-    private static class GrpcClientEnhancer implements AgentToAgentClientFactory.ClientTransportEnhancer {
+    private static class GrpcClientEnhancer
+            implements AgentToAgentClientFactory.ClientTransportEnhancer {
         @Override
         public void enhance(ClientBuilder clientBuilder) {
-            clientBuilder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
-                ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-                return channel;
-            }));
+            clientBuilder.withTransport(
+                    GrpcTransport.class,
+                    new GrpcTransportConfigBuilder()
+                            .channelFactory(
+                                    target -> {
+                                        ManagedChannel channel =
+                                                ManagedChannelBuilder.forTarget(target)
+                                                        .usePlaintext()
+                                                        .build();
+                                        return channel;
+                                    }));
         }
     }
 
-    private static class JsonRpcClientEnhancer implements AgentToAgentClientFactory.ClientTransportEnhancer {
+    private static class JsonRpcClientEnhancer
+            implements AgentToAgentClientFactory.ClientTransportEnhancer {
         @Override
         public void enhance(ClientBuilder clientBuilder) {
-            clientBuilder.withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
+            clientBuilder.withTransport(
+                    JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
         }
     }
 
-    private static class RestClientEnhancer implements AgentToAgentClientFactory.ClientTransportEnhancer {
+    private static class RestClientEnhancer
+            implements AgentToAgentClientFactory.ClientTransportEnhancer {
         @Override
         public void enhance(ClientBuilder clientBuilder) {
             clientBuilder.withTransport(RestTransport.class, new RestTransportConfigBuilder());
         }
     }
 }
-

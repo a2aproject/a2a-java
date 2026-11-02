@@ -3,7 +3,6 @@ package org.a2aproject.sdk.jsonrpc.common.wrappers;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 
 import java.util.UUID;
-
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 
 /**
@@ -19,11 +18,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  * @see TaskPushNotificationConfig for the parameter structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
+public final class CreateTaskPushNotificationConfigRequest
+        extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
-    private CreateTaskPushNotificationConfigRequest() {
-    }
-
+    private CreateTaskPushNotificationConfigRequest() {}
 
     /**
      * Constructs request with all parameters.
@@ -32,7 +30,8 @@ public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJ
      * @param id the request ID
      * @param params the request parameters
      */
-    public CreateTaskPushNotificationConfigRequest(String jsonrpc, Object id, TaskPushNotificationConfig params) {
+    public CreateTaskPushNotificationConfigRequest(
+            String jsonrpc, Object id, TaskPushNotificationConfig params) {
         super(jsonrpc, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, id, params);
     }
 
@@ -42,7 +41,8 @@ public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJ
      * @param id the request ID
      * @param taskPushConfig the task push notification configuration
      */
-    public CreateTaskPushNotificationConfigRequest(String id, TaskPushNotificationConfig taskPushConfig) {
+    public CreateTaskPushNotificationConfigRequest(
+            String id, TaskPushNotificationConfig taskPushConfig) {
         this(null, id, taskPushConfig);
     }
 
@@ -66,8 +66,7 @@ public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJ
         /**
          * Creates a new Builder with all fields unset.
          */
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Sets the JSON-RPC version.
@@ -97,7 +96,8 @@ public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJ
          * @param params the request parameters
          * @return this builder for method chaining
          */
-        public CreateTaskPushNotificationConfigRequest.Builder params(TaskPushNotificationConfig params) {
+        public CreateTaskPushNotificationConfigRequest.Builder params(
+                TaskPushNotificationConfig params) {
             this.params = params;
             return this;
         }

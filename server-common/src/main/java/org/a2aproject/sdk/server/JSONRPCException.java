@@ -9,7 +9,7 @@ import org.a2aproject.sdk.spec.A2AError;
  * protocol-level errors during JSON-RPC request processing.
  * </p>
  */
-public class JSONRPCException extends Exception{
+public class JSONRPCException extends Exception {
     private final A2AError error;
 
     /**

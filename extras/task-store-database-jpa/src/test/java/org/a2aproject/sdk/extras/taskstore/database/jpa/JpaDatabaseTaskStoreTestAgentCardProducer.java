@@ -1,17 +1,15 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
-import java.util.Collections;
-import java.util.List;
-
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-
+import java.util.Collections;
+import java.util.List;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
  * Simple test AgentCard producer for our integration test.
@@ -31,9 +29,11 @@ public class JpaDatabaseTaskStoreTestAgentCardProducer {
                 .defaultOutputModes(List.of("text"))
                 .capabilities(AgentCapabilities.builder().build())
                 .skills(List.of())
-                .supportedInterfaces(Collections.singletonList(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")
-                ))
+                .supportedInterfaces(
+                        Collections.singletonList(
+                                new AgentInterface(
+                                        TransportProtocol.JSONRPC.asString(),
+                                        "http://localhost:8081")))
                 .build();
     }
 }

@@ -1,12 +1,12 @@
 package org.a2aproject.sdk.compat03.server.grpc.quarkus;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
 import org.a2aproject.sdk.compat03.transport.grpc.context.GrpcContextKeys_v0_3;
 
@@ -23,7 +23,6 @@ import org.a2aproject.sdk.compat03.transport.grpc.context.GrpcContextKeys_v0_3;
 @ApplicationScoped
 public class A2AExtensionsInterceptor_v0_3 implements ServerInterceptor {
 
-
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> serverCall,
@@ -32,17 +31,20 @@ public class A2AExtensionsInterceptor_v0_3 implements ServerInterceptor {
 
         // Extract A2A extensions header
         Metadata.Key<String> extensionsKey =
-            Metadata.Key.of(A2AHeaders_v0_3.X_A2A_EXTENSIONS, Metadata.ASCII_STRING_MARSHALLER);
+                Metadata.Key.of(A2AHeaders_v0_3.X_A2A_EXTENSIONS, Metadata.ASCII_STRING_MARSHALLER);
         String extensions = metadata.get(extensionsKey);
 
         // Create enhanced context with rich information (equivalent to Python's ServicerContext)
-        Context context = Context.current()
-            // Store complete metadata for full header access
-            .withValue(GrpcContextKeys_v0_3.METADATA_KEY, metadata)
-            // Store method name (equivalent to Python's context.method())
-            .withValue(GrpcContextKeys_v0_3.METHOD_NAME_KEY, serverCall.getMethodDescriptor().getFullMethodName())
-            // Store peer information for client connection details
-            .withValue(GrpcContextKeys_v0_3.PEER_INFO_KEY, getPeerInfo(serverCall));
+        Context context =
+                Context.current()
+                        // Store complete metadata for full header access
+                        .withValue(GrpcContextKeys_v0_3.METADATA_KEY, metadata)
+                        // Store method name (equivalent to Python's context.method())
+                        .withValue(
+                                GrpcContextKeys_v0_3.METHOD_NAME_KEY,
+                                serverCall.getMethodDescriptor().getFullMethodName())
+                        // Store peer information for client connection details
+                        .withValue(GrpcContextKeys_v0_3.PEER_INFO_KEY, getPeerInfo(serverCall));
 
         // Store A2A extensions if present
         if (extensions != null) {
@@ -61,7 +63,8 @@ public class A2AExtensionsInterceptor_v0_3 implements ServerInterceptor {
      */
     private String getPeerInfo(ServerCall<?, ?> serverCall) {
         try {
-            Object remoteAddr = serverCall.getAttributes().get(io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+            Object remoteAddr =
+                    serverCall.getAttributes().get(io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
             return remoteAddr != null ? remoteAddr.toString() : "unknown";
         } catch (Exception e) {
             return "unknown";

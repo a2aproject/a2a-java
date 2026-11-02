@@ -26,7 +26,8 @@ import org.jspecify.annotations.Nullable;
  * @see TransportProtocol
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentInterface(String protocolBinding, String url, @Nullable String tenant, String protocolVersion) {
+public record AgentInterface(
+        String protocolBinding, String url, @Nullable String tenant, String protocolVersion) {
 
     /** The default A2A Protocol version used when not explicitly specified. */
     public static final String CURRENT_PROTOCOL_VERSION = "1.0";
@@ -40,7 +41,7 @@ public record AgentInterface(String protocolBinding, String url, @Nullable Strin
      * @param protocolVersion the protocolVersion parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if protocolBinding, url, or protocolVersion is null
      */
-    public AgentInterface   {
+    public AgentInterface {
         Assert.checkNotNullParam("protocolBinding", protocolBinding);
         Assert.checkNotNullParam("url", url);
 

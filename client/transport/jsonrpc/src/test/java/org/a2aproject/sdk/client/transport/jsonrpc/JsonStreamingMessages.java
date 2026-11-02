@@ -5,7 +5,8 @@ package org.a2aproject.sdk.client.transport.jsonrpc;
  */
 public class JsonStreamingMessages {
 
-    public static final String STREAMING_TASK_EVENT = """
+    public static final String STREAMING_TASK_EVENT =
+            """
             data: {
                   "jsonrpc": "2.0",
                   "id": "1234",
@@ -21,8 +22,8 @@ public class JsonStreamingMessages {
             }
             """;
 
-
-    public static final String STREAMING_MESSAGE_EVENT = """
+    public static final String STREAMING_MESSAGE_EVENT =
+            """
             data: {
                   "jsonrpc": "2.0",
                   "id": "1234",
@@ -38,9 +39,11 @@ public class JsonStreamingMessages {
                       ]
                     }
                   }
-            }""";
+            }\
+            """;
 
-    public static final String STREAMING_STATUS_UPDATE_EVENT = """
+    public static final String STREAMING_STATUS_UPDATE_EVENT =
+            """
             data: {
                   "jsonrpc": "2.0",
                   "id": "1234",
@@ -53,9 +56,11 @@ public class JsonStreamingMessages {
                       }
                     }
                   }
-            }""";
+            }\
+            """;
 
-    public static final String STREAMING_STATUS_UPDATE_EVENT_FINAL = """
+    public static final String STREAMING_STATUS_UPDATE_EVENT_FINAL =
+            """
             data: {
                   "jsonrpc": "2.0",
                   "id": "1234",
@@ -68,9 +73,11 @@ public class JsonStreamingMessages {
                       }
                     }
                   }
-            }""";
+            }\
+            """;
 
-    public static final String STREAMING_ARTIFACT_UPDATE_EVENT = """
+    public static final String STREAMING_ARTIFACT_UPDATE_EVENT =
+            """
              data: {
                   "jsonrpc": "2.0",
                   "id": "1234",
@@ -90,9 +97,11 @@ public class JsonStreamingMessages {
                       }
                     }
                   }
-            }""";
+            }\
+            """;
 
-    public static final String STREAMING_ERROR_EVENT = """
+    public static final String STREAMING_ERROR_EVENT =
+            """
             data: {
                   "jsonrpc": "2.0",
                   "id": "1234",
@@ -101,9 +110,11 @@ public class JsonStreamingMessages {
                     "message": "Invalid parameters",
                     "data": {"info": "Missing required field"}
                   }
-             }""";
+             }\
+            """;
 
-    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
+    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"SendStreamingMessage",
@@ -118,7 +129,7 @@ public class JsonStreamingMessages {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
                 },
                 "configuration":{
@@ -127,31 +138,34 @@ public class JsonStreamingMessages {
                   ]
                 },
                 "metadata":{
-                  
+
                 }
               }
-            }""";
+            }\
+            """;
 
     static final String SEND_MESSAGE_STREAMING_TEST_RESPONSE =
             """
             event: message
             data: {"jsonrpc":"2.0","id":1,"result":{"task":{"id":"2","contextId":"context-1234","status":{"state":"TASK_STATE_COMPLETED"},"artifacts":[{"artifactId":"artifact-1","name":"joke","parts":[{"text":"Why did the chicken cross the road? To get to the other side!"}]}],"metadata":{}}}}
-            
+
             """;
 
     static final String TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE =
             """
             event: message
             data: {"jsonrpc":"2.0","id":1,"result":{"task":{"id":"2","contextId":"context-1234","status":{"state":"TASK_STATE_COMPLETED"},"artifacts":[{"artifactId":"artifact-1","name":"joke","parts":[{"text":"Why did the chicken cross the road? To get to the other side!"}]}],"metadata":{}}}}
-            
+
             """;
 
-    public static final String TASK_SUBSCRIPTION_TEST_REQUEST = """
+    public static final String TASK_SUBSCRIPTION_TEST_REQUEST =
+            """
             {
               "jsonrpc":"2.0",
               "method":"SubscribeToTask",
               "params":{
                 "id":"task-1234"
               }
-            }""";
+            }\
+            """;
 }

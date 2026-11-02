@@ -20,9 +20,11 @@ public class CustomHttpClientProducer {
     @Produces
     @ApplicationScoped
     A2AHttpClient customClient() {
-        return new MarkerHeaderA2AHttpClient(A2AHttpClientFactory.create(A2AHttpClientConfiguration.builder()
-                .excludedProviderNames(java.util.List.of("cdi"))
-                .build()));
+        return new MarkerHeaderA2AHttpClient(
+                A2AHttpClientFactory.create(
+                        A2AHttpClientConfiguration.builder()
+                                .excludedProviderNames(java.util.List.of("cdi"))
+                                .build()));
     }
 
     /**

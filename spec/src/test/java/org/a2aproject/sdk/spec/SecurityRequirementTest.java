@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class SecurityRequirementTest {
@@ -24,7 +23,11 @@ class SecurityRequirementTest {
         schemes.put("apiKey", List.of());
 
         assertEquals(List.of("read"), requirement.schemes().get("oauth2"));
-        assertThrows(UnsupportedOperationException.class, () -> requirement.schemes().put("x", List.of()));
-        assertThrows(UnsupportedOperationException.class, () -> requirement.schemes().get("oauth2").add("x"));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> requirement.schemes().put("x", List.of()));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> requirement.schemes().get("oauth2").add("x"));
     }
 }

@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.client.http.android;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
-import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
-import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
+import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
 
 /**
@@ -15,14 +14,16 @@ public final class AndroidA2AHttpClientProvider implements A2AHttpClientProvider
 
     private static boolean isAndroidAvailable() {
         String runtimeName = System.getProperty("java.runtime.name");
-        return runtimeName != null && runtimeName.toLowerCase(java.util.Locale.ENGLISH).contains("android");
+        return runtimeName != null
+                && runtimeName.toLowerCase(java.util.Locale.ENGLISH).contains("android");
     }
 
     @Override
     public A2AHttpClient create() {
         if (!ANDROID_AVAILABLE) {
             throw new IllegalStateException(
-                    "Android classes are not available. This provider is only supported on Android.");
+                    "Android classes are not available. This provider is only supported on"
+                            + " Android.");
         }
         return new AndroidA2AHttpClient();
     }
@@ -36,7 +37,8 @@ public final class AndroidA2AHttpClientProvider implements A2AHttpClientProvider
     public A2AHttpClient createWithSseConfig(SSEParserConfig sseParserConfig) {
         if (!ANDROID_AVAILABLE) {
             throw new IllegalStateException(
-                    "Android classes are not available. This provider is only supported on Android.");
+                    "Android classes are not available. This provider is only supported on"
+                            + " Android.");
         }
         return new AndroidA2AHttpClient(sseParserConfig);
     }
@@ -45,10 +47,12 @@ public final class AndroidA2AHttpClientProvider implements A2AHttpClientProvider
     public A2AHttpClient create(A2AHttpClientConfiguration configuration) {
         if (!ANDROID_AVAILABLE) {
             throw new IllegalStateException(
-                    "Android classes are not available. This provider is only supported on Android.");
+                    "Android classes are not available. This provider is only supported on"
+                            + " Android.");
         }
         return new AndroidA2AHttpClient(
-                configuration.sseParserConfigOrDefault(), configuration.redirectHeaderPolicyOrDefault());
+                configuration.sseParserConfigOrDefault(),
+                configuration.redirectHeaderPolicyOrDefault());
     }
 
     @Override

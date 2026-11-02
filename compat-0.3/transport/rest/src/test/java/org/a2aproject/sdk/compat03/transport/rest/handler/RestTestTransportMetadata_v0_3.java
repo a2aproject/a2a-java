@@ -5,5 +5,4 @@ package org.a2aproject.sdk.compat03.transport.rest.handler;
 /**
  * Placeholder stub - awaiting server-common port.
  */
-public class RestTestTransportMetadata_v0_3 {
-}
+public class RestTestTransportMetadata_v0_3 {}

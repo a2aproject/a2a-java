@@ -20,13 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.Collections;
-import java.util.Map;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import java.util.Collections;
+import java.util.Map;
 import org.a2aproject.sdk.grpc.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
@@ -58,7 +57,8 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testSendMessage_WithExplicitNulls_RoundTrips() throws JsonProcessingException {
-        String json = """
+        String json =
+                """
                 {
                   "jsonrpc": "2.0",
                   "id": "null-message",
@@ -78,7 +78,9 @@ public class JSONRPCUtilsTest {
                 }
                 """;
 
-        SendMessageRequest request = assertInstanceOf(SendMessageRequest.class, JSONRPCUtils.parseRequestBody(json, null));
+        SendMessageRequest request =
+                assertInstanceOf(
+                        SendMessageRequest.class, JSONRPCUtils.parseRequestBody(json, null));
         MessageSendParams params = request.getParams();
         DataPart part = assertInstanceOf(DataPart.class, params.message().parts().get(0));
         Map<?, ?> data = assertInstanceOf(Map.class, part.data());
@@ -86,19 +88,25 @@ public class JSONRPCUtilsTest {
         assertNull(data.get("attributeId"));
         assertEquals("ID", data.get("source"));
         assertEquals(Collections.singletonMap("partOptional", null), part.metadata());
-        assertEquals(Collections.singletonMap("messageOptional", null), params.message().metadata());
+        assertEquals(
+                Collections.singletonMap("messageOptional", null), params.message().metadata());
         assertEquals(Collections.singletonMap("requestOptional", null), params.metadata());
 
-        String serialized = JSONRPCUtils.toJsonRPCRequest(assertInstanceOf(String.class, request.getId()), SEND_MESSAGE_METHOD,
-                ProtoUtils.ToProto.sendMessageRequest(params));
-        SendMessageRequest roundTripped = assertInstanceOf(SendMessageRequest.class,
-                JSONRPCUtils.parseRequestBody(serialized, null));
+        String serialized =
+                JSONRPCUtils.toJsonRPCRequest(
+                        assertInstanceOf(String.class, request.getId()),
+                        SEND_MESSAGE_METHOD,
+                        ProtoUtils.ToProto.sendMessageRequest(params));
+        SendMessageRequest roundTripped =
+                assertInstanceOf(
+                        SendMessageRequest.class, JSONRPCUtils.parseRequestBody(serialized, null));
         assertEquals(params, roundTripped.getParams());
     }
 
     @Test
     public void testGetTask_WithNestedNulls_RoundTrips() throws JsonProcessingException {
-        String json = """
+        String json =
+                """
                 {
                   "jsonrpc": "2.0",
                   "id": "null-task",
@@ -126,7 +134,10 @@ public class JSONRPCUtilsTest {
                 }
                 """;
 
-        GetTaskResponse response = assertInstanceOf(GetTaskResponse.class, JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD));
+        GetTaskResponse response =
+                assertInstanceOf(
+                        GetTaskResponse.class,
+                        JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD));
         Task task = response.getResult();
         assertNotNull(task);
         assertEquals(Collections.singletonMap("taskOptional", null), task.metadata());
@@ -134,38 +145,47 @@ public class JSONRPCUtilsTest {
         Map<?, ?> data = assertInstanceOf(Map.class, part.data());
         assertEquals(Collections.singletonMap("optional", null), data.get("nested"));
         assertEquals(Collections.singletonMap("partOptional", null), part.metadata());
-        assertEquals(Collections.singletonMap("messageOptional", null), task.history().get(0).metadata());
+        assertEquals(
+                Collections.singletonMap("messageOptional", null),
+                task.history().get(0).metadata());
 
-        String serialized = JSONRPCUtils.toJsonRPCResultResponse(response.getId(), ProtoUtils.ToProto.task(task));
-        GetTaskResponse roundTripped = assertInstanceOf(GetTaskResponse.class,
-                JSONRPCUtils.parseResponseBody(serialized, GET_TASK_METHOD));
+        String serialized =
+                JSONRPCUtils.toJsonRPCResultResponse(
+                        response.getId(), ProtoUtils.ToProto.task(task));
+        GetTaskResponse roundTripped =
+                assertInstanceOf(
+                        GetTaskResponse.class,
+                        JSONRPCUtils.parseResponseBody(serialized, GET_TASK_METHOD));
         assertEquals(task, roundTripped.getResult());
     }
 
     @Test
-    public void testParseCreateTaskPushNotificationConfigRequest_ValidProtoFormat() throws JsonProcessingException {
-        String validRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "CreateTaskPushNotificationConfig",
-              "id": "1",
-              "params": {
-                "taskId": "task-123",
-                "tenant": "",
-                "id": "config-456",
-                "url": "https://example.com/callback",
-                "authentication": {
-                  "scheme": "jwt"
+    public void testParseCreateTaskPushNotificationConfigRequest_ValidProtoFormat()
+            throws JsonProcessingException {
+        String validRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "CreateTaskPushNotificationConfig",
+                  "id": "1",
+                  "params": {
+                    "taskId": "task-123",
+                    "tenant": "",
+                    "id": "config-456",
+                    "url": "https://example.com/callback",
+                    "authentication": {
+                      "scheme": "jwt"
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
 
         assertNotNull(request);
         assertInstanceOf(CreateTaskPushNotificationConfigRequest.class, request);
-        CreateTaskPushNotificationConfigRequest setRequest = (CreateTaskPushNotificationConfigRequest) request;
+        CreateTaskPushNotificationConfigRequest setRequest =
+                (CreateTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", setRequest.getJsonrpc());
         assertEquals("1", setRequest.getId());
         assertEquals("CreateTaskPushNotificationConfig", setRequest.getMethod());
@@ -177,24 +197,27 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testParseGetTaskPushNotificationConfigRequest_ValidProtoFormat() throws JsonProcessingException {
-        String validRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "GetTaskPushNotificationConfig",
-              "id": "2",
-              "params": {
-                "taskId": "task-123",
-                "id": "config-456"
-              }
-            }
-            """;
+    public void testParseGetTaskPushNotificationConfigRequest_ValidProtoFormat()
+            throws JsonProcessingException {
+        String validRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "GetTaskPushNotificationConfig",
+                  "id": "2",
+                  "params": {
+                    "taskId": "task-123",
+                    "id": "config-456"
+                  }
+                }
+                """;
 
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
 
         assertNotNull(request);
         assertInstanceOf(GetTaskPushNotificationConfigRequest.class, request);
-        GetTaskPushNotificationConfigRequest getRequest = (GetTaskPushNotificationConfigRequest) request;
+        GetTaskPushNotificationConfigRequest getRequest =
+                (GetTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", getRequest.getJsonrpc());
         assertEquals("2", getRequest.getId());
         assertEquals("GetTaskPushNotificationConfig", getRequest.getMethod());
@@ -204,53 +227,73 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testParseMalformedJSON_ThrowsJsonSyntaxException() {
-        String malformedRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "CreateTaskPushNotificationConfig",
-              "params": {
-                "parent": "tasks/task-123"
-            """; // Missing closing braces
+        String malformedRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "CreateTaskPushNotificationConfig",
+                  "params": {
+                    "parent": "tasks/task-123"
+                """; // Missing closing braces
 
-        JsonSyntaxException exception = assertThrows(JsonSyntaxException.class, () -> {
-            JSONRPCUtils.parseRequestBody(malformedRequest, null);
-        });
-        assertEquals("java.io.EOFException: End of input at line 6 column 1 path $.params.parent", exception.getMessage());
+        JsonSyntaxException exception =
+                assertThrows(
+                        JsonSyntaxException.class,
+                        () -> {
+                            JSONRPCUtils.parseRequestBody(malformedRequest, null);
+                        });
+        assertEquals(
+                "java.io.EOFException: End of input at line 6 column 1 path $.params.parent",
+                exception.getMessage());
     }
 
     @Test
     public void testParseInvalidParams_ThrowsInvalidParamsJsonMappingException() {
-        String invalidParamsRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "CreateTaskPushNotificationConfig",
-              "id": "3",
-              "params": "not_a_dict"
-            }
-            """;
+        String invalidParamsRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "CreateTaskPushNotificationConfig",
+                  "id": "3",
+                  "params": "not_a_dict"
+                }
+                """;
 
-        InvalidParamsJsonMappingException exception = assertThrows(
-            InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest, null)
-        );
+        InvalidParamsJsonMappingException exception =
+                assertThrows(
+                        InvalidParamsJsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest, null));
         assertEquals("3", exception.getId());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-        GET_TASK_METHOD, CANCEL_TASK_METHOD, LIST_TASK_METHOD, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-        GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, SEND_MESSAGE_METHOD, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-        DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, SEND_STREAMING_MESSAGE_METHOD, SUBSCRIBE_TO_TASK_METHOD
-    })
+    @ValueSource(
+            strings = {
+                GET_TASK_METHOD,
+                CANCEL_TASK_METHOD,
+                LIST_TASK_METHOD,
+                SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+                GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+                SEND_MESSAGE_METHOD,
+                LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+                DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+                SEND_STREAMING_MESSAGE_METHOD,
+                SUBSCRIBE_TO_TASK_METHOD
+            })
     public void testParseOmittedParams_SameAsEmptyParams(String method) {
         // JSON-RPC 2.0 section 4: "params" MAY be omitted. An omitted "params" must be parsed
-        // like an empty params object instead of escaping parseRequestBody as a NullPointerException.
-        String omittedParamsRequest = """
-            {"jsonrpc": "2.0", "method": "%s", "id": 7}
-            """.formatted(method);
-        String emptyParamsRequest = """
-            {"jsonrpc": "2.0", "method": "%s", "id": 7, "params": {}}
-            """.formatted(method);
+        // like an empty params object instead of escaping parseRequestBody as a
+        // NullPointerException.
+        String omittedParamsRequest =
+                """
+                {"jsonrpc": "2.0", "method": "%s", "id": 7}
+                """
+                        .formatted(method);
+        String emptyParamsRequest =
+                """
+                {"jsonrpc": "2.0", "method": "%s", "id": 7, "params": {}}
+                """
+                        .formatted(method);
 
         assertEquals(parseOutcome(emptyParamsRequest), parseOutcome(omittedParamsRequest));
     }
@@ -266,16 +309,19 @@ public class JSONRPCUtilsTest {
     @Test
     public void testParseOmittedParams_ListTasksWithoutParams() throws Exception {
         // All ListTasks fields are optional, so a request without "params" is valid.
-        String omittedParamsRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "ListTasks",
-              "id": 8
-            }
-            """;
+        String omittedParamsRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "ListTasks",
+                  "id": 8
+                }
+                """;
 
-        ListTasksRequest request = assertInstanceOf(ListTasksRequest.class,
-            JSONRPCUtils.parseRequestBody(omittedParamsRequest, null));
+        ListTasksRequest request =
+                assertInstanceOf(
+                        ListTasksRequest.class,
+                        JSONRPCUtils.parseRequestBody(omittedParamsRequest, null));
         assertEquals(8, request.getId());
         assertNotNull(request.getParams());
     }
@@ -284,108 +330,123 @@ public class JSONRPCUtilsTest {
     public void testParseExplicitNullParams_IsNotTreatedAsOmitted() {
         // Only an omitted "params" is normalized to {}. An explicit "params": null keeps its
         // existing handling, so ListTasks (valid without params) still rejects it.
-        String explicitNullParamsRequest = """
-            {"jsonrpc": "2.0", "method": "ListTasks", "id": 9, "params": null}
-            """;
+        String explicitNullParamsRequest =
+                """
+                {"jsonrpc": "2.0", "method": "ListTasks", "id": 9, "params": null}
+                """;
 
         assertThrows(
-            JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(explicitNullParamsRequest, null)
-        );
+                JsonMappingException.class,
+                () -> JSONRPCUtils.parseRequestBody(explicitNullParamsRequest, null));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-        "{\"jsonrpc\": \"2.0\", \"method\": \"GetExtendedAgentCard\", \"id\": 10}",
-        "{\"jsonrpc\": \"2.0\", \"method\": \"GetExtendedAgentCard\", \"id\": 10, \"params\": null}"
-    })
+    @ValueSource(
+            strings = {
+                "{\"jsonrpc\": \"2.0\", \"method\": \"GetExtendedAgentCard\", \"id\": 10}",
+                "{\"jsonrpc\": \"2.0\", \"method\": \"GetExtendedAgentCard\", \"id\": 10,"
+                        + " \"params\": null}"
+            })
     public void testParseGetExtendedAgentCard_AbsentParamsUnchanged(String body) throws Exception {
         // GetExtendedAgentCard keeps its own handling of absent params.
-        GetExtendedAgentCardRequest request = assertInstanceOf(GetExtendedAgentCardRequest.class,
-            JSONRPCUtils.parseRequestBody(body, null));
+        GetExtendedAgentCardRequest request =
+                assertInstanceOf(
+                        GetExtendedAgentCardRequest.class,
+                        JSONRPCUtils.parseRequestBody(body, null));
         assertEquals(10, request.getId());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {SEND_MESSAGE_METHOD, SEND_STREAMING_MESSAGE_METHOD})
     public void testParseOmittedParams_RequiredFieldsMissing_ThrowsInvalidParams(String method) {
-        // "message" is required, and the existing validation rejects "params": {} with Invalid params
+        // "message" is required, and the existing validation rejects "params": {} with Invalid
+        // params
         // (-32602). An omitted "params" must hit the same validation and keep the request id,
         // instead of failing with an internal error.
-        String omittedParamsRequest = """
-            {"jsonrpc": "2.0", "method": "%s", "id": 7}
-            """.formatted(method);
+        String omittedParamsRequest =
+                """
+                {"jsonrpc": "2.0", "method": "%s", "id": 7}
+                """
+                        .formatted(method);
 
-        InvalidParamsJsonMappingException exception = assertThrows(
-            InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(omittedParamsRequest, null)
-        );
+        InvalidParamsJsonMappingException exception =
+                assertThrows(
+                        InvalidParamsJsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(omittedParamsRequest, null));
         assertEquals(7, exception.getId());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-        "[]",
-        "[{\"jsonrpc\": \"2.0\", \"method\": \"GetTask\", \"id\": 1, \"params\": {\"id\": \"task-1\"}}]",
-        "\"GetTask\"",
-        "42",
-        "true",
-        "null"
-    })
+    @ValueSource(
+            strings = {
+                "[]",
+                "[{\"jsonrpc\": \"2.0\", \"method\": \"GetTask\", \"id\": 1, \"params\": {\"id\":"
+                        + " \"task-1\"}}]",
+                "\"GetTask\"",
+                "42",
+                "true",
+                "null"
+            })
     public void testParseNonObjectBody_ThrowsJsonMappingException(String body) {
         // JSON-RPC 2.0 section 5.1: a body that is valid JSON but not a Request object
         // (an array, including a batch, or a primitive) must yield InvalidRequest (-32600),
         // which the server routes derive from a plain JsonMappingException.
-        JsonMappingException exception = assertThrows(
-            JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(body, null)
-        );
+        JsonMappingException exception =
+                assertThrows(
+                        JsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(body, null));
         assertEquals(JsonMappingException.class, exception.getClass());
     }
 
     @Test
     public void testParseInvalidProtoStructure_ThrowsInvalidParamsJsonMappingException() {
-        String invalidStructure = """
-            {
-              "jsonrpc": "2.0",
-              "method": "CreateTaskPushNotificationConfig",
-              "id": "4",
-              "params": {
-                "invalid_field": "value"
-              }
-            }
-            """;
+        String invalidStructure =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "CreateTaskPushNotificationConfig",
+                  "id": "4",
+                  "params": {
+                    "invalid_field": "value"
+                  }
+                }
+                """;
 
-        InvalidParamsJsonMappingException exception = assertThrows(
-            InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
-        );
+        InvalidParamsJsonMappingException exception =
+                assertThrows(
+                        InvalidParamsJsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(invalidStructure, null));
         assertEquals("4", exception.getId());
-        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.TaskPushNotificationConfig"), exception.getMessage());
+        assertEquals(
+                ERROR_MESSAGE.formatted(
+                        "invalid_field in message lf.a2a.v1.TaskPushNotificationConfig"),
+                exception.getMessage());
     }
 
     @Test
     public void testParseNumericalTimestampThrowsInvalidParamsJsonMappingException() {
-        String validRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "ListTasks",
-              "id": "1",
-              "params": {
-                "statusTimestampAfter": "2023-10-27T10:00:00Z"
-              }
-            }
-            """;
-        String invalidRequest = """
-            {
-              "jsonrpc": "2.0",
-              "method": "ListTasks",
-              "id": "2",
-              "params": {
-                "statusTimestampAfter": "1"
-              }
-            }
-            """;
+        String validRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "ListTasks",
+                  "id": "1",
+                  "params": {
+                    "statusTimestampAfter": "2023-10-27T10:00:00Z"
+                  }
+                }
+                """;
+        String invalidRequest =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "method": "ListTasks",
+                  "id": "2",
+                  "params": {
+                    "statusTimestampAfter": "1"
+                  }
+                }
+                """;
 
         try {
             A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
@@ -393,71 +454,77 @@ public class JSONRPCUtilsTest {
         } catch (JsonProcessingException e) {
             fail(e);
         }
-        InvalidParamsJsonMappingException exception = assertThrows(
-                InvalidParamsJsonMappingException.class,
-                () -> JSONRPCUtils.parseRequestBody(invalidRequest, null)
-        );
+        InvalidParamsJsonMappingException exception =
+                assertThrows(
+                        InvalidParamsJsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(invalidRequest, null));
         assertEquals("2", exception.getId());
     }
 
     @Test
     public void testParseMissingField_ThrowsInvalidParamsError() throws JsonMappingException {
-        String missingRoleMessage=  """
-           {
-              "jsonrpc":"2.0",
-              "method":"SendMessage",
-              "id": "18",
-              "params":{
-                "message":{
-                  "messageId":"message-1234",
-                  "contextId":"context-1234",
-                  "parts":[
-                    {
-                      "text":"tell me a joke"
-                    }
-                  ],
-                  "metadata":{
-                    
-                  }
-                }
-              }
-            }""";
-        InvalidParamsJsonMappingException exception = assertThrows(
-                InvalidParamsJsonMappingException.class,
-                () -> JSONRPCUtils.parseRequestBody(missingRoleMessage, null)
-        );
+        String missingRoleMessage =
+                """
+                {
+                   "jsonrpc":"2.0",
+                   "method":"SendMessage",
+                   "id": "18",
+                   "params":{
+                     "message":{
+                       "messageId":"message-1234",
+                       "contextId":"context-1234",
+                       "parts":[
+                         {
+                           "text":"tell me a joke"
+                         }
+                       ],
+                       "metadata":{
+
+                       }
+                     }
+                   }
+                 }\
+                """;
+        InvalidParamsJsonMappingException exception =
+                assertThrows(
+                        InvalidParamsJsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(missingRoleMessage, null));
         assertEquals("18", exception.getId());
     }
 
     @Test
     public void testParseUnknownField_ThrowsJsonMappingException() throws JsonMappingException {
-        String unknownFieldMessage=  """
-           {
-              "jsonrpc":"2.0",
-              "method":"SendMessage",
-              "id": "18",
-              "params":{
-                "message":{
-                  "role": "ROLE_AGENT",
-                  "unknown":"field",
-                  "messageId":"message-1234",
-                  "contextId":"context-1234",
-                  "parts":[
-                    {
-                      "text":"tell me a joke"
-                    }
-                  ],
-                  "metadata":{
-                    
-                  }
-                }
-              }
-            }""";
-        JsonMappingException exception = assertThrows(
-            JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(unknownFieldMessage, null)
-        );
-        assertEquals(ERROR_MESSAGE.formatted("unknown in message lf.a2a.v1.Message"), exception.getMessage());
+        String unknownFieldMessage =
+                """
+                {
+                   "jsonrpc":"2.0",
+                   "method":"SendMessage",
+                   "id": "18",
+                   "params":{
+                     "message":{
+                       "role": "ROLE_AGENT",
+                       "unknown":"field",
+                       "messageId":"message-1234",
+                       "contextId":"context-1234",
+                       "parts":[
+                         {
+                           "text":"tell me a joke"
+                         }
+                       ],
+                       "metadata":{
+
+                       }
+                     }
+                   }
+                 }\
+                """;
+        JsonMappingException exception =
+                assertThrows(
+                        JsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(unknownFieldMessage, null));
+        assertEquals(
+                ERROR_MESSAGE.formatted("unknown in message lf.a2a.v1.Message"),
+                exception.getMessage());
     }
 
     @Test
@@ -465,75 +532,90 @@ public class JSONRPCUtilsTest {
         // Test the low-level convertProtoBufExceptionToJsonProcessingException with null ID
         // This tests the sentinel value logic directly
         com.google.protobuf.InvalidProtocolBufferException protoException =
-            new com.google.protobuf.InvalidProtocolBufferException("Expected ENUM but found \"INVALID_VALUE\"");
+                new com.google.protobuf.InvalidProtocolBufferException(
+                        "Expected ENUM but found \"INVALID_VALUE\"");
 
         // Use reflection to call the private method for testing
-        java.lang.reflect.Method method = JSONRPCUtils.class.getDeclaredMethod(
-            "convertProtoBufExceptionToJsonProcessingException",
-            com.google.protobuf.InvalidProtocolBufferException.class,
-            Object.class
-        );
+        java.lang.reflect.Method method =
+                JSONRPCUtils.class.getDeclaredMethod(
+                        "convertProtoBufExceptionToJsonProcessingException",
+                        com.google.protobuf.InvalidProtocolBufferException.class,
+                        Object.class);
         method.setAccessible(true);
 
-        JsonProcessingException exception = (JsonProcessingException) method.invoke(
-            null,
-            protoException,
-            null  // null ID
-        );
+        JsonProcessingException exception =
+                (JsonProcessingException)
+                        method.invoke(
+                                null, protoException, null // null ID
+                                );
 
         // Should be InvalidParamsJsonMappingException with empty string sentinel
-        assertInstanceOf(InvalidParamsJsonMappingException.class, exception,
-            "Expected InvalidParamsJsonMappingException for proto error");
-        InvalidParamsJsonMappingException invalidParamsException = (InvalidParamsJsonMappingException) exception;
-        assertEquals("", invalidParamsException.getId(),
-            "Expected empty string sentinel when ID is null");
+        assertInstanceOf(
+                InvalidParamsJsonMappingException.class,
+                exception,
+                "Expected InvalidParamsJsonMappingException for proto error");
+        InvalidParamsJsonMappingException invalidParamsException =
+                (InvalidParamsJsonMappingException) exception;
+        assertEquals(
+                "",
+                invalidParamsException.getId(),
+                "Expected empty string sentinel when ID is null");
     }
 
     @Test
     public void testParseInvalidTypeWithValidId_PreservesId() throws Exception {
         // Test the low-level convertProtoBufExceptionToJsonProcessingException with valid ID
         com.google.protobuf.InvalidProtocolBufferException protoException =
-            new com.google.protobuf.InvalidProtocolBufferException("Expected ENUM but found \"INVALID_VALUE\"");
+                new com.google.protobuf.InvalidProtocolBufferException(
+                        "Expected ENUM but found \"INVALID_VALUE\"");
 
         // Use reflection to call the private method for testing
-        java.lang.reflect.Method method = JSONRPCUtils.class.getDeclaredMethod(
-            "convertProtoBufExceptionToJsonProcessingException",
-            com.google.protobuf.InvalidProtocolBufferException.class,
-            Object.class
-        );
+        java.lang.reflect.Method method =
+                JSONRPCUtils.class.getDeclaredMethod(
+                        "convertProtoBufExceptionToJsonProcessingException",
+                        com.google.protobuf.InvalidProtocolBufferException.class,
+                        Object.class);
         method.setAccessible(true);
 
-        JsonProcessingException exception = (JsonProcessingException) method.invoke(
-            null,
-            protoException,
-            42  // Valid ID
-        );
+        JsonProcessingException exception =
+                (JsonProcessingException)
+                        method.invoke(
+                                null, protoException, 42 // Valid ID
+                                );
 
         // Should be InvalidParamsJsonMappingException with preserved ID
-        assertInstanceOf(InvalidParamsJsonMappingException.class, exception,
-            "Expected InvalidParamsJsonMappingException for proto error");
-        InvalidParamsJsonMappingException invalidParamsException = (InvalidParamsJsonMappingException) exception;
-        assertEquals(42, invalidParamsException.getId(),
-            "Expected actual ID to be preserved when present");
+        assertInstanceOf(
+                InvalidParamsJsonMappingException.class,
+                exception,
+                "Expected InvalidParamsJsonMappingException for proto error");
+        InvalidParamsJsonMappingException invalidParamsException =
+                (InvalidParamsJsonMappingException) exception;
+        assertEquals(
+                42,
+                invalidParamsException.getId(),
+                "Expected actual ID to be preserved when present");
     }
 
     @Test
     public void testGenerateCreateTaskPushNotificationConfigResponse_Success() throws Exception {
-        String responseJson = """
-            {
-              "jsonrpc": "2.0",
-              "id": 1,
-              "result": {
-                "tenant": "tenant",
-                "taskId": "task-123",
-                "id": "config-456",
-                "url": "https://example.com/callback"
-              }
-            }
-            """;
+        String responseJson =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": 1,
+                  "result": {
+                    "tenant": "tenant",
+                    "taskId": "task-123",
+                    "id": "config-456",
+                    "url": "https://example.com/callback"
+                  }
+                }
+                """;
 
         CreateTaskPushNotificationConfigResponse response =
-            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(responseJson, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (CreateTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                responseJson, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals(1, response.getId());
@@ -544,21 +626,24 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testGenerateGetTaskPushNotificationConfigResponse_Success() throws Exception {
-        String responseJson = """
-            {
-              "jsonrpc": "2.0",
-              "id": 2,
-              "result": {
-                "tenant": "tenant",
-                "taskId": "task-123",
-                "id": "config-456",
-                "url": "https://example.com/callback"
-              }
-            }
-            """;
+        String responseJson =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": 2,
+                  "result": {
+                    "tenant": "tenant",
+                    "taskId": "task-123",
+                    "id": "config-456",
+                    "url": "https://example.com/callback"
+                  }
+                }
+                """;
 
         GetTaskPushNotificationConfigResponse response =
-            (GetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(responseJson, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (GetTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                responseJson, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals(2, response.getId());
@@ -569,19 +654,22 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testParseErrorResponse_InvalidParams() throws Exception {
-        String errorResponse = """
-            {
-              "jsonrpc": "2.0",
-              "id": "5",
-              "error": {
-                "code": -32602,
-                "message": "Invalid params"
-              }
-            }
-            """;
+        String errorResponse =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "5",
+                  "error": {
+                    "code": -32602,
+                    "message": "Invalid params"
+                  }
+                }
+                """;
 
         CreateTaskPushNotificationConfigResponse response =
-            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (CreateTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals("5", response.getId());
@@ -593,19 +681,22 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testParseErrorResponse_ParseError() throws Exception {
-        String errorResponse = """
-            {
-              "jsonrpc": "2.0",
-              "id": 6,
-              "error": {
-                "code": -32700,
-                "message": "Parse error"
-              }
-            }
-            """;
+        String errorResponse =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": 6,
+                  "error": {
+                    "code": -32700,
+                    "message": "Parse error"
+                  }
+                }
+                """;
 
         CreateTaskPushNotificationConfigResponse response =
-            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (CreateTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals(6, response.getId());
@@ -635,27 +726,30 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testProcessError_ArrayFormData_ExtractsFirstElement() throws Exception {
-        String errorResponse = """
-            {
-              "jsonrpc": "2.0",
-              "id": "8",
-              "error": {
-                "code": -32001,
-                "message": "Task not found",
-                "data": [
-                  {
-                    "@type": "type.googleapis.com/google.rpc.ErrorInfo",
-                    "reason": "TASK_NOT_FOUND",
-                    "domain": "a2a-protocol.org",
-                    "metadata": {}
+        String errorResponse =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "8",
+                  "error": {
+                    "code": -32001,
+                    "message": "Task not found",
+                    "data": [
+                      {
+                        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+                        "reason": "TASK_NOT_FOUND",
+                        "domain": "a2a-protocol.org",
+                        "metadata": {}
+                      }
+                    ]
                   }
-                ]
-              }
-            }
-            """;
+                }
+                """;
 
         CreateTaskPushNotificationConfigResponse response =
-            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (CreateTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertInstanceOf(TaskNotFoundError.class, response.getError());
@@ -666,20 +760,23 @@ public class JSONRPCUtilsTest {
     @Test
     public void testProcessError_ArrayFormData_NonObjectElement_DoesNotThrow() throws Exception {
         // Verifies that a non-object first array element does not cause a ClassCastException
-        String errorResponse = """
-            {
-              "jsonrpc": "2.0",
-              "id": "9",
-              "error": {
-                "code": -32001,
-                "message": "Task not found",
-                "data": ["unexpected-string-element"]
-              }
-            }
-            """;
+        String errorResponse =
+                """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "9",
+                  "error": {
+                    "code": -32001,
+                    "message": "Task not found",
+                    "data": ["unexpected-string-element"]
+                  }
+                }
+                """;
 
         CreateTaskPushNotificationConfigResponse response =
-            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (CreateTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertInstanceOf(TaskNotFoundError.class, response.getError());
@@ -693,9 +790,9 @@ public class JSONRPCUtilsTest {
 
         String json = JSONRPCUtils.toJsonRPCErrorResponse("req-rt", original);
         CreateTaskPushNotificationConfigResponse response =
-            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(
-                json,
-                SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                (CreateTaskPushNotificationConfigResponse)
+                        JSONRPCUtils.parseResponseBody(
+                                json, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertInstanceOf(TaskNotFoundError.class, response.getError());
@@ -707,52 +804,61 @@ public class JSONRPCUtilsTest {
     public void testToJsonRPCRequest_doesNotHtmlEscapeAngleBrackets() {
         // Reproduce issue #892: HTML special characters in message text were escaped
         // to Unicode sequences (< for <, > for >) by JsonFormat.printer().
-        MessageSendParams params = new MessageSendParams(
-            Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(Collections.singletonList(new TextPart("<event-topic>")))
-                .contextId("context-1234")
-                .messageId("message-1234")
-                .build(),
-            null, null
-        );
+        MessageSendParams params =
+                new MessageSendParams(
+                        Message.builder()
+                                .role(Message.Role.ROLE_USER)
+                                .parts(Collections.singletonList(new TextPart("<event-topic>")))
+                                .contextId("context-1234")
+                                .messageId("message-1234")
+                                .build(),
+                        null,
+                        null);
         org.a2aproject.sdk.grpc.SendMessageRequest protoRequest =
-            ProtoUtils.ToProto.sendMessageRequest(params);
+                ProtoUtils.ToProto.sendMessageRequest(params);
 
         String json = JSONRPCUtils.toJsonRPCRequest("test-id", SEND_MESSAGE_METHOD, protoRequest);
 
-        assertTrue(json.contains("<event-topic>"),
-            "JSON should preserve literal '<event-topic>' but got: " + json);
-        assertFalse(json.contains("\\u003c"),
-            "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
-        assertFalse(json.contains("\\u003e"),
-            "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
+        assertTrue(
+                json.contains("<event-topic>"),
+                "JSON should preserve literal '<event-topic>' but got: " + json);
+        assertFalse(
+                json.contains("\\u003c"),
+                "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
+        assertFalse(
+                json.contains("\\u003e"),
+                "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
     }
 
     @Test
     public void testToJsonRPCResultResponse_doesNotHtmlEscapeAngleBrackets() {
         // Reproduce issue #892: server responses must also send literal angle brackets.
-        Message message = Message.builder()
-            .role(Message.Role.ROLE_AGENT)
-            .parts(Collections.singletonList(new TextPart("<result>")))
-            .contextId("context-1234")
-            .messageId("message-5678")
-            .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_AGENT)
+                        .parts(Collections.singletonList(new TextPart("<result>")))
+                        .contextId("context-1234")
+                        .messageId("message-5678")
+                        .build();
         SendMessageResponse protoResponse = ProtoUtils.ToProto.taskOrMessage(message);
 
         String json = JSONRPCUtils.toJsonRPCResultResponse("test-id", protoResponse);
 
-        assertTrue(json.contains("<result>"),
-            "JSON should preserve literal '<result>' but got: " + json);
-        assertFalse(json.contains("\\u003c"),
-            "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
-        assertFalse(json.contains("\\u003e"),
-            "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
+        assertTrue(
+                json.contains("<result>"),
+                "JSON should preserve literal '<result>' but got: " + json);
+        assertFalse(
+                json.contains("\\u003c"),
+                "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
+        assertFalse(
+                json.contains("\\u003e"),
+                "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
     }
 
     @Test
     void parseGetExtendedAgentCardWithTenantParams() throws Exception {
-        String json = """
+        String json =
+                """
                 {"jsonrpc": "2.0", "id": "1", "method": "GetExtendedAgentCard", "params": {"tenant": "acme"}}
                 """;
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, null);
@@ -764,7 +870,8 @@ public class JSONRPCUtilsTest {
 
     @Test
     void parseGetExtendedAgentCardWithNoParams() throws Exception {
-        String json = """
+        String json =
+                """
                 {"jsonrpc": "2.0", "id": "2", "method": "GetExtendedAgentCard"}
                 """;
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, null);
@@ -773,7 +880,8 @@ public class JSONRPCUtilsTest {
 
     @Test
     void parseGetExtendedAgentCardWithNullParams() throws Exception {
-        String json = """
+        String json =
+                """
                 {"jsonrpc": "2.0", "id": "3", "method": "GetExtendedAgentCard", "params": null}
                 """;
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, null);
@@ -782,7 +890,8 @@ public class JSONRPCUtilsTest {
 
     @Test
     void parseGetExtendedAgentCardWithUrlTenant() throws Exception {
-        String json = """
+        String json =
+                """
                 {"jsonrpc": "2.0", "id": "4", "method": "GetExtendedAgentCard"}
                 """;
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, "url-tenant");
@@ -794,7 +903,8 @@ public class JSONRPCUtilsTest {
 
     @Test
     void parseGetExtendedAgentCardBodyTenantTakesPrecedence() throws Exception {
-        String json = """
+        String json =
+                """
                 {"jsonrpc": "2.0", "id": "5", "method": "GetExtendedAgentCard", "params": {"tenant": "body-tenant"}}
                 """;
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(json, "url-tenant");
@@ -806,16 +916,23 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testRequestAndResponseEmptyMessageIdsKeepDistinctErrors() {
-        String body = """
+        String body =
+                """
                 {"jsonrpc":"2.0","id":"empty-message","method":"SendMessage","params":{
                   "message":{"messageId":"","role":"ROLE_USER","parts":[{"text":"hello"}]}}}
                 """;
-        InvalidParamsJsonMappingException requestError = assertThrows(InvalidParamsJsonMappingException.class,
-                () -> JSONRPCUtils.parseRequestBody(body, null));
+        InvalidParamsJsonMappingException requestError =
+                assertThrows(
+                        InvalidParamsJsonMappingException.class,
+                        () -> JSONRPCUtils.parseRequestBody(body, null));
         assertEquals("Required field cannot be null or empty", requestError.getMessage());
         assertEquals("empty-message", requestError.getId());
-        InvalidParamsError responseError = assertThrows(InvalidParamsError.class,
-                () -> ProtoUtils.FromProto.message(org.a2aproject.sdk.grpc.Message.getDefaultInstance()));
+        InvalidParamsError responseError =
+                assertThrows(
+                        InvalidParamsError.class,
+                        () ->
+                                ProtoUtils.FromProto.message(
+                                        org.a2aproject.sdk.grpc.Message.getDefaultInstance()));
         assertEquals("Invalid parameters", responseError.getMessage());
     }
 
@@ -844,12 +961,14 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testGetAndValidateId_NumericStringIdOutsideIntRange_ReturnsString() throws Exception {
+    public void testGetAndValidateId_NumericStringIdOutsideIntRange_ReturnsString()
+            throws Exception {
         // Large numeric strings previously caused an uncaught NumberFormatException
         // due to integer overflow after the pattern match. Now returned safely as String.
         JsonObject json = JsonParser.parseString("{\"id\": \"2147483648\"}").getAsJsonObject();
         Object id = JSONRPCUtils.getAndValidateId(json);
-        assertInstanceOf(String.class, id, "Out-of-range numeric string ID must be returned as String");
+        assertInstanceOf(
+                String.class, id, "Out-of-range numeric string ID must be returned as String");
         assertEquals("2147483648", id);
     }
 
@@ -861,5 +980,4 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(Integer.class, id, "JSON number ID must be returned as Integer");
         assertEquals(42, id);
     }
-
 }

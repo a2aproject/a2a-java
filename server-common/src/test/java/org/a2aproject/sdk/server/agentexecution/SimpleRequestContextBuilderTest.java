@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -31,11 +30,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SimpleRequestContextBuilderTest {
 
-    @Mock
-    private TaskAuthorizationProvider authorizationProvider;
+    @Mock private TaskAuthorizationProvider authorizationProvider;
 
-    @Mock
-    private ServerCallContext callContext;
+    @Mock private ServerCallContext callContext;
 
     private InMemoryTaskStore taskStore;
 
@@ -60,11 +57,12 @@ class SimpleRequestContextBuilderTest {
     }
 
     private static MessageSendParams paramsWithReferenceTaskIds(List<String> referenceTaskIds) {
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("")))
-                .referenceTaskIds(referenceTaskIds)
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("")))
+                        .referenceTaskIds(referenceTaskIds)
+                        .build();
         return MessageSendParams.builder()
                 .message(message)
                 .configuration(defaultConfiguration())
@@ -72,10 +70,11 @@ class SimpleRequestContextBuilderTest {
     }
 
     private static MessageSendParams paramsWithoutReferenceTaskIds() {
-        Message message = Message.builder()
-                .role(Message.Role.ROLE_USER)
-                .parts(List.of(new TextPart("")))
-                .build();
+        Message message =
+                Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(List.of(new TextPart("")))
+                        .build();
         return MessageSendParams.builder()
                 .message(message)
                 .configuration(defaultConfiguration())
@@ -86,10 +85,11 @@ class SimpleRequestContextBuilderTest {
     void populateDisabled_ignoresReferenceTaskIds() {
         taskStore.save(testTask("task-1"), false);
 
-        RequestContext ctx = new SimpleRequestContextBuilder(taskStore, false, authorizationProvider)
-                .setParams(paramsWithReferenceTaskIds(List.of("task-1")))
-                .setServerCallContext(callContext)
-                .build();
+        RequestContext ctx =
+                new SimpleRequestContextBuilder(taskStore, false, authorizationProvider)
+                        .setParams(paramsWithReferenceTaskIds(List.of("task-1")))
+                        .setServerCallContext(callContext)
+                        .build();
 
         assertTrue(ctx.getRelatedTasks().isEmpty());
         verifyNoInteractions(authorizationProvider);
@@ -97,9 +97,10 @@ class SimpleRequestContextBuilderTest {
 
     @Test
     void noReferenceTaskIds_emptyRelatedTasks() {
-        RequestContext ctx = new SimpleRequestContextBuilder(taskStore, true, null)
-                .setParams(paramsWithoutReferenceTaskIds())
-                .build();
+        RequestContext ctx =
+                new SimpleRequestContextBuilder(taskStore, true, null)
+                        .setParams(paramsWithoutReferenceTaskIds())
+                        .build();
 
         assertTrue(ctx.getRelatedTasks().isEmpty());
     }
@@ -109,9 +110,10 @@ class SimpleRequestContextBuilderTest {
         taskStore.save(testTask("task-1"), false);
         taskStore.save(testTask("task-2"), false);
 
-        RequestContext ctx = new SimpleRequestContextBuilder(taskStore, true, null)
-                .setParams(paramsWithReferenceTaskIds(List.of("task-1", "task-2")))
-                .build();
+        RequestContext ctx =
+                new SimpleRequestContextBuilder(taskStore, true, null)
+                        .setParams(paramsWithReferenceTaskIds(List.of("task-1", "task-2")))
+                        .build();
 
         assertEquals(2, ctx.getRelatedTasks().size());
         assertTrue(ctx.getRelatedTasks().stream().anyMatch(t -> t.id().equals("task-1")));
@@ -124,12 +126,15 @@ class SimpleRequestContextBuilderTest {
         taskStore.save(testTask("task-2"), false);
         taskStore.save(testTask("task-3"), false);
 
-        when(authorizationProvider.checkRead(eq(callContext), eq("task-1"), eq(TaskOperation.MESSAGE_SEND)))
+        when(authorizationProvider.checkRead(
+                        eq(callContext), eq("task-1"), eq(TaskOperation.MESSAGE_SEND)))
                 .thenReturn(true);
-        when(authorizationProvider.checkRead(eq(callContext), eq("task-2"), eq(TaskOperation.MESSAGE_SEND)))
+        when(authorizationProvider.checkRead(
+                        eq(callContext), eq("task-2"), eq(TaskOperation.MESSAGE_SEND)))
                 .thenReturn(false);
 
-        SimpleRequestContextBuilder builder = new SimpleRequestContextBuilder(taskStore, true, authorizationProvider);
+        SimpleRequestContextBuilder builder =
+                new SimpleRequestContextBuilder(taskStore, true, authorizationProvider);
         builder.setParams(paramsWithReferenceTaskIds(List.of("task-1", "task-2", "task-3")));
         builder.setServerCallContext(callContext);
 
@@ -141,10 +146,12 @@ class SimpleRequestContextBuilderTest {
         taskStore.save(testTask("task-1"), false);
         taskStore.save(testTask("task-2"), false);
 
-        when(authorizationProvider.checkRead(eq(callContext), eq("task-1"), eq(TaskOperation.MESSAGE_SEND)))
+        when(authorizationProvider.checkRead(
+                        eq(callContext), eq("task-1"), eq(TaskOperation.MESSAGE_SEND)))
                 .thenReturn(false);
 
-        SimpleRequestContextBuilder builder = new SimpleRequestContextBuilder(taskStore, true, authorizationProvider);
+        SimpleRequestContextBuilder builder =
+                new SimpleRequestContextBuilder(taskStore, true, authorizationProvider);
         builder.setParams(paramsWithReferenceTaskIds(List.of("task-1", "task-2")));
         builder.setServerCallContext(callContext);
 
@@ -155,9 +162,10 @@ class SimpleRequestContextBuilderTest {
     void nonExistentTask_silentlySkipped() {
         taskStore.save(testTask("task-1"), false);
 
-        RequestContext ctx = new SimpleRequestContextBuilder(taskStore, true, null)
-                .setParams(paramsWithReferenceTaskIds(List.of("task-1", "nonexistent")))
-                .build();
+        RequestContext ctx =
+                new SimpleRequestContextBuilder(taskStore, true, null)
+                        .setParams(paramsWithReferenceTaskIds(List.of("task-1", "nonexistent")))
+                        .build();
 
         assertEquals(1, ctx.getRelatedTasks().size());
         assertEquals("task-1", ctx.getRelatedTasks().get(0).id());
@@ -168,7 +176,8 @@ class SimpleRequestContextBuilderTest {
         taskStore.save(testTask("task-1"), false);
         taskStore.save(testTask("task-2"), false);
 
-        SimpleRequestContextBuilder builder = new SimpleRequestContextBuilder(taskStore, true, authorizationProvider);
+        SimpleRequestContextBuilder builder =
+                new SimpleRequestContextBuilder(taskStore, true, authorizationProvider);
         builder.setParams(paramsWithReferenceTaskIds(List.of("task-1", "task-2")));
 
         assertThrows(TaskNotFoundError.class, builder::build);
@@ -179,7 +188,8 @@ class SimpleRequestContextBuilderTest {
     void authorizationCheckUsesCorrectOperation() {
         taskStore.save(testTask("task-1"), false);
 
-        when(authorizationProvider.checkRead(eq(callContext), eq("task-1"), eq(TaskOperation.MESSAGE_SEND)))
+        when(authorizationProvider.checkRead(
+                        eq(callContext), eq("task-1"), eq(TaskOperation.MESSAGE_SEND)))
                 .thenReturn(true);
 
         new SimpleRequestContextBuilder(taskStore, true, authorizationProvider)

@@ -9,7 +9,8 @@ class GetTaskPushNotificationConfigParamsTest {
 
     @Test
     void testConstructionAllowsOmittedConfigurationId() {
-        GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams("task-1");
+        GetTaskPushNotificationConfigParams params =
+                new GetTaskPushNotificationConfigParams("task-1");
 
         assertEquals("task-1", params.taskId());
         assertNull(params.id());
@@ -17,9 +18,8 @@ class GetTaskPushNotificationConfigParamsTest {
 
     @Test
     void testBuilderAllowsOmittedConfigurationId() {
-        GetTaskPushNotificationConfigParams params = GetTaskPushNotificationConfigParams.builder()
-                .taskId("task-1")
-                .build();
+        GetTaskPushNotificationConfigParams params =
+                GetTaskPushNotificationConfigParams.builder().taskId("task-1").build();
 
         assertNull(params.id());
     }

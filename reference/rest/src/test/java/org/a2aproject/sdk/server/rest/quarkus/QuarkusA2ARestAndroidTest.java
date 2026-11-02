@@ -1,16 +1,18 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.http.android.AndroidA2AHttpClient;
 import org.a2aproject.sdk.client.transport.rest.RestTransport;
 import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
-import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class QuarkusA2ARestAndroidTest extends QuarkusA2ARestTest {
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(RestTransport.class, new RestTransportConfigBuilder().httpClient(new AndroidA2AHttpClient()));
+        builder.withTransport(
+                RestTransport.class,
+                new RestTransportConfigBuilder().httpClient(new AndroidA2AHttpClient()));
     }
 }

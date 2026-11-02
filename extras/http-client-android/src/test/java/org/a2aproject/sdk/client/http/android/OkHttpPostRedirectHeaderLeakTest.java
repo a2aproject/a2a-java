@@ -7,7 +7,6 @@ import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.verify.VerificationTimes.exactly;
 
 import java.util.stream.Stream;
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -61,15 +60,14 @@ public class OkHttpPostRedirectHeaderLeakTest {
             throws Exception {
         startRedirectPair();
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .followRedirects(true)
-                .build();
+        OkHttpClient client = new OkHttpClient.Builder().followRedirects(true).build();
 
-        Request request = new Request.Builder()
-                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
-                .post(RequestBody.create("{}", JSON))
-                .addHeader(headerName, "FULCRUM-SYNTHETIC-LEAK")
-                .build();
+        Request request =
+                new Request.Builder()
+                        .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
+                        .post(RequestBody.create("{}", JSON))
+                        .addHeader(headerName, "FULCRUM-SYNTHETIC-LEAK")
+                        .build();
 
         try (Response response = client.newCall(request).execute()) {
             assertEquals(200, response.code());
@@ -77,11 +75,14 @@ public class OkHttpPostRedirectHeaderLeakTest {
 
         collector.verify(request().withPath("/collect"), exactly(1));
 
-        org.mockserver.model.HttpRequest[] recorded = collector.retrieveRecordedRequests(
-                request().withPath("/collect"));
+        org.mockserver.model.HttpRequest[] recorded =
+                collector.retrieveRecordedRequests(request().withPath("/collect"));
         assertEquals(1, recorded.length);
-        assertNotEquals("", recorded[0].getFirstHeader(headerName),
-                headerName + " must survive cross-origin redirect in OkHttp — "
+        assertNotEquals(
+                "",
+                recorded[0].getFirstHeader(headerName),
+                headerName
+                        + " must survive cross-origin redirect in OkHttp — "
                         + "this is why PostBuilder must default to followRedirects=false");
         assertEquals("FULCRUM-SYNTHETIC-LEAK", recorded[0].getFirstHeader(headerName));
     }
@@ -91,15 +92,14 @@ public class OkHttpPostRedirectHeaderLeakTest {
     public void okHttpDoesNotLeakWhenRedirectsDisabled(String headerName) throws Exception {
         startRedirectPair();
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .followRedirects(false)
-                .build();
+        OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).build();
 
-        Request request = new Request.Builder()
-                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
-                .post(RequestBody.create("{}", JSON))
-                .addHeader(headerName, "FULCRUM-SYNTHETIC-NOLEAK")
-                .build();
+        Request request =
+                new Request.Builder()
+                        .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
+                        .post(RequestBody.create("{}", JSON))
+                        .addHeader(headerName, "FULCRUM-SYNTHETIC-NOLEAK")
+                        .build();
 
         try (Response response = client.newCall(request).execute()) {
             assertEquals(302, response.code());
@@ -112,29 +112,30 @@ public class OkHttpPostRedirectHeaderLeakTest {
     public void okHttpStripsAuthorizationButKeepsNonstandardHeadersOnRedirect() throws Exception {
         startRedirectPair();
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .followRedirects(true)
-                .build();
+        OkHttpClient client = new OkHttpClient.Builder().followRedirects(true).build();
 
-        Request request = new Request.Builder()
-                .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
-                .post(RequestBody.create("{}", JSON))
-                .addHeader("Authorization", "Bearer FULCRUM-SYNTHETIC-BEARER")
-                .addHeader("X-API-Key", "FULCRUM-SYNTHETIC-APIKEY")
-                .addHeader("API-Key", "FULCRUM-SYNTHETIC-APIKEY2")
-                .addHeader("X-Auth-Token", "FULCRUM-SYNTHETIC-TOKEN")
-                .addHeader("X-Authentication", "FULCRUM-SYNTHETIC-AUTH")
-                .build();
+        Request request =
+                new Request.Builder()
+                        .url("http://127.0.0.1:" + redirector.getLocalPort() + "/agent")
+                        .post(RequestBody.create("{}", JSON))
+                        .addHeader("Authorization", "Bearer FULCRUM-SYNTHETIC-BEARER")
+                        .addHeader("X-API-Key", "FULCRUM-SYNTHETIC-APIKEY")
+                        .addHeader("API-Key", "FULCRUM-SYNTHETIC-APIKEY2")
+                        .addHeader("X-Auth-Token", "FULCRUM-SYNTHETIC-TOKEN")
+                        .addHeader("X-Authentication", "FULCRUM-SYNTHETIC-AUTH")
+                        .build();
 
         try (Response response = client.newCall(request).execute()) {
             assertEquals(200, response.code());
         }
 
-        org.mockserver.model.HttpRequest[] recorded = collector.retrieveRecordedRequests(
-                request().withPath("/collect"));
+        org.mockserver.model.HttpRequest[] recorded =
+                collector.retrieveRecordedRequests(request().withPath("/collect"));
         assertEquals(1, recorded.length);
 
-        assertEquals("", recorded[0].getFirstHeader("Authorization"),
+        assertEquals(
+                "",
+                recorded[0].getFirstHeader("Authorization"),
                 "OkHttp strips Authorization on cross-origin redirect");
 
         assertEquals("FULCRUM-SYNTHETIC-APIKEY", recorded[0].getFirstHeader("X-API-Key"));
@@ -147,12 +148,18 @@ public class OkHttpPostRedirectHeaderLeakTest {
         redirector = ClientAndServer.startClientAndServer(0);
         collector = ClientAndServer.startClientAndServer(0);
 
-        redirector.when(request().withMethod("POST").withPath("/agent"))
-                .respond(response()
-                        .withStatusCode(302)
-                        .withHeader("Location",
-                                "http://127.0.0.1:" + collector.getLocalPort() + "/collect"));
-        collector.when(request().withPath("/collect"))
+        redirector
+                .when(request().withMethod("POST").withPath("/agent"))
+                .respond(
+                        response()
+                                .withStatusCode(302)
+                                .withHeader(
+                                        "Location",
+                                        "http://127.0.0.1:"
+                                                + collector.getLocalPort()
+                                                + "/collect"));
+        collector
+                .when(request().withPath("/collect"))
                 .respond(response().withStatusCode(200).withBody("redirected"));
     }
 }

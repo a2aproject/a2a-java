@@ -10,7 +10,6 @@ import java.util.ServiceLoader.Provider;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
@@ -23,7 +22,6 @@ import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,15 +98,22 @@ import org.slf4j.LoggerFactory;
  */
 public class ClientBuilder {
 
-    private static final Map<String, ClientTransportProvider<? extends ClientTransport, ? extends ClientTransportConfig<?>>> transportProviderRegistry = new HashMap<>();
-    private static final Map<Class<? extends ClientTransport>, String> transportProtocolMapping = new HashMap<>();
+    private static final Map<
+                    String,
+                    ClientTransportProvider<
+                            ? extends ClientTransport, ? extends ClientTransportConfig<?>>>
+            transportProviderRegistry = new HashMap<>();
+    private static final Map<Class<? extends ClientTransport>, String> transportProtocolMapping =
+            new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientBuilder.class);
 
     static {
-        ServiceLoader<ClientTransportProvider> loader = ServiceLoader.load(ClientTransportProvider.class);
+        ServiceLoader<ClientTransportProvider> loader =
+                ServiceLoader.load(ClientTransportProvider.class);
         for (ClientTransportProvider<?, ?> transport : loader) {
             transportProviderRegistry.put(transport.getTransportProtocol(), transport);
-            transportProtocolMapping.put(transport.getTransportProtocolClass(), transport.getTransportProtocol());
+            transportProtocolMapping.put(
+                    transport.getTransportProtocolClass(), transport.getTransportProtocol());
         }
     }
 
@@ -118,7 +123,10 @@ public class ClientBuilder {
     private @Nullable Consumer<Throwable> streamErrorHandler;
     private ClientConfig clientConfig = new ClientConfig.Builder().build();
 
-    private final Map<Class<? extends ClientTransport>, ClientTransportConfig<? extends ClientTransport>> clientTransports = new LinkedHashMap<>();
+    private final Map<
+                    Class<? extends ClientTransport>,
+                    ClientTransportConfig<? extends ClientTransport>>
+            clientTransports = new LinkedHashMap<>();
 
     /**
      * Package-private constructor used by {@link Client#builder(AgentCard)}.
@@ -148,7 +156,9 @@ public class ClientBuilder {
      * @param <T> the transport type
      * @return this builder for method chaining
      */
-    public <T extends ClientTransport> ClientBuilder withTransport(Class<T> clazz, ClientTransportConfigBuilder<? extends ClientTransportConfig<T>, ?> configBuilder) {
+    public <T extends ClientTransport> ClientBuilder withTransport(
+            Class<T> clazz,
+            ClientTransportConfigBuilder<? extends ClientTransportConfig<T>, ?> configBuilder) {
         return withTransport(clazz, configBuilder.build());
     }
 
@@ -169,7 +179,8 @@ public class ClientBuilder {
      * @param <T> the transport type
      * @return this builder for method chaining
      */
-    public <T extends ClientTransport> ClientBuilder withTransport(Class<T> clazz, ClientTransportConfig<T> config) {
+    public <T extends ClientTransport> ClientBuilder withTransport(
+            Class<T> clazz, ClientTransportConfig<T> config) {
         clientTransports.put(clazz, config);
 
         return this;
@@ -312,20 +323,27 @@ public class ClientBuilder {
         AgentInterface agentInterface = findBestClientTransport();
 
         // Get the transport provider associated with the protocol
-        ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.protocolBinding());
+        ClientTransportProvider clientTransportProvider =
+                transportProviderRegistry.get(agentInterface.protocolBinding());
         if (clientTransportProvider == null) {
-            throw new A2AClientException("No client available for " + agentInterface.protocolBinding());
+            throw new A2AClientException(
+                    "No client available for " + agentInterface.protocolBinding());
         }
-        Class<? extends ClientTransport> transportProtocolClass = clientTransportProvider.getTransportProtocolClass();
+        Class<? extends ClientTransport> transportProtocolClass =
+                clientTransportProvider.getTransportProtocolClass();
 
         // Retrieve the configuration associated with the preferred transport
-        ClientTransportConfig<? extends ClientTransport> clientTransportConfig = clientTransports.get(transportProtocolClass);
+        ClientTransportConfig<? extends ClientTransport> clientTransportConfig =
+                clientTransports.get(transportProtocolClass);
 
         if (clientTransportConfig == null) {
-            throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
+            throw new A2AClientException(
+                    "Missing required TransportConfig for " + agentInterface.protocolBinding());
         }
 
-        return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig);
+        return wrap(
+                clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface),
+                clientTransportConfig);
     }
 
     private Map<String, AgentInterface> getServerInterfacesMap() throws A2AClientException {
@@ -333,7 +351,8 @@ public class ClientBuilder {
         if (serverInterfaces == null || serverInterfaces.isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
-        // If there are multiple interfaces with the same protocol binding, only the first is considered
+        // If there are multiple interfaces with the same protocol binding, only the first is
+        // considered
         Map<String, AgentInterface> serverInterfacesMap = new LinkedHashMap<>();
         for (AgentInterface iface : serverInterfaces) {
             serverInterfacesMap.putIfAbsent(iface.protocolBinding(), iface);
@@ -348,7 +367,9 @@ public class ClientBuilder {
             // default to JSONRPC if not specified
             supportedClientTransports.add(TransportProtocol.JSONRPC.asString());
         } else {
-            clientTransports.forEach((aClass, clientTransportConfig) -> supportedClientTransports.add(transportProtocolMapping.get(aClass)));
+            clientTransports.forEach(
+                    (aClass, clientTransportConfig) ->
+                            supportedClientTransports.add(transportProtocolMapping.get(aClass)));
         }
         return supportedClientTransports;
     }
@@ -381,7 +402,8 @@ public class ClientBuilder {
             throw new A2AClientException("No compatible transport found");
         }
         if (!transportProviderRegistry.containsKey(matchedInterface.protocolBinding())) {
-            throw new A2AClientException("No client available for " + matchedInterface.protocolBinding());
+            throw new A2AClientException(
+                    "No client available for " + matchedInterface.protocolBinding());
         }
 
         return matchedInterface;
@@ -396,18 +418,20 @@ public class ClientBuilder {
      * @param clientTransportConfig the transport configuration
      * @return the wrapped transport (or original if no wrappers are available/applicable)
      */
-    private ClientTransport wrap(ClientTransport transport, ClientTransportConfig<? extends ClientTransport> clientTransportConfig) {
-        ServiceLoader<ClientTransportWrapper> wrapperLoader = ServiceLoader.load(ClientTransportWrapper.class);
+    private ClientTransport wrap(
+            ClientTransport transport,
+            ClientTransportConfig<? extends ClientTransport> clientTransportConfig) {
+        ServiceLoader<ClientTransportWrapper> wrapperLoader =
+                ServiceLoader.load(ClientTransportWrapper.class);
 
         // Collect all wrappers, sort by priority, then reverse for stack application
-        List<ClientTransportWrapper> wrappers = wrapperLoader.stream().map(Provider::get)
-                .sorted()
-                .collect(Collectors.toList());
+        List<ClientTransportWrapper> wrappers =
+                wrapperLoader.stream().map(Provider::get).sorted().collect(Collectors.toList());
 
         if (wrappers.isEmpty()) {
             LOGGER.debug("No client transport wrappers found via ServiceLoader");
             return transport;
-        } 
+        }
         LOGGER.debug(wrappers.size() + " client transport wrappers found via ServiceLoader");
 
         // Reverse to apply lowest priority first (building stack with highest priority outermost)
@@ -419,13 +443,18 @@ public class ClientBuilder {
             try {
                 ClientTransport newWrapped = wrapper.wrap(wrapped, clientTransportConfig);
                 if (newWrapped != wrapped) {
-                    LOGGER.debug("Applied transport wrapper: {} (priority: {})",
-                            wrapper.getClass().getName(), wrapper.priority());
+                    LOGGER.debug(
+                            "Applied transport wrapper: {} (priority: {})",
+                            wrapper.getClass().getName(),
+                            wrapper.priority());
                 }
                 wrapped = newWrapped;
             } catch (Exception e) {
-                LOGGER.warn("Failed to apply transport wrapper {}: {}",
-                        wrapper.getClass().getName(), e.getMessage(), e);
+                LOGGER.warn(
+                        "Failed to apply transport wrapper {}: {}",
+                        wrapper.getClass().getName(),
+                        e.getMessage(),
+                        e);
             }
         }
 

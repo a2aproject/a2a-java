@@ -14,8 +14,10 @@ public class AndroidA2AHttpClientSSETest extends AbstractA2AHttpClientSSETest {
 
     @Override
     protected A2AHttpClient createClient(SSEParserConfig sseParserConfig) {
-        return new AndroidA2AHttpClientProvider().create(A2AHttpClientConfiguration.builder()
-                .sseParserConfig(sseParserConfig)
-                .build());
+        return new AndroidA2AHttpClientProvider()
+                .create(
+                        A2AHttpClientConfiguration.builder()
+                                .sseParserConfig(sseParserConfig)
+                                .build());
     }
 }

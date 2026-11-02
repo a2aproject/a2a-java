@@ -3,12 +3,11 @@ package org.a2aproject.sdk.client.transport.spi.interceptors;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
 
 public class PayloadAndHeaders {
 
-    private final  @Nullable Object payload;
+    private final @Nullable Object payload;
     private final Map<String, String> headers;
 
     public PayloadAndHeaders(@Nullable Object payload, @Nullable Map<String, String> headers) {

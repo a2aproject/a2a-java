@@ -3,27 +3,25 @@ package org.a2aproject.sdk.compat03.spec;
 import static org.a2aproject.sdk.compat03.util.Utils_v0_3.defaultIfNull;
 
 import java.util.UUID;
-
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * A get task request.
  */
-public final class GetTaskRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<TaskQueryParams_v0_3> {
+public final class GetTaskRequest_v0_3
+        extends NonStreamingJSONRPCRequest_v0_3<TaskQueryParams_v0_3> {
 
-    private GetTaskRequest_v0_3() {
-    }
-
+    private GetTaskRequest_v0_3() {}
 
     public static final String METHOD = "tasks/get";
 
-    public GetTaskRequest_v0_3(String jsonrpc, Object id, String method, TaskQueryParams_v0_3 params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+    public GetTaskRequest_v0_3(
+            String jsonrpc, Object id, String method, TaskQueryParams_v0_3 params) {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
+        if (!method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid GetTaskRequest method");
         }
         Assert.checkNotNullParam("params", params);
@@ -37,7 +35,6 @@ public final class GetTaskRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<T
     public GetTaskRequest_v0_3(Object id, TaskQueryParams_v0_3 params) {
         this(null, id, METHOD, params);
     }
-
 
     public static class Builder {
         private String jsonrpc;

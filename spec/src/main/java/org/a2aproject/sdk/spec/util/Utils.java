@@ -2,6 +2,7 @@ package org.a2aproject.sdk.spec.util;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
+import com.google.gson.Gson;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -10,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import com.google.gson.Gson;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -46,7 +45,8 @@ public class Utils {
 
     /** Matches both {@code /.well-known/agent-card.json} and {@code /.well-known/{tenant}/agent-card.json} at end of URL.
      *  Tenant characters are constrained to the same set enforced by {@link #validateTenant}: {@code [a-zA-Z0-9_.-]}. */
-    private static final Pattern WELL_KNOWN_SUFFIX = Pattern.compile("/\\.well-known/([a-zA-Z0-9_.\\-]+/)?agent-card\\.json$");
+    private static final Pattern WELL_KNOWN_SUFFIX =
+            Pattern.compile("/\\.well-known/([a-zA-Z0-9_.\\-]+/)?agent-card\\.json$");
 
     /** Validates that a (normalized) tenant identifier contains only safe characters: {@code [a-zA-Z0-9_.-]}. */
     private static final Pattern VALID_TENANT_CHARS = Pattern.compile("^[a-zA-Z0-9_.\\-]+$");
@@ -113,9 +113,11 @@ public class Utils {
      * @see TaskArtifactUpdateEvent for streaming artifact updates
      * @see Artifact for artifact structure
      */
-    public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event, String taskId) {
+    public static Task appendArtifactToTask(
+            Task task, TaskArtifactUpdateEvent event, String taskId) {
         // Append artifacts
-        List<Artifact> artifacts = task.artifacts() == null ? new ArrayList<>() : new ArrayList<>(task.artifacts());
+        List<Artifact> artifacts =
+                task.artifacts() == null ? new ArrayList<>() : new ArrayList<>(task.artifacts());
 
         Artifact newArtifact = event.artifact();
         String artifactId = newArtifact.artifactId();
@@ -137,18 +139,23 @@ public class Utils {
             // This represents the first chunk for this artifact index
             if (existingArtifactIndex >= 0) {
                 // Replace the existing artifact entirely with the new artifact
-                LOGGER.fine(String.format("Replacing artifact at id %s for task %s", artifactId, taskId));
+                LOGGER.fine(
+                        String.format(
+                                "Replacing artifact at id %s for task %s", artifactId, taskId));
                 artifacts.set(existingArtifactIndex, newArtifact);
             } else {
                 // Append the new artifact since no artifact with this id/index exists yet
-                LOGGER.fine(String.format("Adding artifact at id %s for task %s", artifactId, taskId));
+                LOGGER.fine(
+                        String.format("Adding artifact at id %s for task %s", artifactId, taskId));
                 artifacts.add(newArtifact);
             }
 
         } else if (existingArtifact != null) {
             // Append new parts to the existing artifact's parts list
             // Do this to a copy
-            LOGGER.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
+            LOGGER.fine(
+                    String.format(
+                            "Appending parts to artifact id %s for task %s", artifactId, taskId));
             List<Part<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
 
@@ -163,23 +170,23 @@ public class Utils {
                 }
             }
 
-            Artifact updated = Artifact.builder(existingArtifact)
-                    .parts(parts)
-                    .metadata(mergedMetadata)
-                    .build();
+            Artifact updated =
+                    Artifact.builder(existingArtifact)
+                            .parts(parts)
+                            .metadata(mergedMetadata)
+                            .build();
             artifacts.set(existingArtifactIndex, updated);
         } else {
             // We received a chunk to append, but we don't have an existing artifact.
             // We will ignore this chunk
             LOGGER.warning(
-                    String.format("Received append=true for nonexistent artifact index for artifact %s in task %s. Ignoring chunk.",
+                    String.format(
+                            "Received append=true for nonexistent artifact index for artifact %s in"
+                                    + " task %s. Ignoring chunk.",
                             artifactId, taskId));
         }
 
-        return Task.builder(task)
-                .artifacts(artifacts)
-                .build();
-
+        return Task.builder(task).artifacts(artifacts).build();
     }
 
     /**
@@ -259,7 +266,8 @@ public class Utils {
      * @return the first defined URL in the supported interaces of the agent card.
      * @throws A2AClientException if no server interface is available in the AgentCard
      */
-    public static AgentInterface getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
+    public static AgentInterface getFavoriteInterface(AgentCard agentCard)
+            throws A2AClientException {
         if (agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
@@ -291,7 +299,8 @@ public class Utils {
         }
 
         if (stripped.length() > MAX_TENANT_LENGTH) {
-            throw new IllegalArgumentException("Tenant exceeds maximum length of " + MAX_TENANT_LENGTH + " characters");
+            throw new IllegalArgumentException(
+                    "Tenant exceeds maximum length of " + MAX_TENANT_LENGTH + " characters");
         }
 
         if (!VALID_TENANT_CHARS.matcher(stripped).matches()) {

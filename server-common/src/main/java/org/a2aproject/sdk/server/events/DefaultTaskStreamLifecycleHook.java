@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server.events;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
 import org.a2aproject.sdk.spec.Event;
 
 /**
@@ -12,14 +11,11 @@ import org.a2aproject.sdk.spec.Event;
 public class DefaultTaskStreamLifecycleHook implements TaskStreamLifecycleHook {
 
     @Override
-    public void onSubscribe(String taskId, StreamCloseHandle handle) {
-    }
+    public void onSubscribe(String taskId, StreamCloseHandle handle) {}
 
     @Override
-    public void onUnsubscribe(String taskId, StreamCloseHandle handle) {
-    }
+    public void onUnsubscribe(String taskId, StreamCloseHandle handle) {}
 
     @Override
-    public void onEvent(String taskId, Event event, StreamCloseHandle handle) {
-    }
+    public void onEvent(String taskId, Event event, StreamCloseHandle handle) {}
 }

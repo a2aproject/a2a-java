@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.compat03.conversion.mappers.params;
 
 import java.util.Collections;
-
-import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03ToV10MapperConfig;
+import org.a2aproject.sdk.compat03.conversion.mappers.config.A2AMappers_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.mapstruct.Mapper;
@@ -32,7 +31,8 @@ public interface CancelTaskParamsMapper_v0_3 {
     /**
      * Singleton instance accessed via {@link A2AMappers_v0_3} factory.
      */
-    CancelTaskParamsMapper_v0_3 INSTANCE = A2AMappers_v0_3.getMapper(CancelTaskParamsMapper_v0_3.class);
+    CancelTaskParamsMapper_v0_3 INSTANCE =
+            A2AMappers_v0_3.getMapper(CancelTaskParamsMapper_v0_3.class);
 
     /**
      * Converts v0.3 {@code TaskIdParams} to v1.0 {@code CancelTaskParams}.
@@ -48,10 +48,9 @@ public interface CancelTaskParamsMapper_v0_3 {
             return null;
         }
         return new CancelTaskParams(
-            v03.id(),
-            "",  // Default tenant
-            v03.metadata() != null ? v03.metadata() : Collections.emptyMap()
-        );
+                v03.id(),
+                "", // Default tenant
+                v03.metadata() != null ? v03.metadata() : Collections.emptyMap());
     }
 
     /**

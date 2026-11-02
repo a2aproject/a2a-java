@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.extras.pushnotificationconfigstore.database.jpa;
 
-import java.util.List;
-
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-
+import java.util.List;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.tasks.AgentEmitter;
@@ -15,7 +14,6 @@ import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
-import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
  * Simple test AgentExecutor that updates the task, which in turn
@@ -25,8 +23,7 @@ import io.quarkus.arc.profile.IfBuildProfile;
 @ApplicationScoped
 public class JpaDatabasePushNotificationConfigStoreTestAgentExecutor {
 
-    @Inject
-    PushNotificationSender pushNotificationSender;
+    @Inject PushNotificationSender pushNotificationSender;
 
     @Produces
     public AgentExecutor agentExecutor() {
@@ -43,7 +40,8 @@ public class JpaDatabasePushNotificationConfigStoreTestAgentExecutor {
                     case "update":
                         // Perform a meaningful update, like adding an artifact.
                         // This state change is what will trigger the notification.
-                        agentEmitter.addArtifact(List.of(new TextPart("updated-artifact")), "art-1", "test", null);
+                        agentEmitter.addArtifact(
+                                List.of(new TextPart("updated-artifact")), "art-1", "test", null);
                         break;
                     default:
                         // On the first message (which might have no text), just submit.

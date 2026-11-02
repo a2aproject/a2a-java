@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.Map;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -40,8 +39,14 @@ import org.jspecify.annotations.Nullable;
  * @see Artifact
  * @see Task
  */
-public record TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, @Nullable Boolean append,
-        @Nullable Boolean lastChunk, @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind, UpdateEvent {
+public record TaskArtifactUpdateEvent(
+        String taskId,
+        Artifact artifact,
+        String contextId,
+        @Nullable Boolean append,
+        @Nullable Boolean lastChunk,
+        @Nullable Map<String, Object> metadata)
+        implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The identifier when used in streaming responses
@@ -128,8 +133,7 @@ public record TaskArtifactUpdateEvent(String taskId, Artifact artifact, String c
         private @Nullable Boolean lastChunk;
         private @Nullable Map<String, Object> metadata;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         private Builder(TaskArtifactUpdateEvent existingTaskArtifactUpdateEvent) {
             this.taskId = existingTaskArtifactUpdateEvent.taskId;
@@ -191,7 +195,7 @@ public record TaskArtifactUpdateEvent(String taskId, Artifact artifact, String c
          * @return this builder for method chaining
          */
         public Builder lastChunk(@Nullable Boolean lastChunk) {
-            this.lastChunk  = lastChunk;
+            this.lastChunk = lastChunk;
             return this;
         }
 

@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.spec;
 
-import org.a2aproject.sdk.util.Assert;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -13,7 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Objects;
-
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -54,8 +53,7 @@ public final class FileWithBytes implements FileContent {
     private final ByteSource source;
 
     // Soft-reference cache: held in memory but reclaimable by GC under memory pressure
-    @Nullable
-    private volatile SoftReference<String> cachedBytes;
+    @Nullable private volatile SoftReference<String> cachedBytes;
 
     /**
      * Creates a {@code FileWithBytes} with pre-encoded base64 content.
@@ -254,8 +252,9 @@ public final class FileWithBytes implements FileContent {
             long size = Files.size(file);
             if (size > MAX_FILE_SIZE) {
                 throw new IllegalArgumentException(
-                    String.format("File too large: %d bytes (maximum: %d bytes)", size, MAX_FILE_SIZE)
-                );
+                        String.format(
+                                "File too large: %d bytes (maximum: %d bytes)",
+                                size, MAX_FILE_SIZE));
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to check file size: " + file, e);
@@ -329,7 +328,7 @@ public final class FileWithBytes implements FileContent {
     private static String encodeFileToBase64(Path path) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(path));
-             OutputStream base64OutputStream = Base64.getEncoder().wrap(outputStream)) {
+                OutputStream base64OutputStream = Base64.getEncoder().wrap(outputStream)) {
             byte[] buffer = new byte[8192];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {

@@ -8,5 +8,4 @@ public class JSONRPCTestTransportMetadata implements TransportMetadata {
     public String getTransportProtocol() {
         return TransportProtocol.JSONRPC.asString();
     }
-
 }

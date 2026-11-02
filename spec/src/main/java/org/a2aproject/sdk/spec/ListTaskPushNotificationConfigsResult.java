@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.spec;
 
 import java.util.List;
-
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -12,8 +11,8 @@ import org.jspecify.annotations.Nullable;
  * @param configs List of push notification configurations for the task
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */
-public record ListTaskPushNotificationConfigsResult(List<TaskPushNotificationConfig> configs,
-        @Nullable String nextPageToken) {
+public record ListTaskPushNotificationConfigsResult(
+        List<TaskPushNotificationConfig> configs, @Nullable String nextPageToken) {
     /**
      * Compact constructor for validation.
      * Validates parameters and creates a defensive copy of the configs list.

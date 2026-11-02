@@ -6,7 +6,8 @@ package org.a2aproject.sdk.compat03.client.transport.jsonrpc;
  */
 public class JsonMessages_v0_3 {
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD =
+            """
             {
                  "protocolVersion": "0.2.9",
                  "name": "GeoSpatial Route Planner Agent",
@@ -81,9 +82,11 @@ public class JsonMessages_v0_3 {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-               }""";
+               }\
+            """;
 
-    static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
+    static final String AUTHENTICATION_EXTENDED_AGENT_CARD =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
                 "description": "Extended description",
@@ -158,9 +161,11 @@ public class JsonMessages_v0_3 {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-              }""";
+              }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_REQUEST = """
+    static final String SEND_MESSAGE_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -182,9 +187,11 @@ public class JsonMessages_v0_3 {
                 "blocking": true
               },
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -208,9 +215,11 @@ public class JsonMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -232,10 +241,11 @@ public class JsonMessages_v0_3 {
                 "blocking": true
               },
              }
-            }""";
+            }\
+            """;
 
-
-    static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE = """
+    static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "id": 1,
@@ -250,9 +260,11 @@ public class JsonMessages_v0_3 {
                 "messageId": "msg-456",
                 "kind": "message"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -274,9 +286,11 @@ public class JsonMessages_v0_3 {
                 "blocking": true
               },
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_ERROR_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_ERROR_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "error": {
@@ -284,9 +298,11 @@ public class JsonMessages_v0_3 {
                 "message": "Invalid parameters",
                 "data": "Hello world"
              }
-            }""";
+            }\
+            """;
 
-    static final String GET_TASK_TEST_REQUEST = """
+    static final String GET_TASK_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "tasks/get",
@@ -297,7 +313,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String GET_TASK_TEST_RESPONSE = """
+    static final String GET_TASK_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -350,7 +367,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String CANCEL_TASK_TEST_REQUEST = """
+    static final String CANCEL_TASK_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "tasks/cancel",
@@ -361,7 +379,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String CANCEL_TASK_TEST_RESPONSE = """
+    static final String CANCEL_TASK_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -376,7 +395,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
+    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "tasks/pushNotificationConfig/get",
@@ -387,7 +407,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -402,7 +423,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "tasks/pushNotificationConfig/set",
@@ -415,9 +437,11 @@ public class JsonMessages_v0_3 {
                }
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+    static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -432,7 +456,8 @@ public class JsonMessages_v0_3 {
             }
             """;
 
-    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -461,9 +486,11 @@ public class JsonMessages_v0_3 {
                 "blocking": true
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -487,9 +514,11 @@ public class JsonMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -520,9 +549,11 @@ public class JsonMessages_v0_3 {
                 "blocking": true
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -546,9 +577,11 @@ public class JsonMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST = """
+    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST =
+            """
             {
              "jsonrpc": "2.0",
              "method": "message/send",
@@ -586,9 +619,11 @@ public class JsonMessages_v0_3 {
                 "blocking": true
               }
              }
-            }""";
+            }\
+            """;
 
-    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE = """
+    static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE =
+            """
             {
              "jsonrpc": "2.0",
              "result": {
@@ -612,16 +647,19 @@ public class JsonMessages_v0_3 {
               "metadata": {},
               "kind": "task"
              }
-            }""";
+            }\
+            """;
 
-    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST = """
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST =
+            """
             {
                 "jsonrpc": "2.0",
                 "method": "agent/getAuthenticatedExtendedCard"
             }
             """;
 
-    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = """
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE =
+            """
             {
                 "jsonrpc": "2.0",
                 "id": "1",
@@ -700,9 +738,11 @@ public class JsonMessages_v0_3 {
                        }
                      ]
                 }
-            }""";
+            }\
+            """;
 
-    static final String AGENT_CARD_SUPPORTS_EXTENDED = """
+    static final String AGENT_CARD_SUPPORTS_EXTENDED =
+            """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -765,5 +805,6 @@ public class JsonMessages_v0_3 {
                 ],
                 "supportsAuthenticatedExtendedCard": true,
                 "protocolVersion": "0.2.5"
-              }""";
+              }\
+            """;
 }

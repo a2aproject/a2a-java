@@ -2,7 +2,6 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.List;
 import java.util.Map;
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -16,13 +15,19 @@ public record Task_v0_3(
         List<Artifact_v0_3> artifacts,
         List<Message_v0_3> history,
         @Nullable Map<String, Object> metadata,
-        String kind
-) implements EventKind_v0_3, StreamingEventKind_v0_3 {
+        String kind)
+        implements EventKind_v0_3, StreamingEventKind_v0_3 {
 
     public static final String KIND = "task";
 
-    public Task_v0_3 (String id, String contextId, TaskStatus_v0_3 status, List<Artifact_v0_3> artifacts,
-                     List<Message_v0_3> history, @Nullable Map<String, Object> metadata, String kind){
+    public Task_v0_3(
+            String id,
+            String contextId,
+            TaskStatus_v0_3 status,
+            List<Artifact_v0_3> artifacts,
+            List<Message_v0_3> history,
+            @Nullable Map<String, Object> metadata,
+            String kind) {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);
@@ -38,8 +43,13 @@ public record Task_v0_3(
         this.metadata = metadata != null ? Map.copyOf(metadata) : null;
     }
 
-    public Task_v0_3(String id, String contextId, TaskStatus_v0_3 status, List<Artifact_v0_3> artifacts,
-                     List<Message_v0_3> history, @Nullable Map<String, Object> metadata) {
+    public Task_v0_3(
+            String id,
+            String contextId,
+            TaskStatus_v0_3 status,
+            List<Artifact_v0_3> artifacts,
+            List<Message_v0_3> history,
+            @Nullable Map<String, Object> metadata) {
         this(id, contextId, status, artifacts, history, metadata, KIND);
     }
 
@@ -51,8 +61,7 @@ public record Task_v0_3(
         private List<Message_v0_3> history;
         private Map<String, Object> metadata;
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder(Task_v0_3 task) {
             id = task.id;

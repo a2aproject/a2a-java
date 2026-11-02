@@ -13,7 +13,9 @@ import org.mapstruct.Mapping;
  * Uses TaskStateMapper for state conversion, MessageMapper for message conversion,
  * and CommonFieldMapper for timestamp conversion.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStateMapper.class, MessageMapper.class, A2ACommonFieldMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {TaskStateMapper.class, MessageMapper.class, A2ACommonFieldMapper.class})
 public interface TaskStatusMapper {
 
     TaskStatusMapper INSTANCE = A2AMappers.getMapper(TaskStatusMapper.class);
@@ -22,9 +24,18 @@ public interface TaskStatusMapper {
      * Converts domain TaskStatus to proto TaskStatus.
      * Uses MessageMapper for message and CommonFieldMapper for timestamp conversion.
      */
-    @Mapping(target = "state", source = "state", conditionExpression = "java(domain.state() != null)")
-    @Mapping(target = "message", source = "message", conditionExpression = "java(domain.message() != null)")
-    @Mapping(target = "timestamp", source = "timestamp", qualifiedByName = "offsetDateTimeToProtoTimestamp")
+    @Mapping(
+            target = "state",
+            source = "state",
+            conditionExpression = "java(domain.state() != null)")
+    @Mapping(
+            target = "message",
+            source = "message",
+            conditionExpression = "java(domain.message() != null)")
+    @Mapping(
+            target = "timestamp",
+            source = "timestamp",
+            qualifiedByName = "offsetDateTimeToProtoTimestamp")
     org.a2aproject.sdk.grpc.TaskStatus toProto(TaskStatus domain);
 
     /**
@@ -32,6 +43,9 @@ public interface TaskStatusMapper {
      * Uses MessageMapper for message and CommonFieldMapper for timestamp conversion.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "timestamp", source = "timestamp", qualifiedByName = "protoTimestampToOffsetDateTime")
+    @Mapping(
+            target = "timestamp",
+            source = "timestamp",
+            qualifiedByName = "protoTimestampToOffsetDateTime")
     TaskStatus fromProto(org.a2aproject.sdk.grpc.TaskStatus proto);
 }

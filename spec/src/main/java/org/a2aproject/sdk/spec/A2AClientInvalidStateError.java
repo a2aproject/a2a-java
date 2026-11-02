@@ -29,8 +29,7 @@ public class A2AClientInvalidStateError extends A2AClientError {
     /**
      * Creates a new invalid state error with no message.
      */
-    public A2AClientInvalidStateError() {
-    }
+    public A2AClientInvalidStateError() {}
 
     /**
      * Creates a new invalid state error with the specified message.

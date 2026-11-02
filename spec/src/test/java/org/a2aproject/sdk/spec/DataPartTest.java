@@ -11,15 +11,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class DataPartTest {
 
     @Test
     void testFromJson_object() {
-        DataPart part = DataPart.fromJson("""
-                {"temperature": 22.5, "humidity": 65}""");
+        DataPart part =
+                DataPart.fromJson(
+                        """
+                        {"temperature": 22.5, "humidity": 65}\
+                        """);
 
         Map<String, Object> data = assertInstanceOf(Map.class, part.data());
         assertEquals(22.5, data.get("temperature"));
@@ -29,8 +31,11 @@ class DataPartTest {
 
     @Test
     void testFromJson_array() {
-        DataPart part = DataPart.fromJson("""
-                ["a", "b", "c"]""");
+        DataPart part =
+                DataPart.fromJson(
+                        """
+                        ["a", "b", "c"]\
+                        """);
 
         List<Object> data = assertInstanceOf(List.class, part.data());
         assertEquals(List.of("a", "b", "c"), data);
@@ -67,8 +72,12 @@ class DataPartTest {
     @Test
     void testFromJson_withMetadata() {
         Map<String, Object> metadata = Map.of("source", "sensor");
-        DataPart part = DataPart.fromJson("""
-                {"temperature": 22.5}""", metadata);
+        DataPart part =
+                DataPart.fromJson(
+                        """
+                        {"temperature": 22.5}\
+                        """,
+                        metadata);
 
         assertInstanceOf(Map.class, part.data());
         assertEquals("sensor", part.metadata().get("source"));
@@ -83,13 +92,17 @@ class DataPartTest {
 
         assertTrue(part.metadata().containsKey("source"));
         assertNull(part.metadata().get("source"));
-        assertThrows(UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> part.metadata().put("another", "value"));
     }
 
     @Test
     void testFromJson_nestedObject() {
-        DataPart part = DataPart.fromJson("""
-                {"outer": {"inner": [1, 2, 3]}}""");
+        DataPart part =
+                DataPart.fromJson(
+                        """
+                        {"outer": {"inner": [1, 2, 3]}}\
+                        """);
 
         Map<String, Object> data = assertInstanceOf(Map.class, part.data());
         Map<String, Object> outer = assertInstanceOf(Map.class, data.get("outer"));
@@ -119,7 +132,9 @@ class DataPartTest {
 
         DataPart part = new DataPart(data);
 
-        assertThrows(UnsupportedOperationException.class, () -> ((Map<String, Object>) part.data()).put("humidity", 65));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> ((Map<String, Object>) part.data()).put("humidity", 65));
         data.put("humidity", 65);
         assertEquals(Map.of("temperature", 22.5), part.data());
     }
@@ -131,7 +146,8 @@ class DataPartTest {
 
         DataPart part = new DataPart(data);
 
-        assertThrows(UnsupportedOperationException.class, () -> ((List<Object>) part.data()).add("b"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> ((List<Object>) part.data()).add("b"));
         data.add("b");
         assertEquals(List.of("a"), part.data());
     }

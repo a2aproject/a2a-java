@@ -16,8 +16,7 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 public class V10GsonObjectMapper_v0_3 implements ObjectMapper {
     public static final V10GsonObjectMapper_v0_3 INSTANCE = new V10GsonObjectMapper_v0_3();
 
-    private V10GsonObjectMapper_v0_3() {
-    }
+    private V10GsonObjectMapper_v0_3() {}
 
     @Override
     public Object deserialize(ObjectMapperDeserializationContext context) {

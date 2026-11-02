@@ -3,9 +3,7 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * JSON-RPC error indicating that the request payload is not a valid JSON-RPC Request object.
@@ -48,7 +46,10 @@ public class InvalidRequestError extends A2AError {
      * @param message the error message
      * @param details additional error details
      */
-    public InvalidRequestError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public InvalidRequestError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.INVALID_REQUEST.code()),
                 defaultIfNull(message, "Request payload validation error"),

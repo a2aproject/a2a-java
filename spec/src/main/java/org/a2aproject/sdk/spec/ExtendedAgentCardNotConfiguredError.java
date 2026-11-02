@@ -3,9 +3,7 @@ package org.a2aproject.sdk.spec;
 import static org.a2aproject.sdk.spec.util.Utils.defaultIfNull;
 
 import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * A2A Protocol error indicating that the agent does not have an authenticated extended card configured.
@@ -39,7 +37,10 @@ public class ExtendedAgentCardNotConfiguredError extends A2AProtocolError {
      * @param message the error message
      * @param details additional error details
      */
-    public ExtendedAgentCardNotConfiguredError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+    public ExtendedAgentCardNotConfiguredError(
+            @Nullable Integer code,
+            @Nullable String message,
+            @Nullable Map<String, Object> details) {
         super(
                 defaultIfNull(code, A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED.code()),
                 defaultIfNull(message, "Extended Card not configured"),

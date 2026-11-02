@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.tests.multiversion.grpc;
 
-import java.util.concurrent.TimeUnit;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.quarkus.test.junit.QuarkusTest;
+import java.util.concurrent.TimeUnit;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
@@ -33,10 +32,17 @@ public class MultiVersionGrpcTest extends AbstractA2AServerTest {
 
     @Override
     protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
-            channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-            return channel;
-        }));
+        builder.withTransport(
+                GrpcTransport.class,
+                new GrpcTransportConfigBuilder()
+                        .channelFactory(
+                                target -> {
+                                    channel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    return channel;
+                                }));
     }
 
     @AfterAll

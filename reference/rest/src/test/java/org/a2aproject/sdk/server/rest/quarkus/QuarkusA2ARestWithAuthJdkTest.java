@@ -1,17 +1,17 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import org.a2aproject.sdk.client.ClientBuilder;
-import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.http.JdkA2AHttpClient;
 import org.a2aproject.sdk.client.transport.rest.RestTransport;
 import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
 import org.a2aproject.sdk.client.transport.spi.interceptors.auth.AuthInterceptor;
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerWithAuthTest;
 import org.a2aproject.sdk.server.apps.common.AuthTestProfile;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -45,11 +45,15 @@ public class QuarkusA2ARestWithAuthJdkTest extends AbstractA2AServerWithAuthTest
     @Override
     protected void configureTransportWithAuth(ClientBuilder builder) {
         // Use AuthInterceptor with inline CredentialService
-        AuthInterceptor authInterceptor = new AuthInterceptor(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName) ? getEncodedCredentials() : null
-        );
+        AuthInterceptor authInterceptor =
+                new AuthInterceptor(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials()
+                                        : null);
 
-        builder.withTransport(RestTransport.class,
+        builder.withTransport(
+                RestTransport.class,
                 new RestTransportConfigBuilder()
                         .httpClient(new JdkA2AHttpClient())
                         .addInterceptor(authInterceptor));
@@ -58,9 +62,9 @@ public class QuarkusA2ARestWithAuthJdkTest extends AbstractA2AServerWithAuthTest
     @Override
     protected void configureTransport(ClientBuilder builder) {
         // No auth (for unauthenticated client creation)
-        builder.withTransport(RestTransport.class,
-                new RestTransportConfigBuilder()
-                        .httpClient(new JdkA2AHttpClient()));
+        builder.withTransport(
+                RestTransport.class,
+                new RestTransportConfigBuilder().httpClient(new JdkA2AHttpClient()));
     }
 
     @Test

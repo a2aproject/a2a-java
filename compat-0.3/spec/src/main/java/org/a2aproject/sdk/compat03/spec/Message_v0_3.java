@@ -3,7 +3,6 @@ package org.a2aproject.sdk.compat03.spec;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -19,14 +18,21 @@ public record Message_v0_3(
         @Nullable List<String> referenceTaskIds,
         @Nullable Map<String, Object> metadata,
         @Nullable List<String> extensions,
-        String kind
-) implements EventKind_v0_3, StreamingEventKind_v0_3 {
+        String kind)
+        implements EventKind_v0_3, StreamingEventKind_v0_3 {
 
     public static final String KIND = "message";
 
-    public Message_v0_3(Role role, List<Part_v0_3<?>> parts, @Nullable String messageId, @Nullable String contextId,
-                        @Nullable String taskId, @Nullable List<String> referenceTaskIds,
-                        @Nullable Map<String, Object> metadata, @Nullable List<String> extensions, String kind) {
+    public Message_v0_3(
+            Role role,
+            List<Part_v0_3<?>> parts,
+            @Nullable String messageId,
+            @Nullable String contextId,
+            @Nullable String taskId,
+            @Nullable List<String> referenceTaskIds,
+            @Nullable Map<String, Object> metadata,
+            @Nullable List<String> extensions,
+            String kind) {
         Assert.checkNotNullParam("role", role);
         Assert.checkNotNullParam("parts", parts);
         this.role = role;
@@ -46,10 +52,25 @@ public record Message_v0_3(
         this.extensions = extensions != null ? List.copyOf(extensions) : null;
     }
 
-    public Message_v0_3(Role role, List<Part_v0_3<?>> parts, @Nullable String messageId, @Nullable String contextId,
-                        @Nullable String taskId, @Nullable List<String> referenceTaskIds,
-                        @Nullable Map<String, Object> metadata, @Nullable List<String> extensions) {
-        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, KIND);
+    public Message_v0_3(
+            Role role,
+            List<Part_v0_3<?>> parts,
+            @Nullable String messageId,
+            @Nullable String contextId,
+            @Nullable String taskId,
+            @Nullable List<String> referenceTaskIds,
+            @Nullable Map<String, Object> metadata,
+            @Nullable List<String> extensions) {
+        this(
+                role,
+                parts,
+                messageId,
+                contextId,
+                taskId,
+                referenceTaskIds,
+                metadata,
+                extensions,
+                KIND);
     }
 
     public enum Role {
@@ -83,8 +104,7 @@ public record Message_v0_3(
         private Map<String, Object> metadata;
         private List<String> extensions;
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder(Message_v0_3 message) {
             role = message.role;
@@ -143,8 +163,15 @@ public record Message_v0_3(
         }
 
         public Message_v0_3 build() {
-            return new Message_v0_3(role, parts, messageId == null ? UUID.randomUUID().toString() : messageId,
-                    contextId, taskId, referenceTaskIds, metadata, extensions);
+            return new Message_v0_3(
+                    role,
+                    parts,
+                    messageId == null ? UUID.randomUUID().toString() : messageId,
+                    contextId,
+                    taskId,
+                    referenceTaskIds,
+                    metadata,
+                    extensions);
         }
     }
 }

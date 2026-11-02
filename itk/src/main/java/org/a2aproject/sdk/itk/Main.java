@@ -33,10 +33,7 @@ public class Main {
         command.add("-jar");
         command.add(jarPath.toString());
 
-        Process process = new ProcessBuilder(command)
-                .inheritIO()
-                .directory(new File("."))
-                .start();
+        Process process = new ProcessBuilder(command).inheritIO().directory(new File(".")).start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> process.destroyForcibly()));
 

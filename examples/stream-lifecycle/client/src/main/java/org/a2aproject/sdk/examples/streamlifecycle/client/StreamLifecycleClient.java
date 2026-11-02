@@ -3,6 +3,9 @@ package org.a2aproject.sdk.examples.streamlifecycle.client;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.grpc.Channel;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -10,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientBuilder;
@@ -34,10 +36,6 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TextPart;
-
-import io.grpc.Channel;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
 /**
  * Demonstrates the TaskStreamLifecycleHook by connecting 3 subscribers to a task.
@@ -64,7 +62,8 @@ public class StreamLifecycleClient {
 
     public static void main(String[] args) throws Exception {
         try {
-            AgentCard agentCard = A2ACardResolver.builder().baseUrl(SERVER_URL).build().getAgentCard();
+            AgentCard agentCard =
+                    A2ACardResolver.builder().baseUrl(SERVER_URL).build().getAgentCard();
             System.out.println("Resolved agent card: " + agentCard.name());
             String protocol = System.getProperty("quarkus.agentcard.protocol", "JSONRPC");
             runAndVerify(agentCard, protocol);
@@ -89,28 +88,37 @@ public class StreamLifecycleClient {
         CopyOnWriteArrayList<ClientEvent> sub2Events = new CopyOnWriteArrayList<>();
 
         // --- Subscriber 1: Send a message (creates the task) ---
-        Thread sub1Thread = new Thread(() -> {
-            try {
-                Client client = createStreamingClient(agentCard, "Sub-1", (event, card) -> {
-                    sub1Events.add(event);
-                    logEvent("Sub-1", event);
-                    if (taskIdRef.get() == null) {
-                        String id = extractTaskId(event);
-                        if (id != null) {
-                            taskIdRef.set(id);
-                            taskIdReady.countDown();
-                        }
-                    }
-                }, sub1StreamDone, protocol);
+        Thread sub1Thread =
+                new Thread(
+                        () -> {
+                            try {
+                                Client client =
+                                        createStreamingClient(
+                                                agentCard,
+                                                "Sub-1",
+                                                (event, card) -> {
+                                                    sub1Events.add(event);
+                                                    logEvent("Sub-1", event);
+                                                    if (taskIdRef.get() == null) {
+                                                        String id = extractTaskId(event);
+                                                        if (id != null) {
+                                                            taskIdRef.set(id);
+                                                            taskIdReady.countDown();
+                                                        }
+                                                    }
+                                                },
+                                                sub1StreamDone,
+                                                protocol);
 
-                System.out.println("[Sub-1] Sending message to create task...");
-                client.sendMessage(A2A.toUserMessage("Start streaming demo"));
-            } catch (Exception e) {
-                System.out.println("[Sub-1] Error: " + e.getMessage());
-            } finally {
-                sub1StreamDone.countDown();
-            }
-        }, "subscriber-1");
+                                System.out.println("[Sub-1] Sending message to create task...");
+                                client.sendMessage(A2A.toUserMessage("Start streaming demo"));
+                            } catch (Exception e) {
+                                System.out.println("[Sub-1] Error: " + e.getMessage());
+                            } finally {
+                                sub1StreamDone.countDown();
+                            }
+                        },
+                        "subscriber-1");
         sub1Thread.start();
 
         assertTrue(taskIdReady.await(10, TimeUnit.SECONDS), "Task should be created");
@@ -122,41 +130,62 @@ public class StreamLifecycleClient {
         Thread.sleep(1500);
 
         // --- Subscriber 2: Subscribe to the existing task ---
-        Thread sub2Thread = new Thread(() -> {
-            try {
-                Client client = createStreamingClient(agentCard, "Sub-2", (event, card) -> {
-                    sub2Events.add(event);
-                    logEvent("Sub-2", event);
-                }, sub2StreamDone, protocol);
+        Thread sub2Thread =
+                new Thread(
+                        () -> {
+                            try {
+                                Client client =
+                                        createStreamingClient(
+                                                agentCard,
+                                                "Sub-2",
+                                                (event, card) -> {
+                                                    sub2Events.add(event);
+                                                    logEvent("Sub-2", event);
+                                                },
+                                                sub2StreamDone,
+                                                protocol);
 
-                System.out.println("[Sub-2] Subscribing to task " + taskId + "...");
-                client.subscribeToTask(new TaskIdParams(taskId));
-            } catch (Exception e) {
-                System.out.println("[Sub-2] Error: " + e.getMessage());
-            } finally {
-                sub2StreamDone.countDown();
-            }
-        }, "subscriber-2");
+                                System.out.println("[Sub-2] Subscribing to task " + taskId + "...");
+                                client.subscribeToTask(new TaskIdParams(taskId));
+                            } catch (Exception e) {
+                                System.out.println("[Sub-2] Error: " + e.getMessage());
+                            } finally {
+                                sub2StreamDone.countDown();
+                            }
+                        },
+                        "subscriber-2");
         sub2Thread.start();
 
         System.out.println("\n=== Subscribers 1 and 2 are active — receiving events... ===\n");
         Thread.sleep(2000);
 
         // --- Subscriber 3: Triggers the hook (closes all streams) ---
-        Thread sub3Thread = new Thread(() -> {
-            try {
-                Client client = createStreamingClient(agentCard, "Sub-3", (event, card) -> {
-                    logEvent("Sub-3", event);
-                }, sub3StreamDone, protocol);
+        Thread sub3Thread =
+                new Thread(
+                        () -> {
+                            try {
+                                Client client =
+                                        createStreamingClient(
+                                                agentCard,
+                                                "Sub-3",
+                                                (event, card) -> {
+                                                    logEvent("Sub-3", event);
+                                                },
+                                                sub3StreamDone,
+                                                protocol);
 
-                System.out.println("[Sub-3] Subscribing to task " + taskId + " (will trigger stream close)...");
-                client.subscribeToTask(new TaskIdParams(taskId));
-            } catch (Exception e) {
-                System.out.println("[Sub-3] Error: " + e.getMessage());
-            } finally {
-                sub3StreamDone.countDown();
-            }
-        }, "subscriber-3");
+                                System.out.println(
+                                        "[Sub-3] Subscribing to task "
+                                                + taskId
+                                                + " (will trigger stream close)...");
+                                client.subscribeToTask(new TaskIdParams(taskId));
+                            } catch (Exception e) {
+                                System.out.println("[Sub-3] Error: " + e.getMessage());
+                            } finally {
+                                sub3StreamDone.countDown();
+                            }
+                        },
+                        "subscriber-3");
         sub3Thread.start();
 
         // Wait for all streams to close
@@ -167,10 +196,14 @@ public class StreamLifecycleClient {
         System.out.println("\n=== All streams closed. ===");
 
         // Verify events were received
-        assertTrue(sub1Events.size() >= 2,
-                "Subscriber 1 should have received at least a status update and one artifact, got: " + sub1Events.size());
-        assertTrue(sub2Events.size() >= 1,
-                "Subscriber 2 should have received at least a task snapshot, got: " + sub2Events.size());
+        assertTrue(
+                sub1Events.size() >= 2,
+                "Subscriber 1 should have received at least a status update and one artifact, got: "
+                        + sub1Events.size());
+        assertTrue(
+                sub2Events.size() >= 1,
+                "Subscriber 2 should have received at least a task snapshot, got: "
+                        + sub2Events.size());
     }
 
     public static void shutdownGrpcChannels() {
@@ -185,17 +218,22 @@ public class StreamLifecycleClient {
         grpcChannels.clear();
     }
 
-    private static Client createStreamingClient(AgentCard agentCard, String name,
-                                                BiConsumer<ClientEvent, AgentCard> consumer,
-                                                CountDownLatch streamDone,
-                                                String protocol) throws Exception {
-        ClientBuilder builder = Client.builder(agentCard)
-                .addConsumer(consumer)
-                .streamingErrorHandler(e -> {
-                    System.out.println("[" + name + "] Stream closed.");
-                    streamDone.countDown();
-                })
-                .clientConfig(ClientConfig.builder().setStreaming(true).build());
+    private static Client createStreamingClient(
+            AgentCard agentCard,
+            String name,
+            BiConsumer<ClientEvent, AgentCard> consumer,
+            CountDownLatch streamDone,
+            String protocol)
+            throws Exception {
+        ClientBuilder builder =
+                Client.builder(agentCard)
+                        .addConsumer(consumer)
+                        .streamingErrorHandler(
+                                e -> {
+                                    System.out.println("[" + name + "] Stream closed.");
+                                    streamDone.countDown();
+                                })
+                        .clientConfig(ClientConfig.builder().setStreaming(true).build());
         configureTransport(builder, protocol);
         return builder.build();
     }
@@ -204,13 +242,16 @@ public class StreamLifecycleClient {
         ClientTransportConfig transportConfig;
         switch (protocol) {
             case "GRPC":
-                Function<String, Channel> channelFactory = url -> {
-                    String target = url.replaceAll("^https?://", "");
-                    ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-                    grpcChannels.add(channel);
-                    return channel;
-                };
-                transportConfig = new GrpcTransportConfigBuilder().channelFactory(channelFactory).build();
+                Function<String, Channel> channelFactory =
+                        url -> {
+                            String target = url.replaceAll("^https?://", "");
+                            ManagedChannel channel =
+                                    ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+                            grpcChannels.add(channel);
+                            return channel;
+                        };
+                transportConfig =
+                        new GrpcTransportConfigBuilder().channelFactory(channelFactory).build();
                 clientBuilder.withTransport(GrpcTransport.class, transportConfig);
                 break;
             case "HTTP+JSON":
@@ -227,14 +268,16 @@ public class StreamLifecycleClient {
 
     public static void logEvent(String subscriber, ClientEvent event) {
         if (event instanceof TaskEvent te) {
-            System.out.printf("[%s] TaskEvent — state: %s, id: %s%n",
+            System.out.printf(
+                    "[%s] TaskEvent — state: %s, id: %s%n",
                     subscriber, te.getTask().status().state(), te.getTask().id());
         } else if (event instanceof TaskUpdateEvent tue) {
             if (tue.getUpdateEvent() instanceof TaskArtifactUpdateEvent artifact) {
                 String text = extractText(artifact);
                 System.out.printf("[%s] ArtifactEvent — %s%n", subscriber, text);
             } else {
-                System.out.printf("[%s] StatusUpdate — %s%n", subscriber, tue.getTask().status().state());
+                System.out.printf(
+                        "[%s] StatusUpdate — %s%n", subscriber, tue.getTask().status().state());
             }
         } else if (event instanceof MessageEvent me) {
             String text = extractText(me.getMessage());

@@ -1,5 +1,9 @@
 package org.a2aproject.sdk.grpc.mapper;
 
+import com.google.protobuf.NullValue;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.Value;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -8,15 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.protobuf.NullValue;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.Value;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
-
-import org.a2aproject.sdk.spec.InvalidParamsError;
 
 /**
  * Common field mapping utilities shared across all mappers.
@@ -31,7 +29,9 @@ import org.a2aproject.sdk.spec.InvalidParamsError;
  * <li>Enum → null conversion (protobuf UNSPECIFIED/UNKNOWN handling)</li>
  * </ul>
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStateMapper.class})
+@Mapper(
+        config = A2AProtoMapperConfig.class,
+        uses = {TaskStateMapper.class})
 public interface A2ACommonFieldMapper {
 
     A2ACommonFieldMapper INSTANCE = A2AMappers.getMapper(A2ACommonFieldMapper.class);
@@ -117,8 +117,7 @@ public interface A2ACommonFieldMapper {
         }
         return OffsetDateTime.ofInstant(
                 Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos()),
-                ZoneOffset.UTC
-        );
+                ZoneOffset.UTC);
     }
 
     /**
@@ -253,7 +252,8 @@ public interface A2ACommonFieldMapper {
      * @return protobuf ListValue
      */
     default com.google.protobuf.ListValue listToListValue(List<Object> list) {
-        com.google.protobuf.ListValue.Builder listValueBuilder = com.google.protobuf.ListValue.newBuilder();
+        com.google.protobuf.ListValue.Builder listValueBuilder =
+                com.google.protobuf.ListValue.newBuilder();
         if (list != null) {
             list.forEach(o -> listValueBuilder.addValues(objectToValue(o)));
         }
@@ -383,9 +383,11 @@ public interface A2ACommonFieldMapper {
     @Named("millisToInstant")
     default Instant millisToInstant(long millis) {
         if (millis < 0L) {
-            throw new InvalidParamsError(null,
-                "Timestamp must be a non-negative number of milliseconds since epoch, but got: " + millis,
-                null);
+            throw new InvalidParamsError(
+                    null,
+                    "Timestamp must be a non-negative number of milliseconds since epoch, but got: "
+                            + millis,
+                    null);
         }
         return millis > 0L ? Instant.ofEpochMilli(millis) : null;
     }
@@ -443,19 +445,24 @@ public interface A2ACommonFieldMapper {
      * @throws InvalidParamsError if state is UNRECOGNIZED (invalid enum value)
      */
     @Named("taskStateOrNull")
-    default org.a2aproject.sdk.spec.TaskState taskStateOrNull(org.a2aproject.sdk.grpc.TaskState state) {
+    default org.a2aproject.sdk.spec.TaskState taskStateOrNull(
+            org.a2aproject.sdk.grpc.TaskState state) {
         if (state == null || state == org.a2aproject.sdk.grpc.TaskState.TASK_STATE_UNSPECIFIED) {
             return null;
         }
         // Reject invalid enum values (e.g., "INVALID_STATUS" from JSON)
         if (state == org.a2aproject.sdk.grpc.TaskState.UNRECOGNIZED) {
-            String validStates = java.util.Arrays.stream(org.a2aproject.sdk.spec.TaskState.values())
-                    .filter(s -> s != org.a2aproject.sdk.spec.TaskState.TASK_STATE_UNSPECIFIED)
-                    .map(Enum::name)
-                    .collect(java.util.stream.Collectors.joining(", "));
-            throw new InvalidParamsError(null,
-                "Invalid task state value. Must be one of: " + validStates,
-                null);
+            String validStates =
+                    java.util.Arrays.stream(org.a2aproject.sdk.spec.TaskState.values())
+                            .filter(
+                                    s ->
+                                            s
+                                                    != org.a2aproject.sdk.spec.TaskState
+                                                            .TASK_STATE_UNSPECIFIED)
+                            .map(Enum::name)
+                            .collect(java.util.stream.Collectors.joining(", "));
+            throw new InvalidParamsError(
+                    null, "Invalid task state value. Must be one of: " + validStates, null);
         }
         org.a2aproject.sdk.spec.TaskState result = TaskStateMapper.INSTANCE.fromProto(state);
         return result;

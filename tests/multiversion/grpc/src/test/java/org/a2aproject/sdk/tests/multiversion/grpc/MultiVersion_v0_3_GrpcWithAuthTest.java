@@ -1,14 +1,13 @@
 package org.a2aproject.sdk.tests.multiversion.grpc;
 
-import java.util.concurrent.TimeUnit;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import java.util.concurrent.TimeUnit;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportConfigBuilder_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth.AuthInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerWithAuthTest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
@@ -39,30 +38,40 @@ public class MultiVersion_v0_3_GrpcWithAuthTest extends AbstractA2AServerWithAut
 
     @Override
     protected void configureTransportWithAuth(ClientBuilder_v0_3 builder) {
-        AuthInterceptor_v0_3 authInterceptor = new AuthInterceptor_v0_3(
-                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName) ? getEncodedCredentials() : null
-        );
+        AuthInterceptor_v0_3 authInterceptor =
+                new AuthInterceptor_v0_3(
+                        (schemeName, context) ->
+                                BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                                        ? getEncodedCredentials()
+                                        : null);
 
-        builder.withTransport(GrpcTransport_v0_3.class, new GrpcTransportConfigBuilder_v0_3()
-                .channelFactory(target -> {
-                    authenticatedChannel = ManagedChannelBuilder
-                            .forTarget(target)
-                            .usePlaintext()
-                            .build();
-                    return authenticatedChannel;
-                })
-                .addInterceptor(authInterceptor));
+        builder.withTransport(
+                GrpcTransport_v0_3.class,
+                new GrpcTransportConfigBuilder_v0_3()
+                        .channelFactory(
+                                target -> {
+                                    authenticatedChannel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    return authenticatedChannel;
+                                })
+                        .addInterceptor(authInterceptor));
     }
 
     @Override
     protected void configureTransport(ClientBuilder_v0_3 builder) {
-        builder.withTransport(GrpcTransport_v0_3.class, new GrpcTransportConfigBuilder_v0_3().channelFactory(target -> {
-            unauthenticatedChannel = ManagedChannelBuilder
-                    .forTarget(target)
-                    .usePlaintext()
-                    .build();
-            return unauthenticatedChannel;
-        }));
+        builder.withTransport(
+                GrpcTransport_v0_3.class,
+                new GrpcTransportConfigBuilder_v0_3()
+                        .channelFactory(
+                                target -> {
+                                    unauthenticatedChannel =
+                                            ManagedChannelBuilder.forTarget(target)
+                                                    .usePlaintext()
+                                                    .build();
+                                    return unauthenticatedChannel;
+                                }));
     }
 
     @AfterAll
