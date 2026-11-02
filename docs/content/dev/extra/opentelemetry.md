@@ -189,7 +189,7 @@ The `OpenTelemetryHttpClientProducer` CDI bean produces an `@Instrumented A2AHtt
 
 1. An `@Instrumented A2AHttpClient` bean (if available — e.g. the one produced by this module)
 2. An unqualified `A2AHttpClient` bean (if the application provides one)
-3. `A2AHttpClientFactory.create()` as last resort
+3. `A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT)` as last resort
 
 The `@Instrumented` qualifier (defined in `server-common`) marks HTTP client beans that have been wrapped with observability instrumentation. It ensures the instrumented client does not compete with the application's own `A2AHttpClient` bean in default CDI resolution — the two coexist, and the instrumented variant wraps the application's bean as its delegate.
 

@@ -42,8 +42,12 @@ import org.jspecify.annotations.Nullable;
  * Android-specific implementation of {@link A2AHttpClient} using {@link HttpURLConnection}.
  *
  * <p><b>Security Note:</b> This client does not follow HTTP redirects automatically
- * to prevent credential leakage to third-party origins. Explicitly enabled POST redirects are
- * followed once with headers filtered by {@link RedirectHeaderPolicy}.
+ * to prevent credential leakage to third-party origins. Explicitly enabled GET and POST redirects
+ * are followed once only when the target has the same origin. {@link HttpURLConnection} cannot
+ * isolate process-wide {@code CookieHandler} or {@code Authenticator} state for one request, so
+ * cross-origin redirects are deliberately not followed even when
+ * {@link A2AHttpClient.GetBuilder#followRedirects(boolean)} or
+ * {@link A2AHttpClient.PostBuilder#followRedirects(boolean)} is enabled.
  */
 public class AndroidA2AHttpClient implements A2AHttpClient {
 
@@ -368,14 +372,40 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
   }
 
   private static class AndroidGetBuilder extends AndroidBuilder<GetBuilder> implements GetBuilder {
+    private boolean followRedirects = false;
+
 AndroidGetBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
       super(sseParserConfig, redirectHeaderPolicy);
+    }
+
+    @Override
+    public GetBuilder followRedirects(boolean follow) {
+      this.followRedirects = follow;
+      return self();
     }
 
     @Override
     public A2AHttpResponse get() throws IOException {
       HttpURLConnection connection = createConnection("GET", false);
       try {
+        A2AHttpResponse response = execute(connection);
+        if (!followRedirects) {
+          return response;
+        }
+        String location = response.headers().firstValue("Location");
+        RedirectHeaderPolicy.RedirectedRequest redirect = redirectHeaderPolicy
+            .redirectedRequest(URI.create(url), response.status(), location, headers)
+            .orElse(null);
+        if (redirect == null) {
+          return response;
+        }
+        if (!RedirectHeaderPolicy.sameOrigin(URI.create(url), redirect.target())) {
+          // HttpURLConnection cannot isolate process-wide CookieHandler or Authenticator state
+          // for an individual request. Never follow across an origin boundary.
+          return response;
+        }
+        connection.disconnect();
+        connection = createConnection(redirect.target().toString(), "GET", redirect.headers(), false);
         return execute(connection);
       } catch (IOException e) {
         connection.disconnect();

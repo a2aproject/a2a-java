@@ -138,6 +138,16 @@ public class JSONRPCTransportTest {
     }
 
     @Test
+    public void configBuilderDisablesRedirectFollowingByDefault() {
+        assertFalse(new JSONRPCTransportConfigBuilder().build().isFollowRedirects());
+    }
+
+    @Test
+    public void configBuilderEnablesRedirectFollowing() {
+        assertTrue(new JSONRPCTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
+    }
+
+    @Test
     public void testA2AClientSendMessage() throws Exception {
         this.server.when(
                         request()

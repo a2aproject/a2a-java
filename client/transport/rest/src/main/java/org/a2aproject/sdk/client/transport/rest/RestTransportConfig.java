@@ -51,6 +51,7 @@ import org.jspecify.annotations.Nullable;
 public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
 
     private final @Nullable A2AHttpClient httpClient;
+    private final boolean followRedirects;
 
     /**
      * Create a REST transport configuration with the default HTTP client.
@@ -59,7 +60,7 @@ public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
      * {@link RestTransportConfigBuilder} instead for a more fluent API.
      */
     public RestTransportConfig() {
-        this.httpClient = null;
+        this(null, false);
     }
 
     /**
@@ -70,7 +71,18 @@ public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
      * @param httpClient the HTTP client to use for REST requests
      */
     public RestTransportConfig(A2AHttpClient httpClient) {
+        this(httpClient, false);
+    }
+
+    /**
+     * Create a REST transport configuration with a custom HTTP client and redirect policy.
+     *
+     * @param httpClient the HTTP client to use for REST requests
+     * @param followRedirects whether POST requests may follow a single redirect
+     */
+    public RestTransportConfig(@Nullable A2AHttpClient httpClient, boolean followRedirects) {
         this.httpClient = httpClient;
+        this.followRedirects = followRedirects;
     }
 
     /**
@@ -80,5 +92,14 @@ public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
      */
     public @Nullable A2AHttpClient getHttpClient() {
         return httpClient;
+    }
+
+    /**
+     * Whether POST requests issued by this transport may follow a redirect.
+     *
+     * @return {@code true} when redirect following is enabled
+     */
+    public boolean isFollowRedirects() {
+        return followRedirects;
     }
 }

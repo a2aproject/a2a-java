@@ -275,7 +275,7 @@ public class JdkA2AHttpClientTest {
     }
 
     @Test
-    public void testCustomClientCanFollowRedirects() throws Exception {
+    public void testGetNeverFollowsNativeRedirectsEvenWithRedirectFollowingClient() throws Exception {
         server = ClientAndServer.startClientAndServer(0);
 
         server.when(request().withMethod("GET").withPath("/redirect"))
@@ -296,9 +296,8 @@ public class JdkA2AHttpClientTest {
                 .url("http://localhost:" + server.getLocalPort() + "/redirect")
                 .get();
 
-        assertEquals(200, response.status());
-        assertTrue(response.success());
-        assertEquals("redirected", response.body());
+        assertEquals(302, response.status(),
+                "GET must not follow native redirects; the SDK always uses a no-redirect client");
     }
 
     @Test
@@ -384,7 +383,7 @@ public class JdkA2AHttpClientTest {
     private abstract static class StubHttpClient extends HttpClient {
         @Override public Optional<CookieHandler> cookieHandler() { return Optional.empty(); }
         @Override public Optional<Duration> connectTimeout() { return Optional.empty(); }
-        @Override public HttpClient.Redirect followRedirects() { return HttpClient.Redirect.NORMAL; }
+        @Override public HttpClient.Redirect followRedirects() { return HttpClient.Redirect.NEVER; }
         @Override public Optional<ProxySelector> proxy() { return Optional.empty(); }
         @Override public SSLContext sslContext() { throw new UnsupportedOperationException(); }
         @Override public SSLParameters sslParameters() { return new SSLParameters(); }

@@ -71,6 +71,7 @@ public class RestTransport implements ClientTransport {
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
     private final AgentCard agentCard;
+    private final boolean followRedirects;
 
     public RestTransport(AgentCard agentCard) {
         this(null, agentCard, Utils.getFavoriteInterface(agentCard), null);
@@ -78,10 +79,17 @@ public class RestTransport implements ClientTransport {
 
     public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors) {
+        this(httpClient, agentCard, agentInterface, interceptors, false);
+    }
+
+    public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
+            AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors,
+            boolean followRedirects) {
         this.httpClient = httpClient == null ? A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT) : httpClient;
         this.agentCard = agentCard;
         this.agentInterface = agentInterface;
         this.interceptors = interceptors;
+        this.followRedirects = followRedirects;
     }
 
     @Override
@@ -117,7 +125,10 @@ public class RestTransport implements ClientTransport {
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
-            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream", payloadAndHeaders);
+            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(
+                    Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream",
+                    payloadAndHeaders,
+                    false);
             ref.set(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -410,7 +421,7 @@ public class RestTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
-            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
+            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders, false);
             ref.set(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -470,7 +481,7 @@ public class RestTransport implements ClientTransport {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
         }
-        A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body);
+        A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body, followRedirects);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -481,19 +492,24 @@ public class RestTransport implements ClientTransport {
         return response.body();
     }
 
-    private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders payloadAndHeaders) throws JsonProcessingException, InvalidProtocolBufferException {
+    private A2AHttpClient.PostBuilder createPostBuilder(
+            String url, PayloadAndHeaders payloadAndHeaders, boolean followRedirects)
+            throws JsonProcessingException, InvalidProtocolBufferException {
         String body = ProtoJsonUtils.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
         }
-        return buildPost(url, payloadAndHeaders, body);
+        return buildPost(url, payloadAndHeaders, body, followRedirects);
     }
 
-    private A2AHttpClient.PostBuilder buildPost(String url, PayloadAndHeaders payloadAndHeaders, String body) throws JsonProcessingException {
+    private A2AHttpClient.PostBuilder buildPost(
+            String url, PayloadAndHeaders payloadAndHeaders, String body, boolean followRedirects)
+            throws JsonProcessingException {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
                 .addHeader(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
+                .followRedirects(followRedirects)
                 .body(body);
 
         if (payloadAndHeaders.getHeaders() != null) {

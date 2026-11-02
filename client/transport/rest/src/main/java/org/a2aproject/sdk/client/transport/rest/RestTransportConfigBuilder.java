@@ -67,6 +67,7 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
 
     private @Nullable A2AHttpClient httpClient;
     private A2AHttpClientConfiguration httpClientConfiguration = A2AHttpClientConfiguration.DEFAULT;
+    private boolean followRedirects;
 
     /**
      * Set the HTTP client to use for REST requests.
@@ -108,6 +109,23 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
     }
 
     /**
+     * Enables explicit, one-hop redirect following for non-streaming POST requests.
+     *
+     * <p>Disabled by default. The configured {@link A2AHttpClient} remains responsible for
+     * applying its redirect-header policy. When using {@code JdkA2AHttpClient} with a supplied
+     * JDK client, that JDK client must have native redirects disabled.
+     *
+     * <p>Streaming SSE requests are never redirected.
+     *
+     * @param followRedirects whether non-streaming POST requests may follow a redirect
+     * @return this builder for method chaining
+     */
+    public RestTransportConfigBuilder followRedirects(boolean followRedirects) {
+        this.followRedirects = followRedirects;
+        return this;
+    }
+
+    /**
      * Build the REST transport configuration.
      * <p>
      * If no HTTP client was configured, one is auto-selected via {@link A2AHttpClientFactory}.
@@ -122,7 +140,7 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
             httpClient = A2AHttpClientFactory.create(httpClientConfiguration);
         }
 
-        RestTransportConfig config = new RestTransportConfig(httpClient);
+        RestTransportConfig config = new RestTransportConfig(httpClient, followRedirects);
         config.setInterceptors(this.interceptors);
         return config;
     }

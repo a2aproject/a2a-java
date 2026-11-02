@@ -75,6 +75,7 @@ public class JSONRPCTransport implements ClientTransport {
     private final AgentInterface agentInterface;
     private final @Nullable List<ClientCallInterceptor> interceptors;
     private final @Nullable AgentCard agentCard;
+    private final boolean followRedirects;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, new AgentInterface("JSONRPC", agentUrl),  null);
@@ -86,10 +87,17 @@ public class JSONRPCTransport implements ClientTransport {
 
     public JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
                             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors) {
+        this(httpClient, agentCard, agentInterface, interceptors, false);
+    }
+
+    public JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
+                            AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors,
+                            boolean followRedirects) {
         this.httpClient = httpClient == null ? A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT) : httpClient;
         this.agentCard = agentCard;
         this.agentInterface = agentInterface;
         this.interceptors = interceptors;
+        this.followRedirects = followRedirects;
     }
 
     @Override
@@ -121,7 +129,8 @@ public class JSONRPCTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
 
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(agentInterface.url(), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD);
+            A2AHttpClient.PostBuilder builder = createPostBuilder(
+                    agentInterface.url(), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD, false);
             ref.set(builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -271,7 +280,8 @@ public class JSONRPCTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
 
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(agentInterface.url(), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD);
+            A2AHttpClient.PostBuilder builder = createPostBuilder(
+                    agentInterface.url(), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD, false);
             ref.set(builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -324,7 +334,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders, String method) throws IOException, InterruptedException, JsonProcessingException {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders, method);
+        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders, method, followRedirects);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             int status = response.status();
@@ -334,11 +344,14 @@ public class JSONRPCTransport implements ClientTransport {
         return response.body();
     }
 
-    private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders payloadAndHeaders, String method) throws JsonProcessingException {
+    private A2AHttpClient.PostBuilder createPostBuilder(
+            String url, PayloadAndHeaders payloadAndHeaders, String method, boolean followRedirects)
+            throws JsonProcessingException {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
                 .addHeader(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
+                .followRedirects(followRedirects)
                 .body(JSONRPCUtils.toJsonRPCRequest(null, method, (MessageOrBuilder) payloadAndHeaders.getPayload()));
 
         if (payloadAndHeaders.getHeaders() != null) {

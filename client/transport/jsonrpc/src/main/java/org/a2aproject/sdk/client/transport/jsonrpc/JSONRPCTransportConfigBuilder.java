@@ -67,6 +67,7 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
 
     private @Nullable A2AHttpClient httpClient;
     private A2AHttpClientConfiguration httpClientConfiguration = A2AHttpClientConfiguration.DEFAULT;
+    private boolean followRedirects;
 
     /**
      * Set the HTTP client to use for JSON-RPC requests.
@@ -108,6 +109,23 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
     }
 
     /**
+     * Enables explicit, one-hop redirect following for non-streaming POST requests.
+     *
+     * <p>Disabled by default. The configured {@link A2AHttpClient} remains responsible for
+     * applying its redirect-header policy. When using {@code JdkA2AHttpClient} with a supplied
+     * JDK client, that JDK client must have native redirects disabled.
+     *
+     * <p>Streaming SSE requests are never redirected.
+     *
+     * @param followRedirects whether non-streaming POST requests may follow a redirect
+     * @return this builder for method chaining
+     */
+    public JSONRPCTransportConfigBuilder followRedirects(boolean followRedirects) {
+        this.followRedirects = followRedirects;
+        return this;
+    }
+
+    /**
      * Build the JSON-RPC transport configuration.
      * <p>
      * If no HTTP client was configured, one is auto-selected via {@link A2AHttpClientFactory}.
@@ -122,7 +140,7 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
             httpClient = A2AHttpClientFactory.create(httpClientConfiguration);
         }
 
-        JSONRPCTransportConfig config = new JSONRPCTransportConfig(httpClient);
+        JSONRPCTransportConfig config = new JSONRPCTransportConfig(httpClient, followRedirects);
         config.setInterceptors(this.interceptors);
         return config;
     }

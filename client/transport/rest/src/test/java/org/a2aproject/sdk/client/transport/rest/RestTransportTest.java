@@ -15,6 +15,7 @@ import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SET_TASK
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -106,6 +107,16 @@ public class RestTransportTest {
     @AfterEach
     public void tearDown() {
         server.stop();
+    }
+
+    @Test
+    public void configBuilderDisablesRedirectFollowingByDefault() {
+        assertFalse(new RestTransportConfigBuilder().build().isFollowRedirects());
+    }
+
+    @Test
+    public void configBuilderEnablesRedirectFollowing() {
+        assertTrue(new RestTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
     }
 
     public RestTransportTest() {
