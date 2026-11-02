@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
@@ -24,13 +25,14 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
-import org.a2aproject.sdk.server.util.CdiUtils;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.tasks.TaskPersistenceException;
 import org.a2aproject.sdk.server.tasks.TaskSerializationException;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.server.tasks.TaskStoreException;
+import org.a2aproject.sdk.server.util.CdiUtils;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -40,6 +42,17 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Task persistence in the {@code a2a-java} JTA persistence unit. Register both
+ * {@link JpaTask} and {@link JpaTaskOwner} and apply the application-managed schema
+ * migration described in this module's README, including the exact binary ownership index.
+ *
+ * <p>Authorized listings request {@link JpaTaskAuthorizationCapability} from the configured
+ * provider. Supported scopes restrict both database count and page queries; only the page
+ * query uses the cursor. Unsupported providers use bounded per-task scanning and fail when
+ * an exact count exceeds the configured scan ceiling. Missing call context fails closed.
+ * Adding this store does not select an authorization provider.
+ */
 @ApplicationScoped
 @Alternative
 @Priority(50)
@@ -82,13 +95,14 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
      */
     private long gracePeriodSeconds;
     /**
-     * Maximum number of candidate rows inspected while counting an authorized task listing.
+     * Maximum number of candidate rows inspected by the iterative authorization fallback.
+     * Capability-based database queries do not use this limit.
      * An exact authorized count cannot be returned once this limit is exceeded, so the listing
      * fails instead of returning a partial count.
      */
     private long maxScanned;
     /**
-     * Number of candidate rows fetched per query while scanning an authorized task listing.
+     * Number of candidate rows per iterative authorization fallback query only.
      */
     private int authorizationScanBatchSize = DEFAULT_AUTHORIZATION_SCAN_BATCH_SIZE;
 
@@ -170,6 +184,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     public void delete(String taskId) {
         LOGGER.debug("Deleting task with ID: {}", taskId);
         try {
+            em.createQuery("DELETE FROM JpaTaskOwner o WHERE o.taskId = :taskId")
+                    .setParameter("taskId", taskId).executeUpdate();
             JpaTask jpaTask = em.find(JpaTask.class, taskId);
             if (jpaTask != null) {
                 em.remove(jpaTask);
@@ -311,10 +327,23 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                         + "returning empty result (fail-closed)");
                 return new ListTasksResult(List.of(), 0, 0, null);
             }
+            Optional<JpaTaskAuthorizationCapability> capability = provider == null ? Optional.empty()
+                    : provider.getCapability(JpaTaskAuthorizationCapability.class);
+            JpaTaskReadScope scope = capability.isPresent()
+                    ? java.util.Objects.requireNonNull(capability.get().readScope(context, TaskOperation.LIST_TASKS)) : null;
+            if (scope instanceof JpaTaskReadScope.None) {
+                return new ListTasksResult(List.of(), 0, 0, null);
+            }
+            byte[] subjectKey = scope instanceof JpaTaskReadScope.OwnedBy owned
+                    ? JpaSubjectKey.encode(owned.subjectKey()) : null;
             int pageSize = params.getEffectivePageSize();
 
             // Build base WHERE clause (without cursor — shared across iterations)
             String baseWhereClause = buildBaseWhereClause(params);
+            if (subjectKey != null) {
+                baseWhereClause += " AND EXISTS (SELECT 1 FROM JpaTaskOwner o"
+                        + " WHERE o.taskId = t.id AND o.subjectKey = :subjectKey)";
+            }
 
             List<Task> tasks;
             boolean hasMore;
@@ -322,7 +351,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             PageToken cursor = PageToken.fromString(params.pageToken());
             PageToken scanCursor = cursor;
 
-            if (provider != null) {
+            if (provider != null && capability.isEmpty()) {
                 AuthorizedTaskCount authorizedTaskCount = countAuthorizedTasks(
                         baseWhereClause, params, cursor, context, provider);
                 tasks = new ArrayList<>(pageSize);
@@ -360,10 +389,10 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 hasMore = authorizedTaskCount.totalSize() > authorizedTaskCount.beforePage() + tasks.size();
                 totalSize = authorizedTaskCount.totalSize();
             } else {
-                // Single fetch — no authorization filtering needed
-                totalSize = executeCountQuery(baseWhereClause, params);
+                // Supported authorization scopes are enforced by the database.
+                totalSize = executeCountQuery(baseWhereClause, params, subjectKey);
                 TypedQuery<JpaTask> query = createPageQuery(
-                        baseWhereClause, params, cursor, pageSize + 1);
+                        baseWhereClause, params, cursor, pageSize + 1, subjectKey);
                 List<JpaTask> jpaTasksPage = query.getResultList();
 
                 hasMore = jpaTasksPage.size() > pageSize;
@@ -419,6 +448,11 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     private TypedQuery<JpaTask> createPageQuery(String baseWhereClause,
             ListTasksParams params, @org.jspecify.annotations.Nullable PageToken cursor, int maxResults) {
+        return createPageQuery(baseWhereClause, params, cursor, maxResults, null);
+    }
+
+    private TypedQuery<JpaTask> createPageQuery(String baseWhereClause,
+            ListTasksParams params, @Nullable PageToken cursor, int maxResults, byte @Nullable [] subjectKey) {
         StringBuilder jpql = new StringBuilder("SELECT t FROM JpaTask t").append(baseWhereClause);
         if (cursor != null) {
             jpql.append(" AND (t.statusTimestamp < :tokenTimestamp"
@@ -428,6 +462,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
         TypedQuery<JpaTask> query = em.createQuery(jpql.toString(), JpaTask.class);
         setFilterParameters(query, params);
+        if (subjectKey != null) { query.setParameter("subjectKey", subjectKey); }
         if (cursor != null) {
             query.setParameter("tokenTimestamp", cursor.timestamp());
             query.setParameter("tokenId", cursor.id());
@@ -436,10 +471,11 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         return query;
     }
 
-    private int executeCountQuery(String baseWhereClause, ListTasksParams params) {
+    private int executeCountQuery(String baseWhereClause, ListTasksParams params, byte @Nullable [] subjectKey) {
         String jpql = "SELECT COUNT(t) FROM JpaTask t" + baseWhereClause;
         TypedQuery<Long> countQuery = em.createQuery(jpql, Long.class);
         setFilterParameters(countQuery, params);
+        if (subjectKey != null) { countQuery.setParameter("subjectKey", subjectKey); }
         return countQuery.getSingleResult().intValue();
     }
 

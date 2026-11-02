@@ -74,6 +74,8 @@ When enabled, task IDs referenced in incoming messages are looked up in the `Tas
 a2a.authorization.required=true
 ```
 
+A configured provider remains authoritative even when `a2a.authorization.required=false`; that flag only permits providerless access.
+
 See [Task Authorization](authorization.md) for details on implementing a `TaskAuthorizationProvider`.
 
 ### JPA Task Store Authorized Listings
@@ -81,14 +83,14 @@ See [Task Authorization](authorization.md) for details on implementing a `TaskAu
 These settings apply when using the JPA Task Store together with a `TaskAuthorizationProvider`:
 
 ```properties
-# Maximum candidate rows inspected while counting an authorized task listing (default: 10000)
+# Fallback only: maximum candidates inspected for an exact authorized count (default: 10000)
 a2a.max-scanned-tasks=10000
 
-# Candidate rows fetched in each database query during that scan (default: 100)
+# Fallback only: candidates fetched per query (default: 100)
 a2a.authorization-scan-batch-size=100
 ```
 
-`a2a.max-scanned-tasks` bounds the work performed while counting authorized tasks. The count must be exact, so a listing fails if the scan limit is reached before all matching candidates have been inspected. `a2a.authorization-scan-batch-size` controls the database fetch size within that budget. Both values must be greater than zero; invalid values cause the JPA task store to fail during initialization. Increase the batch size to reduce round trips when many candidates are denied; lower it to reduce memory used per query.
+`a2a.max-scanned-tasks` bounds the work performed while counting authorized tasks. The count must be exact, so a listing fails if the scan limit is reached before all matching candidates have been inspected. `a2a.authorization-scan-batch-size` controls the database fetch size within that budget. Both values must be greater than zero; invalid values cause the JPA task store to fail during initialization. These settings bound scans only for providers without `JpaTaskAuthorizationCapability`; the explicitly selected `JpaTaskAuthorizationProvider` enables database-side count/page filtering without Java candidate-scan ceilings. Increase the batch size to reduce round trips when many candidates are denied; lower it to reduce memory used per query.
 
 ### Push Notification Config Store
 

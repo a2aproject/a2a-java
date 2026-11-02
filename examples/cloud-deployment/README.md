@@ -280,6 +280,16 @@ public void execute(RequestContext context, AgentEmitter agentEmitter) throws JS
    - Kafka bootstrap servers
    - Reactive Messaging channel configuration
 
+### PostgreSQL schema and optional authorization
+
+This example keeps PostgreSQL 16. Its named `a2a-java` persistence unit already scans the JPA task-store package, so Hibernate discovers both `JpaTask` and `JpaTaskOwner`. Enabled schema generation creates `a2a_task_owners` with `subject_key BYTEA NOT NULL` and the complete `(subject_key, task_id)` index, even without a selected provider. Production upgrades need an application-managed migration and trusted backfill preserving exact subject identities; do not rely on development schema generation for upgrades.
+
+The demo deliberately has no authorization provider and explicitly sets `a2a.authorization.required=false`. Adding the dependency does not enable the optional ownership provider. A secured deployment must explicitly select `JpaTaskAuthorizationProvider`, authenticate users and supply stable usernames unique across its identity domains (namespaced when needed). Unknown ownership and anonymous users are denied. A configured provider stays authoritative even if the opt-out flag is retained.
+
+See the [JPA module setup guide](../../extras/task-store-database-jpa/README.md) for selection, programmatic JTA construction, identity limits, PostgreSQL/MySQL DDL, migrations and fallback. MySQL adds portability coverage; the cloud example retains PostgreSQL and its existing Kafka/client/multi-pod behavior.
+
+Check the server package with `mvn -pl examples/cloud-deployment/server -am package -DskipTests`. Full PostgreSQL/Kafka/multi-pod validation uses the existing **Cloud Deployment Example Test** workflow's deployment, verification and client smoke path. Packaging alone does not validate that deployment.
+
 ### Load Balancing Flow
 
 ```

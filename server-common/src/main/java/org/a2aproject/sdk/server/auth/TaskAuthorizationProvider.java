@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.server.auth;
 
+import java.util.Optional;
+
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.spec.A2AError;
 import org.jspecify.annotations.Nullable;
@@ -119,6 +121,21 @@ import org.jspecify.annotations.Nullable;
  * @see TaskOperation
  */
 public interface TaskAuthorizationProvider {
+
+    /**
+     * Discover an optional, typed extension implemented by this provider.
+     * Capabilities representing authorization policy must agree with this provider's
+     * complete policy, including restrictions added by subclasses or wrappers.
+     * Unsupported capabilities return empty; lookup failures propagate to the caller.
+     *
+     * @param capabilityType the requested capability interface
+     * @param <T> the capability type
+     * @return the supported capability, or empty when unsupported
+     */
+    default <T> Optional<T> getCapability(Class<T> capabilityType) {
+        return Optional.empty();
+    }
+
 
     /**
      * Check whether the current user is allowed to read the given task.

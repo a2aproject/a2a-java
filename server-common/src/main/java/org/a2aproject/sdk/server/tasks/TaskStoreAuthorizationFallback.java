@@ -42,42 +42,88 @@ final class TaskStoreAuthorizationFallback {
             token = advanceToken(token, batch.nextPageToken(), scannedTokens);
         } while (token != null && !token.isEmpty());
 
+        if (totalSize == 0) {
+            return new ListTasksResult(List.of(), 0, 0, null);
+        }
         int requestedPageSize = params.getEffectivePageSize();
-        // These tasks were already counted. Give page retrieval its own bounded scan
-        // so a complete count at the limit can still return a page.
         ScanBudget pageBudget = new ScanBudget(store);
         List<Task> page = new ArrayList<>(requestedPageSize);
         token = params.pageToken();
         Set<String> pageTokens = tokensStartingAt(token);
-        while (page.size() < requestedPageSize) {
-            // Store tokens may be opaque; do not fetch beyond the last task on this page.
-            ListTasksResult batch = pageBudget.list(listPage(params, requestedPageSize - page.size(), token), context);
-            for (Task task : batch.tasks()) {
+        int readableSeen = 0;
+        while (true) {
+            String batchStart = token;
+            ListTasksResult batch = pageBudget.list(listPage(params, SCAN_BATCH_SIZE, token), context);
+            token = advanceToken(token, batch.nextPageToken(), pageTokens);
+            for (int index = 0; index < batch.tasks().size(); index++) {
+                Task task = batch.tasks().get(index);
                 if (readAccess.computeIfAbsent(task.id(), id -> isReadAllowed(provider, context, id))) {
                     page.add(task);
+                    readableSeen++;
+                    if (page.size() == requestedPageSize) {
+                        // On the first page the completed count can prove termination.
+                        boolean terminal = (params.pageToken() == null || params.pageToken().isEmpty())
+                                && readableSeen == totalSize;
+                        boolean hasMore = !terminal && hasReadableAfter(batch, index + 1, token,
+                                pageBudget, params, context, provider, readAccess);
+                        String nextPageToken = null;
+                        if (hasMore) {
+                            nextPageToken = index + 1 == batch.tasks().size() ? token
+                                    : recoverToken(batch, index + 1, batchStart, pageBudget, params, context);
+                        }
+                        return new ListTasksResult(page, totalSize, page.size(), nextPageToken);
+                    }
                 }
             }
-            token = advanceToken(token, batch.nextPageToken(), pageTokens);
             if (token == null || token.isEmpty()) {
-                break;
+                return new ListTasksResult(page, totalSize, page.size(), null);
             }
         }
+    }
 
-        String nextPageToken = null;
-        if (page.size() == requestedPageSize) {
-            String lookAheadToken = token;
-            Set<String> lookAheadTokens = tokensStartingAt(lookAheadToken);
-            while (lookAheadToken != null && !lookAheadToken.isEmpty()) {
-                ListTasksResult batch = pageBudget.list(listPage(params, SCAN_BATCH_SIZE, lookAheadToken), context);
-                if (batch.tasks().stream().anyMatch(task -> readAccess.computeIfAbsent(task.id(),
-                        id -> isReadAllowed(provider, context, id)))) {
-                    nextPageToken = token;
-                    break;
-                }
-                lookAheadToken = advanceToken(lookAheadToken, batch.nextPageToken(), lookAheadTokens);
+    private static boolean hasReadableAfter(ListTasksResult finalBatch, int start, @Nullable String token,
+            ScanBudget budget, ListTasksParams params, ServerCallContext context,
+            TaskAuthorizationProvider provider, Map<String, Boolean> readAccess) {
+        for (int index = start; index < finalBatch.tasks().size(); index++) {
+            String id = finalBatch.tasks().get(index).id();
+            if (readAccess.computeIfAbsent(id, key -> isReadAllowed(provider, context, key))) {
+                return true;
             }
         }
-        return new ListTasksResult(page, totalSize, page.size(), nextPageToken);
+        Set<String> seenTokens = tokensStartingAt(token);
+        while (token != null && !token.isEmpty()) {
+            ListTasksResult batch = budget.list(listPage(params, SCAN_BATCH_SIZE, token), context);
+            token = advanceToken(token, batch.nextPageToken(), seenTokens);
+            for (Task task : batch.tasks()) {
+                if (readAccess.computeIfAbsent(task.id(), id -> isReadAllowed(provider, context, id))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static @Nullable String recoverToken(ListTasksResult finalBatch, int prefixLength,
+            @Nullable String token, ScanBudget budget, ListTasksParams params, ServerCallContext context) {
+        Set<String> seenTokens = tokensStartingAt(token);
+        int recovered = 0;
+        while (recovered < prefixLength) {
+            ListTasksResult batch = budget.recover(listPage(params, prefixLength - recovered, token), context);
+            if (batch.tasks().size() > prefixLength - recovered) {
+                throw new TaskStoreException("Task store exceeded the authorized listing recovery prefix");
+            }
+            for (Task task : batch.tasks()) {
+                if (!task.id().equals(finalBatch.tasks().get(recovered).id())) {
+                    throw new TaskStoreException("Task store changed the authorized listing recovery prefix");
+                }
+                recovered++;
+            }
+            token = advanceToken(token, batch.nextPageToken(), seenTokens);
+            if (token == null || token.isEmpty()) {
+                throw new TaskStoreException("Task store ended before the authorized listing recovery boundary");
+            }
+        }
+        return token;
     }
 
     private static Set<String> tokensStartingAt(@Nullable String token) {
@@ -111,20 +157,35 @@ final class TaskStoreAuthorizationFallback {
     private static final class ScanBudget {
         private final TaskStore store;
         private int batches;
-        private int returnedTasks;
+        private int recoveryQueries;
+        private final Set<String> returnedTasks = new HashSet<>();
 
         private ScanBudget(TaskStore store) {
             this.store = store;
         }
 
         private ListTasksResult list(ListTasksParams params, ServerCallContext context) {
-            if (batches >= MAX_SCAN_BATCHES || returnedTasks >= MAX_RETURNED_TASKS) {
+            if (batches >= MAX_SCAN_BATCHES) {
                 throw new TaskStoreException("Authorized task listing exceeded its scan limit");
             }
             batches++;
+            return fetch(params, context);
+        }
+
+        private ListTasksResult recover(ListTasksParams params, ServerCallContext context) {
+            if (recoveryQueries >= SCAN_BATCH_SIZE) {
+                throw new TaskStoreException("Authorized task listing exceeded its recovery query limit");
+            }
+            recoveryQueries++;
+            return fetch(params, context);
+        }
+
+        private ListTasksResult fetch(ListTasksParams params, ServerCallContext context) {
             ListTasksResult result = store.list(params, context);
-            returnedTasks += result.tasks().size();
-            if (returnedTasks > MAX_RETURNED_TASKS) {
+            for (Task task : result.tasks()) {
+                returnedTasks.add(task.id());
+            }
+            if (returnedTasks.size() > MAX_RETURNED_TASKS) {
                 throw new TaskStoreException("Authorized task listing exceeded its scan limit");
             }
             return result;
