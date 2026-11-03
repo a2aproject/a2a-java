@@ -119,7 +119,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
-                        // We don't need to do anything special on completion
+                        // Signal normal stream completion to error handler (null error means success)
+                        sseEventListener.onComplete();
                     }));
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -310,7 +311,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
-                        // We don't need to do anything special on completion
+                        // Signal normal stream completion to error handler (null error means success)
+                        sseEventListener.onComplete();
                     }));
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
