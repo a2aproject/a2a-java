@@ -39,7 +39,8 @@ public interface ClientTransport_v0_3 {
      *
      * @param request       the message send parameters
      * @param eventConsumer consumer that will receive streaming events as they arrive
-     * @param errorConsumer consumer that will be called if an error occurs during streaming
+     * @param errorConsumer consumer called when the stream ends; called with {@code null} to signal
+     *                      clean completion, or with a non-null {@link Throwable} if an error occurs
      * @param context       optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if setting up the streaming connection fails
      */
@@ -117,7 +118,8 @@ public interface ClientTransport_v0_3 {
      *
      * @param request       the task ID parameters specifying which task to resubscribe to
      * @param eventConsumer consumer that will receive streaming events as they arrive
-     * @param errorConsumer consumer that will be called if an error occurs during streaming
+     * @param errorConsumer consumer called when the stream ends; called with {@code null} to signal
+     *                      clean completion, or with a non-null {@link Throwable} if an error occurs
      * @param context       optional client call context for the request (may be {@code null})
      * @throws A2AClientException_v0_3 if resubscribing to the task fails for any reason
      */

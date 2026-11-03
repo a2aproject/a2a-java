@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -70,6 +71,7 @@ import org.mockserver.model.JsonBody;
 public class RestTransport_v0_3_Test {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3_Test.class.getName());
+    private static final Throwable NOT_INVOKED = new Throwable("terminal callback was not delivered");
     private ClientAndServer server;
     private static final AgentCard_v0_3 CARD = new AgentCard_v0_3.Builder()
                 .name("Hello World Agent")
@@ -478,5 +480,97 @@ public class RestTransport_v0_3_Test {
         assertNull(part.data().get("optional"));
         assertEquals(Map.of(), part.data().get("nested"));
         assertEquals(Arrays.asList(null, nullField, Map.of(), List.of()), part.data().get("items"));
+    }
+
+    /**
+     * A stream that ends normally has to be reported through the error consumer with a null
+     * throwable, the same way the native REST transport and the 0.3 JSON-RPC transport already do
+     * it. Without that signal a caller cannot tell a finished stream from a still running one.
+     */
+    @Test
+    public void testSendMessageStreamingSignalsNormalCompletion() throws Exception {
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/v1/message:stream")
+                        .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
+                );
+
+        RestTransport_v0_3 client = new RestTransport_v0_3(CARD);
+        Message_v0_3 message = new Message_v0_3.Builder()
+                .role(Message_v0_3.Role.USER)
+                .parts(Collections.singletonList(new TextPart_v0_3("tell me some jokes")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build();
+        MessageSendConfiguration_v0_3 configuration = new MessageSendConfiguration_v0_3.Builder()
+                .acceptedOutputModes(List.of("text"))
+                .blocking(false)
+                .build();
+        MessageSendParams_v0_3 params = new MessageSendParams_v0_3.Builder()
+                .message(message)
+                .configuration(configuration)
+                .build();
+
+        CountDownLatch eventLatch = new CountDownLatch(1);
+        CountDownLatch terminalLatch = new CountDownLatch(1);
+        AtomicInteger terminalCalls = new AtomicInteger();
+        AtomicReference<Throwable> terminalError = new AtomicReference<>(NOT_INVOKED);
+        Consumer<StreamingEventKind_v0_3> eventHandler = event -> eventLatch.countDown();
+        Consumer<Throwable> errorHandler = error -> {
+            terminalError.set(error);
+            terminalCalls.incrementAndGet();
+            terminalLatch.countDown();
+        };
+        client.sendMessageStreaming(params, eventHandler, errorHandler, null);
+
+        assertTrue(eventLatch.await(10, TimeUnit.SECONDS), "Should receive streaming event");
+        assertTrue(terminalLatch.await(10, TimeUnit.SECONDS), "Error consumer should be called when the stream ends");
+        assertNull(terminalError.get(), "Normal completion has to be reported as a null error");
+        assertEquals(1, terminalCalls.get(), "A single stream has to deliver exactly one terminal callback");
+    }
+
+    /**
+     * Same contract as above for a resubscription stream.
+     */
+    @Test
+    public void testResubscribeSignalsNormalCompletion() throws Exception {
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/v1/tasks/task-1234:subscribe")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
+                );
+
+        RestTransport_v0_3 client = new RestTransport_v0_3(CARD);
+        TaskIdParams_v0_3 taskIdParams = new TaskIdParams_v0_3("task-1234");
+
+        CountDownLatch eventLatch = new CountDownLatch(1);
+        CountDownLatch terminalLatch = new CountDownLatch(1);
+        AtomicInteger terminalCalls = new AtomicInteger();
+        AtomicReference<Throwable> terminalError = new AtomicReference<>(NOT_INVOKED);
+        Consumer<StreamingEventKind_v0_3> eventHandler = event -> eventLatch.countDown();
+        Consumer<Throwable> errorHandler = error -> {
+            terminalError.set(error);
+            terminalCalls.incrementAndGet();
+            terminalLatch.countDown();
+        };
+        client.resubscribe(taskIdParams, eventHandler, errorHandler, null);
+
+        assertTrue(eventLatch.await(10, TimeUnit.SECONDS), "Should receive streaming event");
+        assertTrue(terminalLatch.await(10, TimeUnit.SECONDS), "Error consumer should be called when the stream ends");
+        assertNull(terminalError.get(), "Normal completion has to be reported as a null error");
+        assertEquals(1, terminalCalls.get(), "A single stream has to deliver exactly one terminal callback");
     }
 }
