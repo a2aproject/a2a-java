@@ -53,6 +53,7 @@ public abstract class EventQueue implements AutoCloseable {
         private String taskId;
         private List<Runnable> onCloseCallbacks = new java.util.ArrayList<>();
         private TaskStateProvider taskStateProvider;
+        private boolean fanOutOnly;
 
         public EventQueueBuilder queueSize(int queueSize) {
             this.queueSize = queueSize;
@@ -81,12 +82,17 @@ public abstract class EventQueue implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Creates a dispatch-only main queue for managers whose consumers always use child queues.
+         * Directly built queues retain their normal main-queue consumption behavior.
+         */
+        EventQueueBuilder fanOutOnly() {
+            this.fanOutOnly = true;
+            return this;
+        }
+
         public EventQueue build() {
-            if (hook != null || !onCloseCallbacks.isEmpty() || taskStateProvider != null) {
-                return new MainQueue(queueSize, hook, taskId, onCloseCallbacks, taskStateProvider);
-            } else {
-                return new MainQueue(queueSize);
-            }
+            return new MainQueue(queueSize, hook, taskId, onCloseCallbacks, taskStateProvider, fanOutOnly);
         }
     }
 
@@ -222,6 +228,7 @@ public abstract class EventQueue implements AutoCloseable {
         private final String taskId;
         private final List<Runnable> onCloseCallbacks;
         private final TaskStateProvider taskStateProvider;
+        private final boolean fanOutOnly;
 
         MainQueue() {
             super();
@@ -229,6 +236,7 @@ public abstract class EventQueue implements AutoCloseable {
             this.taskId = null;
             this.onCloseCallbacks = List.of();
             this.taskStateProvider = null;
+            this.fanOutOnly = false;
         }
 
         MainQueue(int queueSize) {
@@ -237,6 +245,7 @@ public abstract class EventQueue implements AutoCloseable {
             this.taskId = null;
             this.onCloseCallbacks = List.of();
             this.taskStateProvider = null;
+            this.fanOutOnly = false;
         }
 
         MainQueue(EventEnqueueHook hook) {
@@ -245,6 +254,7 @@ public abstract class EventQueue implements AutoCloseable {
             this.taskId = null;
             this.onCloseCallbacks = List.of();
             this.taskStateProvider = null;
+            this.fanOutOnly = false;
         }
 
         MainQueue(int queueSize, EventEnqueueHook hook) {
@@ -253,14 +263,20 @@ public abstract class EventQueue implements AutoCloseable {
             this.taskId = null;
             this.onCloseCallbacks = List.of();
             this.taskStateProvider = null;
+            this.fanOutOnly = false;
         }
 
         MainQueue(int queueSize, EventEnqueueHook hook, String taskId, List<Runnable> onCloseCallbacks, TaskStateProvider taskStateProvider) {
+            this(queueSize, hook, taskId, onCloseCallbacks, taskStateProvider, false);
+        }
+
+        MainQueue(int queueSize, EventEnqueueHook hook, String taskId, List<Runnable> onCloseCallbacks, TaskStateProvider taskStateProvider, boolean fanOutOnly) {
             super(queueSize);
             this.enqueueHook = hook;
             this.taskId = taskId;
             this.onCloseCallbacks = List.copyOf(onCloseCallbacks);  // Defensive copy
             this.taskStateProvider = taskStateProvider;
+            this.fanOutOnly = fanOutOnly;
             LOGGER.debug("Created MainQueue for task {} with {} onClose callbacks and TaskStateProvider: {}",
                     taskId, onCloseCallbacks.size(), taskStateProvider != null);
         }
@@ -281,17 +297,23 @@ public abstract class EventQueue implements AutoCloseable {
             // We bypass the parent's closed check and enqueue directly
             Event event = item.getEvent();
 
-            // Acquire semaphore for backpressure
-            try {
-                semaphore.acquire();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
-            }
+            // InMemoryQueueManager always returns ChildQueues to consumers. Keeping another
+            // copy here would exhaust capacity even when every subscriber keeps up. Child queues
+            // still enforce their own bounded backpressure. Do not call dequeueEventItem() for
+            // bookkeeping: it also signals that a real queue poller has started.
+            if (!fanOutOnly) {
+                // Acquire semaphore for backpressure
+                try {
+                    semaphore.acquire();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
+                }
 
-            // Add to this MainQueue's internal queue
-            queue.add(item);
-            LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
+                // Add to this MainQueue's internal queue
+                queue.add(item);
+                LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
+            }
 
             // Distribute to all ChildQueues (they will receive the event even if MainQueue is closed)
             children.forEach(eq -> eq.internalEnqueueItem(item));

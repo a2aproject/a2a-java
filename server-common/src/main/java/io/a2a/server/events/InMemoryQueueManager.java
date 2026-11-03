@@ -10,6 +10,13 @@ import io.a2a.server.tasks.TaskStateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * In-memory fan-out manager. Queues created by the default factory dispatch events to child
+ * queues without retaining a second copy in the main queue. Consumers should use the child
+ * returned by {@link #createOrTap(String)} or {@link #tap(String)}. Tapping subscribes to future
+ * events; it does not replay historical events. Explicitly added queues and custom factories
+ * retain their own consumption behavior.
+ */
 @ApplicationScoped
 public class InMemoryQueueManager implements QueueManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryQueueManager.class);
@@ -164,6 +171,7 @@ public class InMemoryQueueManager implements QueueManager {
         public EventQueue.EventQueueBuilder builder(String taskId) {
             // Return builder with callback that removes queue from map when closed
             return EventQueue.builder()
+                    .fanOutOnly()
                     .taskId(taskId)
                     .addOnCloseCallback(getCleanupCallback(taskId))
                     .taskStateProvider(taskStateProvider);
