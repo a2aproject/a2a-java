@@ -37,21 +37,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.AgentCard;
-import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
-import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.EventKind;
+import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.FileContent;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
@@ -71,6 +70,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.util.Utils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -852,5 +852,36 @@ public class JSONRPCTransportTest {
             assertTrue(versionError.getMessage().contains("2.0"));
             assertTrue(versionError.getMessage().contains("1.0"));
         }
+    }
+
+    @Test
+    public void testListTasksWithNullData() throws Exception {
+        listTasksWithData("null");
+    }
+
+    @Test
+    public void testListTasksWithNestedNullData() throws Exception {
+        listTasksWithData("{\"optional\":null,\"items\":[null,{},[]]}");
+    }
+
+    private void listTasksWithData(String data) throws Exception {
+        String resultJson = """
+                {"tasks":[{"id":"task-null","contextId":"context-null",
+                  "status":{"state":"TASK_STATE_COMPLETED","timestamp":"2026-10-28T00:00:00Z"},
+                  "history":[{"messageId":"message-null","role":"ROLE_AGENT","parts":[{"data":%s}],
+                    "metadata":{"optional":null}}],"metadata":{"optional":null}}],
+                 "totalSize":1,"pageSize":1}
+                """.formatted(data);
+        server.when(request().withMethod("POST").withPath("/"))
+                .respond(response().withStatusCode(200).withBody("{\"jsonrpc\":\"2.0\",\"id\":\"null-task\",\"result\":" + resultJson + "}"));
+
+        var result = new JSONRPCTransport("http://localhost:4001").listTasks(new ListTasksParams(), null);
+
+        assertEquals(1, result.tasks().size());
+        assertEquals(Collections.singletonMap("optional", null), result.tasks().get(0).metadata());
+        assertEquals(Collections.singletonMap("optional", null), result.tasks().get(0).history().get(0).metadata());
+        var part = assertInstanceOf(DataPart.class,
+                result.tasks().get(0).history().get(0).parts().get(0));
+        assertEquals(new Gson().fromJson(data, Object.class), part.data());
     }
 }

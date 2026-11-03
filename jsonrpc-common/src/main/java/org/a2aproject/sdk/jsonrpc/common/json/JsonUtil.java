@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.jsonrpc.common.json;
 
-import static org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.ThrowableTypeAdapter.THROWABLE_MARKER_FIELD;
-import org.a2aproject.sdk.spec.A2AErrorCodes;
-import static org.a2aproject.sdk.spec.DataPart.DATA;
-import static org.a2aproject.sdk.spec.TextPart.TEXT;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
+import static org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.ThrowableTypeAdapter.THROWABLE_MARKER_FIELD;
+import static org.a2aproject.sdk.spec.DataPart.DATA;
+import static org.a2aproject.sdk.spec.TextPart.TEXT;
 
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
@@ -26,12 +25,13 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.APIKeySecurityScheme;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.DataPart;
@@ -65,7 +65,7 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
-
+import org.a2aproject.sdk.util.MapTypeUtils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -73,8 +73,52 @@ import org.jspecify.annotations.Nullable;
  */
 public class JsonUtil {
 
+
+    /** Preserves null entries in JSON object maps; typed maps retain Gson's normal adapters. */
+    static class MapTypeAdapterFactory implements TypeAdapterFactory {
+        @Override
+        public <T> @Nullable TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            if (!MapTypeUtils.hasObjectValues(type.getType())) {
+                return null;
+            }
+            TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+            TypeAdapter<Object> valueAdapter = gson.getAdapter(Object.class);
+            return new TypeAdapter<>() {
+                @Override
+                public void write(JsonWriter out, T value) throws java.io.IOException {
+                    if (value == null) {
+                        delegate.write(out, value);
+                        return;
+                    }
+                    out.beginObject();
+                    for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+                        out.name(String.valueOf(entry.getKey()));
+                        if (entry.getValue() == null) {
+                            boolean serializeNulls = out.getSerializeNulls();
+                            out.setSerializeNulls(true);
+                            try {
+                                out.nullValue();
+                            } finally {
+                                out.setSerializeNulls(serializeNulls);
+                            }
+                        } else {
+                            valueAdapter.write(out, entry.getValue());
+                        }
+                    }
+                    out.endObject();
+                }
+
+                @Override
+                public T read(JsonReader in) throws java.io.IOException {
+                    return delegate.read(in);
+                }
+            };
+        }
+    }
+
     private static GsonBuilder createBaseGsonBuilder() {
         return new GsonBuilder()
+                .registerTypeAdapterFactory(new MapTypeAdapterFactory())
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
                 .registerTypeAdapter(SecurityRequirement.class, new SecurityRequirementTypeAdapter())
@@ -578,7 +622,17 @@ public class JsonUtil {
 
             } else if (value instanceof DataPart dataPart) {
                 out.name(DATA);
-                delegateGson.toJson(dataPart.data(), Object.class, out);
+                if (dataPart.data() == null) {
+                    boolean serializeNulls = out.getSerializeNulls();
+                    out.setSerializeNulls(true);
+                    try {
+                        out.nullValue();
+                    } finally {
+                        out.setSerializeNulls(serializeNulls);
+                    }
+                } else {
+                    delegateGson.toJson(dataPart.data(), Object.class, out);
+                }
                 JsonUtil.writeMetadata(out, dataPart.metadata());
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
@@ -638,13 +692,13 @@ public class JsonUtil {
             };
         }
 
-        /** Returns the content keys carrying a non-null value, in document order. */
+        /** Returns present content keys; JSON null is a value only for data. */
         private Stream<String> contentKeys(com.google.gson.JsonObject obj) {
             return obj.keySet().stream()
                     .filter(VALID_KEYS::contains)
                     .filter(key -> {
                         JsonElement el = obj.get(key);
-                        return el != null && !el.isJsonNull();
+                        return el != null && (DATA.equals(key) || !el.isJsonNull());
                     });
         }
 

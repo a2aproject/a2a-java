@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
@@ -18,7 +20,7 @@ public record TextPart_v0_3(String text, Map<String, Object> metadata, Kind kind
             throw new IllegalArgumentException("Invalid TextPart kind: " + kind);
         }
         this.text = text;
-        this.metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+        this.metadata = metadata == null ? Map.of() : Collections.unmodifiableMap(new HashMap<>(metadata));
         this.kind = kind;
     }
 

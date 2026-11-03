@@ -13,6 +13,13 @@ import static org.a2aproject.sdk.compat03.spec.A2AErrorCodes_v0_3.TASK_NOT_CANCE
 import static org.a2aproject.sdk.compat03.spec.A2AErrorCodes_v0_3.TASK_NOT_FOUND_ERROR_CODE;
 import static org.a2aproject.sdk.compat03.spec.A2AErrorCodes_v0_3.UNSUPPORTED_OPERATION_ERROR_CODE;
 
+import java.lang.reflect.Type;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -24,52 +31,92 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.a2aproject.sdk.compat03.spec.APIKeySecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
-import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
+import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.DataPart_v0_3;
+import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileContent_v0_3;
 import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
-import org.a2aproject.sdk.compat03.spec.MutualTLSSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.OAuth2SecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.OpenIdConnectSecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.Part_v0_3;
-import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
-import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
-import java.lang.reflect.Type;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
-import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidAgentResponseError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
+import org.a2aproject.sdk.compat03.spec.MutualTLSSecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.OAuth2SecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.OpenIdConnectSecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
+import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
+import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
+import org.a2aproject.sdk.util.MapTypeUtils;
 import org.jspecify.annotations.Nullable;
 
 
 public class JsonUtil_v0_3 {
     private static final String THROWABLE_MARKER_FIELD = "__throwable";
 
+
+    /** Preserves null entries in JSON object maps; typed maps retain Gson's normal adapters. */
+    static class MapTypeAdapterFactory implements TypeAdapterFactory {
+        @Override
+        public <T> @Nullable TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            if (!MapTypeUtils.hasObjectValues(type.getType())) {
+                return null;
+            }
+            TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+            TypeAdapter<Object> valueAdapter = gson.getAdapter(Object.class);
+            return new TypeAdapter<>() {
+                @Override
+                public void write(JsonWriter out, T value) throws java.io.IOException {
+                    if (value == null) {
+                        delegate.write(out, value);
+                        return;
+                    }
+                    out.beginObject();
+                    for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+                        out.name(String.valueOf(entry.getKey()));
+                        if (entry.getValue() == null) {
+                            boolean serializeNulls = out.getSerializeNulls();
+                            out.setSerializeNulls(true);
+                            try {
+                                out.nullValue();
+                            } finally {
+                                out.setSerializeNulls(serializeNulls);
+                            }
+                        } else {
+                            valueAdapter.write(out, entry.getValue());
+                        }
+                    }
+                    out.endObject();
+                }
+
+                @Override
+                public T read(JsonReader in) throws java.io.IOException {
+                    return delegate.read(in);
+                }
+            };
+        }
+    }
+
     private static GsonBuilder createBaseGsonBuilder() {
         return new GsonBuilder()
+                .registerTypeAdapterFactory(new MapTypeAdapterFactory())
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
                 // Register JSONRPCError hierarchy adapter for all error subclasses

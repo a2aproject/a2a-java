@@ -6,10 +6,10 @@ import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.GET_TASK_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
+import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_TEST_RESPONSE;
-import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.compat03.client.transport.rest.JsonRestMessages_v0_3.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
@@ -21,11 +21,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentSkill_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
+import org.a2aproject.sdk.compat03.spec.DataPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
@@ -33,29 +46,20 @@ import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Part_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3.Kind;
+import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -451,5 +455,28 @@ public class RestTransport_v0_3_Test {
         Part_v0_3<?> part = artifact.parts().get(0);
         assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart_v0_3) part).text());
+    }
+
+    @Test
+    public void testGetTaskPreservesDataAndMetadataNulls() throws Exception {
+        String json = """
+                {"id":"task-null","contextId":"context-null","status":{"state":"TASK_STATE_COMPLETED"},
+                   "history":[{"messageId":"message-null","role":"ROLE_AGENT",
+                     "content":[{"data":{"data":{"optional":null,"nested":{},"items":[null,{"optional":null},{},[]]}},
+                       "metadata":{"optional":null}}],"metadata":{"optional":null}}],"metadata":{"optional":null}}
+                """;
+        server.when(request().withMethod("GET").withPath("/v1/tasks/task-null"))
+                .respond(response().withStatusCode(200).withBody(json));
+
+        var task = new RestTransport_v0_3(CARD).getTask(new TaskQueryParams_v0_3("task-null", 0), null);
+        Map<String, Object> nullField = Collections.singletonMap("optional", null);
+        assertEquals(nullField, task.metadata());
+        assertEquals(nullField, task.history().get(0).metadata());
+        var part = (DataPart_v0_3) task.history().get(0).parts().get(0);
+        assertEquals(nullField, part.metadata());
+        assertTrue(part.data().containsKey("optional"));
+        assertNull(part.data().get("optional"));
+        assertEquals(Map.of(), part.data().get("nested"));
+        assertEquals(Arrays.asList(null, nullField, Map.of(), List.of()), part.data().get("items"));
     }
 }

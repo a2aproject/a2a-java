@@ -5,8 +5,8 @@ import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.CANCEL_T
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.CANCEL_TASK_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.GET_TASK_TEST_RESPONSE;
-import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASKS_TEST_RESPONSE;
+import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
 import static org.a2aproject.sdk.client.transport.rest.JsonRestMessages.SEND_MESSAGE_TEST_REQUEST;
@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
@@ -44,10 +45,10 @@ import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
 import org.a2aproject.sdk.spec.CancelTaskParams;
+import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
-import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
 import org.a2aproject.sdk.spec.FileWithUri;
@@ -66,6 +67,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -871,5 +873,36 @@ public class RestTransportTest {
 
         ListTaskPushNotificationConfigsResult result = client.listTaskPushNotificationConfigurations(params, null);
         assertEquals(2, result.configs().size());
+    }
+
+    @Test
+    public void testListTasksWithNullData() throws Exception {
+        listTasksWithData("null");
+    }
+
+    @Test
+    public void testListTasksWithNestedNullData() throws Exception {
+        listTasksWithData("{\"optional\":null,\"items\":[null,{},[]]}");
+    }
+
+    private void listTasksWithData(String data) throws Exception {
+        String resultJson = """
+                {"tasks":[{"id":"task-null","contextId":"context-null",
+                  "status":{"state":"TASK_STATE_COMPLETED","timestamp":"2026-10-28T00:00:00Z"},
+                  "history":[{"messageId":"message-null","role":"ROLE_AGENT","parts":[{"data":%s}],
+                    "metadata":{"optional":null}}],"metadata":{"optional":null}}],
+                 "totalSize":1,"pageSize":1}
+                """.formatted(data);
+        server.when(request().withMethod("GET").withPath("/tasks"))
+                .respond(response().withStatusCode(200).withBody(resultJson));
+
+        var result = new RestTransport(CARD).listTasks(new ListTasksParams(), null);
+
+        assertEquals(1, result.tasks().size());
+        assertEquals(Collections.singletonMap("optional", null), result.tasks().get(0).metadata());
+        assertEquals(Collections.singletonMap("optional", null), result.tasks().get(0).history().get(0).metadata());
+        var part = assertInstanceOf(DataPart.class,
+                result.tasks().get(0).history().get(0).parts().get(0));
+        assertEquals(new Gson().fromJson(data, Object.class), part.data());
     }
 }

@@ -1,14 +1,15 @@
 package org.a2aproject.sdk.spec;
 
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.util.CollectionCopies;
-import java.util.List;
-import java.util.Map;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 
@@ -24,6 +25,7 @@ import org.jspecify.annotations.Nullable;
  *   <li>JSON objects: {@code Map<String, Object>}</li>
  *   <li>JSON arrays: {@code List<Object>}</li>
  *   <li>Primitives: {@code String}, {@code Number}, {@code Boolean}</li>
+ *   <li>JSON null: {@code null}</li>
  * </ul>
  * <p>
  * Example usage:
@@ -42,19 +44,19 @@ import org.jspecify.annotations.Nullable;
  * DataPart primitive = new DataPart(42);
  * }</pre>
  *
- * @param data the structured data (required, supports JSON objects, arrays, and primitives)
+ * @param data the structured data (supports JSON objects, arrays, primitives, and null)
  * @param metadata additional metadata for the part
  * @see Part
  * @see Message
  * @see Artifact
  */
-public record DataPart(Object data, @Nullable Map<String, Object> metadata) implements Part<Object> {
+public record DataPart(@Nullable Object data, @Nullable Map<String, Object> metadata) implements Part<Object> {
 
     /**
      * The JSON member name discriminator for data parts: "data".
      * <p>
      * In protocol v1.0+, this constant defines the JSON member name used for serialization:
-     * {@code { "data": { "data": { "temperature": 22.5, "unit": "C" } } }}
+     * {@code { "data": { "temperature": 22.5, "unit": "C" } }}
      */
     public static final String DATA = "data";
 
@@ -64,12 +66,10 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      * For mutable data types ({@code Map} and {@code List}), an unmodifiable defensive
      * copy is created. Primitives and other immutable values are stored as-is.
      *
-     * @param data the structured data (required, supports JSON objects, arrays, and primitives)
+     * @param data the structured data (supports JSON objects, arrays, primitives, and null)
      * @param metadata additional metadata for the part
-     * @throws IllegalArgumentException if data is null
      */
-    public DataPart (Object data, @Nullable Map<String, Object> metadata) {
-        Assert.checkNotNullParam("data", data);
+    public DataPart (@Nullable Object data, @Nullable Map<String, Object> metadata) {
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.data = defensivelyCopy(data);
     }
@@ -77,10 +77,9 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
     /**
      * Constructor.
      *
-     * @param data the structured data (required, supports JSON objects, arrays, and primitives)
-     * @throws IllegalArgumentException if data is null
+     * @param data the structured data (supports JSON objects, arrays, primitives, and null)
      */
-    public DataPart(Object data) {
+    public DataPart(@Nullable Object data) {
         this(data, null);
     }
 
@@ -96,6 +95,7 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      *   <li>JSON integers → {@code Long}</li>
      *   <li>JSON decimals → {@code Double}</li>
      *   <li>JSON booleans → {@code Boolean}</li>
+     *   <li>JSON null → {@code null}</li>
      * </ul>
      * <p>
      * Example usage:
@@ -107,9 +107,9 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      *     }""");
      * }</pre>
      *
-     * @param json the JSON string to parse (must not be null or the JSON literal "null")
+     * @param json the JSON string to parse (must not be null)
      * @return a new DataPart containing the parsed data
-     * @throws IllegalArgumentException if json is null, parses to null, or is not valid
+     * @throws IllegalArgumentException if json is null or is not valid
      */
     public static DataPart fromJson(String json) {
         return fromJson(json, null);
@@ -119,16 +119,19 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      * Creates a DataPart by parsing a JSON string into its corresponding Java type,
      * with optional metadata.
      *
-     * @param json the JSON string to parse (must not be null or the JSON literal "null")
+     * @param json the JSON string to parse (must not be null)
      * @param metadata additional metadata for the part
      * @return a new DataPart containing the parsed data and metadata
-     * @throws IllegalArgumentException if json is null, parses to null, or is not valid
+     * @throws IllegalArgumentException if json is null or is not valid
      * @see #fromJson(String)
      */
     public static DataPart fromJson(String json, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("json", json);
         try {
             Object data = JSON_PARSER.fromJson(json, Object.class);
+            if (data == null && !"null".equals(json.trim())) {
+                throw new IllegalArgumentException("Invalid JSON: " + json);
+            }
             return new DataPart(data, metadata);
         } catch (JsonSyntaxException e) {
             throw new IllegalArgumentException("Invalid JSON: " + json, e);
@@ -149,7 +152,7 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
      * @param data the data value to potentially copy
      * @return an unmodifiable copy for collections, or the original value for immutable types
      */
-    private static Object defensivelyCopy(Object data) {
+    private static @Nullable Object defensivelyCopy(@Nullable Object data) {
         if (data instanceof Map<?, ?> map) {
             return CollectionCopies.unmodifiableShallowMap(map);
         }

@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
@@ -19,7 +21,7 @@ public record FilePart_v0_3(FileContent_v0_3 file, Map<String, Object> metadata,
             throw new IllegalArgumentException("Invalid FilePart kind: " + kind);
         }
         this.file = file;
-        this.metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+        this.metadata = metadata == null ? Map.of() : Collections.unmodifiableMap(new HashMap<>(metadata));
         this.kind = kind;
     }
 

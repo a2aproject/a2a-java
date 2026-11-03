@@ -91,13 +91,11 @@ public class PartSerializationTest {
     }
 
     @Test
-    void testJsonNullContentKeyIsSkipped() throws JsonProcessingException {
+    void testNullDataAndPopulatedTextAreRejected() {
         String json = """
             {"text": "hello", "data": null}
             """;
-        Part<?> part = JsonUtil.fromJson(json, Part.class);
-        assertInstanceOf(TextPart.class, part);
-        assertEquals("hello", ((TextPart) part).text());
+        assertThrows(JsonProcessingException.class, () -> JsonUtil.fromJson(json, Part.class));
     }
 
     @Test

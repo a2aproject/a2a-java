@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.grpc.mapper;
 
 import java.util.Base64;
+import java.util.Map;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Value;
@@ -12,7 +13,6 @@ import org.a2aproject.sdk.spec.FileWithUri;
 import org.a2aproject.sdk.spec.InvalidRequestError;
 import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.TextPart;
-import java.util.Map;
 import org.mapstruct.Mapper;
 
 /**

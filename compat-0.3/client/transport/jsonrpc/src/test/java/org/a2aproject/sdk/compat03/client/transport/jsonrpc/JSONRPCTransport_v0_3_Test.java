@@ -28,11 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,22 +52,21 @@ import org.a2aproject.sdk.compat03.spec.FilePart_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithBytes_v0_3;
 import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.OpenIdConnectSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.Part_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationAuthenticationInfo_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -679,5 +680,29 @@ public class JSONRPCTransport_v0_3_Test {
         assertEquals(Part_v0_3.Kind.TEXT, ((TextPart_v0_3) part).kind());
         assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart_v0_3) part).text());
         assertTrue(task.metadata().isEmpty());
+    }
+
+    @Test
+    public void testGetTaskPreservesDataAndMetadataNulls() throws Exception {
+        String json = """
+                {"jsonrpc":"2.0","id":"null-task","result":{"kind":"task",
+                   "id":"task-null","contextId":"context-null","status":{"state":"completed"},
+                   "history":[{"kind":"message","messageId":"message-null","role":"agent",
+                     "parts":[{"kind":"data","data":{"optional":null,"nested":{},"items":[null,{"optional":null},{},[]]},
+                       "metadata":{"optional":null}}],"metadata":{"optional":null}}],"metadata":{"optional":null}}}
+                """;
+        server.when(request().withMethod("POST").withPath("/"))
+                .respond(response().withStatusCode(200).withBody(json));
+
+        var task = new JSONRPCTransport_v0_3("http://localhost:4001").getTask(new TaskQueryParams_v0_3("task-null", 0), null);
+        Map<String, Object> nullField = Collections.singletonMap("optional", null);
+        assertEquals(nullField, task.metadata());
+        assertEquals(nullField, task.history().get(0).metadata());
+        var part = (DataPart_v0_3) task.history().get(0).parts().get(0);
+        assertEquals(nullField, part.metadata());
+        assertTrue(part.data().containsKey("optional"));
+        assertNull(part.data().get("optional"));
+        assertEquals(Map.of(), part.data().get("nested"));
+        assertEquals(Arrays.asList(null, nullField, Map.of(), List.of()), part.data().get("items"));
     }
 }

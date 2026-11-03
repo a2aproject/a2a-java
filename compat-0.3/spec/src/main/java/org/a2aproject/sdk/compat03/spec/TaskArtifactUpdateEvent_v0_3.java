@@ -1,5 +1,7 @@
 package org.a2aproject.sdk.compat03.spec;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.a2aproject.sdk.util.Assert;
@@ -35,7 +37,7 @@ public record TaskArtifactUpdateEvent_v0_3(
         this.lastChunk = lastChunk;
         this.artifact = artifact;
         this.contextId = contextId;
-        this.metadata = metadata != null ? Map.copyOf(metadata) : null;
+        this.metadata = metadata != null ? Collections.unmodifiableMap(new HashMap<>(metadata)) : null;
     }
 
     public TaskArtifactUpdateEvent_v0_3(String taskId, Artifact_v0_3 artifact, String contextId,
