@@ -1,7 +1,7 @@
 label: "1.4.0.Final"
 path: "1_4_0_Final"
 sortOrder: 5
-defaultVersion: true
+defaultVersion: false
 devVersion: false
 menu:
   - title: "Getting Started"
