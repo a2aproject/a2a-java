@@ -31,40 +31,42 @@ A2AHttpClientConfiguration configuration =
 A2AHttpClient client = A2AHttpClientFactory.create(configuration);
 ----
 
-Providers that cannot honor explicitly requested settings are skipped, so custom SSE limits are no longer silently ignored. Existing factory methods remain available and are deprecated in favor of the configuration API (link:https://github.com/a2aproject/a2a-java/pull/1255[#1255]).
+// Escape leading '#' in PR link labels: Roq's AsciiDoc renderer otherwise
+// treats the label as an ID and displays the full URL instead of the PR number.
+Providers that cannot honor explicitly requested settings are skipped, so custom SSE limits are no longer silently ignored. Existing factory methods remain available and are deprecated in favor of the configuration API (link:https://github.com/a2aproject/a2a-java/pull/1255[\#1255]).
 
-Redirect handling is now configurable for synchronous GET requests as well as POST requests, with a shared policy across the built-in HTTP clients. Agent card discovery automatically enables one-hop GET redirects; JSON-RPC and REST transport configuration expose an opt-in setting for non-streaming POST requests. SSE requests do not follow redirects (link:https://github.com/a2aproject/a2a-java/pull/1257[#1257]).
+Redirect handling is now configurable for synchronous GET requests as well as POST requests, with a shared policy across the built-in HTTP clients. Agent card discovery automatically enables one-hop GET redirects; JSON-RPC and REST transport configuration expose an opt-in setting for non-streaming POST requests. SSE requests do not follow redirects (link:https://github.com/a2aproject/a2a-java/pull/1257[\#1257]).
 
 == First Phase of Expanded OpenTelemetry Support
 
-This release delivers an initial expansion of OpenTelemetry support. Streaming lifecycle instrumentation adds linked spans for events and termination, helping correlate the initial request with later stream activity. It also adds the client operation duration histogram `gen_ai.client.operation.duration` and the server streaming duration histogram `gen_ai.agent.a2a.streaming.duration` (link:https://github.com/a2aproject/a2a-java/pull/1236[#1236]).
+This release delivers an initial expansion of OpenTelemetry support. Streaming lifecycle instrumentation adds linked spans for events and termination, helping correlate the initial request with later stream activity. It also adds the client operation duration histogram `gen_ai.client.operation.duration` and the server streaming duration histogram `gen_ai.agent.a2a.streaming.duration` (link:https://github.com/a2aproject/a2a-java/pull/1236[\#1236]).
 
-Push notification delivery gains tracing and W3C trace-context propagation. Delivery spans record the outcome and task ID for correlation; the HTTP client wrapper propagates trace context to outbound webhook requests while preserving custom HTTP client settings (link:https://github.com/a2aproject/a2a-java/pull/1229[#1229]).
+Push notification delivery gains tracing and W3C trace-context propagation. Delivery spans record the outcome and task ID for correlation; the HTTP client wrapper propagates trace context to outbound webhook requests while preserving custom HTTP client settings (link:https://github.com/a2aproject/a2a-java/pull/1229[\#1229]).
 
 With the client instrumentation module present, enable client metrics by passing both a `Tracer` under `OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY` and a `Meter` under `OpenTelemetryClientTransportWrapper.OTEL_METER_KEY` in the transport configuration parameters. The server instrumentation uses a CDI `Meter` bean for its streaming histogram. Without a `Meter`, the corresponding histogram is skipped. See the link:https://a2aproject.github.io/a2a-java/1_5_0_Final/extra/opentelemetry/[versioned OpenTelemetry documentation] for dependencies and configuration examples. These additions are a first phase, and OpenTelemetry support is not yet complete.
 
 == Task Listings That Respect Authorization Before Pagination
 
-Task listings now apply authorization before selecting a page. Page contents, continuation tokens, and totals therefore describe the same set of readable tasks. This improves pagination when authorized and unauthorized tasks are interspersed in storage (link:https://github.com/a2aproject/a2a-java/pull/1258[#1258]).
+Task listings now apply authorization before selecting a page. Page contents, continuation tokens, and totals therefore describe the same set of readable tasks. This improves pagination when authorized and unauthorized tasks are interspersed in storage (link:https://github.com/a2aproject/a2a-java/pull/1258[\#1258]).
 
-For database deployments, the JPA task store can use authorization capabilities to filter count and page queries directly in the database. A new, explicitly selected `JpaTaskAuthorizationProvider` persists task ownership and supplies owner-based read scopes. Existing authorization providers retain a bounded scanning fallback (link:https://github.com/a2aproject/a2a-java/pull/1259[#1259]).
+For database deployments, the JPA task store can use authorization capabilities to filter count and page queries directly in the database. A new, explicitly selected `JpaTaskAuthorizationProvider` persists task ownership and supplies owner-based read scopes. Existing authorization providers retain a bounded scanning fallback (link:https://github.com/a2aproject/a2a-java/pull/1259[\#1259]).
 
 == Spring Boot Integration Documentation
 
-The server documentation now covers the community link:https://github.com/soheilqalamkari/a2a-spring[a2a-spring integration], which provides Spring MVC JSON-RPC hosting for the SDK (link:https://github.com/a2aproject/a2a-java/pull/1201[#1201]). See link:https://a2aproject.github.io/a2a-java/1_5_0_Final/server/#server-integrations[Server Integrations] for the available runtime integrations and manual wiring guidance.
+The server documentation now covers the community link:https://github.com/soheilqalamkari/a2a-spring[a2a-spring integration], which provides Spring MVC JSON-RPC hosting for the SDK (link:https://github.com/a2aproject/a2a-java/pull/1201[\#1201]). See link:https://a2aproject.github.io/a2a-java/1_5_0_Final/server/#server-integrations[Server Integrations] for the available runtime integrations and manual wiring guidance.
 
 == Selected Fixes
 
 This release also addresses several interoperability and reliability issues:
 
-* *JSON-RPC* -- handles omitted parameters and non-object request bodies more reliably (link:https://github.com/a2aproject/a2a-java/pull/1198[#1198]), and avoids repeated number-parsing exceptions for string request IDs (link:https://github.com/a2aproject/a2a-java/pull/1254[#1254]).
-* *REST* -- correctly formats single-digit history lengths (link:https://github.com/a2aproject/a2a-java/pull/1200[#1200]) and includes missing query parameters in task and push notification configuration listings (link:https://github.com/a2aproject/a2a-java/pull/1239[#1239]).
-* *gRPC* -- task listing works without a tenant (link:https://github.com/a2aproject/a2a-java/pull/1240[#1240]).
-* *Event queues* -- gracefully closed child queues receive awaited final events (link:https://github.com/a2aproject/a2a-java/pull/1227[#1227]).
-* *JSON serialization* -- explicit nulls are preserved in data and metadata (link:https://github.com/a2aproject/a2a-java/pull/1261[#1261]).
-* *Task listings* -- responses with fewer tasks than the requested page size are accepted (link:https://github.com/a2aproject/a2a-java/pull/1273[#1273]).
-* *Push notification configuration IDs* -- retrieving a configuration with an omitted or empty ID now falls back to the task ID instead of rejecting the request (link:https://github.com/a2aproject/a2a-java/pull/1242[#1242]).
-* *Programmatic handler timeouts* -- builder defaults now match the documented 30/5/1 seconds, replacing 5/2/1 seconds. New setters let manually wired applications override each timeout (link:https://github.com/a2aproject/a2a-java/pull/1249[#1249]); see <<_programmatically_built_handler_timeouts,Programmatically Built Handler Timeouts>> to preserve the previous values.
+* *JSON-RPC* -- handles omitted parameters and non-object request bodies more reliably (link:https://github.com/a2aproject/a2a-java/pull/1198[\#1198]), and avoids repeated number-parsing exceptions for string request IDs (link:https://github.com/a2aproject/a2a-java/pull/1254[\#1254]).
+* *REST* -- correctly formats single-digit history lengths (link:https://github.com/a2aproject/a2a-java/pull/1200[\#1200]) and includes missing query parameters in task and push notification configuration listings (link:https://github.com/a2aproject/a2a-java/pull/1239[\#1239]).
+* *gRPC* -- task listing works without a tenant (link:https://github.com/a2aproject/a2a-java/pull/1240[\#1240]).
+* *Event queues* -- gracefully closed child queues receive awaited final events (link:https://github.com/a2aproject/a2a-java/pull/1227[\#1227]).
+* *JSON serialization* -- explicit nulls are preserved in data and metadata (link:https://github.com/a2aproject/a2a-java/pull/1261[\#1261]).
+* *Task listings* -- responses with fewer tasks than the requested page size are accepted (link:https://github.com/a2aproject/a2a-java/pull/1273[\#1273]).
+* *Push notification configuration IDs* -- retrieving a configuration with an omitted or empty ID now falls back to the task ID instead of rejecting the request (link:https://github.com/a2aproject/a2a-java/pull/1242[\#1242]).
+* *Programmatic handler timeouts* -- builder defaults now match the documented 30/5/1 seconds, replacing 5/2/1 seconds. New setters let manually wired applications override each timeout (link:https://github.com/a2aproject/a2a-java/pull/1249[\#1249]); see <<_programmatically_built_handler_timeouts,Programmatically Built Handler Timeouts>> to preserve the previous values.
 
 The link:https://github.com/a2aproject/a2a-java/compare/v1.4.0.Final...v1.5.0.Final[full changelog] includes all fixes, dependency updates, and testing improvements.
 
@@ -186,7 +188,7 @@ DefaultRequestHandler.Builder builder = DefaultRequestHandler.builder()
 // Configure your executor, stores, and remaining dependencies before build().
 ----
 
-The `a2a.blocking.*` configuration properties apply to CDI-managed handlers; manually wired handlers use these builder setters. See link:https://github.com/a2aproject/a2a-java/pull/1249[#1249] for the correction.
+The `a2a.blocking.*` configuration properties apply to CDI-managed handlers; manually wired handlers use these builder setters. See link:https://github.com/a2aproject/a2a-java/pull/1249[\#1249] for the correction.
 
 === Custom Server Integrations (SPI)
 
@@ -209,7 +211,7 @@ String historyLength = routingContext.request().getParam("historyLength");
 restHandler.getTask(context, tenant, taskId, historyLength);
 ----
 
-REST push configuration listing similarly accepts a raw `pageSize` string. Card resolution helpers move to `AgentCardResolver`, request preflight to `AgentCardRequestPolicy`, and cached transport validation to `CachingAgentCardTransportValidator`. Follow the updated reference integration in link:https://github.com/a2aproject/a2a-java/pull/1213[#1213]. Ordinary `AgentExecutor` implementations and applications using the reference servers do not need these SPI adaptations.
+REST push configuration listing similarly accepts a raw `pageSize` string. Card resolution helpers move to `AgentCardResolver`, request preflight to `AgentCardRequestPolicy`, and cached transport validation to `CachingAgentCardTransportValidator`. Follow the updated reference integration in link:https://github.com/a2aproject/a2a-java/pull/1213[\#1213]. Ordinary `AgentExecutor` implementations and applications using the reference servers do not need these SPI adaptations.
 
 == Also Released: 0.3.4
 
