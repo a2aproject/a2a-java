@@ -14,6 +14,14 @@
     <artifactId>a2a-java-queue-manager-replicated-tests-multi-instance-tests</artifactId>
     <name>Java A2A Extras: Replicated Queue Manager Tests - Multi Instance Tests</name>
 
+    <properties>
+        <!-- Set -DskipDockerTests=true to skip these tests: they boot Quarkus Dev
+             Services (Redpanda via Testcontainers) and need a working Docker daemon.
+             Aliasing skipTests keeps the standard -DskipTests flag working too. -->
+        <skipDockerTests>false</skipDockerTests>
+        <skipTests>${skipDockerTests}</skipTests>
+    </properties>
+
     <dependencies>
         <!-- A2A Client for testing -->
         <dependency>

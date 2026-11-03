@@ -1,9 +1,13 @@
 name: Build and Test
 
 on:
-  # Handle all branches for now
+  # Only run for the 0.3.x maintenance branch
   push:
+    branches:
+      - 0.3.x
   pull_request:
+    branches:
+      - 0.3.x
   workflow_dispatch:
 
 # Only run the latest job
@@ -26,7 +30,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven and run tests
-      run: mvn -B package --file pom.xml -fae
+      # The replication integration tests boot Quarkus Dev Services (Redpanda via
+      # Testcontainers). On current runners (Docker 29.x) the Testcontainers client of
+      # the Quarkus 3.28.x stack cannot detect the Docker daemon, so skip them here;
+      # they still run locally and on the newer stack used by main.
+      run: mvn -B package --file pom.xml -fae -DskipDockerTests=true
     - name: Upload Test Reports
       if: failure()
       uses: actions/upload-artifact@v6
