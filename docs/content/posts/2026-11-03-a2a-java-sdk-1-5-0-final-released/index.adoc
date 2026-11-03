@@ -31,8 +31,6 @@ A2AHttpClientConfiguration configuration =
 A2AHttpClient client = A2AHttpClientFactory.create(configuration);
 ----
 
-// Escape leading '#' in PR link labels: Roq's AsciiDoc renderer otherwise
-// treats the label as an ID and displays the full URL instead of the PR number.
 Providers that cannot honor explicitly requested settings are skipped, so custom SSE limits are no longer silently ignored. Existing factory methods remain available and are deprecated in favor of the configuration API (link:https://github.com/a2aproject/a2a-java/pull/1255[\#1255]).
 
 Redirect handling is now configurable for synchronous GET requests as well as POST requests, with a shared policy across the built-in HTTP clients. Agent card discovery automatically enables one-hop GET redirects; JSON-RPC and REST transport configuration expose an opt-in setting for non-streaming POST requests. SSE requests do not follow redirects (link:https://github.com/a2aproject/a2a-java/pull/1257[\#1257]).
