@@ -11,6 +11,8 @@ import org.a2aproject.sdk.compat03.client.transport.rest.RestErrorMapper_v0_3;
 import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.jspecify.annotations.Nullable;
 
 public class RestSSEEventListener_v0_3 {
@@ -31,7 +33,7 @@ public class RestSSEEventListener_v0_3 {
             LOGGER.fine("Streaming message received: " + message);
             org.a2aproject.sdk.compat03.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.compat03.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(message, builder);
-            handleMessage(builder.build());
+            handleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
             signalTerminal(RestErrorMapper_v0_3.mapRestError(message, 500));
         }
@@ -72,7 +74,7 @@ public class RestSSEEventListener_v0_3 {
         }
     }
 
-    private void handleMessage(StreamResponse response) {
+    private void handleMessage(StreamResponse response, @Nullable Future<Void> future) {
         StreamingEventKind_v0_3 event;
         switch (response.getPayloadCase()) {
             case MSG ->
@@ -89,7 +91,46 @@ public class RestSSEEventListener_v0_3 {
                 return;
             }
         }
+        handleEvent(event, future);
+    }
+
+    /**
+     * Delivers the event and closes the connection once the event carries the end of the task.
+     * <p>
+     * This mirrors {@code AbstractSSEEventListener.handleEvent}, which the native REST and JSON-RPC
+     * listeners inherit: a stream that reaches a final state is cancelled client side instead of
+     * waiting for the server to tear the connection down. That wait never ends when the server keeps
+     * the response open, which is what happens on a late resubscription to an already finished task.
+     *
+     * @param event the parsed streaming event
+     * @param future optional future for controlling the SSE connection
+     */
+    private void handleEvent(StreamingEventKind_v0_3 event, @Nullable Future<Void> future) {
         eventHandler.accept(event);
+
+        if (shouldAutoClose(event) && future != null) {
+            LOGGER.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
+            signalTerminal(null);
+            future.cancel(true); // close SSE channel
+        }
+    }
+
+    /**
+     * Determines whether the stream is finished, using the same predicate as
+     * {@code AbstractSSEEventListener.shouldAutoClose}: a final status update, or a task snapshot
+     * that is already in a final state.
+     *
+     * @param event the streaming event to check
+     * @return {@code true} when the connection should be closed, {@code false} otherwise
+     */
+    private boolean shouldAutoClose(StreamingEventKind_v0_3 event) {
+        if (event instanceof TaskStatusUpdateEvent_v0_3 tue && tue.isFinal()) {
+            return true;
+        }
+        if (event instanceof Task_v0_3 task) {
+            return task.status().state().isFinal();
+        }
+        return false;
     }
 
 }

@@ -8,6 +8,7 @@ import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -71,13 +72,31 @@ public class SSEEventListener_v0_3 {
             String resultJson = jsonObject.get("result").toString();
             StreamingEventKind_v0_3 event = JsonUtil_v0_3.fromJson(resultJson, StreamingEventKind_v0_3.class);
             eventHandler.accept(event);
-            if (event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal()) {
+            if (shouldAutoClose(event)) {
                 signalTerminal(null);
                 future.cancel(true); // close SSE channel
             }
         } else {
             throw new IllegalArgumentException("Unknown message type");
         }
+    }
+
+    /**
+     * Determines whether the stream is finished, using the same predicate as
+     * {@code AbstractSSEEventListener.shouldAutoClose} in the native transport: a final status
+     * update, or a task snapshot that is already in a final state.
+     *
+     * @param event the streaming event to check
+     * @return {@code true} when the connection should be closed, {@code false} otherwise
+     */
+    private boolean shouldAutoClose(StreamingEventKind_v0_3 event) {
+        if (event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal()) {
+            return true;
+        }
+        if (event instanceof Task_v0_3 task) {
+            return task.status().state().isFinal();
+        }
+        return false;
     }
 
 }

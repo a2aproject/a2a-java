@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.compat03.client.transport.jsonrpc.JsonStreamingMessages_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
@@ -190,7 +192,7 @@ public class SSEEventListener_v0_3_Test {
     }
 
     @Test
-    public void testFinalTaskStatusUpdateEventCancels() {
+    public void testFinalTaskStatusUpdateEventCancels() throws Exception {
         TaskStatusUpdateEvent_v0_3 tsue = new TaskStatusUpdateEvent_v0_3.Builder()
                 .taskId("1234")
                 .contextId("xyz")
@@ -205,7 +207,64 @@ public class SSEEventListener_v0_3_Test {
                 error -> {}
         );
 
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onMessage(resultPayload(tsue), future);
 
+        assertInstanceOf(TaskStatusUpdateEvent_v0_3.class, receivedEvent.get());
+        assertTrue(future.cancelHandlerCalled, "A final status update has to close the SSE connection");
+    }
+
+    /**
+     * A resubscription to a task that already finished only ever receives the task snapshot itself,
+     * which ends the stream the same way a final status update does.
+     */
+    @Test
+    public void testTerminalTaskSnapshotCancels() throws Exception {
+        Task_v0_3 task = new Task_v0_3.Builder()
+                .id("1234")
+                .contextId("xyz")
+                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                .build();
+
+        AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
+        AtomicInteger terminalCalls = new AtomicInteger();
+        AtomicReference<Throwable> terminalError = new AtomicReference<>(new Throwable("not invoked"));
+        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
+                event -> receivedEvent.set(event),
+                error -> {
+                    terminalCalls.incrementAndGet();
+                    terminalError.set(error);
+                });
+
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onMessage(resultPayload(task), future);
+
+        assertInstanceOf(Task_v0_3.class, receivedEvent.get());
+        assertTrue(future.cancelHandlerCalled, "A task that is already in a final state has to close the SSE connection");
+        assertEquals(1, terminalCalls.get());
+        assertNull(terminalError.get(), "Reaching the end of the task is a normal completion");
+    }
+
+    @Test
+    public void testRunningTaskSnapshotKeepsTheConnectionOpen() throws Exception {
+        Task_v0_3 task = new Task_v0_3.Builder()
+                .id("1234")
+                .contextId("xyz")
+                .status(new TaskStatus_v0_3(TaskState_v0_3.WORKING))
+                .build();
+
+        AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
+        AtomicInteger terminalCalls = new AtomicInteger();
+        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
+                event -> receivedEvent.set(event),
+                error -> terminalCalls.incrementAndGet());
+
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onMessage(resultPayload(task), future);
+
+        assertInstanceOf(Task_v0_3.class, receivedEvent.get());
+        assertFalse(future.cancelHandlerCalled, "A stream that is still running must not be cancelled");
+        assertEquals(0, terminalCalls.get(), "A stream that is still running has no terminal outcome yet");
     }
 
     @Test
@@ -341,6 +400,13 @@ public class SSEEventListener_v0_3_Test {
         assertTrue(future.cancelHandlerCalled);
         assertEquals(1, terminalCount.get());
         assertNull(terminalError.get());
+    }
+
+    /**
+     * Wraps a streaming event into the JSON-RPC result envelope the listener receives on the wire.
+     */
+    private static String resultPayload(StreamingEventKind_v0_3 event) throws JsonProcessingException_v0_3 {
+        return "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"result\":" + JsonUtil_v0_3.toJson(event) + "}";
     }
 
     private static class CancelCapturingFuture implements Future<Void> {
