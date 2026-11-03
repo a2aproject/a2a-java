@@ -2,11 +2,14 @@ package org.a2aproject.sdk.client.transport.rest.sse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.client.http.ServerSentEvent;
@@ -244,12 +247,16 @@ public class SSEEventListenerTest {
     }
 
     @Test
-    public void testOnMessageWithInvalidJsonCallsErrorHandler() {
+    public void testOnMessageWithInvalidJsonThenOnCompleteKeepsTheError() {
         // Set up error handler
+        AtomicInteger calls = new AtomicInteger();
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> {},
-                error -> receivedError.set(error)
+                error -> {
+                    calls.incrementAndGet();
+                    receivedError.set(error);
+                }
         );
 
         // Invalid JSON message
@@ -260,15 +267,25 @@ public class SSEEventListenerTest {
 
         // Verify error handler was called
         assertNotNull(receivedError.get());
+        Throwable firstError = receivedError.get();
+
+        listener.onComplete();
+
+        assertEquals(1, calls.get());
+        assertSame(firstError, receivedError.get());
     }
 
     @Test
-    public void testOnMessageWithInvalidPayloadCaseCallsErrorHandler() {
+    public void testOnMessageWithInvalidPayloadCaseThenOnCompleteKeepsTheError() {
         // Set up error handler
+        AtomicInteger calls = new AtomicInteger();
         AtomicReference<Throwable> receivedError = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> {},
-                error -> receivedError.set(error)
+                error -> {
+                    calls.incrementAndGet();
+                    receivedError.set(error);
+                }
         );
 
         // JSON with no recognized payload type (empty object)
@@ -281,6 +298,50 @@ public class SSEEventListenerTest {
         assertNotNull(receivedError.get());
         assertTrue(receivedError.get() instanceof IllegalStateException);
         assertTrue(receivedError.get().getMessage().contains("Invalid stream response"));
+        Throwable firstError = receivedError.get();
+
+        listener.onComplete();
+
+        assertEquals(1, calls.get());
+        assertSame(firstError, receivedError.get());
+    }
+
+    @Test
+    public void testOnCompleteSignalsNormalCompletion() {
+        AtomicReference<Throwable> received = new AtomicReference<>(new RuntimeException("unset"));
+        AtomicBoolean called = new AtomicBoolean(false);
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> {
+                    called.set(true);
+                    received.set(error);
+                }
+        );
+
+        listener.onComplete();
+
+        assertTrue(called.get());
+        assertNull(received.get());
+    }
+
+    @Test
+    public void testOnErrorThenOnCompleteKeepsTheError() {
+        AtomicInteger calls = new AtomicInteger();
+        AtomicReference<Throwable> received = new AtomicReference<>();
+        IllegalStateException boom = new IllegalStateException("first");
+        SSEEventListener listener = new SSEEventListener(
+                event -> {},
+                error -> {
+                    calls.incrementAndGet();
+                    received.set(error);
+                }
+        );
+
+        listener.onError(boom, null);
+        listener.onComplete();
+
+        assertEquals(1, calls.get());
+        assertEquals(boom, received.get());
     }
 
     @Test
