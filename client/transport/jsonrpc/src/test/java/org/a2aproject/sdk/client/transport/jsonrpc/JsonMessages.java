@@ -93,10 +93,7 @@ public class JsonMessages {
                     {
                       "text":"tell me a joke"
                     }
-                  ],
-                  "metadata":{
-                    
-                  }
+                  ]
                 }
               }
             }""";
@@ -143,18 +140,12 @@ public class JsonMessages {
                 {
                   "text":"tell me a joke"
                 }
-              ],
-              "metadata":{
-              }
+              ]
             },
             "configuration":{
               "acceptedOutputModes":[
                 "text"
-              ],
-              "returnImmediately":false
-            },
-            "metadata":{
-
+              ]
             }
           }
         }""";
@@ -192,19 +183,12 @@ public class JsonMessages {
                     {
                       "text":"tell me a joke"
                     }
-                  ],
-                  "metadata":{
-                    
-                  }
+                  ]
                 },
                 "configuration":{
                   "acceptedOutputModes":[
                     "text"
-                  ],
-                  "returnImmediately":false
-                },
-                "metadata":{
-                  
+                  ]
                 }
               }
             }""";
@@ -376,19 +360,12 @@ public class JsonMessages {
                        "url":"file:///path/to/image.jpg",
                        "mediaType":"image/jpeg"
                      }
-                   ],
-                   "metadata":{
-                     
-                   }
+                   ]
                  },
                  "configuration":{
                    "acceptedOutputModes":[
                      "text"
-                   ],
-                   "returnImmediately":false
-                 },
-                 "metadata":{
-                   
+                   ]
                  }
                }
              }""";
@@ -443,19 +420,12 @@ public class JsonMessages {
                         "timestamp":"2024-01-15T10:30:00Z"
                       }
                     }
-                  ],
-                  "metadata":{
-                    
-                  }
+                  ]
                 },
                 "configuration":{
                   "acceptedOutputModes":[
                     "text"
-                  ],
-                  "returnImmediately":false
-                },
-                "metadata":{
-                  
+                  ]
                 }
               }
             }""";
@@ -514,19 +484,12 @@ public class JsonMessages {
                         "labels":["Q1", "Q2", "Q3", "Q4"]
                       }
                     }
-                  ],
-                  "metadata":{
-                    
-                  }
+                  ]
                 },
                 "configuration":{
                   "acceptedOutputModes":[
                     "text"
-                  ],
-                  "returnImmediately":false
-                },
-                "metadata":{
-                  
+                  ]
                 }
               }
             }""";

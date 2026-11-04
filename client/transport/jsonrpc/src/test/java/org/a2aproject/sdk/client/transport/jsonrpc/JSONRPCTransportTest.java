@@ -97,14 +97,14 @@ public class JSONRPCTransportTest {
     public void testListTasksWithDefaultBuilder() throws Exception {
         JsonObject params = listTasksAndGetRequestParams(ListTasksParams.builder().build());
 
-        assertEquals("", params.get("tenant").getAsString());
+        assertFalse(params.has("tenant"), "an unset tenant must be omitted instead of being sent as \"\"");
     }
 
     @Test
     public void testListTasksWithDefaultConstructor() throws Exception {
         JsonObject params = listTasksAndGetRequestParams(new ListTasksParams());
 
-        assertEquals("", params.get("tenant").getAsString());
+        assertFalse(params.has("tenant"), "an unset tenant must be omitted instead of being sent as \"\"");
     }
 
     @Test
