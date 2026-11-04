@@ -152,8 +152,8 @@ jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/hello
 The Java client (`HelloWorldClient.java`) performs the following actions:
 
 1. Fetches the server's public agent card
-2. Fetches the server's extended agent card
-3. Creates a client using the extended agent card that connects to the Python server at `http://localhost:9999`.
+2. Creates a client from it that connects to the Python server at `http://localhost:9999`.
+3. Fetches the server's extended agent card through the client, if the public card advertises one. The client uses it from then on.
 4. Sends a regular message asking "how much is 10 USD in INR?".
 5. Prints the server's response.
 6. Sends the same message as a streaming request.

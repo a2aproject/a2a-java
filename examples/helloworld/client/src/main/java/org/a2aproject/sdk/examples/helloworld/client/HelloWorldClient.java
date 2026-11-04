@@ -60,21 +60,6 @@ public class HelloWorldClient {
             AgentCard publicAgentCard = A2ACardResolver.builder().baseUrl(SERVER_URL).build().getAgentCard();
             System.out.println("Successfully fetched public agent card:");
             System.out.println(JsonUtil.toJson(publicAgentCard));
-            System.out.println("Using public agent card for client initialization (default).");
-            AgentCard finalAgentCard = publicAgentCard;
-
-            if (publicAgentCard.capabilities().extendedAgentCard()) {
-                System.out.println("Public card supports authenticated extended card. Attempting to fetch from: " + SERVER_URL + "/ExtendedAgentCard");
-                Map<String, String> authHeaders = new HashMap<>();
-                authHeaders.put("Authorization", "Bearer dummy-token-for-extended-card");
-                AgentCard extendedAgentCard = A2A.getAgentCard(SERVER_URL, "/ExtendedAgentCard", authHeaders);
-                System.out.println("Successfully fetched authenticated extended agent card:");
-                System.out.println(JsonUtil.toJson(extendedAgentCard));
-                System.out.println("Using AUTHENTICATED EXTENDED agent card for client initialization.");
-                finalAgentCard = extendedAgentCard;
-            } else {
-                System.out.println("Public card does not indicate support for an extended card. Using public card.");
-            }
 
             final CompletableFuture<String> messageResponse = new CompletableFuture<>();
 
@@ -109,11 +94,20 @@ public class HelloWorldClient {
             }
 
             ClientBuilder clientBuilder = Client
-                    .builder(finalAgentCard)
+                    .builder(publicAgentCard)
                     .addConsumers(consumers)
                     .streamingErrorHandler(streamingErrorHandler);
             configureTransport(clientBuilder, openTelemetrySdk);
              Client client = clientBuilder.build();
+
+            if (publicAgentCard.capabilities().extendedAgentCard()) {
+                // The client uses the extended card for the calls that follow
+                AgentCard extendedAgentCard = client.getExtendedAgentCard();
+                System.out.println("Successfully fetched extended agent card:");
+                System.out.println(JsonUtil.toJson(extendedAgentCard));
+            } else {
+                System.out.println("Public card does not indicate support for an extended card. Using public card.");
+            }
 
             Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
             try {

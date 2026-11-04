@@ -83,8 +83,8 @@ The client will connect to the Java server running on `http://localhost:9999`.
 The Python A2A client (`test_client.py`) performs the following actions:
 
 1. Fetches the server's public agent card
-2. Fetches the server's extended agent card if supported by the server (see https://github.com/a2aproject/a2a-java/issues/81)
-3. Creates an A2A client using the extended agent card that connects to the Python server at `http://localhost:9999`.
+2. Fetches the server's extended agent card
+3. Creates an A2A client using the extended agent card that connects to the Java server at `http://localhost:9999`.
 4. Sends a regular message asking "how much is 10 USD in INR?".
 5. Prints the server's response.
 6. Sends the same message as a streaming request.
