@@ -84,6 +84,22 @@ class NullValues_v0_3_Test {
         assertThrows(UnsupportedOperationException.class, () -> part.data().put("later", true));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"text", "data"})
+    void partMetadataWithNullValuesIsDefensivelyCopied(String kind) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("optional", null);
+        Map<String, Object> copiedMetadata =
+                kind.equals("text")
+                        ? new TextPart_v0_3("hello", metadata).metadata()
+                        : new DataPart_v0_3(Map.of("value", "hello"), metadata).metadata();
+        metadata.put("optional", "changed");
+        metadata.put("later", true);
+
+        assertEquals(Collections.singletonMap("optional", null), copiedMetadata);
+        assertThrows(UnsupportedOperationException.class, () -> copiedMetadata.put("later", true));
+    }
+
     @Test
     void nullDataObjectRemainsInvalid() {
         assertThrows(IllegalArgumentException.class, () -> new DataPart_v0_3(null));
