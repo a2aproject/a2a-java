@@ -97,14 +97,14 @@ public class JSONRPCTransportTest {
     public void testListTasksWithDefaultBuilder() throws Exception {
         JsonObject params = listTasksAndGetRequestParams(ListTasksParams.builder().build());
 
-        assertEquals("", params.get("tenant").getAsString());
+        assertFalse(params.has("tenant"));
     }
 
     @Test
     public void testListTasksWithDefaultConstructor() throws Exception {
         JsonObject params = listTasksAndGetRequestParams(new ListTasksParams());
 
-        assertEquals("", params.get("tenant").getAsString());
+        assertFalse(params.has("tenant"));
     }
 
     @Test

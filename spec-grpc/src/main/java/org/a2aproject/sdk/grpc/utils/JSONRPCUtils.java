@@ -581,8 +581,9 @@ public class JSONRPCUtils {
                 output.name("method").value(method);
             }
             if (payload != null) {
+                // Unlike responses, omit unset fields: receivers may treat "taskId": "" as a real value
                 String resultValue = ProtoJsonUtils.toJson(
-                        JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), payload);
+                        JsonFormat.printer().omittingInsignificantWhitespace(), payload);
                 output.name("params").jsonValue(resultValue);
             }
             output.endObject();

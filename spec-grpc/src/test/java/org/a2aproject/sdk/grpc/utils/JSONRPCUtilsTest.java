@@ -763,6 +763,32 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
+    public void testToJsonRPCRequest_omitsUnsetFields() throws JsonProcessingException {
+        // Issue #770: unset taskId, contextId and tenant were sent as empty strings
+        MessageSendParams params = new MessageSendParams(
+            Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("hello")))
+                .messageId("message-1234")
+                .build(),
+            null, null
+        );
+
+        String json = JSONRPCUtils.toJsonRPCRequest("test-id", SEND_MESSAGE_METHOD,
+            ProtoUtils.ToProto.sendMessageRequest(params));
+
+        JsonObject requestParams = JsonParser.parseString(json).getAsJsonObject().getAsJsonObject("params");
+        assertFalse(requestParams.has("tenant"), json);
+        JsonObject message = requestParams.getAsJsonObject("message");
+        assertFalse(message.has("taskId"), json);
+        assertFalse(message.has("contextId"), json);
+        Message parsed = assertInstanceOf(SendMessageRequest.class, JSONRPCUtils.parseRequestBody(json, null))
+            .getParams().message();
+        assertNull(parsed.taskId());
+        assertNull(parsed.contextId());
+    }
+
+    @Test
     public void testToJsonRPCResultResponse_doesNotHtmlEscapeAngleBrackets() {
         // Reproduce issue #892: server responses must also send literal angle brackets.
         Message message = Message.builder()
