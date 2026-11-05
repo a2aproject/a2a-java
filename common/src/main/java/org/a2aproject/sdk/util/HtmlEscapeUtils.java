@@ -16,6 +16,8 @@ public final class HtmlEscapeUtils {
      * <p>
      * Both lowercase ({@code <}) and uppercase ({@code <}) hex digits are handled,
      * as the JSON specification permits either case for unicode escapes.
+     * Escaped backslashes are preserved, so literal Unicode escape text is not
+     * mistaken for an encoded HTML character.
      * <p>
      * Gson also escapes U+2028 (line separator) and U+2029 (paragraph separator) in HTML-safe
      * mode, but those are left as-is because they are valid JSON encodings that preserve the
@@ -31,10 +33,31 @@ public final class HtmlEscapeUtils {
         if (!json.contains("\\u00")) {
             return json;
         }
-        return json.replace("\\u003c", "<").replace("\\u003C", "<")
-                .replace("\\u003e", ">").replace("\\u003E", ">")
-                .replace("\\u0026", "&")
-                .replace("\\u003d", "=").replace("\\u003D", "=")
-                .replace("\\u0027", "'");
+        StringBuilder result = new StringBuilder(json.length());
+        for (int index = 0; index < json.length(); index++) {
+            char current = json.charAt(index);
+            if (current == '\\' && index + 1 < json.length()) {
+                if (index + 5 < json.length() && json.startsWith("\\u00", index)) {
+                    char replacement = switch (json.substring(index + 4, index + 6)) {
+                        case "3c", "3C" -> '<';
+                        case "3e", "3E" -> '>';
+                        case "26" -> '&';
+                        case "3d", "3D" -> '=';
+                        case "27" -> '\'';
+                        default -> 0;
+                    };
+                    if (replacement != 0) {
+                        result.append(replacement);
+                        index += 5;
+                        continue;
+                    }
+                }
+                // Consume each escape as a pair, including escaped backslashes.
+                result.append(current).append(json.charAt(++index));
+            } else {
+                result.append(current);
+            }
+        }
+        return result.toString();
     }
 }

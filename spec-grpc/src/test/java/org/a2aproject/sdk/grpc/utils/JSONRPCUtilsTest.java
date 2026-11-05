@@ -27,7 +27,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
+import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.grpc.SendMessageResponse;
+import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
@@ -781,6 +785,29 @@ public class JSONRPCUtilsTest {
             "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
         assertFalse(json.contains("\\u003e"),
             "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
+    }
+
+    @Test
+    public void testToJsonRPCResultResponse_preservesEscapesInStreamingToolResults() throws Exception {
+        String text = "Literal escapes: \\u003e \\u0027; backslashes: \\> \\'; actual: > '";
+        org.a2aproject.sdk.grpc.Artifact artifact = org.a2aproject.sdk.grpc.Artifact.newBuilder()
+                .setArtifactId("tool-result")
+                .addParts(org.a2aproject.sdk.grpc.Part.newBuilder()
+                        .setData(Value.newBuilder().setStructValue(Struct.newBuilder()
+                                .putFields("result", Value.newBuilder()
+                                        .setStringValue(text).build()))))
+                .build();
+        StreamResponse original = StreamResponse.newBuilder()
+                .setArtifactUpdate(org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent.newBuilder()
+                        .setTaskId("task-1")
+                        .setArtifact(artifact))
+                .build();
+
+        String json = JSONRPCUtils.toJsonRPCResultResponse("stream-id", original);
+        JsonObject envelope = JsonParser.parseString(json).getAsJsonObject();
+        StreamResponse.Builder parsed = StreamResponse.newBuilder();
+        JsonFormat.parser().merge(envelope.get("result").toString(), parsed);
+        assertEquals(original, parsed.build());
     }
 
     @Test

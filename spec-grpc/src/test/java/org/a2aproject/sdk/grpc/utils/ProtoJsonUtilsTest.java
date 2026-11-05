@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 
 import org.a2aproject.sdk.spec.Message;
@@ -85,5 +87,23 @@ public class ProtoJsonUtilsTest {
         String result = ProtoJsonUtils.toJson(JsonFormat.printer(), null);
 
         assertEquals("", result);
+    }
+
+    @Test
+    public void toJson_preservesLiteralUnicodeEscapesAndBackslashes() throws Exception {
+        String text = "\\u003c \\u003C \\u003e \\u003E \\u0026 \\u003d \\u003D \\u0027"
+                + " <tag>&=' \\> \\' \"quoted\"\n\u2028\u2029";
+        Struct original = Struct.newBuilder()
+                .putFields("result", Value.newBuilder().setStringValue(text).build())
+                .putFields("\\u003e", Value.newBuilder().setStringValue("literal field name").build())
+                .build();
+
+        for (JsonFormat.Printer printer : new JsonFormat.Printer[] {
+                JsonFormat.printer(), JsonFormat.printer().omittingInsignificantWhitespace()}) {
+            String json = ProtoJsonUtils.toJson(printer, original);
+            Struct.Builder parsed = Struct.newBuilder();
+            JsonFormat.parser().merge(json, parsed);
+            assertEquals(original, parsed.build());
+        }
     }
 }
