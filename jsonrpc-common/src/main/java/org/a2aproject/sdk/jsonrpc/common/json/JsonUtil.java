@@ -605,6 +605,9 @@ public class JsonUtil {
 
             if (value instanceof TextPart textPart) {
                 out.name(TEXT).value(textPart.text());
+                if (textPart.mediaType() != null) {
+                    writeNonEmpty(out, MEDIA_TYPE, textPart.mediaType());
+                }
                 writeMetadata(out, textPart.metadata());
             } else if (value instanceof FilePart filePart) {
                 if (filePart.file() instanceof FileWithBytes withBytes) {
@@ -633,6 +636,9 @@ public class JsonUtil {
                 } else {
                     delegateGson.toJson(dataPart.data(), Object.class, out);
                 }
+                if (dataPart.mediaType() != null) {
+                    writeNonEmpty(out, MEDIA_TYPE, dataPart.mediaType());
+                }
                 JsonUtil.writeMetadata(out, dataPart.metadata());
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
@@ -658,6 +664,7 @@ public class JsonUtil {
 
             // Extract metadata if present
             Map<String, Object> metadata = JsonUtil.readMetadata(jsonObject);
+            String mediaType = stringOrEmpty(jsonObject, MEDIA_TYPE);
             Set<String> keys = jsonObject.keySet();
 
             // A producer that emits every content key, leaving the unset ones as "", would otherwise
@@ -675,7 +682,7 @@ public class JsonUtil {
                     .orElseThrow(() -> new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, keys)));
 
             return switch (discriminator) {
-                case TEXT -> new TextPart(requireString(jsonObject, TEXT), metadata);
+                case TEXT -> new TextPart(requireString(jsonObject, TEXT), metadata, mediaType.isEmpty() ? null : mediaType);
                 case RAW -> new FilePart(new FileWithBytes(
                         stringOrEmpty(jsonObject, MEDIA_TYPE),
                         stringOrEmpty(jsonObject, FILENAME),
@@ -686,7 +693,7 @@ public class JsonUtil {
                         requireString(jsonObject, URL)), metadata);
                 case DATA -> {
                     Object data = delegateGson.fromJson(jsonObject.get(DATA), Object.class);
-                    yield new DataPart(data, metadata);
+                    yield new DataPart(data, metadata, mediaType.isEmpty() ? null : mediaType);
                 }
                 default -> throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
             };

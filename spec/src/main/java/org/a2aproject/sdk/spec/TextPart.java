@@ -24,11 +24,12 @@ import org.jspecify.annotations.Nullable;
  *
  * @param text the text content (required, must not be null)
  * @param metadata additional metadata for the part
+ * @param mediaType the optional MIME type of the content
  * @see Part
  * @see Message
  * @see Artifact
  */
-public record TextPart(String text, @Nullable Map<String, Object> metadata) implements Part<String> {
+public record TextPart(String text, @Nullable Map<String, Object> metadata, @Nullable String mediaType) implements Part<String> {
 
     /**
      * The JSON member name discriminator for text parts: "text".
@@ -44,10 +45,16 @@ public record TextPart(String text, @Nullable Map<String, Object> metadata) impl
      * @param text the text content (required, must not be null)
      * @throws IllegalArgumentException if text is null
      */
-    public TextPart (String text, @Nullable Map<String, Object> metadata) {
+    public TextPart (String text, @Nullable Map<String, Object> metadata, @Nullable String mediaType) {
         Assert.checkNotNullParam("text", text);
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.text = text;
+        this.mediaType = mediaType;
+    }
+
+    /** Creates a text part with metadata and no media type. */
+    public TextPart(String text, @Nullable Map<String, Object> metadata) {
+        this(text, metadata, null);
     }
 
     /**

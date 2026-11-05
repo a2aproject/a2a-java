@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 
+import com.google.gson.JsonParser;
 import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.FilePart;
 import org.a2aproject.sdk.spec.FileWithBytes;
@@ -20,6 +21,24 @@ import org.junit.jupiter.params.provider.ValueSource;
  * Decoding of the flat Part oneOf when a producer emits more than one content key.
  */
 public class PartSerializationTest {
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"text\":\"Hello\",\"mediaType\":\"text/markdown\"}",
+            "{\"data\":{\"answer\":\"42\"},\"mediaType\":\"application/vnd.example+json\"}"
+    })
+    void testMediaTypeSurvivesJsonRoundTrip(String json) throws JsonProcessingException {
+        Part<?> part = JsonUtil.fromJson(json, Part.class);
+        assertEquals(JsonParser.parseString(json), JsonParser.parseString(JsonUtil.toJson(part)));
+    }
+
+    @Test
+    void testConstructedPartsSerializeMediaType() throws JsonProcessingException {
+        assertEquals(JsonParser.parseString("{\"text\":\"Hello\",\"mediaType\":\"text/markdown\"}"),
+                JsonParser.parseString(JsonUtil.toJson(new TextPart("Hello", null, "text/markdown"))));
+        assertEquals(JsonParser.parseString("{\"data\":null,\"mediaType\":\"application/json\"}"),
+                JsonParser.parseString(JsonUtil.toJson(new DataPart(null, null, "application/json"))));
+    }
 
     @Test
     void testPopulatedDataWinsOverEmptyTextPlaceholder() throws JsonProcessingException {
