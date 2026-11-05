@@ -255,9 +255,8 @@ public class JsonUtil_v0_3 {
      * <li>"message": The exception message</li>
      * </ul>
      * <p>
-     * <b>Deserialization:</b> Reads the JSON and reconstructs the Throwable using reflection to find
-     * a constructor that accepts a String message parameter. If no such constructor exists or if
-     * instantiation fails, returns a generic {@link RuntimeException} with the message.
+     * <b>Deserialization:</b> Returns a generic {@link RuntimeException} with the message.
+     * The type is informational and is not used to load or instantiate a class.
      *
      * @see Throwable
      */
@@ -284,15 +283,12 @@ public class JsonUtil_v0_3 {
                 return null;
             }
 
-            String type = null;
             String message = null;
 
             in.beginObject();
             while (in.hasNext()) {
                 String fieldName = in.nextName();
                 switch (fieldName) {
-                    case "type" ->
-                        type = in.nextString();
                     case "message" ->
                         message = in.nextString();
                     default ->
@@ -301,25 +297,6 @@ public class JsonUtil_v0_3 {
             }
             in.endObject();
 
-            // Try to reconstruct the Throwable
-            if (type != null) {
-                try {
-                    Class<?> throwableClass = Class.forName(type);
-                    if (Throwable.class.isAssignableFrom(throwableClass)) {
-                        // Try to find a constructor that takes a String message
-                        try {
-                            var constructor = throwableClass.getConstructor(String.class);
-                            return (Throwable) constructor.newInstance(message);
-                        } catch (NoSuchMethodException e) {
-                            // No String constructor, return a generic RuntimeException
-                            return new RuntimeException(message);
-                        }
-                    }
-                } catch (Exception e) {
-                    // If we can't reconstruct the exact type, return a generic RuntimeException
-                    return new RuntimeException(message);
-                }
-            }
             return new RuntimeException(message);
         }
     }
