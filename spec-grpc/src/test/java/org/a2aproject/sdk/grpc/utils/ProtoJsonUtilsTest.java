@@ -86,4 +86,26 @@ public class ProtoJsonUtilsTest {
 
         assertEquals("", result);
     }
+
+    @Test
+    public void toJson_keepsALiteralBackslashBeforeUEscapeInMessageText() throws Exception {
+        String text = "use " + "\\" + "u003c to escape a tag";
+        MessageSendParams params = new MessageSendParams(
+            Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart(text)))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build(),
+            null, null
+        );
+        var proto = ProtoUtils.ToProto.sendMessageRequest(params);
+
+        String json = ProtoJsonUtils.toJson(JsonFormat.printer(), proto);
+
+        // The body is still valid JSON, and the text survives the round trip untouched.
+        var parsed = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
+        JsonFormat.parser().merge(json, parsed);
+        assertEquals(text, parsed.getMessage().getParts(0).getText());
+    }
 }

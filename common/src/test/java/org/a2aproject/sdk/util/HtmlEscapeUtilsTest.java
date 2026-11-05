@@ -58,4 +58,19 @@ public class HtmlEscapeUtilsTest {
         assertEquals("<tag>=value", HtmlEscapeUtils.removeHtmlEscaping("\\u003ctag\\u003E\\u003Dvalue"));
     }
 
+    @Test
+    public void removeHtmlEscaping_leavesAnEscapedBackslashBeforeUEscapeAlone() {
+        // A JSON string holding a literal backslash followed by the text "u003c".
+        String json = "{\"text\":\"a" + "\\\\" + "u003c b\"}";
+        assertEquals(json, HtmlEscapeUtils.removeHtmlEscaping(json));
+    }
+
+    @Test
+    public void removeHtmlEscaping_restoresTheEscapeAfterAnEscapedBackslash() {
+        // A literal backslash, then an HTML-escaped '<': the escape is removed, the backslash
+        // stays escaped so that the document is still valid JSON.
+        String json = "a" + "\\\\" + "\\u003c" + "b";
+        assertEquals("a" + "\\\\" + "<b", HtmlEscapeUtils.removeHtmlEscaping(json));
+    }
+
 }
