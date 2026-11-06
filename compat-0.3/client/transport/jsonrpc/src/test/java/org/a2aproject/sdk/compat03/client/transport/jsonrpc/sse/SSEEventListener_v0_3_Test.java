@@ -267,6 +267,71 @@ public class SSEEventListener_v0_3_Test {
         assertEquals(0, terminalCalls.get(), "A stream that is still running has no terminal outcome yet");
     }
 
+    /**
+     * The transport publishes the streaming future only after {@code postAsyncSSE} returns, so a
+     * terminal event delivered while the request is still in flight reaches the listener without
+     * one. The listener must record the close request instead of dereferencing a missing future,
+     * and honour it once the transport hands the future over.
+     */
+    @Test
+    public void testTerminalTaskSnapshotArrivingBeforeTheFutureIsPublished() throws Exception {
+        Task_v0_3 task = new Task_v0_3.Builder()
+                .id("1234")
+                .contextId("xyz")
+                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                .build();
+
+        AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
+        AtomicInteger terminalCalls = new AtomicInteger();
+        AtomicReference<Throwable> terminalError = new AtomicReference<>(new Throwable("not invoked"));
+        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
+                event -> receivedEvent.set(event),
+                error -> {
+                    terminalCalls.incrementAndGet();
+                    terminalError.set(error);
+                });
+
+        // The future does not exist yet: this is the call that used to throw a NullPointerException.
+        listener.onMessage(resultPayload(task), null);
+
+        assertInstanceOf(Task_v0_3.class, receivedEvent.get());
+        assertEquals(1, terminalCalls.get());
+        assertNull(terminalError.get(), "Reaching the end of the task is a normal completion");
+
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onStreamFuturePublished(future);
+
+        assertTrue(future.cancelHandlerCalled,
+                "The close request raised before the future existed has to be honoured once it does");
+    }
+
+    /**
+     * Publishing the future is not itself a close request: a stream that is still running must stay
+     * open, and a terminal event arriving afterwards still has to close it.
+     */
+    @Test
+    public void testPublishingTheFutureIsNotACloseRequest() throws Exception {
+        Task_v0_3 task = new Task_v0_3.Builder()
+                .id("1234")
+                .contextId("xyz")
+                .status(new TaskStatus_v0_3(TaskState_v0_3.COMPLETED))
+                .build();
+
+        AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();
+        SSEEventListener_v0_3 listener = new SSEEventListener_v0_3(
+                event -> receivedEvent.set(event),
+                error -> {});
+
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onStreamFuturePublished(future);
+        assertFalse(future.cancelHandlerCalled, "Publishing the future is not a reason to close the stream");
+
+        listener.onMessage(resultPayload(task), future);
+
+        assertInstanceOf(Task_v0_3.class, receivedEvent.get());
+        assertTrue(future.cancelHandlerCalled, "A task already in a final state still has to close the channel");
+    }
+
     @Test
     public void testOnEventWithFinalTaskStatusUpdateEventEventCancels() throws Exception {
         // Set up event handler
