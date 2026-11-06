@@ -2104,12 +2104,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
 
-        // Create context with incompatible version 2.0
+        // Create context with unsupported minor version 1.1
         ServerCallContext contextWithVersion = new ServerCallContext(
                 UnauthenticatedUser.INSTANCE,
                 Map.of("foo", "bar"),
                 new HashSet<>(),
-                "2.0"  // Incompatible version
+                "1.1"  // Unsupported minor version
         );
 
         Message message = Message.builder(MESSAGE)
@@ -2120,7 +2120,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageResponse response = handler.onMessageSend(request, contextWithVersion);
 
         assertInstanceOf(VersionNotSupportedError.class, response.getError());
-        assertTrue(response.getError().getMessage().contains("2.0"));
+        assertTrue(response.getError().getMessage().contains("1.1"));
         assertNull(response.getResult());
     }
 
@@ -2220,12 +2220,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        // Create context with compatible version 1.1
+        // Create context with the advertised version 1.0
         ServerCallContext contextWithVersion = new ServerCallContext(
                 UnauthenticatedUser.INSTANCE,
                 Map.of("foo", "bar"),
                 new HashSet<>(),
-                "1.1"  // Compatible version (same major version)
+                "1.0"  // Exact supported version
         );
 
         agentExecutorExecute = (context, agentEmitter) -> {

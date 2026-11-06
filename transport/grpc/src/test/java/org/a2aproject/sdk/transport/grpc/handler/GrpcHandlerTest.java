@@ -1172,7 +1172,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        // Create handler that provides incompatible version 2.0 in the context
+        // Create handler that provides unsupported minor version 1.1 in the context
         GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
             @Override
             protected CallContextFactory getCallContextFactory() {
@@ -1183,7 +1183,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                                 UnauthenticatedUser.INSTANCE,
                                 Map.of("grpc_response_observer", streamObserver),
                                 new HashSet<>(),
-                                "2.0" // Incompatible version
+                                "1.1" // Unsupported minor version
                         );
                     }
                 };
@@ -1308,7 +1308,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        // Create handler that provides compatible version 1.1 in the context
+        // Create handler that provides the advertised version 1.0 in the context
         GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
             @Override
             protected CallContextFactory getCallContextFactory() {
@@ -1319,7 +1319,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                                 UnauthenticatedUser.INSTANCE,
                                 Map.of("grpc_response_observer", streamObserver),
                                 new HashSet<>(),
-                                "1.1" // Compatible version (same major version)
+                                "1.0" // Exact supported version
                         );
                     }
                 };

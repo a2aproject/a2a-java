@@ -832,12 +832,12 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
 
-        // Create context with incompatible version 2.0
+        // Create context with unsupported minor version 1.1
         ServerCallContext contextWithVersion = new ServerCallContext(
                 UnauthenticatedUser.INSTANCE,
                 Map.of("foo", "bar"),
                 new HashSet<>(),
-                "2.0"  // Incompatible version
+                "1.1"  // Unsupported minor version
         );
 
         String requestBody = """
@@ -860,7 +860,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         assertProblemDetail(response, 400,
                 "VERSION_NOT_SUPPORTED",
-                "Protocol version '2.0' is not supported. Supported versions: [1.0]");
+                "Protocol version '1.1' is not supported. Supported versions: [1.0]");
     }
 
     @Test
@@ -978,12 +978,12 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
 
-        // Create context with compatible version 1.1
+        // Create context with the advertised version 1.0
         ServerCallContext contextWithVersion = new ServerCallContext(
                 UnauthenticatedUser.INSTANCE,
                 Map.of("foo", "bar"),
                 new HashSet<>(),
-                "1.1"  // Compatible version (same major version)
+                "1.0"  // Exact supported version
         );
 
         agentExecutorExecute = (context, agentEmitter) -> {
