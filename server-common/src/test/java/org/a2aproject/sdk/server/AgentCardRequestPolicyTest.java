@@ -118,7 +118,7 @@ class AgentCardRequestPolicyTest {
     @Test
     void versionWinsOverRequiredExtensionAndCapability() {
         AgentCardRequestPolicy policy = policy(cardWithRequiredExtension());
-        ServerCallContext context = context("2.0", Set.of());
+        ServerCallContext context = context("1.1", Set.of());
         assertThrows(VersionNotSupportedError.class,
                 () -> policy.preflight(null, context, card -> {}, disabledOperation()));
         assertNull(context.getEffectiveAgentCard());

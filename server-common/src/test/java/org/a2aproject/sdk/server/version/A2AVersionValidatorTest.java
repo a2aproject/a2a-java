@@ -23,10 +23,10 @@ public class A2AVersionValidatorTest {
 
     @Test
     public void testIsVersionCompatible_SameMajorDifferentMinor() {
-        // Major versions match, minor versions can differ
-        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "1.1"));
-        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.1"), "1.0"));
-        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.5"), "1.9"));
+        // A server interface supports only the exact advertised major/minor version.
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "1.1"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.1"), "1.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.5"), "1.9"));
     }
 
     @Test
@@ -35,6 +35,13 @@ public class A2AVersionValidatorTest {
         assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "2.0"));
         assertFalse(A2AVersionValidator.isVersionCompatible(List.of("2.0"), "1.0"));
         assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.5"), "2.5"));
+    }
+
+    @Test
+    public void testIsVersionCompatible_PatchVersionDoesNotAffectCompatibility() {
+        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "1.0.7"));
+        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.0.3"), "1.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "1.1.7"));
     }
 
     @Test
@@ -94,6 +101,14 @@ public class A2AVersionValidatorTest {
     }
 
     @Test
+    public void testValidateProtocolVersion_EmptyVersionProvided_V03OnlyServer() {
+        AgentCard agentCard = createAgentCard("0.3");
+        ServerCallContext context = createContext("");
+
+        assertDoesNotThrow(() -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+    }
+
+    @Test
     public void testValidateProtocolVersion_MatchingVersion() {
         // When version matches exactly, should succeed
         AgentCard agentCard = createAgentCard("1.0");
@@ -104,23 +119,40 @@ public class A2AVersionValidatorTest {
     }
 
     @Test
-    public void testValidateProtocolVersion_CompatibleMinorVersions() {
-        // When major version matches but minor differs, should succeed
+    public void testValidateProtocolVersion_PatchVersionDoesNotAffectCompatibility() {
         AgentCard agentCard = createAgentCard("1.0");
-        ServerCallContext context = createContext("1.1");
+        ServerCallContext context = createContext("1.0.7");
 
-        // Should not throw - same major version
         assertDoesNotThrow(() -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
     }
 
     @Test
-    public void testValidateProtocolVersion_CompatibleMinorVersions_Reverse() {
-        // When major version matches but minor differs (reverse), should succeed
+    public void testValidateProtocolVersion_MultipleSupportedMinorVersions() {
+        AgentCard agentCard = createAgentCardWithVersions("1.0", "1.1");
+
+        assertDoesNotThrow(() -> A2AVersionValidator.validateProtocolVersion(agentCard, createContext("1.1")));
+        assertThrows(VersionNotSupportedError.class,
+                () -> A2AVersionValidator.validateProtocolVersion(agentCard, createContext("1.2")));
+    }
+
+    @Test
+    public void testValidateProtocolVersion_UnsupportedMinorVersion() {
+        // A matching major is insufficient when the server advertises a different minor.
+        AgentCard agentCard = createAgentCard("1.0");
+        ServerCallContext context = createContext("1.1");
+
+        assertThrows(VersionNotSupportedError.class,
+                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+    }
+
+    @Test
+    public void testValidateProtocolVersion_UnsupportedMinorVersion_Reverse() {
+        // The server advertising 1.1 does not support a request for 1.0 unless it lists both.
         AgentCard agentCard = createAgentCard("1.1");
         ServerCallContext context = createContext("1.0");
 
-        // Should not throw - same major version
-        assertDoesNotThrow(() -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
+        assertThrows(VersionNotSupportedError.class,
+                () -> A2AVersionValidator.validateProtocolVersion(agentCard, context));
     }
 
     @Test

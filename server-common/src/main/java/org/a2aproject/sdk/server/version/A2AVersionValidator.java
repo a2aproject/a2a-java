@@ -11,10 +11,10 @@ import org.a2aproject.sdk.spec.VersionNotSupportedError;
 /**
  * Utility class for validating A2A protocol version compatibility between clients and agents.
  *
- * <p>Version validation follows semantic versioning rules:
+ * <p>Version validation follows the A2A protocol versioning rules:
  * <ul>
- *   <li>Major versions must match exactly (1.x can only talk to 1.x)</li>
- *   <li>Minor versions are compatible (1.0 client can talk to 1.1 server and vice versa)</li>
+ *   <li>The requested major and minor versions must match a supported interface</li>
+ *   <li>Patch versions do not affect compatibility</li>
  * </ul>
  *
  * <p>Per A2A spec Section 3.6.2, if the client does not specify a version,
@@ -55,15 +55,16 @@ public class A2AVersionValidator {
     }
 
     /**
-     * Checks if the requested version is compatible with the supported version.
+     * Checks if the requested major and minor version match any supported interface.
      *
      * <p>Compatibility rules:
      * <ul>
      *   <li>Major versions must match exactly</li>
-     *   <li>Minor versions are compatible (any x.Y works with x.Z)</li>
+     *   <li>Minor versions must match exactly</li>
+     *   <li>Patch versions are ignored</li>
      * </ul>
      *
-     * @param supportedVersions the version supported by the agent (e.g., ["1.0", "1.1"])
+     * @param supportedVersions the versions supported by the agent (e.g., ["1.0", "1.1"])
      * @param requestedVersion the version requested by the client (e.g., "1.1")
      * @return true if versions are compatible, false otherwise
      */
@@ -76,11 +77,11 @@ public class A2AVersionValidator {
                 VersionParts supportedParts = parseVersion(supportedVersion);
                 VersionParts requestedParts = parseVersion(requestedVersion);
 
-                // Major versions must match exactly
-                if (supportedParts.major == requestedParts.major) {
+                // A2A negotiates Major.Minor; patch versions are not considered.
+                if (supportedParts.major == requestedParts.major
+                        && supportedParts.minor == requestedParts.minor) {
                     return true;
                 }
-                // Minor versions are compatible - any 1.x can talk to any 1.y
             } catch (IllegalArgumentException e) {
                 // If we can't parse the version, consider it incompatible
                 return false;
