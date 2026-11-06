@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.examples.helloworld.server;
 
+import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -10,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +36,7 @@ public class AgentCardProducer {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
+                        .extendedAgentCard(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
@@ -44,6 +47,26 @@ public class AgentCardProducer {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
+                .build();
+    }
+
+    // Returned by GetExtendedAgentCard. No authentication is configured here, so any client can read it.
+    @Produces
+    @ExtendedAgentCard
+    public AgentCard extendedAgentCard() {
+        AgentCard publicCard = agentCard();
+        List<AgentSkill> skills = new ArrayList<>(publicCard.skills());
+        skills.add(AgentSkill.builder()
+                .id("super_hello_world")
+                .name("Returns a SUPER hello world")
+                .description("A more enthusiastic hello world, only listed in the extended agent card")
+                .tags(List.of("hello world", "extended"))
+                .examples(List.of("super hi", "give me a super hello"))
+                .build());
+        return AgentCard.builder(publicCard)
+                .name("Hello World Agent - Extended Edition")
+                .description("The full-featured hello world agent for authenticated users")
+                .skills(skills)
                 .build();
     }
 
