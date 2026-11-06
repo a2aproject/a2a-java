@@ -265,6 +265,50 @@ public class RestSSEEventListener_v0_3_Test {
         assertNull(terminalError.get());
     }
 
+    /**
+     * {@code postAsyncSSE} only returns its future after the call is done, so a final event can be
+     * delivered while the listener still has nothing to cancel. The completion signal must not be
+     * lost in that window, and the cancellation has to happen as soon as the future shows up -
+     * REST never replays the request, so a stream left open waits forever.
+     */
+    @Test
+    public void testFinalEventArrivingBeforeTheFutureIsPublished() {
+        AtomicInteger terminalCalls = new AtomicInteger();
+        AtomicReference<Throwable> terminalError = new AtomicReference<>(new Throwable("not invoked"));
+        RestSSEEventListener_v0_3 listener = new RestSSEEventListener_v0_3(
+                event -> {},
+                error -> {
+                    terminalCalls.incrementAndGet();
+                    terminalError.set(error);
+                });
+
+        listener.onMessage(statusUpdatePayload(true), null);
+
+        assertEquals(1, terminalCalls.get(), "The terminal callback must not depend on the future being published");
+        assertNull(terminalError.get(), "Reaching the end of the task is a normal completion");
+
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onStreamFuturePublished(future);
+
+        assertTrue(future.cancelHandlerCalled, "The close request has to be replayed once the future exists");
+    }
+
+    /** Publishing the future is bookkeeping, not a request to close the stream. */
+    @Test
+    public void testPublishingTheFutureIsNotACloseRequest() {
+        AtomicInteger terminalCalls = new AtomicInteger();
+        RestSSEEventListener_v0_3 listener = new RestSSEEventListener_v0_3(
+                event -> {},
+                error -> terminalCalls.incrementAndGet());
+
+        listener.onMessage(statusUpdatePayload(false), null);
+        CancelCapturingFuture future = new CancelCapturingFuture();
+        listener.onStreamFuturePublished(future);
+
+        assertFalse(future.cancelHandlerCalled, "A stream that is still running must not be cancelled");
+        assertEquals(0, terminalCalls.get(), "A stream that is still running has no terminal outcome yet");
+    }
+
     private static String statusUpdatePayload(boolean isFinal) {
         TaskStatusUpdateEvent_v0_3 event = new TaskStatusUpdateEvent_v0_3.Builder()
                 .taskId("task-1")
