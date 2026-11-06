@@ -47,6 +47,9 @@ public interface PartMapper {
 
         if (domain instanceof TextPart textPart) {
             builder.setText(textPart.text());
+            if (textPart.mediaType() != null) {
+                builder.setMediaType(textPart.mediaType());
+            }
             builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(textPart.metadata()));
         } else if (domain instanceof FilePart filePart) {
             FileContent fileContent = filePart.file();
@@ -75,6 +78,9 @@ public interface PartMapper {
             // Map data to google.protobuf.Value (supports object, array, primitive, or null)
             Value dataValue = A2ACommonFieldMapper.INSTANCE.objectToValue(dataPart.data());
             builder.setData(dataValue);
+            if (dataPart.mediaType() != null) {
+                builder.setMediaType(dataPart.mediaType());
+            }
             builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(dataPart.metadata()));
         }
 
@@ -90,8 +96,9 @@ public interface PartMapper {
             return null;
         }
         Map<String, Object> metadata = A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata());
+        String mediaType = proto.getMediaType().isEmpty() ? null : proto.getMediaType();
         if (proto.hasText()) {
-            return new TextPart(proto.getText(), metadata);
+            return new TextPart(proto.getText(), metadata, mediaType);
         } else if (proto.hasRaw()) {
             // raw bytes → FilePart(FileWithBytes)
             String bytes = Base64.getEncoder().encodeToString(proto.getRaw().toByteArray());
@@ -108,7 +115,7 @@ public interface PartMapper {
             // data (google.protobuf.Value containing any JSON value) → DataPart
             Value dataValue = proto.getData();
             Object data = A2ACommonFieldMapper.INSTANCE.valueToObject(dataValue);
-            return new DataPart(data, metadata);
+            return new DataPart(data, metadata, mediaType);
         }
 
         throw new InvalidRequestError();

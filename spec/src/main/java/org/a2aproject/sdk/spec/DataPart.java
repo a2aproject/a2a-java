@@ -46,11 +46,12 @@ import org.jspecify.annotations.Nullable;
  *
  * @param data the structured data (supports JSON objects, arrays, primitives, and null)
  * @param metadata additional metadata for the part
+ * @param mediaType the optional MIME type of the content
  * @see Part
  * @see Message
  * @see Artifact
  */
-public record DataPart(@Nullable Object data, @Nullable Map<String, Object> metadata) implements Part<Object> {
+public record DataPart(@Nullable Object data, @Nullable Map<String, Object> metadata, @Nullable String mediaType) implements Part<Object> {
 
     /**
      * The JSON member name discriminator for data parts: "data".
@@ -69,9 +70,15 @@ public record DataPart(@Nullable Object data, @Nullable Map<String, Object> meta
      * @param data the structured data (supports JSON objects, arrays, primitives, and null)
      * @param metadata additional metadata for the part
      */
-    public DataPart (@Nullable Object data, @Nullable Map<String, Object> metadata) {
+    public DataPart (@Nullable Object data, @Nullable Map<String, Object> metadata, @Nullable String mediaType) {
         this.metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         this.data = defensivelyCopy(data);
+        this.mediaType = mediaType;
+    }
+
+    /** Creates a data part with metadata and no media type. */
+    public DataPart(@Nullable Object data, @Nullable Map<String, Object> metadata) {
+        this(data, metadata, null);
     }
 
     /**
