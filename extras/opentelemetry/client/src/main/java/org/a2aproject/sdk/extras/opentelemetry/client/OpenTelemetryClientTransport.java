@@ -1,5 +1,13 @@
 package org.a2aproject.sdk.extras.opentelemetry.client;
 
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_EVENT_TASK_REQUEST;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_EVENT_TASK_RESPONSE;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_EVENT_TASK_STREAM_END;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_EVENT_TASK_SUBSCRIPTION;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_KIND_COMPLETE;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_KIND_ERROR;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_LOG_DIRECTION_INBOUND;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_LOG_DIRECTION_OUTBOUND;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.ERROR_TYPE;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_REQUEST_SYS_PROPERTY;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_RESPONSE_SYS_PROPERTY;
@@ -22,10 +30,10 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +42,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
+import org.a2aproject.sdk.extras.opentelemetry.ProtocolLogEmitter;
 import org.a2aproject.sdk.extras.opentelemetry.StreamingEventAttributes;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
@@ -60,6 +69,7 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     private final Tracer tracer;
     private final ClientTransport delegate;
     @Nullable private final DoubleHistogram operationDurationHistogram;
+    @Nullable private final ProtocolLogEmitter protocolLogEmitter;
 
     public OpenTelemetryClientTransport(ClientTransport delegate, Tracer tracer) {
         this(delegate, tracer, null);
@@ -69,8 +79,22 @@ public class OpenTelemetryClientTransport implements ClientTransport {
      * @param meter optional meter for recording {@code gen_ai.client.operation.duration}; null disables metrics
      */
     public OpenTelemetryClientTransport(ClientTransport delegate, Tracer tracer, @Nullable Meter meter) {
+        this(delegate, tracer, meter, null);
+    }
+
+    /**
+     * Creates an instrumented transport with optional metrics and protocol logging.
+     *
+     * @param delegate transport to instrument
+     * @param tracer tracer used for client spans
+     * @param meter optional meter for operation duration metrics
+     * @param protocolLogEmitter optional protocol log emitter
+     */
+    public OpenTelemetryClientTransport(ClientTransport delegate, Tracer tracer, @Nullable Meter meter,
+            @Nullable ProtocolLogEmitter protocolLogEmitter) {
         this.delegate = delegate;
         this.tracer = tracer;
+        this.protocolLogEmitter = protocolLogEmitter;
         this.operationDurationHistogram = meter == null ? null
                 : meter.histogramBuilder(GENAI_CLIENT_OPERATION_DURATION)
                         .setUnit("s")
@@ -116,7 +140,13 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         Span span = spanBuilder.startSpan();
         boolean success = false;
         try (Scope scope = span.makeCurrent()) {
+            logProtocolEvent(A2A_EVENT_TASK_REQUEST, A2AMethods.SEND_MESSAGE_METHOD,
+                    A2A_LOG_DIRECTION_OUTBOUND, null, request);
             EventKind result = delegate.sendMessage(request, clientContext);
+            if (result != null && protocolLogEmitter != null) {
+                protocolLogEmitter.emitResponse(A2A_EVENT_TASK_RESPONSE, A2AMethods.SEND_MESSAGE_METHOD,
+                        A2A_LOG_DIRECTION_INBOUND, result);
+            }
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
             }
@@ -165,15 +195,18 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         AtomicBoolean terminated = new AtomicBoolean(false);
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
-            SpanContext spanContext = span.getSpanContext();
+            logProtocolEvent(A2A_EVENT_TASK_REQUEST, A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
+                    A2A_LOG_DIRECTION_OUTBOUND, null, request);
+            Context streamingContext = Context.current();
             delegate.sendMessageStreaming(
                     request,
                     new OpenTelemetryEventConsumer(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX,
-                            eventConsumer, tracer, spanContext),
+                            eventConsumer, tracer, streamingContext, protocolLogEmitter,
+                            A2AMethods.SEND_STREAMING_MESSAGE_METHOD),
                     new OpenTelemetryTerminalConsumer(errorConsumer,
                             new TerminalConsumerConfig(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX,
-                                    tracer, spanContext, startNanos, A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
-                                    operationDurationHistogram, terminated)),
+                                    tracer, startNanos, A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
+                                    operationDurationHistogram, terminated, streamingContext, protocolLogEmitter)),
                     clientContext
             );
             span.setStatus(StatusCode.OK);
@@ -445,15 +478,18 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         AtomicBoolean terminated = new AtomicBoolean(false);
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
-            SpanContext spanContext = span.getSpanContext();
+            logProtocolEvent(A2A_EVENT_TASK_SUBSCRIPTION, A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
+                    A2A_LOG_DIRECTION_OUTBOUND, null, request);
+            Context streamingContext = Context.current();
             delegate.subscribeToTask(
                     request,
                     new OpenTelemetryEventConsumer(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_EVENT_SUFFIX,
-                            eventConsumer, tracer, spanContext),
+                            eventConsumer, tracer, streamingContext, protocolLogEmitter,
+                            A2AMethods.SUBSCRIBE_TO_TASK_METHOD),
                     new OpenTelemetryTerminalConsumer(errorConsumer,
                             new TerminalConsumerConfig(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX,
-                                    tracer, spanContext, startNanos, A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
-                                    operationDurationHistogram, terminated)),
+                                    tracer, startNanos, A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
+                                    operationDurationHistogram, terminated, streamingContext, protocolLogEmitter)),
                     clientContext
             );
             span.setStatus(StatusCode.OK);
@@ -499,6 +535,12 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         StreamingEventAttributes.recordDuration(operationDurationHistogram, startNanos, operationName, success);
     }
 
+    private void logProtocolEvent(String event, String operation, String direction, @Nullable String kind, Object payload) {
+        if (protocolLogEmitter != null) {
+            protocolLogEmitter.emit(event, operation, direction, kind, payload);
+        }
+    }
+
     private ClientCallContext createContext(@Nullable ClientCallContext context) {
         if (context == null) {
             return new ClientCallContext(Map.of(), new HashMap<>());
@@ -515,26 +557,33 @@ public class OpenTelemetryClientTransport implements ClientTransport {
 
         private final Consumer<StreamingEventKind> delegate;
         private final Tracer tracer;
-        private final SpanContext parentSpanContext;
         private final String name;
+        private final Context context;
+        private final @Nullable ProtocolLogEmitter emitter;
+        private final String operation;
 
         OpenTelemetryEventConsumer(String name, Consumer<StreamingEventKind> delegate,
-                Tracer tracer, SpanContext parentSpanContext) {
+                Tracer tracer, Context context,
+                @Nullable ProtocolLogEmitter emitter, String operation) {
             this.delegate = delegate;
             this.tracer = tracer;
-            this.parentSpanContext = parentSpanContext;
             this.name = name;
+            this.context = context;
+            this.emitter = emitter;
+            this.operation = operation;
         }
 
         @Override
         public void accept(StreamingEventKind t) {
             SpanBuilder builder = tracer.spanBuilder(name)
                     .setSpanKind(SpanKind.CLIENT)
-                    .addLink(parentSpanContext)
                     .setAttribute(GENAI_STREAMING_EVENT, t.kind());
             StreamingEventAttributes.apply(builder, t);
-            Span eventSpan = builder.startSpan();
-            try (Scope ignored = eventSpan.makeCurrent()) {
+            Span eventSpan = builder.setParent(context).startSpan();
+            try (Scope ignored = context.with(eventSpan).makeCurrent()) {
+                if (emitter != null) {
+                    emitter.emit(ProtocolLogEmitter.streamingEventName(t), operation, A2A_LOG_DIRECTION_INBOUND, t.kind(), t);
+                }
                 delegate.accept(t);
                 eventSpan.setStatus(StatusCode.OK);
             } catch (RuntimeException | Error e) {
@@ -547,9 +596,9 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         }
     }
 
-    private record TerminalConsumerConfig(String name, Tracer tracer, SpanContext parentSpanContext,
-            long startNanos, String operationName, @Nullable DoubleHistogram operationDurationHistogram,
-            AtomicBoolean terminated) {}
+    private record TerminalConsumerConfig(String name, Tracer tracer, long startNanos,
+            String operationName, @Nullable DoubleHistogram operationDurationHistogram,
+            AtomicBoolean terminated, Context context, @Nullable ProtocolLogEmitter emitter) {}
 
     private static class OpenTelemetryTerminalConsumer implements Consumer<Throwable> {
 
@@ -568,9 +617,13 @@ public class OpenTelemetryClientTransport implements ClientTransport {
             }
             Span closingSpan = config.tracer().spanBuilder(config.name())
                     .setSpanKind(SpanKind.CLIENT)
-                    .addLink(config.parentSpanContext())
+                    .setParent(config.context())
                     .startSpan();
-            try (Scope ignored = closingSpan.makeCurrent()) {
+            try (Scope ignored = config.context().with(closingSpan).makeCurrent()) {
+                if (config.emitter() != null) {
+                    config.emitter().emit(A2A_EVENT_TASK_STREAM_END, config.operationName(), A2A_LOG_DIRECTION_INBOUND,
+                            t == null ? A2A_KIND_COMPLETE : A2A_KIND_ERROR);
+                }
                 if (t == null) {
                     closingSpan.setStatus(StatusCode.OK);
                     delegate.accept(null);
