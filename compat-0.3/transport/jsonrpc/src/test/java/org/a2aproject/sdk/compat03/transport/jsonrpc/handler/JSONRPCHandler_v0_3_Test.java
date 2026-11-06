@@ -19,20 +19,13 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskArtifactUpdateEventMapper_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskStatusUpdateEventMapper_v0_3;
-import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Event_v0_3;
-import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-// V0.3 spec imports (client perspective)
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
@@ -41,6 +34,8 @@ import org.a2aproject.sdk.compat03.spec.CancelTaskResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.Event_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigResponse_v0_3;
@@ -48,18 +43,17 @@ import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
-import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageResponse_v0_3;
-import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
@@ -67,10 +61,16 @@ import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
+import org.a2aproject.sdk.server.util.async.AsyncUtils;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  * Test suite for v0.3 JSONRPCHandler with v1.0 backend.
@@ -1163,4 +1163,52 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
     }
 
     // TODO Phase 6: Add authenticated extended card tests
+
+    @Test
+    public void testUnexpectedGetTaskErrorUsesGenericMessage() {
+        Convert_v0_3_To10RequestHandler backend = Mockito.mock(Convert_v0_3_To10RequestHandler.class);
+        Mockito.when(backend.onGetTask(Mockito.any(), Mockito.any()))
+                .thenThrow(new IllegalStateException("detail: /var/lib/internal/config.db"));
+        JSONRPCHandler_v0_3 handler = new JSONRPCHandler_v0_3(CARD, internalExecutor, backend);
+        GetTaskResponse_v0_3 response = handler.onGetTask(
+                new GetTaskRequest_v0_3("request", new TaskQueryParams_v0_3("task")), callContext);
+        assertEquals("request", response.getId());
+        assertInstanceOf(InternalError_v0_3.class, response.getError());
+        assertEquals(-32603, response.getError().getCode());
+        assertEquals("Internal error", response.getError().getMessage());
+    }
+
+    @Test
+    public void testUnexpectedStreamErrorUsesGenericMessage() throws Exception {
+        Convert_v0_3_To10RequestHandler backend = Mockito.mock(Convert_v0_3_To10RequestHandler.class);
+        Mockito.when(backend.onMessageSendStream(Mockito.any(), Mockito.any()))
+                .thenReturn(ZeroPublisher.create(AsyncUtils.createTubeConfig(), tube ->
+                        tube.fail(new IllegalStateException("detail: /var/lib/internal/config.db"))));
+        JSONRPCHandler_v0_3 handler = new JSONRPCHandler_v0_3(CARD, internalExecutor, backend);
+        CompletableFuture<SendStreamingMessageResponse_v0_3> first = new CompletableFuture<>();
+        handler.onMessageSendStream(new SendStreamingMessageRequest_v0_3(
+                "request", new MessageSendParams_v0_3(MESSAGE, null, null)), callContext)
+                .subscribe(new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscription.request(Long.MAX_VALUE);
+                    }
+                    @Override
+                    public void onNext(SendStreamingMessageResponse_v0_3 item) {
+                        first.complete(item);
+                    }
+                    @Override
+                    public void onError(Throwable error) {
+                        first.completeExceptionally(error);
+                    }
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+        SendStreamingMessageResponse_v0_3 response = first.get(5, TimeUnit.SECONDS);
+        assertEquals("request", response.getId());
+        assertInstanceOf(InternalError_v0_3.class, response.getError());
+        assertEquals("Internal error", response.getError().getMessage());
+    }
+
 }

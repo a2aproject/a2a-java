@@ -39,9 +39,9 @@ import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
-import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3;
 import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3.HTTPRestResponse;
 import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3.HTTPRestStreamingResponse;
+import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.AuthenticatedUser;
@@ -52,9 +52,13 @@ import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class A2AServerRoutes_v0_3 {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(A2AServerRoutes_v0_3.class);
 
     @Inject
     RestHandler_v0_3 jsonRestHandler;
@@ -168,7 +172,7 @@ public class A2AServerRoutes_v0_3 {
         try {
             response = jsonRestHandler.sendMessage(body, context);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+            response = jsonRestHandler.createErrorResponse(internalError(t));
         } finally {
             sendResponse(rc, response);
         }
@@ -207,7 +211,7 @@ public class A2AServerRoutes_v0_3 {
             response = jsonRestHandler.getTask(taskId, rc.request().params().get("history_length"),
                     rc.request().params().get("historyLength"), context);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+            response = jsonRestHandler.createErrorResponse(internalError(t));
         } finally {
             sendResponse(rc, response);
         }
@@ -224,7 +228,7 @@ public class A2AServerRoutes_v0_3 {
             if (t instanceof JSONRPCError_v0_3 error) {
                 response = jsonRestHandler.createErrorResponse(error);
             } else {
-                response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+                response = jsonRestHandler.createErrorResponse(internalError(t));
             }
         } finally {
             sendResponse(rc, response);
@@ -278,7 +282,7 @@ public class A2AServerRoutes_v0_3 {
         try {
             response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+            response = jsonRestHandler.createErrorResponse(internalError(t));
         } finally {
             sendResponse(rc, response);
         }
@@ -293,7 +297,7 @@ public class A2AServerRoutes_v0_3 {
         try {
             response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+            response = jsonRestHandler.createErrorResponse(internalError(t));
         } finally {
             sendResponse(rc, response);
         }
@@ -307,7 +311,7 @@ public class A2AServerRoutes_v0_3 {
         try {
             response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+            response = jsonRestHandler.createErrorResponse(internalError(t));
         } finally {
             sendResponse(rc, response);
         }
@@ -322,7 +326,7 @@ public class A2AServerRoutes_v0_3 {
         try {
             response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
         } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError_v0_3(t.getMessage()));
+            response = jsonRestHandler.createErrorResponse(internalError(t));
         } finally {
             sendResponse(rc, response);
         }
@@ -390,6 +394,11 @@ public class A2AServerRoutes_v0_3 {
             }
         }
         return false;
+    }
+
+    private static InternalError_v0_3 internalError(Throwable t) {
+        LOGGER.error("Internal error while processing request", t);
+        return new InternalError_v0_3("Internal error");
     }
 
 }

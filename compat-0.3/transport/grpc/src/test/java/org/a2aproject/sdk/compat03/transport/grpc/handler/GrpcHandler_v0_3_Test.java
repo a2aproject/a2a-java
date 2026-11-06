@@ -11,26 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.testing.StreamRecorder;
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
-import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
-import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
-import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-// gRPC test imports
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-import io.grpc.testing.StreamRecorder;
-
-// v0.3 gRPC proto imports
 import org.a2aproject.sdk.compat03.grpc.CancelTaskRequest;
 import org.a2aproject.sdk.compat03.grpc.GetTaskRequest;
 import org.a2aproject.sdk.compat03.grpc.Message;
@@ -42,6 +30,16 @@ import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.grpc.Task;
 import org.a2aproject.sdk.compat03.grpc.TaskState;
 import org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest;
+import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
+import org.a2aproject.sdk.server.util.async.AsyncUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  * Test suite for v0.3 GrpcHandler with v1.0 backend.
@@ -551,6 +549,32 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         protected java.util.concurrent.Executor getExecutor() {
             return executor;
         }
+    }
+
+
+    @Test
+    public void testUnexpectedGetTaskErrorUsesGenericMessage() throws Exception {
+        Convert_v0_3_To10RequestHandler backend = Mockito.mock(Convert_v0_3_To10RequestHandler.class);
+        Mockito.when(backend.onGetTask(Mockito.any(), Mockito.any()))
+                .thenThrow(new IllegalStateException("detail: /var/lib/internal/config.db"));
+        TestGrpcHandler handler = new TestGrpcHandler(CARD, backend, internalExecutor);
+        StreamRecorder<Task> response = StreamRecorder.create();
+        handler.getTask(GetTaskRequest.newBuilder().setName("tasks/task").build(), response);
+        assertTrue(response.awaitCompletion(5, TimeUnit.SECONDS));
+        assertGrpcError(response, Status.Code.INTERNAL);
+        assertEquals("InternalError: Internal error", Status.fromThrowable(response.getError()).getDescription());
+    }
+
+    @Test
+    public void testUnexpectedStreamErrorUsesGenericMessage() throws Exception {
+        Convert_v0_3_To10RequestHandler backend = Mockito.mock(Convert_v0_3_To10RequestHandler.class);
+        Mockito.when(backend.onMessageSendStream(Mockito.any(), Mockito.any()))
+                .thenReturn(ZeroPublisher.create(AsyncUtils.createTubeConfig(), tube ->
+                        tube.fail(new IllegalStateException("detail: /var/lib/internal/config.db"))));
+        StreamRecorder<StreamResponse> response = sendStreamingMessageRequest(
+                new TestGrpcHandler(CARD, backend, internalExecutor));
+        assertGrpcError(response, Status.Code.INTERNAL);
+        assertEquals("InternalError: Internal error", Status.fromThrowable(response.getError()).getDescription());
     }
 
 }

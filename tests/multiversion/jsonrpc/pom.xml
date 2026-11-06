@@ -22,6 +22,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5-mockito</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Production multiversion module (provides MultiVersionJSONRPCRoutes) -->
         <dependency>
             <groupId>${project.groupId}</groupId>

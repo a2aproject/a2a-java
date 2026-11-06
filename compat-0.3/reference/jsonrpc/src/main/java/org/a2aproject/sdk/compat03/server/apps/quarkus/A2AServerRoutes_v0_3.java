@@ -36,8 +36,8 @@ import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCErrorResponse_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
@@ -61,9 +61,13 @@ import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class A2AServerRoutes_v0_3 {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(A2AServerRoutes_v0_3.class);
 
     @Inject
     JSONRPCHandler_v0_3 jsonRpcHandler;
@@ -157,7 +161,7 @@ public class A2AServerRoutes_v0_3 {
         } catch (JsonSyntaxException e) {
             error = new JSONRPCErrorResponse_v0_3(requestId, new JSONParseError_v0_3(e.getMessage()));
         } catch (Throwable t) {
-            error = new JSONRPCErrorResponse_v0_3(requestId, new InternalError_v0_3(t.getMessage()));
+            error = new JSONRPCErrorResponse_v0_3(requestId, internalError(t));
         } finally {
             if (error != null) {
                 rc.response()
@@ -252,6 +256,11 @@ public class A2AServerRoutes_v0_3 {
             CallContextFactory_v0_3 builder = callContextFactory.get();
             return builder.build(rc);
         }
+    }
+
+    private static InternalError_v0_3 internalError(Throwable t) {
+        LOGGER.error("Internal error while processing request", t);
+        return new InternalError_v0_3("Internal error");
     }
 
 }

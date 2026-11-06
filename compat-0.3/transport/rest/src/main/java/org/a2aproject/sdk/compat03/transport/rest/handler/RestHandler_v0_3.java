@@ -2,22 +2,28 @@ package org.a2aproject.sdk.compat03.transport.rest.handler;
 
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Flow;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Flow;
-
-import org.a2aproject.sdk.server.ExtendedAgentCard;
-import org.a2aproject.sdk.server.PublicAgentCard;
-import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
@@ -34,25 +40,19 @@ import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
-import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
-import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
+import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.util.async.Internal;
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.A2AError;
-import jakarta.enterprise.inject.Instance;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
@@ -100,7 +100,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -118,7 +118,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError_v0_3(throwable.getMessage())).toJson()));
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(internalError(throwable)).toJson()));
         }
     }
 
@@ -136,7 +136,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -184,7 +184,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -207,7 +207,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError_v0_3(throwable.getMessage())).toJson()));
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(internalError(throwable)).toJson()));
         }
     }
 
@@ -248,7 +248,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -269,7 +269,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -287,7 +287,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -306,7 +306,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
-            return createErrorResponse(new InternalError_v0_3(throwable.getMessage()));
+            return createErrorResponse(internalError(throwable));
         }
     }
 
@@ -345,7 +345,7 @@ public class RestHandler_v0_3 {
             String jsonBody = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), builder);
             return new HTTPRestResponse(statusCode, "application/json", jsonBody);
         } catch (InvalidProtocolBufferException e) {
-            return createErrorResponse(new InternalError_v0_3("Failed to serialize response: " + e.getMessage()));
+            return createErrorResponse(internalError(e));
         }
     }
 
@@ -398,7 +398,7 @@ public class RestHandler_v0_3 {
                         if (throwable instanceof JSONRPCError_v0_3 jsonrpcError) {
                             tube.send(new HTTPRestErrorResponse(jsonrpcError).toJson());
                         } else {
-                            tube.send(new HTTPRestErrorResponse(new InternalError_v0_3(throwable.getMessage())).toJson());
+                            tube.send(new HTTPRestErrorResponse(internalError(throwable)).toJson());
                         }
                         onComplete();
                     }
@@ -449,7 +449,7 @@ public class RestHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
-            return createErrorResponse(500, new InternalError_v0_3(t.getMessage()));
+            return createErrorResponse(500, internalError(t));
         }
     }
 
@@ -457,7 +457,7 @@ public class RestHandler_v0_3 {
         try {
             return new HTTPRestResponse(200, "application/json", JsonUtil_v0_3.toJson(agentCard));
         } catch (Throwable t) {
-            return createErrorResponse(500, new InternalError_v0_3(t.getMessage()));
+            return createErrorResponse(500, internalError(t));
         }
     }
 
@@ -535,4 +535,9 @@ public class RestHandler_v0_3 {
             return "HTTPRestErrorResponse{" + "error=" + error + ", message=" + message + '}';
         }
     }
+    private static InternalError_v0_3 internalError(Throwable t) {
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
+        return new InternalError_v0_3("Internal error");
+    }
+
 }

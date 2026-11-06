@@ -2,18 +2,20 @@ package org.a2aproject.sdk.compat03.transport.jsonrpc.handler;
 
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.a2aproject.sdk.server.ExtendedAgentCard;
-import org.a2aproject.sdk.server.PublicAgentCard;
-import org.a2aproject.sdk.server.ServerCallContext;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+
+import mutiny.zero.ZeroPublisher;
+import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AuthenticatedExtendedCardNotConfiguredError_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
@@ -41,17 +43,19 @@ import org.a2aproject.sdk.compat03.spec.SendStreamingMessageResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
+import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.util.async.Internal;
-import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
-import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
 import org.a2aproject.sdk.spec.A2AError;
-import mutiny.zero.ZeroPublisher;
 
 @ApplicationScoped
 public class JSONRPCHandler_v0_3 {
+
+    private static final Logger LOGGER = Logger.getLogger(JSONRPCHandler_v0_3.class.getName());
 
     private AgentCard_v0_3 agentCard;
     private Instance<AgentCard_v0_3> extendedAgentCard;
@@ -88,7 +92,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (IllegalArgumentException t) {
             return new SendMessageResponse_v0_3(request.getId(), new InvalidParamsError_v0_3(t.getMessage()));
         } catch (Throwable t) {
-            return new SendMessageResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new SendMessageResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -107,7 +111,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e)));
         } catch (Throwable t) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage())));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse_v0_3(request.getId(), internalError(t)));
         }
     }
 
@@ -118,7 +122,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return new CancelTaskResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
         } catch (Throwable t) {
-            return new CancelTaskResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new CancelTaskResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -137,7 +141,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e)));
         } catch (Throwable t) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage())));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse_v0_3(request.getId(), internalError(t)));
         }
     }
 
@@ -153,7 +157,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return new GetTaskPushNotificationConfigResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
         } catch (Throwable t) {
-            return new GetTaskPushNotificationConfigResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new GetTaskPushNotificationConfigResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -169,7 +173,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return new SetTaskPushNotificationConfigResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
         } catch (Throwable t) {
-            return new SetTaskPushNotificationConfigResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new SetTaskPushNotificationConfigResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -180,7 +184,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return new GetTaskResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
         } catch (Throwable t) {
-            return new GetTaskResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new GetTaskResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -197,7 +201,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return new ListTaskPushNotificationConfigResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
         } catch (Throwable t) {
-            return new ListTaskPushNotificationConfigResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new ListTaskPushNotificationConfigResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -213,7 +217,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (A2AError e) {
             return new DeleteTaskPushNotificationConfigResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
         } catch (Throwable t) {
-            return new DeleteTaskPushNotificationConfigResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new DeleteTaskPushNotificationConfigResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -229,7 +233,7 @@ public class JSONRPCHandler_v0_3 {
         } catch (JSONRPCError_v0_3 e) {
             return new GetAuthenticatedExtendedCardResponse_v0_3(request.getId(), e);
         } catch (Throwable t) {
-            return new GetAuthenticatedExtendedCardResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
+            return new GetAuthenticatedExtendedCardResponse_v0_3(request.getId(), internalError(t));
         }
     }
 
@@ -266,8 +270,7 @@ public class JSONRPCHandler_v0_3 {
                         } else {
                             tube.send(
                                     new SendStreamingMessageResponse_v0_3(
-                                            requestId, new
-                                            InternalError_v0_3(throwable.getMessage())));
+                                            requestId, internalError(throwable)));
                         }
                         onComplete();
                     }
@@ -280,4 +283,9 @@ public class JSONRPCHandler_v0_3 {
             }, executor);
         });
     }
+    private static InternalError_v0_3 internalError(Throwable t) {
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
+        return new InternalError_v0_3("Internal error");
+    }
+
 }
