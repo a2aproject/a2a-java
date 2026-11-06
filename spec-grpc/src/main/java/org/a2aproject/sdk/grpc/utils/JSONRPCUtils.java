@@ -180,6 +180,25 @@ public class JSONRPCUtils {
     private static final Pattern EXTRACT_WRONG_TYPE = Pattern.compile("Expected (.*) but found \".*\"");
     static final String ERROR_MESSAGE = "Invalid request content: %s. Please verify the request matches the expected schema for this method.";
 
+    /**
+     * Printer for client requests. Proto3 scalar fields without presence ({@code task_id},
+     * {@code context_id}, {@code tenant}, ...) are omitted when they are unset, which is what the
+     * REST client already does. Printing them as {@code ""} would tell the server the field is
+     * present and empty, and the two readings cannot be told apart again once the request is
+     * parsed.
+     */
+    private static final JsonFormat.Printer REQUEST_PRINTER = JsonFormat.printer()
+            .omittingInsignificantWhitespace();
+
+    /**
+     * Printer for server responses. Responses keep printing fields without presence so that a
+     * client sees the full shape of the payload it is about to parse instead of having to infer
+     * defaults from missing keys.
+     */
+    private static final JsonFormat.Printer RESPONSE_PRINTER = JsonFormat.printer()
+            .alwaysPrintFieldsWithNoPresence()
+            .omittingInsignificantWhitespace();
+
     public static A2ARequest<?> parseRequestBody(String body, @Nullable String tenant) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         if (!jelement.isJsonObject()) {
@@ -581,8 +600,7 @@ public class JSONRPCUtils {
                 output.name("method").value(method);
             }
             if (payload != null) {
-                String resultValue = ProtoJsonUtils.toJson(
-                        JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), payload);
+                String resultValue = ProtoJsonUtils.toJson(REQUEST_PRINTER, payload);
                 output.name("params").jsonValue(resultValue);
             }
             output.endObject();
@@ -599,8 +617,7 @@ public class JSONRPCUtils {
             output.beginObject();
             output.name("jsonrpc").value("2.0");
             JsonUtil.writeJsonRpcId(output, requestId);
-            String resultValue = ProtoJsonUtils.toJson(
-                    JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), builder);
+            String resultValue = ProtoJsonUtils.toJson(RESPONSE_PRINTER, builder);
             output.name("result").jsonValue(resultValue);
             output.endObject();
             return result.toString();

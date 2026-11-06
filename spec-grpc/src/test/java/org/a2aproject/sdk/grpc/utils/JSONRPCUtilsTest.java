@@ -784,6 +784,68 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
+    public void testToJsonRPCRequest_omitsFieldsWithoutPresence() throws Exception {
+        // Issue #770: the client used to force every proto3 field with implicit presence into
+        // the payload as "" / [] / false, so a peer could no longer tell "not supplied" (mint a
+        // task id) from "supplied but empty" (reject, or echo an empty id back).
+        MessageSendParams params = new MessageSendParams(
+            Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("hello")))
+                .messageId("message-1")
+                .build(),
+            null, null
+        );
+        org.a2aproject.sdk.grpc.SendMessageRequest protoRequest =
+            ProtoUtils.ToProto.sendMessageRequest(params);
+
+        String json = JSONRPCUtils.toJsonRPCRequest("test-id", SEND_MESSAGE_METHOD, protoRequest);
+        JsonObject paramsNode = JsonParser.parseString(json).getAsJsonObject().getAsJsonObject("params");
+        JsonObject message = paramsNode.getAsJsonObject("message");
+        JsonObject textPart = message.getAsJsonArray("parts").get(0).getAsJsonObject();
+
+        assertFalse(paramsNode.has("tenant"),
+            "unset 'tenant' must be omitted from the request, got: " + json);
+        assertFalse(message.has("taskId"),
+            "unset 'taskId' must be omitted from the request, got: " + json);
+        assertFalse(message.has("contextId"),
+            "unset 'contextId' must be omitted from the request, got: " + json);
+        assertFalse(message.has("extensions"),
+            "unset 'extensions' must be omitted from the request, got: " + json);
+        assertFalse(message.has("referenceTaskIds"),
+            "unset 'referenceTaskIds' must be omitted from the request, got: " + json);
+        assertFalse(textPart.has("filename"),
+            "unset 'filename' must be omitted from the request, got: " + json);
+        assertFalse(textPart.has("mediaType"),
+            "unset 'mediaType' must be omitted from the request, got: " + json);
+
+        SendMessageRequest roundTripped = assertInstanceOf(SendMessageRequest.class,
+            JSONRPCUtils.parseRequestBody(json, null));
+        assertEquals("message-1", roundTripped.getParams().message().messageId());
+        assertEquals("hello", ((TextPart) roundTripped.getParams().message().parts().get(0)).text());
+    }
+
+    @Test
+    public void testToJsonRPCResultResponse_stillPrintsFieldsWithoutPresence() {
+        // The split is deliberate: only the client request printer omits fields without
+        // presence. Responses keep printing them so a client sees the full payload shape.
+        Message message = Message.builder()
+            .role(Message.Role.ROLE_AGENT)
+            .parts(Collections.singletonList(new TextPart("hi")))
+            .messageId("message-1")
+            .build();
+        SendMessageResponse protoResponse = ProtoUtils.ToProto.taskOrMessage(message);
+
+        String json = JSONRPCUtils.toJsonRPCResultResponse("test-id", protoResponse);
+        JsonObject resultMessage = JsonParser.parseString(json).getAsJsonObject()
+            .getAsJsonObject("result").getAsJsonObject("message");
+
+        assertTrue(resultMessage.has("contextId"),
+            "the response printer must keep printing fields without presence, got: " + json);
+        assertEquals("", resultMessage.get("contextId").getAsString());
+    }
+
+    @Test
     void parseGetExtendedAgentCardWithTenantParams() throws Exception {
         String json = """
                 {"jsonrpc": "2.0", "id": "1", "method": "GetExtendedAgentCard", "params": {"tenant": "acme"}}
