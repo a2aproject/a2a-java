@@ -8,9 +8,11 @@ import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -19,6 +21,13 @@ public class SSEEventListener_v0_3 {
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     private final Consumer<Throwable> errorHandler;
     private final AtomicBoolean terminalSignaled = new AtomicBoolean(false);
+    /**
+     * Set as soon as this listener decides the stream is over, which can happen before the future
+     * returned by {@code postAsyncSSE} exists; {@link #onStreamFuturePublished} replays it then.
+     */
+    private final AtomicBoolean closeRequested = new AtomicBoolean(false);
+    /** The future returned by {@code postAsyncSSE}, published by the transport after that call returns. */
+    private final AtomicReference<Future<Void>> streamFuture = new AtomicReference<>();
 
     public SSEEventListener_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler,
                                  Consumer<Throwable> errorHandler) {
@@ -26,6 +35,10 @@ public class SSEEventListener_v0_3 {
         this.errorHandler = errorHandler;
     }
 
+    /**
+     * @param completableFuture the streaming future, or {@code null} while {@code postAsyncSSE} has
+     *                          not returned yet
+     */
     public void onMessage(String message, Future<Void> completableFuture) {
         try {
             handleMessage(JsonParser.parseString(message).getAsJsonObject(), completableFuture);
@@ -36,13 +49,45 @@ public class SSEEventListener_v0_3 {
         } catch (IllegalArgumentException e) {
             LOGGER.warning("Invalid message format: " + message);
             signalTerminal(e);
-            completableFuture.cancel(true); // close SSE channel
+            requestClose(completableFuture);
         }
     }
 
+    /**
+     * @param future the streaming future, or {@code null} while {@code postAsyncSSE} has not
+     *               returned yet
+     */
     public void onError(Throwable throwable, Future<Void> future) {
         signalTerminal(throwable);
-        future.cancel(true); // close SSE channel
+        requestClose(future);
+    }
+
+    /**
+     * Hands this listener the future returned by {@code postAsyncSSE}.
+     *
+     * <p>That future does not exist while the call is still in flight, so a terminal event that
+     * arrives early cannot close the channel from {@link #onMessage} or {@link #onError}. The
+     * close request recorded in that case is honoured here.
+     *
+     * @param future the streaming future, or {@code null} if the client did not return one
+     */
+    public void onStreamFuturePublished(Future<Void> future) {
+        // Publish first, then read the flag: a concurrent requestClose either sees the future
+        // here or is seen below, so the close request is never lost.
+        streamFuture.set(future);
+        if (closeRequested.get() && future != null) {
+            future.cancel(true); // close SSE channel
+        }
+    }
+
+    private void requestClose(Future<Void> future) {
+        // Set the flag before reading the future, mirroring onStreamFuturePublished.
+        closeRequested.set(true);
+        Future<Void> published = streamFuture.get();
+        Future<Void> target = published != null ? published : future;
+        if (target != null) {
+            target.cancel(true); // close SSE channel
+        }
     }
 
     private void signalTerminal(Throwable error) {
@@ -71,13 +116,31 @@ public class SSEEventListener_v0_3 {
             String resultJson = jsonObject.get("result").toString();
             StreamingEventKind_v0_3 event = JsonUtil_v0_3.fromJson(resultJson, StreamingEventKind_v0_3.class);
             eventHandler.accept(event);
-            if (event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal()) {
+            if (shouldAutoClose(event)) {
                 signalTerminal(null);
-                future.cancel(true); // close SSE channel
+                requestClose(future);
             }
         } else {
             throw new IllegalArgumentException("Unknown message type");
         }
+    }
+
+    /**
+     * Determines whether the stream is finished, using the same predicate as
+     * {@code AbstractSSEEventListener.shouldAutoClose} in the native transport: a final status
+     * update, or a task snapshot that is already in a final state.
+     *
+     * @param event the streaming event to check
+     * @return {@code true} when the connection should be closed, {@code false} otherwise
+     */
+    private boolean shouldAutoClose(StreamingEventKind_v0_3 event) {
+        if (event instanceof TaskStatusUpdateEvent_v0_3 tsue && tsue.isFinal()) {
+            return true;
+        }
+        if (event instanceof Task_v0_3 task) {
+            return task.status().state().isFinal();
+        }
+        return false;
     }
 
 }
