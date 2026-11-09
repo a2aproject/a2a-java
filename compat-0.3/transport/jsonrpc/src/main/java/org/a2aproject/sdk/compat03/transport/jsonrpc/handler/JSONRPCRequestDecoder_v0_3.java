@@ -1,5 +1,8 @@
 package org.a2aproject.sdk.compat03.transport.jsonrpc.handler;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
@@ -28,6 +31,8 @@ import org.jspecify.annotations.Nullable;
 
 /** Decodes compat JSON-RPC envelopes and typed requests without a server runtime. */
 public final class JSONRPCRequestDecoder_v0_3 {
+
+    private static final Logger LOGGER = Logger.getLogger(JSONRPCRequestDecoder_v0_3.class.getName());
 
     private JSONRPCRequestDecoder_v0_3() {
     }
@@ -103,7 +108,7 @@ public final class JSONRPCRequestDecoder_v0_3 {
         } catch (JsonSyntaxException e) {
             return new DecodeFailure(requestId, methodName, new JSONParseError_v0_3(e.getMessage()));
         } catch (Throwable t) {
-            return new DecodeFailure(requestId, methodName, new InternalError_v0_3(t.getMessage()));
+            return new DecodeFailure(requestId, methodName, internalError(t));
         }
     }
 
@@ -146,6 +151,11 @@ public final class JSONRPCRequestDecoder_v0_3 {
         } catch (Exception e) {
             throw new InvalidParamsError_v0_3(e.getMessage());
         }
+    }
+
+    private static InternalError_v0_3 internalError(Throwable t) {
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
+        return new InternalError_v0_3("Internal error");
     }
 
 }

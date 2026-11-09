@@ -23,7 +23,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import org.jspecify.annotations.Nullable;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -32,6 +31,7 @@ import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -351,4 +351,13 @@ public class A2AServerRoutes_v0_3_Test {
         verify(response).end(error.getBody());
         verifyNoMoreInteractions(response);
     }
+
+    @Test
+    public void testUnexpectedRouteErrorUsesGenericMessage() {
+        fixture(true);
+        when(rc.request().params()).thenThrow(new IllegalStateException("detail: /var/lib/internal/config.db"));
+        routes.getTask(rc);
+        assertError(500, "InternalError", "Internal error");
+    }
+
 }

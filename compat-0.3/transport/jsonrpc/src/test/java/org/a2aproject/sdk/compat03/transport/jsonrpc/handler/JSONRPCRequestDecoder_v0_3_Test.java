@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
@@ -33,6 +35,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /** Decoder parity with the reference route's captured wire responses. */
 public class JSONRPCRequestDecoder_v0_3_Test {
@@ -212,4 +216,17 @@ public class JSONRPCRequestDecoder_v0_3_Test {
         }
         assertNull(failure.error().getData());
     }
+
+    @Test
+    public void testUnexpectedDecodeErrorUsesGenericMessage() {
+        String body = request("tasks/get", "{\"id\":\"task\"}");
+        try (MockedStatic<JsonUtil_v0_3> json =
+                Mockito.mockStatic(JsonUtil_v0_3.class)) {
+            json.when(() -> JsonUtil_v0_3.fromJson(body, GetTaskRequest_v0_3.class))
+                    .thenThrow(new AssertionError("detail: internal decoder"));
+            assertFailure(body, "original", "tasks/get",
+                    InternalError_v0_3.class, -32603, "Internal error");
+        }
+    }
+
 }

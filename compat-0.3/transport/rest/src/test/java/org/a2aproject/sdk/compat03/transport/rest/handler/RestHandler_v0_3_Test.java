@@ -12,26 +12,36 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Flow;
+import java.util.concurrent.TimeUnit;
 
+import com.google.gson.JsonParser;
+import com.google.protobuf.InvalidProtocolBufferException;
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.requesthandlers.LogCaptureAssertions;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
+import org.a2aproject.sdk.server.util.async.AsyncUtils;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /**
  * Test suite for v0.3 RestHandler with v1.0 backend.
@@ -635,6 +645,68 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
                     422, "InvalidParamsError", "bad config id");
         }
         verifyNoInteractions(backend);
+    }
+
+
+    @Test
+    public void testUnexpectedGetTaskErrorUsesGenericMessage() {
+        Convert_v0_3_To10RequestHandler backend = mock(Convert_v0_3_To10RequestHandler.class);
+        when(backend.onGetTask(any(), any()))
+                .thenThrow(new IllegalStateException("detail: /var/lib/internal/config.db"));
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, backend);
+        RestHandler_v0_3.HTTPRestResponse response = handler.getTask("task", null, null, callContext);
+        assertEquals(500, response.getStatusCode());
+        assertEquals("Internal error", JsonParser.parseString(response.getBody())
+                .getAsJsonObject().get("message").getAsString());
+    }
+
+    @Test
+    public void testUnexpectedStreamErrorUsesGenericMessage() throws Exception {
+        Convert_v0_3_To10RequestHandler backend = mock(Convert_v0_3_To10RequestHandler.class);
+        when(backend.onMessageSendStream(any(), any()))
+                .thenReturn(ZeroPublisher.create(AsyncUtils.createTubeConfig(), tube ->
+                        tube.fail(new IllegalStateException("detail: /var/lib/internal/config.db"))));
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, backend);
+        RestHandler_v0_3.HTTPRestStreamingResponse response = assertInstanceOf(
+                RestHandler_v0_3.HTTPRestStreamingResponse.class,
+                handler.sendStreamingMessage("{\"request\":{\"messageId\":\"m\",\"role\":\"ROLE_USER\","
+                        + "\"content\":[{\"text\":\"hello\"}]}}", callContext));
+        CompletableFuture<String> first = new CompletableFuture<>();
+        response.getPublisher().subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+            @Override
+            public void onNext(String item) {
+                first.complete(item);
+            }
+            @Override
+            public void onError(Throwable error) {
+                first.completeExceptionally(error);
+            }
+            @Override
+            public void onComplete() {
+            }
+        });
+        assertEquals("Internal error", JsonParser.parseString(first.get(5, TimeUnit.SECONDS))
+                .getAsJsonObject().get("message").getAsString());
+    }
+
+    @Test
+    public void testResponseSerializationErrorUsesGenericMessage() {
+        Convert_v0_3_To10RequestHandler backend = mock(Convert_v0_3_To10RequestHandler.class);
+        when(backend.onGetTask(any(), any())).thenReturn(MINIMAL_TASK);
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, backend);
+        try (MockedStatic<ProtoJsonUtils_v0_3> json =
+                Mockito.mockStatic(ProtoJsonUtils_v0_3.class)) {
+            json.when(() -> ProtoJsonUtils_v0_3.toJson(any(), any()))
+                    .thenThrow(new InvalidProtocolBufferException("detail: internal descriptor"));
+            RestHandler_v0_3.HTTPRestResponse response = handler.getTask("task", null, null, callContext);
+            assertEquals(500, response.getStatusCode());
+            assertEquals("Internal error", JsonParser.parseString(response.getBody())
+                    .getAsJsonObject().get("message").getAsString());
+        }
     }
 
 }

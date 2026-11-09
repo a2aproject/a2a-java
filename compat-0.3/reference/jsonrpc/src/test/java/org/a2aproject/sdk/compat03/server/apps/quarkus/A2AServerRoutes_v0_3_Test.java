@@ -31,7 +31,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import org.jspecify.annotations.Nullable;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -42,6 +41,7 @@ import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -244,7 +244,7 @@ public class A2AServerRoutes_v0_3_Test {
     @MethodSource("emptyParams")
     public void testMissingGetParamsReachTransport(@Nullable String params) {
         when(transport.onGetTask(any(), any())).thenThrow(new IllegalStateException("dispatch reached"));
-        assertError(invoke(request("tasks/get", params)), "\"original\"", -32603, "dispatch reached");
+        assertError(invoke(request("tasks/get", params)), "\"original\"", -32603, "Internal error");
         ArgumentCaptor<org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3> decoded =
                 ArgumentCaptor.forClass(org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3.class);
         verify(transport).onGetTask(decoded.capture(), any());
@@ -288,7 +288,7 @@ public class A2AServerRoutes_v0_3_Test {
         assertTrue(eventText.endsWith("\nid: 0\n\n"));
         assertError(JsonParser.parseString(eventText.substring(eventText.indexOf("data: ") + 6,
                 eventText.indexOf("\nid: "))).getAsJsonObject(), "\"original\"", -32603,
-                "Parameter 'params' may not be null");
+                "Internal error");
     }
 
     @ParameterizedTest(name = "method={0}")
@@ -299,7 +299,7 @@ public class A2AServerRoutes_v0_3_Test {
             throw new IllegalStateException("dispatch reached");
         });
         routes.jsonRpcHandler = transport;
-        assertError(invoke(request(method, params)), "\"original\"", -32603, "dispatch reached");
+        assertError(invoke(request(method, params)), "\"original\"", -32603, "Internal error");
         var invocation = mockingDetails(transport).getInvocations().iterator().next();
         assertEquals(dispatchMethod, invocation.getMethod().getName());
         assertEquals(1, mockingDetails(transport).getInvocations().size());
@@ -394,7 +394,7 @@ public class A2AServerRoutes_v0_3_Test {
         when(transport.onGetTask(any(), any())).thenThrow(new IllegalStateException("dispatch failed"));
         JsonObject body = JsonParser.parseString(request("tasks/get", "{\"id\":\"task\"}")).getAsJsonObject();
         body.add("id", JsonParser.parseString(rawId));
-        assertError(invoke(body.toString()), responseId, -32603, "dispatch failed");
+        assertError(invoke(body.toString()), responseId, -32603, "Internal error");
         ArgumentCaptor<org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3> decoded =
                 ArgumentCaptor.forClass(org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3.class);
         verify(transport).onGetTask(decoded.capture(), any());

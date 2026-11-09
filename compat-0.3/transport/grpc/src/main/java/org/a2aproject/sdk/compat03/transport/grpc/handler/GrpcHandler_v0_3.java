@@ -3,15 +3,25 @@ package org.a2aproject.sdk.compat03.transport.grpc.handler;
 import static org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.FromProto;
 import static org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.ToProto;
 
-import jakarta.enterprise.inject.Vetoed;
-
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import jakarta.enterprise.inject.Vetoed;
 
 import com.google.protobuf.Empty;
+import io.grpc.Context;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
+import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
@@ -31,32 +41,25 @@ import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.PushNotificationNotSupportedError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
 import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.spec.A2AError;
-import io.grpc.Context;
-import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.UnaryOperator;
 
 /**
  * Abstract gRPC handler for v0.3 protocol with translation layer to v1.0.
  */
 @Vetoed
 public abstract class GrpcHandler_v0_3 extends org.a2aproject.sdk.compat03.grpc.A2AServiceGrpc.A2AServiceImplBase {
+
+    private static final Logger LOGGER = Logger.getLogger(GrpcHandler_v0_3.class.getName());
 
     private Convert_v0_3_To10RequestHandler requestHandler;
 
@@ -455,7 +458,8 @@ public abstract class GrpcHandler_v0_3 extends org.a2aproject.sdk.compat03.grpc.
     }
 
     private <V> void handleInternalError(StreamObserver<V> responseObserver, Throwable t) {
-        handleError(responseObserver, new InternalError_v0_3(t.getMessage()));
+        LOGGER.log(Level.SEVERE, "Internal error while processing request", t);
+        handleError(responseObserver, new InternalError_v0_3("Internal error"));
     }
 
     public static void setStreamingSubscribedRunnable(Runnable runnable) {
