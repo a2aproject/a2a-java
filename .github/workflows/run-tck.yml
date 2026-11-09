@@ -15,7 +15,7 @@ on:
 
 env:
   # Tag/branch of the TCK
-  TCK_VERSION: 1.0.0.alpha3
+  TCK_VERSION: main
   TCK_VERSION_0_3: 0.3.0.beta6
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
@@ -93,10 +93,10 @@ jobs:
           done
       - name: Run TCK
         id: run-tck
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
           set -o pipefail
-          uv run ./run_tck.py --sut-host ${{ env.SUT_URL }} -v 2>&1 | tee tck-output.log
+          ./run_tck.py --sut-host ${{ env.SUT_URL }} -v 2>&1 | tee tck-output.log
         working-directory: a2a-tck
       - name: TCK Summary
         if: always() && steps.run-tck.outcome != 'skipped'
