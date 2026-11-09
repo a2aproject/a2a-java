@@ -73,4 +73,21 @@ public class HtmlEscapeUtilsTest {
         assertEquals("a" + "\\\\" + "<b", HtmlEscapeUtils.removeHtmlEscaping(json));
     }
 
+    @Test
+    public void removeHtmlEscaping_preservesEscapedBackslashes() {
+        String[] escapes = {"003c", "003C", "003e", "003E", "0026", "003d", "003D", "0027"};
+        for (String escape : escapes) {
+            String json = "{\"text\":\"" + "\\\\" + "u" + escape + "\"}";
+            assertEquals(json, HtmlEscapeUtils.removeHtmlEscaping(json),
+                    "Literal escape " + escape);
+        }
+
+        assertEquals("\\".repeat(2) + ">",
+                HtmlEscapeUtils.removeHtmlEscaping("\\".repeat(3) + "u003e"));
+        assertEquals("\\".repeat(4) + "u003e",
+                HtmlEscapeUtils.removeHtmlEscaping("\\".repeat(4) + "u003e"));
+        assertEquals("\\".repeat(4) + ">",
+                HtmlEscapeUtils.removeHtmlEscaping("\\".repeat(5) + "u003e"));
+    }
+
 }
