@@ -19,7 +19,6 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.codec.BodyCodec;
 import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -406,7 +405,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * <p>Uses the lower-level {@link HttpClient} so that the response status and
      * {@code Content-Type} header are available before any body bytes flow.  The
      * response is paused immediately on arrival; the appropriate body handler is then
-     * wired up and the response is resumed via {@code pipe().to(...)}.
+     * wired up and the response is resumed.
      *
      * @param httpMethod the HTTP method (GET or POST)
      * @param url the absolute request URL
@@ -441,7 +440,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 .compose(req -> bodyBuffer != null ? req.send(bodyBuffer) : req.send())
                 .onSuccess(response -> {
                     // Pause before inspecting headers so no body bytes are lost while we
-                    // set up the appropriate handler. pipe().to(...) will resume the response.
+                    // set up the appropriate handler, then resume the response.
                     response.pause();
                     int statusCode = response.statusCode();
                     if (statusCode == HTTP_UNAUTHORIZED || statusCode == HTTP_FORBIDDEN) {
@@ -461,40 +460,50 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                     boolean isSse = statusCode >= HTTP_OK && statusCode < HTTP_MULT_CHOICE
                             && contentType != null && contentType.contains(EVENT_STREAM);
                     if (isSse) {
-                        BodyCodec.sseStream(readStream ->
-                            readStream.handler(sseEvent -> {
-                                String data = sseEvent.data();
-                                if (data != null && !data.isEmpty()) {
-                                    String eventType = sseEvent.event() != null ? sseEvent.event() : ServerSentEvent.DEFAULT_EVENT_TYPE;
-                                    // Vert.x SseEvent.retry() defaults to 0 when no retry field is present, so
-                                    // retry:0 (a valid SSE directive meaning "reconnect immediately") is
-                                    // indistinguishable from "not set" and is silently treated as absent.
-                                    Long retry = sseEvent.retry() != 0 ? (long) sseEvent.retry() : null;
-                                    messageConsumer.accept(new ServerSentEvent(data, eventType, sseEvent.id(), retry));
-                                }
-                            })
-                        ).create(ar -> {
-                            if (ar.failed()) {
-                                if (futureCompleted.compareAndSet(false, true)) {
-                                    errorConsumer.accept(ar.cause());
+                        // Keep reading incomplete events: the Vert.x SSE codec's byte-buffer
+                        // watermarks can pause the response before an event's terminator arrives.
+                        VertxSseParser parser = new VertxSseParser(messageConsumer, errorConsumer);
+                        Consumer<Throwable> fail = cause -> {
+                            if (futureCompleted.compareAndSet(false, true)) {
+                                try {
+                                    errorConsumer.accept(cause);
+                                } finally {
                                     future.complete(null);
                                 }
-                                return;
                             }
-                            response.pipe().to(ar.result())
-                                    .onSuccess(v -> {
-                                        if (futureCompleted.compareAndSet(false, true)) {
-                                            completeRunnable.run();
-                                            future.complete(null);
-                                        }
-                                    })
-                                    .onFailure(cause -> {
-                                        if (futureCompleted.compareAndSet(false, true)) {
-                                            errorConsumer.accept(cause);
-                                            future.complete(null);
-                                        }
-                                    });
+                        };
+                        response.exceptionHandler(fail::accept);
+                        response.handler(buffer -> {
+                            if (!futureCompleted.get()) {
+                                try {
+                                    parser.handle(buffer);
+                                } catch (RuntimeException e) {
+                                    try {
+                                        fail.accept(e);
+                                    } finally {
+                                        response.request().reset();
+                                    }
+                                }
+                            }
                         });
+                        response.endHandler(ignored -> {
+                            if (!futureCompleted.get()) {
+                                try {
+                                    parser.end();
+                                } catch (RuntimeException e) {
+                                    fail.accept(e);
+                                    return;
+                                }
+                                if (futureCompleted.compareAndSet(false, true)) {
+                                    try {
+                                        completeRunnable.run();
+                                    } finally {
+                                        future.complete(null);
+                                    }
+                                }
+                            }
+                        });
+                        response.resume();
                     } else {
                         // Non-SSE response (error body): collect the full body and deliver it
                         // to messageConsumer so the SSEEventListener can parse the JSON-RPC error.

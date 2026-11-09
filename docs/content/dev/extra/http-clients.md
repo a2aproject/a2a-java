@@ -172,6 +172,12 @@ try (A2AHttpClient client = A2AHttpClientFactory.create(A2AHttpClientConfigurati
 }
 ```
 
+### SSE Parser Limits
+
+The Vert.x client uses the shared SSE parser with `SSEParserConfig.DEFAULT`: a 1 MiB byte limit per raw line, at most 1,000 data lines per event, and at most 1,048,576 characters across an event's data values. Large events are parsed incrementally across response buffers.
+
+When a limit is exceeded, the client reports an error through the error callback, discards the affected event, and continues with the next event. Custom SSE limits currently require the JDK HTTP client.
+
 ### CDI / Quarkus Integration
 
 In Quarkus or other CDI environments, the `VertxA2AHttpClient` automatically discovers and reuses the CDI-managed `Vertx` instance so that your entire application shares the same event loop.
