@@ -136,6 +136,53 @@ public class EventQueueTest {
     }
 
     @Test
+    public void testAwaitInFlightEventsProcessedWaitsForTheEventBus() throws Exception {
+        CountDownLatch processing = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processing.countDown();
+                try {
+                    release.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+            }
+        });
+        EventQueue mainQueue = createQueueWithEventBus(TASK_ID);
+        EventQueue childQueue = mainQueue.tap();
+
+        assertTrue(childQueue.awaitInFlightEventsProcessed(0, TimeUnit.MILLISECONDS), "nothing enqueued yet");
+        childQueue.enqueueEvent(fromJson(MINIMAL_TASK, Task.class));
+        assertTrue(processing.await(5, TimeUnit.SECONDS));
+        assertFalse(childQueue.awaitInFlightEventsProcessed(100, TimeUnit.MILLISECONDS),
+                "the event is still being processed");
+
+        Thread releaser = new Thread(() -> {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            release.countDown();
+        });
+        releaser.start();
+        long start = System.nanoTime();
+        assertTrue(childQueue.awaitInFlightEventsProcessed(10, TimeUnit.SECONDS));
+        long waitedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+        releaser.join();
+
+        // Woken by the processor releasing its permit, not by the timeout
+        assertTrue(waitedMillis < 5000, "waited " + waitedMillis + " ms");
+        assertEquals(0, mainQueue.size());
+    }
+
+    @Test
     public void testConstructorDefaultQueueSize() {
         EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         assertEquals(EventQueue.DEFAULT_QUEUE_SIZE, queue.getQueueSize());
