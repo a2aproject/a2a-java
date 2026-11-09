@@ -81,7 +81,7 @@
         <logback.version>1.6.3</logback.version>
         <version.testcontainers>2.0.5</version.testcontainers>
         <error-prone.version>2.51.0</error-prone.version>
-        <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>3.11.0</spotless-maven-plugin.version>
         <google-java-format.version>1.37.0</google-java-format.version>
         <nullaway.version>0.14.3</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
