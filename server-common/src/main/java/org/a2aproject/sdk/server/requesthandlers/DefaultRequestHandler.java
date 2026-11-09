@@ -898,18 +898,20 @@ public class DefaultRequestHandler implements RequestHandler {
                 // 1. Wait for agent to finish enqueueing events (or timeout)
                 // 2. Close the queue to signal consumption can complete
                 // 3. Wait for consumption to finish processing events
-                // 4. (Implicit) MainEventBusProcessor persistence guarantee via consumption completion
+                // 4. Wait for MainEventBusProcessor to persist events the agent enqueued but Step 3 did not consume
                 // 5. Fetch current task state from TaskStore (includes all consumed & persisted events)
                 LOGGER.debug("DefaultRequestHandler: Entering blocking fire-and-forget handling for task {}", taskId.get());
 
                 try {
                     // Step 1: Wait for agent to finish (with configurable timeout)
+                    boolean agentCompleted = true;
                     if (agentFuture != null) {
                         try {
                             agentFuture.get(agentCompletionTimeoutSeconds, SECONDS);
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent completed for task {}", taskId.get());
                         } catch (java.util.concurrent.TimeoutException e) {
                             // Agent still running after timeout - that's fine, events already being processed
+                            agentCompleted = false;
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent still running for task {} after {}s timeout",
                                 taskId.get(), agentCompletionTimeoutSeconds);
                         }
@@ -927,16 +929,20 @@ public class DefaultRequestHandler implements RequestHandler {
                         LOGGER.debug("DefaultRequestHandler: Step 3 - Consumption completed for task {}", taskId.get());
                     }
 
-                    // Step 4: Implicit guarantee of persistence via consumption completion
-                    // We do NOT add an explicit wait for MainEventBusProcessor here because:
-                    // 1. MainEventBusProcessor persists BEFORE distributing to ChildQueues
-                    // 2. Step 3 (consumption completion) already guarantees all consumed events are persisted
-                    // 3. Adding another explicit synchronization point would require exposing
-                    //    MainEventBusProcessor internals and blocking event loop threads
+                    // Step 4: Wait for MainEventBusProcessor to finish the events the agent already enqueued.
+                    // Step 3 only covers events that were distributed before the consumer stopped. Only a
+                    // final event keeps the consumer polling after Step 2, so an interrupted state
+                    // (INPUT_REQUIRED, AUTH_REQUIRED) or a trailing artifact can still be waiting to be
+                    // persisted here, and Step 5 would read a stale task from the TaskStore.
                     //
                     // Note: For fire-and-forget tasks, if the agent is still running after Step 1 timeout,
                     // it may enqueue additional events. These will be persisted asynchronously but won't
-                    // be included in the task state returned to the client (already consumed in Step 3).
+                    // be included in the task state returned to the client, so we don't wait for them.
+                    if (agentCompleted
+                            && !queue.awaitInFlightEventsProcessed(consumptionCompletionTimeoutSeconds, SECONDS)) {
+                        LOGGER.debug("DefaultRequestHandler: Step 4 - Events for task {} still in flight after {}s",
+                            taskId.get(), consumptionCompletionTimeoutSeconds);
+                    }
 
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -956,8 +962,9 @@ public class DefaultRequestHandler implements RequestHandler {
 
                 // Step 5: Fetch the current task state from TaskStore
                 // All events consumed in Step 3 are guaranteed persisted (MainEventBusProcessor
-                // ordering: persist → distribute → consume). This returns the persisted state
-                // including all consumed events and artifacts.
+                // ordering: persist → distribute → consume), and Step 4 waited for the ones the agent
+                // enqueued that were not consumed. This returns the persisted state including all
+                // of the agent's events and artifacts.
                 String nonNullTaskId = Objects.requireNonNull(taskId.get(), "taskId cannot be null");
                 Task updatedTask = taskStore.get(nonNullTaskId);
                 if (updatedTask != null) {

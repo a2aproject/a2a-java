@@ -389,6 +389,23 @@ public abstract class EventQueue implements AutoCloseable {
     }
 
     /**
+     * Waits until every event already enqueued on the main queue has been processed by
+     * MainEventBusProcessor, i.e. persisted to the TaskStore and distributed to child queues.
+     * <p>
+     * Default implementation returns immediately. MainQueue waits for its in-flight count
+     * ({@link #size()}) to reach zero, and ChildQueue delegates to its parent.
+     * </p>
+     *
+     * @param timeout the maximum time to wait
+     * @param unit the unit of the timeout
+     * @return true if no events were in flight before the timeout elapsed, false otherwise
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public boolean awaitInFlightEventsProcessed(long timeout, TimeUnit unit) throws InterruptedException {
+        return true;
+    }
+
+    /**
      * Closes this queue if it is not currently waiting for an in-flight final event.
      * ChildQueue overrides this with an atomic check-and-close operation.
      *
@@ -499,6 +516,8 @@ public abstract class EventQueue implements AutoCloseable {
         private final @Nullable TaskStreamLifecycleHook streamLifecycleHook;
 
         private final ThreadLocal<Boolean> closingChildren = ThreadLocal.withInitial(() -> false);
+        // Notified whenever a permit is released, so awaitInFlightEventsProcessed() can wake up
+        private final Object inFlightLock = new Object();
 
         private final StreamCloseHandle streamCloseHandle = new StreamCloseHandle() {
             @Override
@@ -657,7 +676,7 @@ public abstract class EventQueue implements AutoCloseable {
                 // releaseSemaphore() (see MainEventBusProcessor.processEvent finally block).
                 // Release the permit here to avoid leaking it and eventually blocking
                 // all event processing for this task.
-                semaphore.release();
+                releaseSemaphore();
                 awaitingChildren.forEach(ChildQueue::cancelSubmittedFinalEvent);
                 throw e;
             }
@@ -798,6 +817,24 @@ public abstract class EventQueue implements AutoCloseable {
          */
         void releaseSemaphore() {
             semaphore.release();
+            synchronized (inFlightLock) {
+                inFlightLock.notifyAll();
+            }
+        }
+
+        @Override
+        public boolean awaitInFlightEventsProcessed(long timeout, TimeUnit unit) throws InterruptedException {
+            long deadline = System.nanoTime() + unit.toNanos(timeout);
+            synchronized (inFlightLock) {
+                while (size() > 0) {
+                    long remaining = deadline - System.nanoTime();
+                    if (remaining <= 0) {
+                        return false;
+                    }
+                    TimeUnit.NANOSECONDS.timedWait(inFlightLock, remaining);
+                }
+            }
+            return true;
         }
 
         /**
@@ -1009,6 +1046,11 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         public synchronized boolean isAwaitingFinalEvent() {
             return pendingFinalEvents > 0 || submittedFinalEvents > 0;
+        }
+
+        @Override
+        public boolean awaitInFlightEventsProcessed(long timeout, TimeUnit unit) throws InterruptedException {
+            return parent.awaitInFlightEventsProcessed(timeout, unit);
         }
 
         @Override

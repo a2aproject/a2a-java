@@ -1855,6 +1855,58 @@ public class DefaultRequestHandlerTest {
         assertEquals("answer", assertInstanceOf(TextPart.class, task.artifacts().get(0).parts().get(0)).text());
     }
 
+    /**
+     * Only a final event keeps the caller's consumer polling after the handler closes its queue.
+     * When persisting the agent's last event takes longer than the consumer's poll interval, a
+     * blocking call must still return the task as the agent left it, not the state stored before.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"input-required", "auth-required", "artifact"})
+    void blockingSendReturnsLastStateWhenItsPersistenceIsSlow(String lastEvent) throws Exception {
+        taskStore = new InMemoryTaskStore() {
+            @Override
+            public void save(Task task, boolean isReplicated) {
+                boolean slow = switch (lastEvent) {
+                    case "input-required" -> task.status().state() == TaskState.TASK_STATE_INPUT_REQUIRED;
+                    case "auth-required" -> task.status().state() == TaskState.TASK_STATE_AUTH_REQUIRED;
+                    default -> !task.artifacts().isEmpty();
+                };
+                if (slow) {
+                    try {
+                        // Longer than the consumer's 500 ms poll, so it stops before this is stored
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                super.save(task, isReplicated);
+            }
+        };
+        useQueueManager(new InMemoryQueueManager((TaskStateProvider) taskStore, mainEventBus));
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.submit();
+            emitter.startWork();
+            switch (lastEvent) {
+                case "input-required" -> emitter.requiresInput();
+                case "auth-required" -> emitter.requiresAuth();
+                default -> emitter.addArtifact(List.of(new TextPart("answer")), "answer-id", "answer", null);
+            }
+        };
+
+        EventKind result = requestHandler.onMessageSend(blockingParams("msg-slow-" + lastEvent), NULL_CONTEXT);
+
+        Task task = assertInstanceOf(Task.class, result);
+        switch (lastEvent) {
+            case "input-required" -> assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED, task.status().state());
+            case "auth-required" -> assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, task.status().state());
+            default -> {
+                assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
+                assertEquals(1, task.artifacts().size());
+                assertEquals("answer-id", task.artifacts().get(0).artifactId());
+            }
+        }
+    }
+
     @Test
     void blockingSendWithoutFinalEventReturnsWorkingTaskAndAllowsResubscription() throws Exception {
         agentExecutorExecute = (context, emitter) -> emitter.startWork();
