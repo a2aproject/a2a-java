@@ -135,13 +135,18 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
-            ref.set(builder.postAsyncSSE(
+            CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    });
+            ref.set(streamFuture);
+            // A terminal event can be delivered before postAsyncSSE returns, i.e. before the future
+            // above is available to the listener. Handing it over lets the listener close the
+            // channel the event asked for.
+            sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -316,13 +321,16 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
-            ref.set(builder.postAsyncSSE(
+            CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    });
+            ref.set(streamFuture);
+            // Same as sendMessageStreaming: replay a close request raised before the future existed.
+            sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {

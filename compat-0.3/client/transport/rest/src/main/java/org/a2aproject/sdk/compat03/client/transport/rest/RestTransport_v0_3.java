@@ -115,13 +115,15 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         RestSSEEventListener_v0_3 sseEventListener = new RestSSEEventListener_v0_3(eventConsumer, errorConsumer);
         try {
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(agentUrl + "/v1/message:stream", payloadAndHeaders);
-            ref.set(postBuilder.postAsyncSSE(
+            CompletableFuture<Void> streamFuture = postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    });
+            ref.set(streamFuture);
+            sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -307,13 +309,15 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         try {
             String url = agentUrl + String.format("/v1/tasks/%1s:subscribe", request.id());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
-            ref.set(postBuilder.postAsyncSSE(
+            CompletableFuture<Void> streamFuture = postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    });
+            ref.set(streamFuture);
+            sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
