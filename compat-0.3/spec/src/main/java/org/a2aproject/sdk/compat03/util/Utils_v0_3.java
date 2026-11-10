@@ -1,7 +1,10 @@
 package org.a2aproject.sdk.compat03.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
@@ -48,6 +51,35 @@ public class Utils_v0_3 {
             return defaultValue;
         }
         return value;
+    }
+
+    /**
+     * Creates an unmodifiable shallow copy of a non-null map while preserving null values.
+     * <p>
+     * Intended for JSON-like maps such as {@code data}, {@code metadata} and {@code headers},
+     * where an explicit JSON null is valid protocol content. It intentionally does not use
+     * {@link Map#copyOf(Map)}, which rejects null values.
+     *
+     * @param map the source map, must not be {@code null}
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return an unmodifiable shallow copy preserving null values
+     */
+    public static <K, V> Map<K, V> unmodifiableShallowMap(Map<K, V> map) {
+        return Collections.unmodifiableMap(new HashMap<>(map));
+    }
+
+    /**
+     * Creates an unmodifiable shallow copy of a nullable map while preserving null values.
+     *
+     * @param map the source map, or {@code null}
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return {@code null} if the source is {@code null}, otherwise an unmodifiable shallow copy
+     * preserving null values
+     */
+    public static <K, V> Map<K, V> unmodifiableNullableShallowMap(Map<K, V> map) {
+        return map == null ? null : unmodifiableShallowMap(map);
     }
 
     /**
