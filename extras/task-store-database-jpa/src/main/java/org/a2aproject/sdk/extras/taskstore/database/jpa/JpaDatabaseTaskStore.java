@@ -125,7 +125,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     public void save(Task task, boolean isReplicated) {
         LOGGER.debug("Saving task with ID: {} (replicated: {})", task.id(), isReplicated);
         try {
-            JpaTask jpaTask = JpaTask.createFromTask(task);
+            JpaTask jpaTask = JpaTask.createFromTask(task, findPersistedFinalizedAt(task.id()));
             em.merge(jpaTask);
             LOGGER.debug("Persisted/updated task with ID: {}", task.id());
 
@@ -149,6 +149,26 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             throw new TaskPersistenceException(task.id(),
                 "Database save failed for task", e);
         }
+    }
+
+    /**
+     * Reads the finalization instant already persisted for a task ID.
+     * <p>
+     * Only the {@code finalized_at} column is selected: loading the entity would also
+     * materialize the task JSON, which is large and not needed here. A missing row and a
+     * row that was never finalized both yield {@code null}, which is the correct input for
+     * a first finalization.
+     * </p>
+     *
+     * @param taskId the task identifier
+     * @return the persisted finalization instant, or {@code null} if there is none
+     */
+    private @Nullable Instant findPersistedFinalizedAt(String taskId) {
+        List<Instant> persisted = em.createQuery(
+                        "SELECT j.finalizedAt FROM JpaTask j WHERE j.id = :taskId", Instant.class)
+                .setParameter("taskId", taskId)
+                .getResultList();
+        return persisted.isEmpty() ? null : persisted.get(0);
     }
 
     @Transactional

@@ -11,6 +11,7 @@ import jakarta.persistence.Transient;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Task;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "a2a_tasks")
@@ -125,9 +126,29 @@ public class JpaTask {
     }
 
     static JpaTask createFromTask(Task task) throws JsonProcessingException {
+        return createFromTask(task, null);
+    }
+
+    /**
+     * Builds the entity to persist for {@code task}, carrying over the finalization instant
+     * already recorded for the same task ID.
+     * <p>
+     * The freshly constructed instance has no {@code finalizedAt} of its own, so without the
+     * carried-over value every write of an already finalized task would stamp a new
+     * timestamp and restart the replication grace period. The previous value must come from
+     * the persisted row, never from this new instance.
+     * </p>
+     *
+     * @param task the task to persist
+     * @param previousFinalizedAt the finalization instant already stored for this task ID,
+     *                            or {@code null} if the task was never finalized before
+     * @return a new entity instance ready for {@code merge}
+     */
+    static JpaTask createFromTask(Task task, @Nullable Instant previousFinalizedAt) throws JsonProcessingException {
         String json = JsonUtil.toJson(task);
         JpaTask jpaTask = new JpaTask(task.id(), json);
         jpaTask.task = task;
+        jpaTask.finalizedAt = previousFinalizedAt;
         jpaTask.updateDenormalizedFields(task);
         jpaTask.updateFinalizedTimestamp(task);
         return jpaTask;
