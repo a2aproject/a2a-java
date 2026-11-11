@@ -171,6 +171,32 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testSendMessageIgnoresUnknownFields() {
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+        String requestBody = """
+            {
+              "message":
+                {
+                  "messageId": "message-1234",
+                  "contextId": "context-1234",
+                  "role": "ROLE_USER",
+                  "parts": [{
+                    "text": "tell me a joke"
+                  }],
+                  "unknownMessageField": "ignored"
+              },
+              "unknownParam": 42
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
+        Assertions.assertEquals(200, response.getStatusCode(), response.toString());
+        Assertions.assertTrue(response.getBody().contains("message-1234"), response.getBody());
+    }
+
+    @Test
     public void testSendMessageInvalidBody() {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
@@ -206,8 +232,10 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         JsonObject error = body.getAsJsonObject("error");
         Assertions.assertEquals(422, error.get("code").getAsInt());
         Assertions.assertEquals("INVALID_PARAMS", error.getAsJsonArray("details").get(0).getAsJsonObject().get("reason").getAsString());
-        Assertions.assertTrue(error.get("message").getAsString().startsWith("Failed to parse request body:"),
-                "message should indicate parse failure: " + error.get("message").getAsString());
+        // "user" is not a Role value. Unknown enum values are skipped like unknown fields,
+        // so the missing required role is reported instead.
+        Assertions.assertTrue(error.get("message").getAsString().contains("role"),
+                "message should name the invalid field: " + error.get("message").getAsString());
     }
 
     @Test
@@ -499,10 +527,10 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "scheme": "Bearer",
                 "credentials": "oauth-secret-67890"
               },
-              "unknownField": "trigger-parse-error"
+              "tenant": {"invalid": "trigger-parse-error"}
             }""".formatted(MINIMAL_TASK.id());
 
-        // Request body with sensitive data and an unknown field to trigger parse error
+        // Request body with sensitive data and a wrongly typed field to trigger parse error
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RestHandler.class.getName());
         LogCaptureAssertions.assertSensitiveDataNotLogged(logger,
                 () -> Assertions.assertEquals(422,

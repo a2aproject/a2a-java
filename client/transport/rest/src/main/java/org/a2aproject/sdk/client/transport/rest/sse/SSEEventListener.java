@@ -4,6 +4,9 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
@@ -37,10 +40,24 @@ public class SSEEventListener extends AbstractSSEEventListener {
         try {
             LOGGER.fine("REST SSE raw data: " + event.data());
             org.a2aproject.sdk.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
-            JsonFormat.parser().merge(event.data(), builder);
+            JsonFormat.parser().ignoringUnknownFields().merge(event.data(), builder);
+            if (builder.getPayloadCase() == StreamResponse.PayloadCase.PAYLOAD_NOT_SET && isErrorEvent(event.data())) {
+                // Unknown fields are ignored, so an error event parses to an empty response.
+                signalTerminal(RestErrorMapper.mapRestError(event.data(), 500));
+                return;
+            }
             parseAndHandleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
             signalTerminal(RestErrorMapper.mapRestError(event.data(), 500));
+        }
+    }
+
+    private static boolean isErrorEvent(String data) {
+        try {
+            JsonElement json = JsonParser.parseString(data);
+            return json.isJsonObject() && json.getAsJsonObject().has("error");
+        } catch (JsonParseException e) {
+            return false;
         }
     }
 

@@ -388,7 +388,7 @@ public class JSONRPCUtilsTest {
               "method": "CreateTaskPushNotificationConfig",
               "id": "4",
               "params": {
-                "invalid_field": "value"
+                "authentication": "not-an-object"
               }
             }
             """;
@@ -398,7 +398,7 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
         assertEquals("4", exception.getId());
-        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.TaskPushNotificationConfig"), exception.getMessage());
+        assertEquals(ERROR_MESSAGE.formatted("message object"), exception.getMessage());
     }
 
     @Test
@@ -467,8 +467,8 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testParseUnknownField_ThrowsJsonMappingException() throws JsonMappingException {
-        String unknownFieldMessage=  """
+    public void testParseUnknownFields_AreIgnored() throws JsonProcessingException {
+        String unknownFieldMessage = """
            {
               "jsonrpc":"2.0",
               "method":"SendMessage",
@@ -485,16 +485,42 @@ public class JSONRPCUtilsTest {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
-                }
+                },
+                "unknownParam": 42
               }
             }""";
-        JsonMappingException exception = assertThrows(
-            JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(unknownFieldMessage, null)
-        );
-        assertEquals(ERROR_MESSAGE.formatted("unknown in message lf.a2a.v1.Message"), exception.getMessage());
+        SendMessageRequest request = assertInstanceOf(SendMessageRequest.class,
+                JSONRPCUtils.parseRequestBody(unknownFieldMessage, null));
+        assertEquals("18", request.getId());
+        assertEquals("message-1234", request.getParams().message().messageId());
+        assertEquals(Message.Role.ROLE_AGENT, request.getParams().message().role());
+    }
+
+    @Test
+    public void testParseResponseUnknownFields_AreIgnored() throws JsonProcessingException {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "id": "task-1",
+                    "contextId": "context-1",
+                    "status": {
+                      "state": "TASK_STATE_COMPLETED",
+                      "unknownStatusField": true
+                    },
+                    "unknownTaskField": {"nested": "value"}
+                  }
+                }
+                """;
+        GetTaskResponse response = assertInstanceOf(GetTaskResponse.class,
+                JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD));
+        Task task = response.getResult();
+        assertNotNull(task);
+        assertEquals("task-1", task.id());
+        assertEquals("context-1", task.contextId());
     }
 
     @Test

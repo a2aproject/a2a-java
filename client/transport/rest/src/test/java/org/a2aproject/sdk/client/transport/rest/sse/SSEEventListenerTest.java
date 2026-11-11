@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.rest.sse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -13,9 +14,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.client.http.ServerSentEvent;
+import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
@@ -95,6 +98,36 @@ public class SSEEventListenerTest {
         Task task = (Task) receivedEvent.get();
         assertEquals("task-123", task.id());
         assertEquals("context-456", task.contextId());
+        assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
+    }
+
+    @Test
+    public void testOnMessageIgnoresUnknownFields() {
+        AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(receivedEvent::set, receivedError::set);
+
+        String jsonMessage = """
+            {
+              "task": {
+                "id": "task-123",
+                "contextId": "context-456",
+                "status": {
+                  "state": "TASK_STATE_WORKING",
+                  "unknownStatusField": true
+                },
+                "unknownTaskField": "ignored"
+              },
+              "unknownResponseField": 42
+            }
+            """;
+
+        listener.onMessage(new ServerSentEvent(jsonMessage), null);
+
+        assertNull(receivedError.get());
+        Task task = (Task) receivedEvent.get();
+        assertNotNull(task);
+        assertEquals("task-123", task.id());
         assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
     }
 
@@ -273,6 +306,22 @@ public class SSEEventListenerTest {
 
         assertEquals(1, calls.get());
         assertSame(firstError, receivedError.get());
+    }
+
+    @Test
+    public void testOnMessageWithErrorEventMapsTheError() {
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(event -> {}, receivedError::set);
+
+        String errorEvent = """
+            {"error": {"code": 404, "status": "NOT_FOUND", "message": "Task not found",
+              "details": [{"reason": "TASK_NOT_FOUND"}]}}
+            """;
+
+        listener.onMessage(new ServerSentEvent(errorEvent), null);
+
+        A2AClientException error = assertInstanceOf(A2AClientException.class, receivedError.get());
+        assertInstanceOf(TaskNotFoundError.class, error.getCause());
     }
 
     @Test

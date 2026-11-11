@@ -758,7 +758,8 @@ public class RestHandler {
                 throw new InvalidRequestError("Request body is required");
             }
             validate(body);
-            JsonFormat.parser().merge(body, builder);
+            // Spec Section 5.7: ignore unrecognized fields for forward compatibility.
+            JsonFormat.parser().ignoringUnknownFields().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
                     body != null ? body.length() : 0);
