@@ -1213,7 +1213,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
         ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigsResult = pushConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(params.taskId()));
         if (listTaskPushNotificationConfigsResult == null || listTaskPushNotificationConfigsResult.isEmpty()) {
-            throw new InternalError("No push notification config found");
+            throw new TaskNotFoundError("No push notification config found", null);
         }
 
         String requestedConfigId = params.id();

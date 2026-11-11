@@ -1263,6 +1263,36 @@ public class DefaultRequestHandlerTest {
         assertEquals("http://example.com/get-default-config-id", result.url());
     }
 
+    @Test
+    void testGetTaskPushNotificationConfigWithNoConfigsThrowsTaskNotFoundError() {
+        String taskId = "get-config-none-stored";
+        taskStore.save(Task.builder()
+                .id(taskId)
+                .contextId("ctx-get-config-none-stored")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build(), false);
+
+        assertThrows(TaskNotFoundError.class, () -> requestHandler.onGetTaskPushNotificationConfig(
+                new GetTaskPushNotificationConfigParams(taskId, "missing-config-id"), NULL_CONTEXT));
+    }
+
+    @Test
+    void testGetTaskPushNotificationConfigWithUnknownIdThrowsTaskNotFoundError() throws Exception {
+        String taskId = "get-config-unknown-id";
+        taskStore.save(Task.builder()
+                .id(taskId)
+                .contextId("ctx-get-config-unknown-id")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build(), false);
+        requestHandler.onCreateTaskPushNotificationConfig(TaskPushNotificationConfig.builder()
+                .taskId(taskId)
+                .url("http://example.com/get-config-unknown-id")
+                .build(), NULL_CONTEXT);
+
+        assertThrows(TaskNotFoundError.class, () -> requestHandler.onGetTaskPushNotificationConfig(
+                new GetTaskPushNotificationConfigParams(taskId, "missing-config-id"), NULL_CONTEXT));
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     void testGetTaskPushNotificationConfigDefaultsMissingIdToTaskIdWithEffectiveCard(String configId)
