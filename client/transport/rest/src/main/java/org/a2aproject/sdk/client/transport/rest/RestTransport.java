@@ -100,7 +100,7 @@ public class RestTransport implements ClientTransport {
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:send", payloadAndHeaders);
             org.a2aproject.sdk.grpc.SendMessageResponse.Builder responseBuilder = org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
             if (responseBuilder.hasMessage()) {
                 return ProtoUtils.FromProto.message(responseBuilder.getMessage());
             }
@@ -166,7 +166,7 @@ public class RestTransport implements ClientTransport {
             }
             String httpResponseBody = response.body();
             org.a2aproject.sdk.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.grpc.Task.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
@@ -183,7 +183,7 @@ public class RestTransport implements ClientTransport {
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, taskIdParams.tenant()) + String.format("/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
             org.a2aproject.sdk.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.grpc.Task.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
@@ -243,7 +243,7 @@ public class RestTransport implements ClientTransport {
             }
             String httpResponseBody = response.body();
             org.a2aproject.sdk.grpc.ListTasksResponse.Builder responseBuilder = org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
 
             return new ListTasksResult(
                     responseBuilder.getTasksList().stream()
@@ -306,7 +306,7 @@ public class RestTransport implements ClientTransport {
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
@@ -341,7 +341,7 @@ public class RestTransport implements ClientTransport {
             }
             String httpResponseBody = response.body();
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
@@ -379,7 +379,7 @@ public class RestTransport implements ClientTransport {
             }
             String httpResponseBody = response.body();
             org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.Builder responseBuilder = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsResponse.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+            JsonFormat.parser().ignoringUnknownFields().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.listTaskPushNotificationConfigsResult(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
