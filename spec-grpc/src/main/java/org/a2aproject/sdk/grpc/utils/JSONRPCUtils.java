@@ -459,7 +459,8 @@ public class JSONRPCUtils {
     }
 
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
-        parseJsonString(jsonRpc.toString(), builder, id);
+        // Spec Section 5.7: ignore unrecognized fields for forward compatibility.
+        parseJsonString(jsonRpc.toString(), builder, id, true);
     }
 
     public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
