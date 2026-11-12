@@ -1,5 +1,10 @@
 package org.a2aproject.sdk.extras.opentelemetry.server;
 
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_EVENT_NOTIFICATION_DELIVERY;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_KIND_ERROR;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_KIND_FAILURE;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_KIND_SUCCESS;
+import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.A2A_LOG_DIRECTION_OUTBOUND;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.ERROR_TYPE;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.EXTRACT_RESPONSE_SYS_PROPERTY;
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.GENAI_CONTEXT_ID;
@@ -10,6 +15,7 @@ import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.PUSH
 import static org.a2aproject.sdk.extras.opentelemetry.A2AObservabilityNames.PUSH_NOTIFICATION_EVENT_KIND;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -18,7 +24,10 @@ import jakarta.annotation.Priority;
 import jakarta.decorator.Decorator;
 import jakarta.decorator.Delegate;
 import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import java.util.function.Supplier;
+import org.a2aproject.sdk.extras.opentelemetry.ProtocolLogEmitter;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
@@ -42,17 +51,23 @@ import org.jspecify.annotations.Nullable;
  */
 @Decorator
 @Priority(100)
-public abstract class OpenTelemetryPushNotificationSenderDecorator implements PushNotificationSender {
+public abstract class OpenTelemetryPushNotificationSenderDecorator
+        implements PushNotificationSender {
 
     static final String SEND_PUSH_NOTIFICATION = "SendPushNotification";
 
-    @Inject
-    @Delegate
-    @Any
-    private PushNotificationSender delegate;
+    @Inject @Delegate @Any private PushNotificationSender delegate;
 
-    @Inject
-    private Tracer tracer;
+    @Inject private Tracer tracer;
+
+    @Inject private Instance<ProtocolLogEmitter> emitterInstance;
+
+    /**
+     * Memoized supplier for the optional protocol log emitter.
+     * {@code null} until first call to {@link #logDelivery} (CDI path); set directly by test constructors.
+     */
+    @Nullable
+    private volatile Supplier<@Nullable ProtocolLogEmitter> emitterSupplier;
 
     private final boolean extractResponse;
 
@@ -71,19 +86,30 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
      * @param tracer the tracer to use
      * @param extractResponse whether to capture the full event payload as a span attribute
      */
-    OpenTelemetryPushNotificationSenderDecorator(PushNotificationSender delegate, Tracer tracer,
-                                                  boolean extractResponse) {
+    OpenTelemetryPushNotificationSenderDecorator(
+            PushNotificationSender delegate, Tracer tracer, boolean extractResponse) {
+        this(delegate, tracer, extractResponse, null);
+    }
+
+    OpenTelemetryPushNotificationSenderDecorator(
+            PushNotificationSender delegate,
+            Tracer tracer,
+            boolean extractResponse,
+            @Nullable ProtocolLogEmitter emitter) {
         this.delegate = delegate;
         this.tracer = tracer;
         this.extractResponse = extractResponse;
+        this.emitterSupplier = () -> emitter;
     }
 
     @Override
     public boolean sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot) {
-        var spanBuilder = tracer.spanBuilder(SEND_PUSH_NOTIFICATION)
-                .setSpanKind(SpanKind.CLIENT)
-                .setAttribute(GENAI_OPERATION_NAME, SEND_PUSH_NOTIFICATION)
-                .setAttribute(PUSH_NOTIFICATION_EVENT_KIND, event.getClass().getSimpleName());
+        SpanBuilder spanBuilder =
+                tracer.spanBuilder(SEND_PUSH_NOTIFICATION)
+                        .setSpanKind(SpanKind.CLIENT)
+                        .setAttribute(GENAI_OPERATION_NAME, SEND_PUSH_NOTIFICATION)
+                        .setAttribute(
+                                PUSH_NOTIFICATION_EVENT_KIND, event.getClass().getSimpleName());
 
         EventIds ids = extractIds(event, taskSnapshot);
         if (ids.taskId != null) {
@@ -99,6 +125,7 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
             boolean result = delegate.sendNotification(event, taskSnapshot);
+            logDelivery(result ? A2A_KIND_SUCCESS : A2A_KIND_FAILURE, event);
             if (result) {
                 span.setStatus(StatusCode.OK);
             } else {
@@ -107,22 +134,50 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
             }
             return result;
         } catch (Error err) {
-            String errorDescription = err.getMessage() != null ? err.getMessage() : err.getClass().getName();
-            span.setAttribute(ERROR_TYPE, errorDescription);
-            span.setStatus(StatusCode.ERROR, errorDescription);
+            recordFailure(span, err, event);
             throw err;
         } catch (Exception ex) {
-            String errorDescription = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getName();
-            span.setAttribute(ERROR_TYPE, errorDescription);
-            span.setStatus(StatusCode.ERROR, errorDescription);
+            recordFailure(span, ex, event);
             throw ex;
         } finally {
             span.end();
         }
     }
 
-    private record EventIds(@Nullable String taskId, @Nullable String contextId) {
+    private void logDelivery(String outcome, StreamingEventKind event) {
+        Supplier<@Nullable ProtocolLogEmitter> s = emitterSupplier;
+        if (s == null) {
+            synchronized (this) {
+                if ((s = emitterSupplier) == null) {
+                    emitterSupplier = s = ProtocolLogEmitters.lazy(emitterInstance);
+                }
+            }
+        }
+        ProtocolLogEmitter emitter = s.get();
+        if (emitter != null) {
+            emitter.emitMetadata(
+                    A2A_EVENT_NOTIFICATION_DELIVERY,
+                    SEND_PUSH_NOTIFICATION,
+                    A2A_LOG_DIRECTION_OUTBOUND,
+                    outcome,
+                    event);
+        }
     }
+
+    /**
+     * Records a delivery failure on the span and returns a description suitable for {@code error.type}.
+     * The description is the exception message when present, otherwise the class name.
+     */
+    private void recordFailure(Span span, Throwable t, StreamingEventKind event) {
+        try (Scope ignored = span.makeCurrent()) {
+            logDelivery(A2A_KIND_ERROR, event);
+        }
+        String desc = t.getMessage() != null ? t.getMessage() : t.getClass().getName();
+        span.setAttribute(ERROR_TYPE, desc);
+        span.setStatus(StatusCode.ERROR, desc);
+    }
+
+    private record EventIds(@Nullable String taskId, @Nullable String contextId) {}
 
     private static EventIds extractIds(StreamingEventKind event, @Nullable Task taskSnapshot) {
         if (taskSnapshot != null) {
@@ -142,5 +197,4 @@ public abstract class OpenTelemetryPushNotificationSenderDecorator implements Pu
         }
         return new EventIds(null, null);
     }
-
 }

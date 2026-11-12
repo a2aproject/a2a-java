@@ -13,6 +13,7 @@ Adds distributed tracing and context propagation to A2A servers and clients usin
 - **Distributed Tracing**: Automatic span creation for all A2A protocol methods
 - **Context Propagation**: OpenTelemetry trace context propagation across async operations
 - **Request/Response Logging**: Optional extraction of request and response data into spans
+- **Protocol Logs**: Opt-in structured OpenTelemetry log records, with separately opt-in bounded and sanitized payloads
 - **Error Tracking**: Automatic error status and error type attributes on failures
 - **Metrics**: `gen_ai.client.operation.duration` histogram on the client side; `gen_ai.agent.a2a.streaming.duration` histogram for full streaming lifecycle on the server side
 
@@ -72,9 +73,9 @@ Streaming methods (`message/stream` and `tasks/resubscribe`) follow a two-span m
 
 **Span 1 — method span** is created when the request arrives and ended as soon as the publisher is returned to the transport layer. It captures request attributes and the initial outcome (success or synchronous error).
 
-**Per-event child spans** (`<method>-event`) are created for each streaming event published via `onNext()`. Each child span carries a [link](https://opentelemetry.io/docs/concepts/signals/traces/#span-links) back to Span 1 and is made the current span during delegate execution, so any nested telemetry is correctly parented.
+**Per-event child spans** (`<method>-event`) are created for each streaming event published via `onNext()`. Each child span is parented to Span 1 and made current during delegate execution, so any nested telemetry is correctly parented.
 
-**Span 2 — end span** (`<method>-end`) is created when the stream terminates — either on completion or error. It also carries a link to Span 1 for correlation.
+**Span 2 — end span** (`<method>-end`) is created when the stream terminates — either on completion or error. It is also parented to Span 1.
 
 <pre class="mermaid">
 sequenceDiagram
@@ -94,17 +95,17 @@ sequenceDiagram
     note over D: Span₁ closed immediately
 
     loop for each streaming event
-        W->>W: create child span (link→Span₁)
+        W->>W: create child span (parent=Span₁)
         W-->>C: onNext(event)
         W->>W: child span.end()
     end
 
     alt stream completes normally
-        W->>W: create Span₂ (SERVER, link→Span₁)
+        W->>W: create Span₂ (SERVER, parent=Span₁)
         W->>W: Span₂.setStatus(OK) · Span₂.end()
         W-->>C: onComplete()
     else stream errors
-        W->>W: create Span₂ (SERVER, link→Span₁)
+        W->>W: create Span₂ (SERVER, parent=Span₁)
         W->>W: Span₂.setStatus(ERROR) · Span₂.end()
         W-->>C: onError(throwable)
     end
@@ -255,6 +256,28 @@ Enable request and response data extraction in spans using JVM system properties
 
 > **Warning:** Extracting request/response data may expose sensitive information in traces. Use with caution in production environments.
 
+### Server Protocol Logs
+
+Server protocol logs are disabled unless the application provides a CDI bean of type
+`ProtocolLogEmitter`. The request handler records incoming message requests and subscriptions,
+outgoing responses and streaming events, and stream completion, failure, or cancellation. The push
+sender records aggregate delivery outcomes and, for the CDI-managed default HTTP sender, each
+per-destination delivery outcome without recording the destination URL or credentials.
+
+```java
+@Produces
+@Singleton
+ProtocolLogEmitter protocolLogEmitter(OpenTelemetry openTelemetry) {
+    return new ProtocolLogEmitter(openTelemetry.getLogsBridge().get("my-service"));
+}
+```
+
+This enables metadata-only records. To opt in to payload bodies, construct the emitter with a
+`ProtocolPayloadFormatter` as described under [Payload Capture and Security](#payload-capture-and-security).
+Applications must configure an OpenTelemetry logs SDK and exporter. Protocol logs are observability
+data, not a durable audit trail, and authorization decisions still require application-level
+instrumentation.
+
 ## Client
 
 ### Instrumentation
@@ -293,6 +316,35 @@ Attributes on `gen_ai.client.operation.duration`:
 | `gen_ai.system` | `a2a` |
 | `error.type` | `error` (only on failure) |
 
+### Client Protocol Logs
+
+Client protocol logs are disabled unless an OpenTelemetry `Logger` is supplied together with the
+tracer. Supplying a logger enables metadata-only DEBUG records; `OTEL_LOG_SEVERITY_KEY` can select a
+different OpenTelemetry `Severity`.
+
+```java
+config.setParameters(Map.of(
+    OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY,
+        openTelemetry.getTracer("my-service"),
+    OpenTelemetryClientTransportWrapper.OTEL_LOGGER_KEY,
+        openTelemetry.getLogsBridge().get("my-service")
+));
+```
+
+Payload capture is a separate opt-in. Add `OTEL_PAYLOAD_FORMATTER_KEY` with a
+`ProtocolPayloadFormatter`:
+
+```java
+config.setParameters(Map.of(
+    OpenTelemetryClientTransportWrapper.OTEL_TRACER_KEY,
+        openTelemetry.getTracer("my-service"),
+    OpenTelemetryClientTransportWrapper.OTEL_LOGGER_KEY,
+        openTelemetry.getLogsBridge().get("my-service"),
+    OpenTelemetryClientTransportWrapper.OTEL_PAYLOAD_FORMATTER_KEY,
+        new ProtocolPayloadFormatter(ProtocolPayloadFormatter.DEFAULT_MAX_BYTES, value -> value)
+));
+```
+
 ### Context Propagation
 
 For trace context propagation across async client boundaries:
@@ -303,6 +355,62 @@ For trace context propagation across async client boundaries:
     <artifactId>a2a-java-sdk-opentelemetry-client-propagation</artifactId>
 </dependency>
 ```
+
+## Protocol Log Schema
+
+Every record includes `a2a.event.name`, `a2a.operation.name`, and `a2a.log.direction` (`inbound` or
+`outbound`). Records include `a2a.event.kind` where applicable and task, context, message, artifact,
+notification, and task-state attributes when available. These identifiers can themselves be
+sensitive and must follow the application's logging policy. Records use the current trace and span
+context when one is available.
+
+| Event | Trigger | Direction | Kind |
+|-------|---------|-----------|------|
+| `a2a.authorization` | Server checks access for a task operation | Server inbound | `allow` or `deny` |
+| `a2a.negotiation` | Client selects an interface from the agent card | Outbound | Selected protocol binding |
+| `a2a.task.request` | Client sends or server receives a message request | Client outbound; server inbound | Omitted |
+| `a2a.task.response` | Client receives or server returns a synchronous response | Client inbound; server outbound | Response kind |
+| `a2a.task.subscription` | Client sends or server receives a stream subscription | Client outbound; server inbound | Omitted |
+| `a2a.task.state_change` | Client receives or server emits a task status update | Client inbound; server outbound | Protocol event kind |
+| `a2a.task.artifact` | Client receives or server emits an artifact update | Client inbound; server outbound | Protocol event kind |
+| `a2a.task.event` | Client receives or server emits another stream event | Client inbound; server outbound | Protocol event kind |
+| `a2a.task.stream.end` | A stream completes, fails, or is cancelled | Client inbound; server outbound | `complete`, `error`, or `cancel` |
+| `a2a.notification.subscription` | A push-notification configuration is created or deleted | Server outbound | `created` or `deleted` |
+| `a2a.notification.delivery` | A push sender invocation completes | Server outbound | `success`, `failure`, or `error` |
+| `a2a.notification.delivery.attempt` | One configured notification delivery finishes or is rejected before sending | Server outbound | `success` or `failure` |
+
+Client and server instrumentation produce separate records for their respective perspectives.
+JSON-RPC, HTTP+JSON (including SSE), and gRPC share the same client transport and server request
+handler logging paths.
+
+### Authorization Audit Records
+
+`a2a.authorization` records the outcome of every `RequestHandler.authorizeTaskAccess` check. The
+`a2a.operation.name` attribute carries the `TaskOperation` being authorized (for example
+`GET_TASK`), and `a2a.task.id` is present when the operation is task-scoped. Denials add
+`error.type` with the simple class name of the rejection.
+
+The A2A protocol deliberately reports a missing task and an inaccessible task identically so that
+callers cannot probe for task existence. `error.type` preserves that distinction server-side, where
+it is needed to investigate a denial, so these records must not be exposed to callers.
+
+Records carry no caller identity. Add the principal through a log processor if your audit policy
+requires it, and treat the result as personal data.
+
+### Payload Capture and Security
+
+Payload capture is disabled by default even when protocol logging is enabled. When a
+`ProtocolPayloadFormatter` is configured, it creates a bounded projection before serialization,
+masks common secret field names and bearer or query-string credentials, omits file content and
+unknown object types, and then applies the caller's string sanitizer. The default limit is 4096 UTF-8
+bytes. Truncated output ends in ` [truncated]` and is plain text rather than guaranteed-valid JSON;
+attributes report truncation and, when known, the projected size.
+
+No general-purpose sanitizer can identify every secret in arbitrary text. Use an
+application-specific sanitizer, review representative data, and apply access and retention controls
+before enabling payload capture. If sanitization fails or returns `null`, the payload is omitted.
+The request/response span-extraction system properties are independent and are not sanitized by the
+protocol-log formatter.
 
 ## Troubleshooting
 
