@@ -87,11 +87,11 @@ public class JSONRPCTransportStreamingCancel_v0_3_Test {
     }
 
     private static JSONRPCTransport_v0_3 transport(A2AHttpClient httpClient) {
-        return new JSONRPCTransport_v0_3(httpClient, null, "http://localhost:4001", null);
+        return FixedRequestId.transport(httpClient);
     }
 
     private static String eventJson(String ssePayload) {
-        return ssePayload.substring(ssePayload.indexOf("{"));
+        return FixedRequestId.sse(ssePayload.substring(ssePayload.indexOf("{")));
     }
 
     private static MessageSendParams_v0_3 streamingParams() {

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonParseException;
 
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
@@ -131,10 +133,11 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
                 sendStreamingMessageRequest, agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener_v0_3 sseEventListener = new SSEEventListener_v0_3(eventConsumer, errorConsumer);
-
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
+            String requestJson = JsonUtil_v0_3.toJson(payloadAndHeaders.getPayload());
+            SSEEventListener_v0_3 sseEventListener = new SSEEventListener_v0_3(eventConsumer, errorConsumer,
+                    ResponseCorrelation_v0_3.requestId(requestJson));
+            A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders, requestJson);
             CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -317,10 +320,11 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
                 taskResubscriptionRequest, agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener_v0_3 sseEventListener = new SSEEventListener_v0_3(eventConsumer, errorConsumer);
-
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
+            String requestJson = JsonUtil_v0_3.toJson(payloadAndHeaders.getPayload());
+            SSEEventListener_v0_3 sseEventListener = new SSEEventListener_v0_3(eventConsumer, errorConsumer,
+                    ResponseCorrelation_v0_3.requestId(requestJson));
+            A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders, requestJson);
             CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -394,19 +398,27 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
     }
 
     private String sendPostRequest(PayloadAndHeaders_v0_3 payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException_v0_3 {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
+        String requestJson = JsonUtil_v0_3.toJson(payloadAndHeaders.getPayload());
+        A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders, requestJson);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             throw new IOException("Request failed " + response.status());
         }
-        return response.body();
+        String responseBody = response.body();
+        try {
+            ResponseCorrelation_v0_3.validate(JsonParser.parseString(responseBody).getAsJsonObject(),
+                    ResponseCorrelation_v0_3.requestId(requestJson));
+        } catch (IllegalArgumentException | IllegalStateException | JsonParseException e) {
+            throw new IOException("Invalid JSON-RPC response correlation", e);
+        }
+        return responseBody;
     }
 
-    private A2AHttpClient.PostBuilder createPostBuilder(PayloadAndHeaders_v0_3 payloadAndHeaders) throws JsonProcessingException_v0_3 {
+    private A2AHttpClient.PostBuilder createPostBuilder(PayloadAndHeaders_v0_3 payloadAndHeaders, String requestJson) {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(agentUrl)
                 .addHeader("Content-Type", "application/json")
-                .body(JsonUtil_v0_3.toJson(payloadAndHeaders.getPayload()));
+                .body(requestJson);
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
