@@ -59,7 +59,7 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
             .setTaskId(MINIMAL_TASK.id())
             .setContextId(MINIMAL_TASK.contextId())
             .setMessageId(MESSAGE.messageId())
-            .setRole(Role.ROLE_AGENT)
+            .setRole(Role.ROLE_USER)
             .addContent(Part.newBuilder().setText(((TextPart_v0_3) MESSAGE.parts().get(0)).text()).build())
             .build();
 

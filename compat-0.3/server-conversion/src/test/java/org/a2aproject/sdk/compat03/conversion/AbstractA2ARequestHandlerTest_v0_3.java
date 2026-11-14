@@ -80,7 +80,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
 
     protected static final Message_v0_3 MESSAGE = new Message_v0_3.Builder()
             .messageId("111")
-            .role(Message_v0_3.Role.AGENT)
+            .role(Message_v0_3.Role.USER)
             .parts(new TextPart_v0_3("test message"))
             .build();
 

@@ -56,6 +56,31 @@ import org.mockito.Mockito;
  */
 public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
 
+    @Test
+    void rejectsAgentRoleInLegacyClientRequests() throws Exception {
+        java.util.concurrent.atomic.AtomicBoolean executed = new java.util.concurrent.atomic.AtomicBoolean();
+        agentExecutorExecute = (context, emitter) -> executed.set(true);
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+        String body = """
+            {"message":{"messageId":"role-probe","role":"ROLE_AGENT","content":[{"text":"hello"}]}}
+            """;
+        RestHandler_v0_3.HTTPRestResponse response = handler.sendMessage(body, callContext);
+        assertEquals(422, response.getStatusCode());
+        assertTrue(response.getBody().contains("InvalidParamsError"));
+
+        RestHandler_v0_3.HTTPRestStreamingResponse stream = assertInstanceOf(
+                RestHandler_v0_3.HTTPRestStreamingResponse.class, handler.sendStreamingMessage(body, callContext));
+        CompletableFuture<String> error = new CompletableFuture<>();
+        stream.getPublisher().subscribe(new Flow.Subscriber<>() {
+            @Override public void onSubscribe(Flow.Subscription subscription) { subscription.request(Long.MAX_VALUE); }
+            @Override public void onNext(String item) { error.complete(item); }
+            @Override public void onError(Throwable failure) { error.completeExceptionally(failure); }
+            @Override public void onComplete() { }
+        });
+        assertTrue(error.get(5, TimeUnit.SECONDS).contains("InvalidParamsError"));
+        Assertions.assertFalse(executed.get());
+    }
+
     private final ServerCallContext callContext = new ServerCallContext(
             UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
 
