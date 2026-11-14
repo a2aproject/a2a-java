@@ -133,14 +133,15 @@ public class JSONRPCTransport implements ClientTransport {
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(
                     agentInterface.url(), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD, false, requestId);
-            ref.set(builder.postAsyncSSE(
+            CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
-            sseEventListener.bindFuture(ref.get());
+                    });
+            ref.set(streamFuture);
+            sseEventListener.bindFuture(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -286,14 +287,15 @@ public class JSONRPCTransport implements ClientTransport {
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(
                     agentInterface.url(), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD, false, requestId);
-            ref.set(builder.postAsyncSSE(
+            CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
-            sseEventListener.bindFuture(ref.get());
+                    });
+            ref.set(streamFuture);
+            sseEventListener.bindFuture(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
