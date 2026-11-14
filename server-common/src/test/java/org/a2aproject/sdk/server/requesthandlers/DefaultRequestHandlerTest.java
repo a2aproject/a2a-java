@@ -93,6 +93,52 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 public class DefaultRequestHandlerTest {
 
+    @ParameterizedTest(name = "streaming={0}, role={1}, existing={2}")
+    @CsvSource({
+            "false, ROLE_AGENT, false", "true, ROLE_AGENT, false",
+            "false, ROLE_UNSPECIFIED, false", "true, ROLE_UNSPECIFIED, false",
+            "false, ROLE_AGENT, true", "true, ROLE_AGENT, true",
+            "false, ROLE_UNSPECIFIED, true", "true, ROLE_UNSPECIFIED, true"
+    })
+    void rejectsInvalidClientRoleBeforeExecutingOrUpdatingHistory(
+            boolean streaming, Message.Role role, boolean existing) {
+        AtomicBoolean executed = new AtomicBoolean();
+        agentExecutorExecute = (context, emitter) -> {
+            executed.set(true);
+            emitter.complete();
+        };
+        Task stored = Task.builder()
+                .id("role-task")
+                .contextId("role-context")
+                .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
+                .history(List.of())
+                .build();
+        if (existing) {
+            taskStore.save(stored, false);
+        }
+        Message.Builder message = Message.builder()
+                .messageId("role-probe")
+                .role(role)
+                .parts(new TextPart("caller text"));
+        if (existing) {
+            message.taskId(stored.id()).contextId(stored.contextId());
+        }
+        MessageSendParams params = MessageSendParams.builder().message(message.build()).build();
+        ServerCallContext context = contextWithEffectiveCard(true);
+
+        assertThrows(InvalidParamsError.class, () -> {
+            if (streaming) {
+                requestHandler.onMessageSendStream(params, context);
+            } else {
+                requestHandler.onMessageSend(params, context);
+            }
+        });
+        assertFalse(executed.get(), "invalid requests must not invoke the agent");
+        if (existing) {
+            assertEquals(stored, taskStore.get(stored.id()));
+        }
+    }
+
     private static final MessageSendConfiguration DEFAULT_CONFIG = MessageSendConfiguration.builder()
         .returnImmediately(true)
         .acceptedOutputModes(List.of())
@@ -102,7 +148,7 @@ public class DefaultRequestHandlerTest {
 
     private static final Message MESSAGE = Message.builder()
         .messageId("111")
-        .role(Message.Role.ROLE_AGENT)
+        .role(Message.Role.ROLE_USER)
         .parts(new TextPart("test message"))
         .build();
 

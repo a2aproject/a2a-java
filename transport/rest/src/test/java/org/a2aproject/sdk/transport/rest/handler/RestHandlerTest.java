@@ -54,6 +54,26 @@ import org.mockito.Mockito;
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
 public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
+    @ParameterizedTest
+    @ValueSource(strings = {"ROLE_AGENT", "ROLE_UNSPECIFIED"})
+    void rejectsClientMessageWithInvalidRole(String role) {
+        AtomicBoolean executed = new AtomicBoolean();
+        agentExecutorExecute = (context, emitter) -> executed.set(true);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        String requestBody = """
+            {"message":{"messageId":"role-probe","role":"%s","parts":[{"text":"hello"}]}}
+            """.formatted(role);
+
+        String expectedMessage = role.equals("ROLE_AGENT")
+                ? "Client message role must be ROLE_USER" : "Parameter 'role' may not be null";
+        assertProblemDetail(handler.sendMessage(callContext, "", requestBody), 422,
+                "INVALID_PARAMS", expectedMessage);
+        RestHandler.HTTPRestStreamingResponse stream = Assertions.assertInstanceOf(
+                RestHandler.HTTPRestStreamingResponse.class, handler.sendStreamingMessage(callContext, "", requestBody));
+        assertSingleStreamProblem(stream, 422, "INVALID_PARAMS", expectedMessage);
+        Assertions.assertFalse(executed.get());
+    }
+
     private final ServerCallContext callContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "1.0");
 
     private static AgentCardCacheMetadata createCacheMetadata() {

@@ -1539,6 +1539,9 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @SuppressWarnings("NullAway") // shouldAddPushInfo guarantees pushConfigStore != null
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
+        if (params.message().role() != Message.Role.ROLE_USER) {
+            throw new InvalidParamsError("Client message role must be ROLE_USER");
+        }
         Task task = authorizeTaskAccess(params, context);
         MessageSendParams requestParams = task == null ? params : normalizeRequestParamsForTask(params, task);
 
