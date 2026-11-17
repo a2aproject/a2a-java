@@ -120,6 +120,19 @@ public class InMemoryQueueManagerTest {
     }
 
     @Test
+    public void testCloseClosesChildQueues() {
+        String taskId = "close_children_task_id";
+        EventQueue first = queueManager.createOrTap(taskId);
+        EventQueue second = queueManager.tap(taskId);
+        assertNotNull(second);
+
+        queueManager.close(taskId);
+
+        assertTrue(first.isClosed(), "close(taskId) should close the ChildQueues that consumers poll");
+        assertTrue(second.isClosed(), "close(taskId) should close the ChildQueues that consumers poll");
+    }
+
+    @Test
     public void testCloseNonexistentQueueThrowsException() {
         assertThrows(NoTaskQueueException.class, () -> {
             queueManager.close("nonexistent_task_id");

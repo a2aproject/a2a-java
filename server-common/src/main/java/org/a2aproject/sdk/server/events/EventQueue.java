@@ -331,7 +331,8 @@ public abstract class EventQueue implements AutoCloseable {
      * </p>
      *
      * @param waitMilliSeconds the maximum time to wait in milliseconds
-     * @return the EventQueueItem, or null if timeout occurs
+     * @return the EventQueueItem, or null if timeout occurs or the wait is interrupted
+     *         (in which case the thread's interrupt flag is set)
      * @throws EventQueueClosedException if the queue is closed and empty
      * @throws UnsupportedOperationException if called on MainQueue
      */
