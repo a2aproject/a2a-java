@@ -130,8 +130,9 @@ public class EventConsumer {
                                 System.identityHashCode(queue), error, agentCompleted);
                             item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
                             if (item == null) {
-                                // An interrupted dequeue returns null with the interrupt flag set, so every
-                                // later poll returns at once: polling again would busy-spin (#1345).
+                                // dequeueEventItem returns null on a timeout and also on an interrupt, with the
+                                // interrupt flag still set. Only an interrupt ends this consumer: while the flag
+                                // is set, each later poll returns at once, so polling again would spin.
                                 if (Thread.currentThread().isInterrupted()) {
                                     LOGGER.warn("EventConsumer polling thread interrupted, exiting polling loop for queue {}", System.identityHashCode(queue));
                                     completed = true;
