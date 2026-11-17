@@ -9,7 +9,7 @@ import org.a2aproject.sdk.spec.A2AClientException;
 public final class JsonRpcCorrelation {
     private JsonRpcCorrelation() {}
 
-    /** Validate standard JSON-RPC error envelopes while leaving HTTP middleware errors unchanged. */
+    /** Validate IDs in HTTP error envelopes while leaving uncorrelated middleware errors unchanged. */
     public static void validateIfErrorEnvelope(String body, String expectedId) {
         final JsonObject response;
         try {
@@ -17,7 +17,7 @@ public final class JsonRpcCorrelation {
         } catch (RuntimeException e) {
             return;
         }
-        if (response.has("jsonrpc") && response.get("jsonrpc").isJsonPrimitive()
+        if (response.has("id") && response.has("jsonrpc") && response.get("jsonrpc").isJsonPrimitive()
                 && "2.0".equals(response.get("jsonrpc").getAsString())
                 && response.has("error") && !response.get("error").isJsonNull()) {
             validate(body, expectedId);
