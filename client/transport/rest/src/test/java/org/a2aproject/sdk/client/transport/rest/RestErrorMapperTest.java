@@ -127,4 +127,42 @@ public class RestErrorMapperTest {
         assertNotNull(httpError.getResponseHeaders());
         assertTrue(httpError.getResponseHeaders().isEmpty());
     }
+
+    @Test
+    public void testNullMessageInGoogleErrorFormatFallsBackToHttpError() {
+        String body = "{\"error\": {\"code\": 502, \"message\": null}}";
+        A2AClientException ex = RestErrorMapper.mapRestError(body, 502, Map.of());
+
+        assertInstanceOf(A2AClientHTTPError.class, ex.getCause());
+        assertEquals(502, ((A2AClientHTTPError) ex.getCause()).getCode());
+    }
+
+    @Test
+    public void testNonStringMessageInLegacyErrorFormatFallsBackToHttpError() {
+        String body = "{\"error\": \"Bad Gateway\", \"message\": {\"detail\": \"upstream down\"}}";
+        A2AClientException ex = RestErrorMapper.mapRestError(body, 502, Map.of());
+
+        assertInstanceOf(A2AClientHTTPError.class, ex.getCause());
+        assertEquals(502, ((A2AClientHTTPError) ex.getCause()).getCode());
+    }
+
+    @Test
+    public void testNullErrorInLegacyFormatFallsBackToHttpError() {
+        String body = "{\"error\": null}";
+        A2AClientException ex = RestErrorMapper.mapRestError(body, 502, Map.of());
+
+        assertInstanceOf(A2AClientHTTPError.class, ex.getCause());
+        assertEquals(502, ((A2AClientHTTPError) ex.getCause()).getCode());
+        assertEquals("Request failed with HTTP 502", ex.getMessage());
+    }
+
+    @Test
+    public void testNullReasonInGoogleErrorDetailsFallsBackToHttpError() {
+        String body = "{\"error\": {\"code\": 502, \"message\": \"Bad Gateway\", \"details\": [{\"reason\": null}]}}";
+        A2AClientException ex = RestErrorMapper.mapRestError(body, 502, Map.of());
+
+        assertInstanceOf(A2AClientHTTPError.class, ex.getCause());
+        assertEquals(502, ((A2AClientHTTPError) ex.getCause()).getCode());
+        assertEquals("Bad Gateway", ex.getMessage());
+    }
 }
