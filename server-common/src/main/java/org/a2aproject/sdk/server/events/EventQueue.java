@@ -850,6 +850,9 @@ public abstract class EventQueue implements AutoCloseable {
 
         @Override
         protected void doClose(boolean immediate) {
+            if (isClosed()) {
+                return;
+            }
             // Invoke all callbacks BEFORE closing, so they can still enqueue events
             if (!onCloseCallbacks.isEmpty()) {
                 LOGGER.debug("Invoking {} onClose callbacks for task {} BEFORE closing", onCloseCallbacks.size(), taskId);
