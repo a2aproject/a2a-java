@@ -8,11 +8,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.transport.spi.sse.AbstractSSEEventListener;
 import org.a2aproject.sdk.client.transport.rest.RestErrorMapper;
 import org.a2aproject.sdk.grpc.StreamResponse;
+import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.jspecify.annotations.Nullable;
@@ -40,7 +40,7 @@ public class SSEEventListener extends AbstractSSEEventListener {
         try {
             LOGGER.fine("REST SSE raw data: " + event.data());
             org.a2aproject.sdk.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
-            JsonFormat.parser().ignoringUnknownFields().merge(event.data(), builder);
+            ProtoJsonUtils.mergeIgnoringUnknownFields(event.data(), builder);
             if (builder.getPayloadCase() == StreamResponse.PayloadCase.PAYLOAD_NOT_SET && isErrorEvent(event.data())) {
                 // Unknown fields are ignored, so an error event parses to an empty response.
                 signalTerminal(RestErrorMapper.mapRestError(event.data(), 500));

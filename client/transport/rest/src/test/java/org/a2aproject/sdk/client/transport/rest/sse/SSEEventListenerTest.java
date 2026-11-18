@@ -325,6 +325,32 @@ public class SSEEventListenerTest {
     }
 
     @Test
+    public void testOnMessageWithUnrecognizedEnumValueSignalsError() {
+        AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        SSEEventListener listener = new SSEEventListener(receivedEvent::set, receivedError::set);
+
+        // Unknown field names are ignored, but an unrecognized enum value is not dropped.
+        String jsonMessage = """
+            {
+              "task": {
+                "id": "task-123",
+                "contextId": "context-456",
+                "status": {
+                  "state": "NOT_A_TASK_STATE"
+                },
+                "unknownTaskField": "ignored"
+              }
+            }
+            """;
+
+        listener.onMessage(new ServerSentEvent(jsonMessage), null);
+
+        assertNull(receivedEvent.get());
+        assertNotNull(receivedError.get());
+    }
+
+    @Test
     public void testOnMessageWithInvalidPayloadCaseThenOnCompleteKeepsTheError() {
         // Set up error handler
         AtomicInteger calls = new AtomicInteger();

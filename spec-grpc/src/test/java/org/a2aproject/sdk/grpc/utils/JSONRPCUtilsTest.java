@@ -604,6 +604,94 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
+    public void testParseListTasks_UnknownFieldIgnoredAndStatusKept() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "20",
+              "params": {
+                "status": "TASK_STATE_WORKING",
+                "unknownParam": 42
+              }
+            }
+            """;
+        ListTasksRequest parsed = assertInstanceOf(ListTasksRequest.class,
+            JSONRPCUtils.parseRequestBody(request, null));
+        assertEquals(TaskState.TASK_STATE_WORKING, parsed.getParams().status());
+    }
+
+    @Test
+    public void testParseListTasks_UnrecognizedStatusValue_ThrowsInvalidParams() {
+        // Unknown field names are ignored, but an unrecognized value for a known enum field is
+        // still rejected. Dropping it would turn the status filter into no filter at all.
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "21",
+              "params": {
+                "status": "NOT_A_TASK_STATE"
+              }
+            }
+            """;
+        InvalidParamsJsonMappingException exception = assertThrows(
+            InvalidParamsJsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(request, null)
+        );
+        assertEquals("21", exception.getId());
+        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
+    }
+
+    @Test
+    public void testParseResponse_UnrecognizedEnumValue_Throws() {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "id": "task-1",
+                    "contextId": "context-1",
+                    "status": {
+                      "state": "NOT_A_TASK_STATE"
+                    },
+                    "unknownTaskField": true
+                  }
+                }
+                """;
+        JsonProcessingException exception = assertThrows(
+            JsonProcessingException.class,
+            () -> JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD)
+        );
+        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
+    }
+
+    @Test
+    public void testParseResponseEvent_UnrecognizedEnumValue_Throws() {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "statusUpdate": {
+                      "taskId": "task-1",
+                      "contextId": "context-1",
+                      "status": {
+                        "state": "NOT_A_TASK_STATE"
+                      },
+                      "unknownEventField": true
+                    }
+                  }
+                }
+                """;
+        JsonProcessingException exception = assertThrows(
+            JsonProcessingException.class,
+            () -> JSONRPCUtils.parseResponseEvent(json)
+        );
+        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
+    }
+
+    @Test
     public void testParseInvalidTypeWithNullId_UsesEmptyStringSentinel() throws Exception {
         // Test the low-level convertProtoBufExceptionToJsonProcessingException with null ID
         // This tests the sentinel value logic directly

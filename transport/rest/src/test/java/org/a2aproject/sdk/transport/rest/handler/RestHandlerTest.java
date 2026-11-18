@@ -322,10 +322,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         JsonObject error = body.getAsJsonObject("error");
         Assertions.assertEquals(422, error.get("code").getAsInt());
         Assertions.assertEquals("INVALID_PARAMS", error.getAsJsonArray("details").get(0).getAsJsonObject().get("reason").getAsString());
-        // "user" is not a Role value. Unknown enum values are skipped like unknown fields,
-        // so the missing required role is reported instead.
-        Assertions.assertTrue(error.get("message").getAsString().contains("role"),
-                "message should name the invalid field: " + error.get("message").getAsString());
+        Assertions.assertTrue(error.get("message").getAsString().startsWith("Failed to parse request body:"),
+                "message should indicate parse failure: " + error.get("message").getAsString());
     }
 
     @Test

@@ -465,8 +465,9 @@ public class JSONRPCUtils {
     }
 
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
-        // Spec Section 5.7: ignore unrecognized fields for forward compatibility.
-        parseJsonString(jsonRpc.toString(), builder, id, true);
+        // Spec Section 5.7: ignore unrecognized field names for forward compatibility. The values
+        // of recognized fields, such as enum values, are still checked by the strict parser.
+        parseJsonString(ProtoJsonUtils.removeUnknownFields(jsonRpc, builder.getDescriptorForType()).toString(), builder, id);
     }
 
     // SendMessage permits extra top-level operation parameters; nested protocol objects remain strict.
