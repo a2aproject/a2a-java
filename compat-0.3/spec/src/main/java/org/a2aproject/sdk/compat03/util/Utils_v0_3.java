@@ -1,7 +1,9 @@
 package org.a2aproject.sdk.compat03.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
@@ -111,10 +113,29 @@ public class Utils_v0_3 {
             LOGGER.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
             List<Part_v0_3<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
-            Artifact_v0_3 updated = new Artifact_v0_3.Builder(existingArtifact)
-                    .parts(parts)
-                    .build();
-            artifacts.set(existingArtifactIndex, updated);
+
+            Artifact_v0_3.Builder builder =
+                    new Artifact_v0_3.Builder(existingArtifact).parts(parts);
+
+            // Merge the chunk's metadata into the existing artifact, mirroring
+            // org.a2aproject.sdk.spec.util.Utils#appendArtifactToTask.
+            // Only set it when something is present: Artifact_v0_3.Builder#metadata
+            // rejects null, unlike the v1.0 builder.
+            Map<String, Object> mergedMetadata = null;
+            if (existingArtifact.metadata() != null || newArtifact.metadata() != null) {
+                mergedMetadata = new HashMap<>();
+                if (existingArtifact.metadata() != null) {
+                    mergedMetadata.putAll(existingArtifact.metadata());
+                }
+                if (newArtifact.metadata() != null) {
+                    mergedMetadata.putAll(newArtifact.metadata());
+                }
+            }
+            if (mergedMetadata != null) {
+                builder.metadata(mergedMetadata);
+            }
+
+            artifacts.set(existingArtifactIndex, builder.build());
         } else {
             // We received a chunk to append, but we don't have an existing artifact.
             // We will ignore this chunk
