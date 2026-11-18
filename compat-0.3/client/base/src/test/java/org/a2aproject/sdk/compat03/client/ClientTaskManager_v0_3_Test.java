@@ -4,8 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
+import org.a2aproject.sdk.compat03.spec.Artifact_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
+import org.a2aproject.sdk.compat03.spec.Part_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatus_v0_3;
@@ -14,6 +18,40 @@ import org.a2aproject.sdk.compat03.spec.TextPart_v0_3;
 import org.junit.jupiter.api.Test;
 
 public class ClientTaskManager_v0_3_Test {
+
+    private static Artifact_v0_3 artifact(String text, Map<String, Object> metadata) {
+        List<Part_v0_3<?>> parts = List.of(new TextPart_v0_3(text));
+        return new Artifact_v0_3.Builder()
+                .artifactId("artifact-1")
+                .parts(parts)
+                .metadata(metadata)
+                .build();
+    }
+
+    @Test
+    public void testArtifactChunkMetadataIsMergedIntoTheAccumulatedTask() {
+        ClientTaskManager_v0_3 taskManager = new ClientTaskManager_v0_3();
+
+        taskManager.saveTaskEvent(new TaskArtifactUpdateEvent_v0_3.Builder()
+                .taskId("task-123")
+                .contextId("context-123")
+                .append(false)
+                .artifact(artifact("chunk-1", Map.of("source", "ocr")))
+                .build());
+
+        Task_v0_3 task = taskManager.saveTaskEvent(new TaskArtifactUpdateEvent_v0_3.Builder()
+                .taskId("task-123")
+                .contextId("context-123")
+                .append(true)
+                .artifact(artifact("chunk-2", Map.of("progress", "60%")))
+                .build());
+
+        assertEquals(1, task.artifacts().size());
+        assertEquals(
+                Map.of("source", "ocr", "progress", "60%"),
+                task.artifacts().get(0).metadata());
+        assertEquals(2, task.artifacts().get(0).parts().size());
+    }
 
     @Test
     public void testStatusMessagesMoveToHistoryWhenSuperseded() throws Exception {

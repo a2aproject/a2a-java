@@ -927,16 +927,23 @@ public class DefaultRequestHandler implements RequestHandler {
                         LOGGER.debug("DefaultRequestHandler: Step 3 - Consumption completed for task {}", taskId.get());
                     }
 
-                    // Step 4: Implicit guarantee of persistence via consumption completion
-                    // We do NOT add an explicit wait for MainEventBusProcessor here because:
-                    // 1. MainEventBusProcessor persists BEFORE distributing to ChildQueues
-                    // 2. Step 3 (consumption completion) already guarantees all consumed events are persisted
-                    // 3. Adding another explicit synchronization point would require exposing
-                    //    MainEventBusProcessor internals and blocking event loop threads
-                    //
-                    // Note: For fire-and-forget tasks, if the agent is still running after Step 1 timeout,
-                    // it may enqueue additional events. These will be persisted asynchronously but won't
-                    // be included in the task state returned to the client (already consumed in Step 3).
+                    // Step 4: Wait until the queue has nothing left in flight
+                    // Completing the consumption (Step 3) only proves the consumer saw the events
+                    // that had already been distributed to it. The last event the agent enqueued -
+                    // for example the INPUT_REQUIRED status that ended the turn - may still be
+                    // sitting in MainEventBusProcessor, which persists it *after* the consumer is
+                    // done. Reading the TaskStore at that point returns the state from before that
+                    // event (SUBMITTED or WORKING instead of INPUT_REQUIRED) with no error raised.
+                    // Terminal states are not affected because the awaitingFinalEvent machinery
+                    // keeps the consumer waiting for the final event; interrupted states
+                    // (INPUT_REQUIRED, AUTH_REQUIRED) and artifact-only tails are.
+                    if (!queue.awaitDrained(consumptionCompletionTimeoutSeconds, SECONDS)) {
+                        LOGGER.warn("DefaultRequestHandler: Step 4 - Queue for task {} still has events in flight "
+                            + "after {}s; the returned task may not include the latest event",
+                            taskId.get(), consumptionCompletionTimeoutSeconds);
+                    } else {
+                        LOGGER.debug("DefaultRequestHandler: Step 4 - Queue drained for task {}", taskId.get());
+                    }
 
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
