@@ -62,7 +62,7 @@ public class AgentCardProducer {
                 .version("1.0.0")
                 .supportedInterfaces(interfaces)
                 .capabilities(capabilities())
-                .defaultInputModes(List.of("text"))
+                .defaultInputModes(List.of("text", "application/x-protobuf"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of(AgentSkill.builder()
                         .id("itk_current")

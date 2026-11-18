@@ -11,7 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class MainEventBus {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainEventBus.class);
-    private final BlockingQueue<MainEventBusContext> queue;
+    private final BlockingQueue<Object> queue;
 
     public MainEventBus() {
         this.queue = new LinkedBlockingDeque<>();
@@ -28,11 +28,14 @@ public class MainEventBus {
         }
     }
 
-    MainEventBusContext take() throws InterruptedException {
+    void submit(Runnable action) {
+        queue.add(action);
+    }
+
+    Object take() throws InterruptedException {
         LOGGER.debug("MainEventBus: Waiting to take event (current queue size: {})...", queue.size());
-        MainEventBusContext context = queue.take();
-        LOGGER.debug("MainEventBus: Took event for task {} (remaining queue size: {})",
-                    context.taskId(), queue.size());
+        Object context = queue.take();
+        LOGGER.debug("MainEventBus: Took item (remaining queue size: {})", queue.size());
         return context;
     }
 

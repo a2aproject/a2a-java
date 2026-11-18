@@ -18,6 +18,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -60,6 +61,8 @@ import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.CancelTaskParams;
+import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
+import org.a2aproject.sdk.spec.DataPart;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
@@ -180,6 +183,105 @@ public abstract class AbstractA2AServerTest {
         testGetTask();
     }
 
+    @Test
+    public void testGetTaskHistoryIsChronological() throws Exception {
+        List<Message> history = List.of(
+                Message.builder(MESSAGE)
+                        .messageId("history-first")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("chronological first"))
+                        .build(),
+                Message.builder(MESSAGE)
+                        .messageId("history-second")
+                        .role(Message.Role.ROLE_AGENT)
+                        .parts(new TextPart("chronological second"))
+                        .build(),
+                Message.builder(MESSAGE)
+                        .messageId("history-third")
+                        .role(Message.Role.ROLE_USER)
+                        .parts(new TextPart("chronological third"))
+                        .build());
+        Task task = Task.builder()
+                .id("task-with-chronological-history")
+                .contextId("chronological-history-context")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .history(history)
+                .build();
+        saveTaskInTaskStore(task);
+
+        try {
+            Task response = getClient().getTask(new TaskQueryParams(task.id()));
+
+            assertNotNull(response.history());
+            assertEquals(List.of("history-first", "history-second", "history-third"),
+                    response.history().stream().map(Message::messageId).toList(),
+                    "History messages must be returned in chronological order");
+            assertEquals("chronological first", ((TextPart) response.history().get(0).parts().get(0)).text());
+            assertEquals("chronological second", ((TextPart) response.history().get(1).parts().get(0)).text());
+            assertEquals("chronological third", ((TextPart) response.history().get(2).parts().get(0)).text());
+        } finally {
+            deleteTaskInTaskStore(task.id());
+        }
+    }
+
+    @Test
+    public void testMultiTurnHistoryIsChronological() throws Exception {
+        Task firstResponse = sendMessageAndAwaitTask(Message.builder(MESSAGE)
+                .messageId("chronological-first")
+                .role(Message.Role.ROLE_USER)
+                .parts(new TextPart("history-workflow:chronological first"))
+                .build());
+
+        try {
+            Task secondResponse = sendMessageAndAwaitTask(Message.builder(MESSAGE)
+                    .messageId("chronological-second")
+                    .role(Message.Role.ROLE_USER)
+                    .taskId(firstResponse.id())
+                    .contextId(firstResponse.contextId())
+                    .parts(new TextPart("history-workflow:chronological second"))
+                    .build());
+            sendMessageAndAwaitTask(Message.builder(MESSAGE)
+                    .messageId("chronological-third")
+                    .role(Message.Role.ROLE_USER)
+                    .taskId(secondResponse.id())
+                    .contextId(secondResponse.contextId())
+                    .parts(new TextPart("history-workflow:chronological third"))
+                    .build());
+
+            Task task = getClient().getTask(new TaskQueryParams(firstResponse.id()));
+            List<String> userMessages = task.history().stream()
+                    .filter(message -> message.role() == Message.Role.ROLE_USER)
+                    .map(message -> ((TextPart) message.parts().get(0)).text())
+                    .toList();
+            assertEquals(List.of(
+                    "history-workflow:chronological first",
+                    "history-workflow:chronological second",
+                    "history-workflow:chronological third"), userMessages,
+                    "User messages must be retained in chronological order");
+        } finally {
+            deleteTaskInTaskStore(firstResponse.id());
+        }
+    }
+
+    private Task sendMessageAndAwaitTask(Message message) throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Task> task = new AtomicReference<>();
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        getNonStreamingClient().sendMessage(message, List.of((event, agentCard) -> {
+            if (event instanceof TaskEvent taskEvent) {
+                task.set(taskEvent.getTask());
+                latch.countDown();
+            }
+        }), error -> {
+            failure.set(error);
+            latch.countDown();
+        });
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS), "Expected a task response");
+        assertNull(failure.get(), "Unexpected error while sending message");
+        return java.util.Objects.requireNonNull(task.get(), "Expected a task response");
+    }
+
     private void testGetTask() throws Exception {
         testGetTask(null);
     }
@@ -287,6 +389,37 @@ public abstract class AbstractA2AServerTest {
             deleteTaskInTaskStore(task1.id());
             deleteTaskInTaskStore(task2.id());
             deleteTaskInTaskStore(task3.id());
+        }
+    }
+
+    @Test
+    public void testListTasksWithoutArtifacts() throws Exception {
+        Task taskWithArtifact = Task.builder()
+                .id("list-task-with-artifact")
+                .contextId("context-with-artifact")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .artifacts(List.of(Artifact.builder()
+                        .artifactId("list-artifact-1")
+                        .parts(new TextPart("artifact content"))
+                        .build()))
+                .build();
+        saveTaskInTaskStore(taskWithArtifact);
+
+        try {
+            ListTasksParams params = ListTasksParams.builder()
+                    .contextId(taskWithArtifact.contextId())
+                    .includeArtifacts(false)
+                    .tenant("")
+                    .build();
+
+            ListTasksResult result = getClient().listTasks(params);
+
+            assertEquals(1, result.tasks().size());
+            assertEquals(taskWithArtifact.id(), result.tasks().get(0).id());
+            assertTrue(result.tasks().get(0).artifacts().isEmpty(),
+                    "ListTasks with includeArtifacts=false must omit task artifacts");
+        } finally {
+            deleteTaskInTaskStore(taskWithArtifact.id());
         }
     }
 
@@ -505,6 +638,63 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    public void testSendMessageAcceptsPlainTextForTextInputMode() throws Exception {
+        Message message = Message.builder()
+                .messageId("plain-text-content-type-message")
+                .role(Message.Role.ROLE_USER)
+                .parts(new TextPart("hello", null, "text/plain; charset=utf-8"))
+                .build();
+        getNonStreamingClient().sendMessage(message);
+    }
+
+    /**
+     * A server that advertises only {@code text} input must reject a message part whose media type
+     * it does not support. This is the protocol-level regression test for ACTS CORE-SEND-004.
+     */
+    @Test
+    public void testSendMessageRejectsUnsupportedPartContentType() {
+        Message message = Message.builder()
+                .messageId("unsupported-content-type-message")
+                .role(Message.Role.ROLE_USER)
+                .parts(new DataPart(Map.of("value", "unsupported"), null, "application/x-a2a-unsupported"))
+                .build();
+
+        try {
+            getNonStreamingClient().sendMessage(message);
+            fail("Expected ContentTypeNotSupportedError for an unsupported message-part content type");
+        } catch (A2AClientException e) {
+            assertInstanceOf(ContentTypeNotSupportedError.class, e.getCause());
+        }
+    }
+
+    @Test
+    public void testStreamingSendRejectsUnsupportedPartContentType() throws Exception {
+        Message message = Message.builder()
+                .messageId("unsupported-stream-content-type-message")
+                .role(Message.Role.ROLE_USER)
+                .parts(new DataPart(Map.of("value", "unsupported"), null, "application/x-a2a-unsupported"))
+                .build();
+        CountDownLatch errorLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        try {
+            getClient().sendMessage(message, List.of(), failure -> {
+                if (failure != null) {
+                    error.set(failure);
+                    errorLatch.countDown();
+                }
+            });
+            assertTrue(errorLatch.await(10, TimeUnit.SECONDS), "Expected unsupported content type error");
+            Throwable cause = error.get();
+            while (cause != null && !(cause instanceof ContentTypeNotSupportedError)) {
+                cause = cause.getCause();
+            }
+            assertInstanceOf(ContentTypeNotSupportedError.class, cause);
+        } catch (A2AClientException e) {
+            assertInstanceOf(ContentTypeNotSupportedError.class, e.getCause());
+        }
+    }
+
+    @Test
     public void testRequestScopedBeanAvailableOnAgentExecutorThread() throws Exception {
         Message message = Message.builder()
                 .messageId("request-scoped-test")
@@ -681,6 +871,20 @@ public abstract class AbstractA2AServerTest {
             fail("Unexpected exception during get push notification test: " + e.getMessage(), e);
         } finally {
             deletePushNotificationConfigInStore(MINIMAL_TASK.id(), "c295ea44-7543-4f78-b524-7a38915ad6e4");
+            deleteTaskInTaskStore(MINIMAL_TASK.id());
+        }
+    }
+
+    @Test
+    public void testGetNonexistentPushNotificationConfigReturnsTaskNotFoundError() throws Exception {
+        saveTaskInTaskStore(MINIMAL_TASK);
+        try {
+            getClient().getTaskPushNotificationConfiguration(
+                    new GetTaskPushNotificationConfigParams(MINIMAL_TASK.id(), "non-existent-config-id"));
+            fail("Expected TaskNotFoundError when the push notification config does not exist");
+        } catch (A2AClientException e) {
+            assertInstanceOf(TaskNotFoundError.class, e.getCause());
+        } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.id());
         }
     }
@@ -2899,14 +3103,14 @@ public abstract class AbstractA2AServerTest {
      * 2. Task reaches COMPLETED state (final)
      * 3. ChildQueue closes after receiving final event
      * 4. MainQueue should close because task is finalized
-     * 5. Resubscription should fail with TaskNotFoundError
+     * 5. Resubscription should fail with UnsupportedOperationError
      */
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     public void testMainQueueClosesForFinalizedTasks() throws Exception {
         // Send a message without taskId - server generates one
         Message message = Message.builder(MESSAGE)
-                .parts(new TextPart("complete task"))
+                .parts(new TextPart("queue-finalization:complete task"))
                 .build();
 
         CountDownLatch completionLatch = new CountDownLatch(1);
@@ -2920,10 +3124,6 @@ public abstract class AbstractA2AServerTest {
                 if (te.getTask().status().state().isFinal()) {
                     completionLatch.countDown();
                 }
-            } else if (event instanceof MessageEvent me) {
-                // Message is considered a final event - capture taskId from the message
-                generatedTaskId.compareAndSet(null, me.getMessage().taskId());
-                completionLatch.countDown();
             } else if (event instanceof TaskUpdateEvent tue
                     && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
                 generatedTaskId.compareAndSet(null, status.taskId());
@@ -2951,8 +3151,9 @@ public abstract class AbstractA2AServerTest {
             String taskId = generatedTaskId.get();
             assertNotNull(taskId, "Should have captured server-generated taskId");
 
-            // Give cleanup time to run after final event
-            Thread.sleep(2000);
+            // -1 means the main queue is closed or no longer registered.
+            assertTrue(awaitChildQueueCountStable(taskId, -1, 15000),
+                    "MainQueue should close after the task reaches a final state");
 
             // Try to subscribe to finalized task - should fail
             CountDownLatch errorLatch = new CountDownLatch(1);
@@ -2982,24 +3183,24 @@ public abstract class AbstractA2AServerTest {
                 Throwable error = resubErrorRef.get();
                 assertNotNull(error, "Resubscription should fail for finalized task");
 
-                // Verify it's a TaskNotFoundError
+                // Terminal tasks reject subscription with UnsupportedOperationError.
                 Throwable cause = error;
-                boolean foundTaskNotFound = false;
-                while (cause != null && !foundTaskNotFound) {
-                    if (cause instanceof TaskNotFoundError
+                boolean foundUnsupportedOperation = false;
+                while (cause != null && !foundUnsupportedOperation) {
+                    if (cause instanceof UnsupportedOperationError
                             || (cause instanceof A2AClientException
-                            && ((A2AClientException) cause).getCause() instanceof TaskNotFoundError)) {
-                        foundTaskNotFound = true;
+                            && ((A2AClientException) cause).getCause() instanceof UnsupportedOperationError)) {
+                        foundUnsupportedOperation = true;
                     }
                     cause = cause.getCause();
                 }
-                assertTrue(foundTaskNotFound,
-                        "Should receive TaskNotFoundError - MainQueue closed for finalized task");
+                assertTrue(foundUnsupportedOperation,
+                        "Should receive UnsupportedOperationError for a finalized task");
 
             } catch (A2AClientException e) {
                 // Exception might be thrown immediately instead of via error handler
-                assertInstanceOf(TaskNotFoundError.class, e.getCause(),
-                        "Should fail with TaskNotFoundError - MainQueue cleaned up for finalized task");
+                assertInstanceOf(UnsupportedOperationError.class, e.getCause(),
+                        "Should fail with UnsupportedOperationError for a finalized task");
             }
 
         } finally {

@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.server.rest.quarkus;
 
+import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
@@ -523,7 +524,7 @@ public class A2AServerRoutesTest {
     public void testSendMessage_ForwardsTransportPolicyResponseWithoutRouteValidation() {
         HTTPRestResponse policyResponse = mock(HTTPRestResponse.class);
         when(policyResponse.getStatusCode()).thenReturn(422);
-        when(policyResponse.getContentType()).thenReturn(APPLICATION_JSON);
+        when(policyResponse.getContentType()).thenReturn(APPLICATION_A2A_JSON);
         when(policyResponse.getBody()).thenReturn("{\"error\":{\"code\":422,\"status\":\"INVALID_ARGUMENT\"}}");
         when(mockRoutingContext.pathParam("tenant")).thenReturn("bad?tenant");
         when(mockRestHandler.sendMessage(any(ServerCallContext.class), eq("bad?tenant"), anyString()))
@@ -533,7 +534,7 @@ public class A2AServerRoutesTest {
 
         verify(mockRestHandler).sendMessage(any(ServerCallContext.class), eq("bad?tenant"), eq("{}"));
         verify(mockResponse).setStatusCode(422);
-        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_A2A_JSON);
         verify(mockResponse).end("{\"error\":{\"code\":422,\"status\":\"INVALID_ARGUMENT\"}}");
     }
 
@@ -574,7 +575,7 @@ public class A2AServerRoutesTest {
 
     private void assertValidationError(int status, String reason, String message, JsonObject metadata) {
         verify(mockResponse).setStatusCode(status);
-        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+        verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_A2A_JSON);
         ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
         verify(mockResponse).end(body.capture());
         JsonObject expected = JsonParser.parseString("""
@@ -666,7 +667,7 @@ public class A2AServerRoutesTest {
             assertNull(params.getValue().historyLength());
             assertEquals(raw == null || raw.isEmpty() ? null : Boolean.valueOf(raw), params.getValue().includeArtifacts());
             verify(mockResponse).setStatusCode(200);
-            verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
+            verify(mockResponse).putHeader(io.vertx.core.http.HttpHeaders.CONTENT_TYPE, APPLICATION_A2A_JSON);
         }
         for (String field : List.of("status", "statusTimestampAfter")) {
             validationFixture("1.0", false, true);

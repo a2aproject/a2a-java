@@ -70,9 +70,19 @@ public class TaskManager {
     boolean saveTaskEvent(Task task, boolean isReplicated, @Nullable AtomicReference<Task> taskSnapshot)
             throws A2AServerException {
         checkIdsAndUpdateIfNecessary(task.id(), task.contextId());
+        Task current = getTask();
+        if (current == null && initialMessage != null
+                && (task.history() == null || task.history().stream()
+                        .noneMatch(message -> message.messageId().equals(initialMessage.messageId())))) {
+            List<Message> history = new ArrayList<>();
+            history.add(initialMessage);
+            if (task.history() != null) {
+                history.addAll(task.history());
+            }
+            task = Task.builder(task).history(history).build();
+        }
         // Defensive state-machine check: a task that already reached a terminal state must
         // not be overwritten by a task snapshot carrying a different state.
-        Task current = getTask();
         if (current != null && current.status() != null && current.status().state() != null
                 && task.status() != null && task.status().state() != null) {
             validateStateTransition(current.status().state(), task.status().state(), task.id());
