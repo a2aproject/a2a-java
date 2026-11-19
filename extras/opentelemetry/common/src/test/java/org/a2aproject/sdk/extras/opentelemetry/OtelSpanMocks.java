@@ -8,11 +8,10 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.Context;
 
 /** Shared Mockito helpers for OTel span builder stubs used in client and server tests. */
 public final class OtelSpanMocks {
@@ -28,12 +27,12 @@ public final class OtelSpanMocks {
         SpanBuilder closingSpanBuilder = mock(SpanBuilder.class);
         when(tracer.spanBuilder(spanName)).thenReturn(closingSpanBuilder);
         when(closingSpanBuilder.setSpanKind(any(SpanKind.class))).thenReturn(closingSpanBuilder);
-        when(closingSpanBuilder.addLink(any(SpanContext.class))).thenReturn(closingSpanBuilder);
+        lenient().when(closingSpanBuilder.setParent(any(Context.class))).thenReturn(closingSpanBuilder);
         when(closingSpanBuilder.startSpan()).thenReturn(closingSpan);
         // lenient: success/error path coverage varies per test
         lenient().when(closingSpan.setStatus(any(StatusCode.class))).thenReturn(closingSpan);
         lenient().when(closingSpan.setStatus(any(StatusCode.class), anyString())).thenReturn(closingSpan);
-        when(closingSpan.makeCurrent()).thenReturn(mock(Scope.class));
+        lenient().when(closingSpan.storeInContext(any(Context.class))).thenAnswer(invocation -> invocation.getArgument(0));
         return closingSpanBuilder;
     }
 
@@ -45,10 +44,10 @@ public final class OtelSpanMocks {
         SpanBuilder eventSpanBuilder = mock(SpanBuilder.class);
         when(tracer.spanBuilder(spanName)).thenReturn(eventSpanBuilder);
         when(eventSpanBuilder.setSpanKind(any(SpanKind.class))).thenReturn(eventSpanBuilder);
-        when(eventSpanBuilder.addLink(any(SpanContext.class))).thenReturn(eventSpanBuilder);
+        lenient().when(eventSpanBuilder.setParent(any(Context.class))).thenReturn(eventSpanBuilder);
         when(eventSpanBuilder.setAttribute(anyString(), anyString())).thenReturn(eventSpanBuilder);
         when(eventSpanBuilder.startSpan()).thenReturn(eventSpan);
-        when(eventSpan.makeCurrent()).thenReturn(mock(Scope.class));
+        lenient().when(eventSpan.storeInContext(any(Context.class))).thenAnswer(invocation -> invocation.getArgument(0));
         return eventSpanBuilder;
     }
 }

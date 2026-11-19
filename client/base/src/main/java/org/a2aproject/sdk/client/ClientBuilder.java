@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -325,7 +326,8 @@ public class ClientBuilder {
             throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
         }
 
-        return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig);
+        return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig,
+                agentInterface);
     }
 
     private Map<String, AgentInterface> getServerInterfacesMap() throws A2AClientException {
@@ -394,9 +396,11 @@ public class ClientBuilder {
      *
      * @param transport the base transport to wrap
      * @param clientTransportConfig the transport configuration
+     * @param agentInterface the selected interface reported to transport wrappers
      * @return the wrapped transport (or original if no wrappers are available/applicable)
      */
-    private ClientTransport wrap(ClientTransport transport, ClientTransportConfig<? extends ClientTransport> clientTransportConfig) {
+    private ClientTransport wrap(ClientTransport transport, ClientTransportConfig<? extends ClientTransport> clientTransportConfig,
+            AgentInterface agentInterface) {
         ServiceLoader<ClientTransportWrapper> wrapperLoader = ServiceLoader.load(ClientTransportWrapper.class);
 
         // Collect all wrappers, sort by priority, then reverse for stack application
@@ -411,11 +415,16 @@ public class ClientBuilder {
         LOGGER.debug(wrappers.size() + " client transport wrappers found via ServiceLoader");
 
         // Reverse to apply lowest priority first (building stack with highest priority outermost)
-        java.util.Collections.reverse(wrappers);
+        Collections.reverse(wrappers);
 
         // Apply wrappers to build stack
         ClientTransport wrapped = transport;
         for (ClientTransportWrapper wrapper : wrappers) {
+            try {
+                wrapper.onTransportSelected(agentInterface, clientTransportConfig);
+            } catch (Exception e) {
+                LOGGER.warn("Transport selection observer {} failed: {}", wrapper.getClass().getName(), e.getMessage(), e);
+            }
             try {
                 ClientTransport newWrapped = wrapper.wrap(wrapped, clientTransportConfig);
                 if (newWrapped != wrapped) {
