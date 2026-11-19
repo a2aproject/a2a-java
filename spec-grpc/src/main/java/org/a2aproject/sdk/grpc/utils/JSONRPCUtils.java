@@ -327,12 +327,15 @@ public class JSONRPCUtils {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
-        Object id = getAndValidateId(jsonRpc);
-        JsonElement paramsNode = jsonRpc.get("result");
         JsonElement errorNode = jsonRpc.get("error");
         if (errorNode != null && !errorNode.isJsonNull()) {
-            return parseError(errorNode.getAsJsonObject(), id, method);
+            if (jsonRpc.has("id") && jsonRpc.get("id").isJsonNull()) {
+                return parseError(errorNode.getAsJsonObject(), null, method);
+            }
+            return parseError(errorNode.getAsJsonObject(), getAndValidateId(jsonRpc), method);
         }
+        Object id = getAndValidateId(jsonRpc);
+        JsonElement paramsNode = jsonRpc.get("result");
         switch (method) {
             case GET_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.Task.Builder builder = org.a2aproject.sdk.grpc.Task.newBuilder();
@@ -385,7 +388,7 @@ public class JSONRPCUtils {
         }
     }
 
-    public static A2AResponse<?> parseError(JsonObject error, Object id, String method) throws JsonMappingException {
+    public static A2AResponse<?> parseError(JsonObject error, @Nullable Object id, String method) throws JsonMappingException {
         A2AError rpcError = processError(error);
         switch (method) {
             case GET_TASK_METHOD -> {
@@ -412,8 +415,11 @@ public class JSONRPCUtils {
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id, rpcError);
             }
+            case GET_EXTENDED_AGENT_CARD_METHOD -> {
+                return new GetExtendedAgentCardResponse(id, rpcError);
+            }
             default ->
-                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id);
+                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id == null ? "UNDETERMINED ID" : id);
         }
     }
 
