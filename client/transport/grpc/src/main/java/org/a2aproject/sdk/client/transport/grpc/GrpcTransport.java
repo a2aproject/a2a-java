@@ -240,7 +240,10 @@ public class GrpcTransport implements ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        org.a2aproject.sdk.grpc.TaskPushNotificationConfig grpcRequest = ToProto.taskPushNotificationConfig(request);
+        org.a2aproject.sdk.grpc.TaskPushNotificationConfig grpcRequest = ToProto.taskPushNotificationConfig(request)
+                .toBuilder()
+                .setTenant(resolveTenant(request.tenant()))
+                .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, grpcRequest, agentCard, context);
 
         try {
