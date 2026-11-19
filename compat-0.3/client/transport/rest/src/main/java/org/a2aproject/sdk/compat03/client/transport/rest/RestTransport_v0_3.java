@@ -141,11 +141,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         GetTaskRequest.Builder builder = GetTaskRequest.newBuilder();
         builder.setName("tasks/" + taskQueryParams.id());
         builder.setHistoryLength(taskQueryParams.historyLength());
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetTaskRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder.class);
             String url = resourceUrl(effective.getName());
             if (effective.getHistoryLength() > 0) {
                 url += "?historyLength=" + effective.getHistoryLength();
@@ -176,11 +175,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         checkNotNullParam("taskIdParams", taskIdParams);
         CancelTaskRequest.Builder builder = CancelTaskRequest.newBuilder();
         builder.setName("tasks/" + taskIdParams.id());
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(CancelTaskRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder.class);
             String httpResponseBody = sendPostRequest(resourceUrl(effective.getName()) + ":cancel", payloadAndHeaders);
             org.a2aproject.sdk.compat03.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.Task.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
@@ -201,10 +199,9 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         if (request.pushNotificationConfig().id() != null) {
             builder.setConfigId(request.pushNotificationConfig().id());
         }
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest_v0_3.METHOD, builder, agentCard, context);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder.class);
             String httpResponseBody = sendPostRequest(resourceUrl(effective.getParent()) + "/pushNotificationConfigs", payloadAndHeaders);
             org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
@@ -223,11 +220,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         String configId = request.pushNotificationConfigId() != null ? request.pushNotificationConfigId() : request.id();
         GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
         builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetTaskPushNotificationConfigRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder.class);
             String url = resourceUrl(effective.getName());
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
@@ -255,11 +251,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         checkNotNullParam("request", request);
         ListTaskPushNotificationConfigRequest.Builder builder = ListTaskPushNotificationConfigRequest.newBuilder();
         builder.setParent(String.format("tasks/%1s", request.id()));
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder.class);
             String url = resourceUrl(effective.getParent()) + "/pushNotificationConfigs";
             if (effective.getPageSize() != 0) {
                 url += "?pageSize=" + effective.getPageSize();
@@ -291,13 +286,12 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     @Override
     public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
-        var builder = org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder()
+        org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder()
                 .setName(String.format("tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(DeleteTaskPushNotificationConfigRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder.class);
             String url = resourceUrl(effective.getName());
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
@@ -322,13 +316,12 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         checkNotNullParam("request", request);
         org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest.newBuilder();
         builder.setName("tasks/" + request.id());
-        var original = builder.build();
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(TaskResubscriptionRequest_v0_3.METHOD, builder,
                 agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         RestSSEEventListener_v0_3 sseEventListener = new RestSSEEventListener_v0_3(eventConsumer, errorConsumer);
         try {
-            var effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder.class, original);
+            org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder effective = effectivePayload(payloadAndHeaders, org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder.class);
             String url = resourceUrl(effective.getName()) + ":subscribe";
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
             CompletableFuture<Void> streamFuture = postBuilder.postAsyncSSE(
@@ -395,8 +388,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         return agentUrl + "/v1" + (name.startsWith("/") ? name : "/" + name);
     }
 
-    private static <T> T effectivePayload(PayloadAndHeaders_v0_3 payload, Class<T> type, T original) {
-        return payload.getPayload() == null ? original : type.cast(payload.getPayload());
+    private static <T> T effectivePayload(PayloadAndHeaders_v0_3 payload, Class<T> type) {
+        return type.cast(checkNotNullParam("interceptor payload", payload.getPayload()));
     }
 
     private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, MessageOrBuilder payload,
