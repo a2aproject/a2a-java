@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.extras.taskstore.database.jpa;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -279,6 +280,51 @@ public class JpaDatabaseTaskStoreTest {
         boolean isActive = jpaDatabaseTaskStore.isTaskActive("non-existent-task");
 
         assertEquals(false, isActive, "Non-existent task should be inactive");
+    }
+
+    @Test
+    @Transactional
+    public void testRepeatedSaveOfFinalTaskKeepsOriginalFinalizedAt() {
+        // A task that has been finalized once, then re-persisted (replicated replay,
+        // idempotent retry, late status message) must keep its original finalization
+        // instant. Otherwise the replication grace period restarts on every write and
+        // the task never becomes inactive.
+        Task finalTask = Task.builder()
+                .id("test-task-finalized-idempotent")
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+
+        taskStore.save(finalTask, true);
+
+        // Move the recorded finalization instant beyond the grace period.
+        // Truncated to seconds so the value survives any column precision losslessly.
+        java.time.Instant pastTime = java.time.Instant.now().minusSeconds(20)
+                .truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        entityManager.createQuery("UPDATE JpaTask j SET j.finalizedAt = :finalizedAt WHERE j.id = :id")
+                .setParameter("finalizedAt", pastTime)
+                .setParameter("id", "test-task-finalized-idempotent")
+                .executeUpdate();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
+        assertFalse(jpaDatabaseTaskStore.isTaskActive("test-task-finalized-idempotent"),
+                "Precondition: a final task past the grace period is inactive");
+
+        // Replay the very same final task
+        taskStore.save(finalTask, true);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        JpaTask stored = entityManager.find(JpaTask.class, "test-task-finalized-idempotent");
+        assertNotNull(stored);
+        assertEquals(pastTime, stored.getFinalizedAt(),
+                "Re-saving a final task must not overwrite its original finalizedAt");
+        assertFalse(jpaDatabaseTaskStore.isTaskActive("test-task-finalized-idempotent"),
+                "Re-saving a final task must not restart the replication grace period");
     }
 
     // ===== list() method tests =====
