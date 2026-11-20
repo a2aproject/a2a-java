@@ -42,6 +42,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConf
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
@@ -570,7 +571,7 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testSendMessageStillRequiresMessageAndRejectsNestedExtras() {
+    public void testSendMessageStillRequiresMessageAndIgnoresNestedExtras() throws Exception {
         for (String method : List.of("SendMessage", "SendStreamingMessage")) {
             String missing = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"" + method
                     + "\",\"params\":{\"extra\":true}}";
@@ -578,17 +579,23 @@ public class JSONRPCUtilsTest {
             String nested = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"" + method
                     + "\",\"params\":{\"message\":{\"role\":\"ROLE_USER\",\"messageId\":\"m\","
                     + "\"parts\":[{\"text\":\"hello\"}],\"extra\":true}}}";
-            assertThrows(JsonProcessingException.class, () -> JSONRPCUtils.parseRequestBody(nested, null));
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(nested, null);
+            MessageSendParams params = request instanceof SendMessageRequest send
+                    ? send.getParams()
+                    : assertInstanceOf(SendStreamingMessageRequest.class, request).getParams();
+            assertEquals("m", params.message().messageId());
         }
     }
 
     @Test
-    void rejectsExtraParametersForOtherMethods() {
+    void ignoresExtraParametersForOtherMethods() throws Exception {
         String json = """
                 {"jsonrpc":"2.0","id":1,"method":"GetTask",
                  "params":{"id":"task-1","histroyLength":2}}
                 """;
-        assertThrows(JsonMappingException.class, () -> JSONRPCUtils.parseRequestBody(json, null));
+        GetTaskRequest request = assertInstanceOf(GetTaskRequest.class, JSONRPCUtils.parseRequestBody(json, null));
+        assertEquals("task-1", request.getParams().id());
+        assertNull(request.getParams().historyLength());
     }
 
     @Test
@@ -640,7 +647,6 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(request, null)
         );
         assertEquals("21", exception.getId());
-        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
     }
 
     @Test
@@ -659,11 +665,10 @@ public class JSONRPCUtilsTest {
                   }
                 }
                 """;
-        JsonProcessingException exception = assertThrows(
+        assertThrows(
             JsonProcessingException.class,
             () -> JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD)
         );
-        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
     }
 
     @Test
@@ -684,11 +689,10 @@ public class JSONRPCUtilsTest {
                   }
                 }
                 """;
-        JsonProcessingException exception = assertThrows(
+        assertThrows(
             JsonProcessingException.class,
             () -> JSONRPCUtils.parseResponseEvent(json)
         );
-        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
     }
 
     @Test

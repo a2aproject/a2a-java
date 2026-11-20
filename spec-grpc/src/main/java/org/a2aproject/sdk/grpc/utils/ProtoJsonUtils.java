@@ -59,17 +59,6 @@ public final class ProtoJsonUtils {
     private ProtoJsonUtils() {
     }
 
-    /** Removes unknown top-level fields while preserving nested objects for strict parsing. */
-    public static JsonElement retainKnownFields(JsonElement json, Descriptor descriptor) {
-        if (!json.isJsonObject()) {
-            return json;
-        }
-        JsonObject result = json.getAsJsonObject().deepCopy();
-        result.keySet().removeIf(name -> descriptor.findFieldByName(name) == null
-                && descriptor.getFields().stream().noneMatch(field -> field.getJsonName().equals(name)));
-        return result;
-    }
-
     /**
      * Serializes a protobuf message to JSON using the supplied printer,
      * then removes HTML escaping.

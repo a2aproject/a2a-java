@@ -265,7 +265,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testSendMessageAllowsExtraTopLevelFieldsOnly() {
+    public void testSendMessageIgnoresExtraFieldsButRequiresMessage() {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         agentExecutorExecute = (context, emitter) -> emitter.sendMessage("response");
         String message = "\"message\":{\"messageId\":\"message-1\",\"role\":\"ROLE_USER\",\"parts\":[{\"text\":\"hello\"}]}";
@@ -277,8 +277,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         String nested = "{\"message\":{\"messageId\":\"message-1\",\"role\":\"ROLE_USER\","
                 + "\"parts\":[{\"text\":\"hello\"}],\"extra\":true}}";
-        Assertions.assertEquals(422, handler.sendMessage(callContext, "", nested).getStatusCode());
-        assertStreamingError(handler.sendStreamingMessage(callContext, "", nested));
+        Assertions.assertEquals(200, handler.sendMessage(callContext, "", nested).getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class,
+                handler.sendStreamingMessage(callContext, "", nested));
         Assertions.assertNotEquals(200, handler.sendMessage(callContext, "", "{\"extra\":true}").getStatusCode());
         assertStreamingError(handler.sendStreamingMessage(callContext, "", "{\"extra\":true}"));
     }
