@@ -103,6 +103,24 @@ import org.mockito.Mockito;
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
 public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
+    @Test
+    void rejectsInvalidClientRoleInSendAndStream() throws Exception {
+        AtomicBoolean executed = new AtomicBoolean();
+        agentExecutorExecute = (context, emitter) -> executed.set(true);
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        for (Message.Role role : List.of(Message.Role.ROLE_AGENT, Message.Role.ROLE_UNSPECIFIED)) {
+            Message message = Message.builder(MESSAGE).role(role).build();
+            MessageSendParams params = new MessageSendParams(message, null, null);
+            SendMessageResponse response = handler.onMessageSend(new SendMessageRequest("role", params), callContext);
+            assertInstanceOf(InvalidParamsError.class, response.getError());
+            List<SendStreamingMessageResponse> stream = drainStream(handler.onMessageSendStream(
+                    new SendStreamingMessageRequest("role-stream", params), callContext));
+            assertEquals(1, stream.size());
+            assertInstanceOf(InvalidParamsError.class, stream.get(0).getError());
+        }
+        assertFalse(executed.get());
+    }
+
     private final ServerCallContext callContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), "1.0");
 
     private static MessageSendConfiguration defaultConfiguration() {
@@ -1061,7 +1079,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Message message = Message.builder()
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
-                .role(Message.Role.ROLE_AGENT)
+                .role(Message.Role.ROLE_USER)
                 .parts(new TextPart("text"))
                 .build();
         SendMessageResponse smr
