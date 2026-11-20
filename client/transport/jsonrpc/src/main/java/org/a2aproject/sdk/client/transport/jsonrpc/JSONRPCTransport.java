@@ -68,6 +68,7 @@ import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransport implements ClientTransport {
@@ -328,7 +329,7 @@ public class JSONRPCTransport implements ClientTransport {
         // no-op
     }
 
-    private PayloadAndHeaders applyInterceptors(String methodName, @Nullable Object payload,
+    private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
                                                 @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
         if (interceptors != null && ! interceptors.isEmpty()) {
@@ -362,7 +363,7 @@ public class JSONRPCTransport implements ClientTransport {
                 .addHeader("Content-Type", "application/json")
                 .addHeader(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
                 .followRedirects(followRedirects)
-                .body(JSONRPCUtils.toJsonRPCRequest(requestId, method, (MessageOrBuilder) payloadAndHeaders.getPayload()));
+                .body(JSONRPCUtils.toJsonRPCRequest(requestId, method, InterceptorPayloads.cast(payloadAndHeaders.getPayload(), MessageOrBuilder.class)));
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
