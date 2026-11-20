@@ -37,6 +37,7 @@ import org.a2aproject.sdk.compat03.spec.FileWithUri_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.ImplicitOAuthFlow_v0_3;
+import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendConfiguration_v0_3;
@@ -739,15 +740,19 @@ public class ProtoUtils_v0_3 {
         }
 
         public static MessageSendParams_v0_3 messageSendParams(org.a2aproject.sdk.compat03.grpc.SendMessageRequestOrBuilder request) {
-            MessageSendParams_v0_3.Builder builder = new MessageSendParams_v0_3.Builder();
-            builder.message(message(request.getRequest()));
-            if (request.hasConfiguration()) {
-                builder.configuration(messageSendConfiguration(request.getConfiguration()));
+            try {
+                MessageSendParams_v0_3.Builder builder = new MessageSendParams_v0_3.Builder();
+                builder.message(message(request.getRequest()));
+                if (request.hasConfiguration()) {
+                    builder.configuration(messageSendConfiguration(request.getConfiguration()));
+                }
+                if (request.hasMetadata()) {
+                    builder.metadata(struct(request.getMetadata()));
+                }
+                return builder.build();
+            } catch (IllegalArgumentException e) {
+                throw new InvalidParamsError_v0_3(e.getMessage());
             }
-            if (request.hasMetadata()) {
-                builder.metadata(struct(request.getMetadata()));
-            }
-            return builder.build();
         }
 
         public static TaskPushNotificationConfig_v0_3 taskPushNotificationConfig(org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder request) {
