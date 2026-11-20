@@ -13,6 +13,14 @@
 
 A multi-module Maven library providing client and server support for A2A agent communication over JSON-RPC, gRPC, and REST transports.
 
+## SDK Release Support
+
+The **1.x SDK release line** is actively supported. The legacy **0.3.x SDK
+release line** is not actively supported. This refers to SDK releases, not
+protocol versions: the 1.x SDK provides
+[compatibility modules](docs/content/dev/compatibility.md) for communicating
+with A2A v0.3 clients and agents.
+
 ## Documentation
 
 Full documentation is available at **[a2aproject.github.io/a2a-java](https://a2aproject.github.io/a2a-java/)**.
