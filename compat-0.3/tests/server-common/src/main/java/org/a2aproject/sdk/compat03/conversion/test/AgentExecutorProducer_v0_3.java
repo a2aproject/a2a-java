@@ -38,6 +38,12 @@ public class AgentExecutorProducer_v0_3 {
                     return;
                 }
 
+                if (input.startsWith("queue-finalization:")) {
+                    agentEmitter.startWork();
+                    agentEmitter.complete();
+                    return;
+                }
+
                 // Local handling: creates a task with startWork() + addArtifact() + complete()
                 if (input.startsWith("a2a-local:")) {
                     String payload = input.substring("a2a-local:".length());

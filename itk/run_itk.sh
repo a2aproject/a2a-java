@@ -4,8 +4,7 @@
 # Everything that used to live here (runtime detection, image build, container
 # start, readiness poll, POST /run, result reporting, nightly metrics) is now
 # in a2a-itk/scripts/run_itk_shared.sh, which all five SDK repos share —
-# including the podman fallback this repo needs, which is why the shared
-# driver has it.
+# including support for Docker and Podman.
 #
 # Scenarios come from the shared role-based set in a2a-itk rather than a
 # scenarios.json in this repo — see a2a-itk/scenarios/traversal/.

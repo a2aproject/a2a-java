@@ -35,6 +35,7 @@ import org.a2aproject.sdk.server.AgentCardResolver;
 import org.a2aproject.sdk.server.AgentCardTransportValidator;
 import org.a2aproject.sdk.server.AgentCardValidator;
 import org.a2aproject.sdk.server.CachingAgentCardTransportValidator;
+import org.a2aproject.sdk.server.InputModeValidator;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
@@ -216,6 +217,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             ServerCallContext context = createCallContext(responseObserver, tenant);
             MessageSendParams params = FromProto.messageSendParams(
                     request.toBuilder().setTenant(canonicalTenant(context)).build());
+            InputModeValidator.validate(params.message(), Objects.requireNonNull(context.getEffectiveAgentCard()).card());
             EventKind taskOrMessage = getRequestHandler().onMessageSend(params, context);
             org.a2aproject.sdk.grpc.SendMessageResponse response = ToProto.taskOrMessage(taskOrMessage);
             responseObserver.onNext(response);
@@ -418,6 +420,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             installForkedContextWrapper(context);
             MessageSendParams params = FromProto.messageSendParams(
                     request.toBuilder().setTenant(canonicalTenant(context)).build());
+            InputModeValidator.validate(params.message(), Objects.requireNonNull(context.getEffectiveAgentCard()).card());
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
         } catch (TenantNotFoundException e) {

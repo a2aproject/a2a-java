@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +61,38 @@ public class TaskManagerTest {
     public void testGetTaskNonExistent() {
         Task retrieved = taskManager.getTask();
         assertNull(retrieved);
+    }
+
+    @Test
+    public void savingTaskReadsStoreOnlyOnce() throws A2AServerException {
+        TaskStore store = spy(new InMemoryTaskStore());
+        Message initial = Message.builder().role(Message.Role.ROLE_USER)
+                .messageId("opening").parts(List.of(new TextPart("hello"))).build();
+        TaskManager manager = new TaskManager(minimalTask.id(), minimalTask.contextId(), store, initial);
+
+        manager.saveTaskEvent(minimalTask, false);
+
+        verify(store, times(1)).get(minimalTask.id());
+        assertEquals("opening", store.get(minimalTask.id()).history().get(0).messageId());
+    }
+
+    @Test
+    void newTaskAddsOpeningMessageToExistingHistoryWithoutDuplicates() throws A2AServerException {
+        Message opening = Message.builder().role(Message.Role.ROLE_USER).messageId("opening")
+                .parts(List.of(new TextPart("hello"))).build();
+        Message reply = Message.builder().role(Message.Role.ROLE_AGENT).messageId("reply")
+                .parts(List.of(new TextPart("response"))).build();
+        TaskManager manager = new TaskManager(minimalTask.id(), minimalTask.contextId(), taskStore, opening);
+        manager.saveTaskEvent(Task.builder(minimalTask).history(List.of(reply)).build(), false);
+        assertEquals(List.of("opening", "reply"), manager.getTask().history().stream()
+                .map(Message::messageId).toList());
+
+        TaskStore anotherStore = new InMemoryTaskStore();
+        TaskManager another = new TaskManager(minimalTask.id(), minimalTask.contextId(), anotherStore, opening);
+        Message sameId = Message.builder(opening).contextId("normalized-context").build();
+        another.saveTaskEvent(Task.builder(minimalTask).history(List.of(sameId, reply)).build(), false);
+        assertEquals(List.of("opening", "reply"), another.getTask().history().stream()
+                .map(Message::messageId).toList());
     }
 
     @Test

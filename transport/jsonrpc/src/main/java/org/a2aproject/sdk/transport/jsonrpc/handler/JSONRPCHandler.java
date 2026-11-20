@@ -48,6 +48,7 @@ import org.a2aproject.sdk.server.CachingAgentCardTransportValidator;
 import org.a2aproject.sdk.server.EffectiveAgentCard;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.FixedInstance;
+import org.a2aproject.sdk.server.InputModeValidator;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -263,6 +264,7 @@ public class JSONRPCHandler {
             String tenant = request.getParams() != null ? request.getParams().tenant() : null;
             EffectiveAgentCard effective = preflight(tenant, context, AgentCardOperation.none());
             MessageSendParams params = request.getParams();
+            InputModeValidator.validate(params.message(), effective.card());
             EventKind taskOrMessage = requestHandler.onMessageSend(new MessageSendParams(params.message(),
                     params.configuration(), params.metadata(), effective.tenant()), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
@@ -315,6 +317,7 @@ public class JSONRPCHandler {
         try {
             EffectiveAgentCard effective = preflight(tenant, context, STREAMING);
             MessageSendParams params = request.getParams();
+            InputModeValidator.validate(params.message(), effective.card());
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onMessageSendStream(new MessageSendParams(params.message(), params.configuration(),
                             params.metadata(), effective.tenant()), context);

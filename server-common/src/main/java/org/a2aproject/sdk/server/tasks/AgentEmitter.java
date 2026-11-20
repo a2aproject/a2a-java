@@ -103,6 +103,7 @@ public class AgentEmitter {
     private final String taskId;
     private final String contextId;
     private final AtomicBoolean terminalStateReached = new AtomicBoolean(false);
+    private final AtomicBoolean taskAssociated;
 
     /**
      * Creates a new AgentEmitter for the given request context and event queue.
@@ -114,6 +115,7 @@ public class AgentEmitter {
         this.eventQueue = eventQueue;
         this.taskId = context.getTaskId();
         this.contextId = context.getContextId();
+        this.taskAssociated = new AtomicBoolean(context.getTask() != null);
     }
 
     /**
@@ -144,6 +146,7 @@ public class AgentEmitter {
         } else {
             eventQueue.enqueueEvent(event);
         }
+        taskAssociated.set(true);
     }
 
     private void enqueueTerminalEvent(Event event) {
@@ -233,6 +236,7 @@ public class AgentEmitter {
                 .lastChunk(lastChunk)
                 .build();
         eventQueue.enqueueEvent(event);
+        taskAssociated.set(true);
     }
 
     /**
@@ -524,22 +528,22 @@ public class AgentEmitter {
 
     /**
      * Sends a message with parts and metadata to the client.
-     * Creates an agent message with the current task and context IDs (if available)
-     * and enqueues it to the event queue.
+     * Creates an agent message with the current context ID and, if a task already exists
+     * or a task event has been emitted, the task ID. Enqueues it to the event queue.
      *
      * @param parts the message parts to send
      * @param metadata optional metadata to attach to the message
      */
     public void sendMessage(List<Part<?>> parts, @Nullable Map<String, Object> metadata) {
-        Message message = newAgentMessage(parts, metadata);
-        eventQueue.enqueueEvent(message);
+        sendMessage(newAgentMessage(parts, metadata));
     }
 
     /**
      * Sends an existing Message object directly to the client.
      * <p>
      * Use this when you need to forward or echo an existing message without creating a new one.
-     * The message is enqueued as-is, preserving its messageId, metadata, and all other fields.
+     * The message is enqueued preserving its fields, except that its task ID is omitted
+     * if no task exists or task event has been emitted.
      * </p>
      * <p>
      * <b>Note:</b> This is typically used for forwarding user messages or preserving specific
@@ -566,7 +570,8 @@ public class AgentEmitter {
             LOGGER.error("Message contextId mismatch: expected={}, actual={}", contextId, message.contextId());
             throw new IllegalArgumentException("Message contextId does not match the emitter's contextId");
         }
-        eventQueue.enqueueEvent(message);
+        eventQueue.enqueueEvent(!taskAssociated.get() && message.taskId() != null
+                ? Message.builder(message).taskId(null).build() : message);
     }
 
     /**
@@ -597,6 +602,7 @@ public class AgentEmitter {
      */
     public void addTask(Task task) {
         eventQueue.enqueueEvent(task);
+        taskAssociated.set(true);
     }
 
     /**
@@ -625,6 +631,9 @@ public class AgentEmitter {
      */
     public void emitEvent(Event event) {
         eventQueue.enqueueEvent(event);
+        if (event instanceof Task || event instanceof TaskStatusUpdateEvent || event instanceof TaskArtifactUpdateEvent) {
+            taskAssociated.set(true);
+        }
     }
 
     /**

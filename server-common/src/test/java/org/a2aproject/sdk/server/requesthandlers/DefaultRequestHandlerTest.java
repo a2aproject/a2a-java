@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.server.requesthandlers;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -991,6 +992,105 @@ public class DefaultRequestHandlerTest {
         assertNull(taskStore.get(""), "No task should ever be stored under the empty-string id");
     }
 
+    @Test
+    void streamingMessageBeforeTaskPreservesOpeningHistory() throws Exception {
+        CountDownLatch taskPersisted = new CountDownLatch(1);
+        AtomicReference<String> taskId = new AtomicReference<>();
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String id, Event event) {
+                if (event instanceof TaskStatusUpdateEvent) {
+                    taskPersisted.countDown();
+                }
+            }
+            @Override
+            public void onTaskFinalized(String id) {
+            }
+        });
+        agentExecutorExecute = (context, emitter) -> {
+            taskId.set(context.getTaskId());
+            emitter.sendMessage(List.of(new TextPart("first")), null);
+            emitter.complete();
+        };
+        Message opening = Message.builder().messageId("opening")
+                .role(Message.Role.ROLE_USER).parts(new TextPart("hello")).build();
+        MessageSendParams params = MessageSendParams.builder().message(opening).build();
+        CountDownLatch done = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        List<StreamingEventKind> events = new java.util.concurrent.CopyOnWriteArrayList<>();
+        requestHandler.onMessageSendStream(params, contextWithEffectiveCard(true)).subscribe(new Flow.Subscriber<>() {
+            public void onSubscribe(Flow.Subscription subscription) { subscription.request(Long.MAX_VALUE); }
+            public void onNext(StreamingEventKind event) { events.add(event); }
+            public void onError(Throwable throwable) { error.set(throwable); done.countDown(); }
+            public void onComplete() { done.countDown(); }
+        });
+        assertTrue(done.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        assertInstanceOf(Message.class, events.get(0));
+        assertTrue(taskPersisted.await(5, TimeUnit.SECONDS));
+        assertNotNull(taskId.get());
+        assertEquals("opening", taskStore.get(taskId.get()).history().get(0).messageId());
+    }
+
+    @Test
+    void streamingFullTaskMatchesPersistedHistory() throws Exception {
+        Message reply = Message.builder().messageId("reply").role(Message.Role.ROLE_AGENT)
+                .parts(new TextPart("response")).build();
+        agentExecutorExecute = (context, emitter) -> emitter.addTask(emitter.taskBuilder()
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).history(List.of(reply)).build());
+        Message opening = Message.builder().messageId("opening").role(Message.Role.ROLE_USER)
+                .parts(new TextPart("hello")).build();
+        CountDownLatch done = new CountDownLatch(1);
+        AtomicReference<Task> streamed = new AtomicReference<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        requestHandler.onMessageSendStream(MessageSendParams.builder().message(opening).build(),
+                contextWithEffectiveCard(true)).subscribe(new Flow.Subscriber<>() {
+            public void onSubscribe(Flow.Subscription subscription) { subscription.request(Long.MAX_VALUE); }
+            public void onNext(StreamingEventKind event) {
+                if (event instanceof Task task) {
+                    streamed.set(task);
+                }
+            }
+            public void onError(Throwable throwable) { error.set(throwable); done.countDown(); }
+            public void onComplete() { done.countDown(); }
+        });
+        assertTrue(done.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        Task task = streamed.get();
+        assertNotNull(task);
+        assertEquals(List.of("opening", "reply"), task.history().stream().map(Message::messageId).toList());
+        assertEquals(taskStore.get(task.id()), task);
+    }
+
+    @Test
+    void initialMessageIsClearedWhenAgentEmitsNothing() throws Exception {
+        CountDownLatch finished = new CountDownLatch(1);
+        agentExecutorExecute = (context, emitter) -> finished.countDown();
+        MessageSendParams params = MessageSendParams.builder().message(Message.builder()
+                .messageId("no-event").role(Message.Role.ROLE_USER).parts(new TextPart("hello")).build()).build();
+        requestHandler.onMessageSendStream(params, contextWithEffectiveCard(true));
+        assertTrue(finished.await(5, TimeUnit.SECONDS));
+        assertInitialMessagesEventuallyEmpty();
+    }
+
+    @Test
+    void initialMessageIsClearedWhenExecutorSetupFails() throws Exception {
+        requestHandler = buildHandlerWithRouter(tenant -> { throw new IllegalStateException("setup failed"); });
+        MessageSendParams params = MessageSendParams.builder().message(Message.builder()
+                .messageId("setup-failure").role(Message.Role.ROLE_USER).parts(new TextPart("hello")).build()).build();
+        assertThrows(IllegalStateException.class,
+                () -> requestHandler.onMessageSendStream(params, contextWithEffectiveCard(true)));
+        assertInitialMessagesEventuallyEmpty();
+    }
+
+    private void assertInitialMessagesEventuallyEmpty() throws Exception {
+        var field = MainEventBusProcessor.class.getDeclaredField("initialMessages");
+        field.setAccessible(true);
+        Map<?, ?> pending = (Map<?, ?>) field.get(mainEventBusProcessor);
+        await().atMost(5, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertTrue(pending.isEmpty(), "opening messages should be cleared"));
+    }
+
     /**
      * Streaming counterpart of {@link #testSendMessage_WithBlankTaskId_TreatedAsNewTask(String)}.
      */
@@ -1261,6 +1361,20 @@ public class DefaultRequestHandlerTest {
 
         assertEquals(taskId, result.id());
         assertEquals("http://example.com/get-default-config-id", result.url());
+    }
+
+    @Test
+    void testGetTaskPushNotificationConfigReturnsTaskNotFoundWhenNoConfigExists() throws Exception {
+        String taskId = "get-missing-config";
+        taskStore.save(Task.builder()
+                .id(taskId)
+                .contextId("ctx-get-missing-config")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                .build(), false);
+
+        assertThrows(TaskNotFoundError.class,
+                () -> requestHandler.onGetTaskPushNotificationConfig(
+                        new GetTaskPushNotificationConfigParams(taskId, "missing-config"), NULL_CONTEXT));
     }
 
     @ParameterizedTest

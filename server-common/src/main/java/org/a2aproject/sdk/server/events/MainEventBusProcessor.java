@@ -20,6 +20,7 @@ import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.InternalError;
+import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
@@ -89,6 +90,13 @@ public class MainEventBusProcessor implements Runnable {
      */
     private final ConcurrentHashMap<String, CompletableFuture<Void>> pushNotificationChains = new ConcurrentHashMap<>();
 
+    /**
+     * Initial client messages for tasks that have not emitted their first event yet. Event
+     * persistence creates its own TaskManager, so this preserves the message that opened a task
+     * when that first event creates the task in the TaskStore.
+     */
+    private final ConcurrentHashMap<String, Message> initialMessages = new ConcurrentHashMap<>();
+
     private MainEventBus eventBus;
 
     private TaskStore taskStore;
@@ -128,6 +136,21 @@ public class MainEventBusProcessor implements Runnable {
      */
     public void setCallback(MainEventBusProcessorCallback callback) {
         this.callback = callback != null ? callback : MainEventBusProcessorCallback.NOOP;
+    }
+
+    /**
+     * Registers the message that opens a new task until its first event is persisted.
+     *
+     * @param taskId the new task identifier
+     * @param message the opening client message
+     */
+    public void registerInitialMessage(String taskId, Message message) {
+        initialMessages.put(taskId, message);
+    }
+
+    /** Remove a registration after all events already submitted by the agent are processed. */
+    public void clearInitialMessageAfterEvents(String taskId) {
+        eventBus.submit(() -> initialMessages.remove(taskId));
     }
 
     /**
@@ -198,10 +221,12 @@ public class MainEventBusProcessor implements Runnable {
         while (running) {
             try {
                 LOGGER.debug("MainEventBusProcessor: Waiting for event from MainEventBus...");
-                MainEventBusContext context = eventBus.take();
-                LOGGER.debug("MainEventBusProcessor: Retrieved event for task {} from MainEventBus",
-                            context.taskId());
-                processEvent(context);
+                Object item = eventBus.take();
+                if (item instanceof MainEventBusContext context) {
+                    processEvent(context);
+                } else if (item instanceof Runnable action) {
+                    action.run();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOGGER.info("MainEventBusProcessor interrupted, shutting down");
@@ -225,16 +250,23 @@ public class MainEventBusProcessor implements Runnable {
 
         Event eventToDistribute = null;
         UpdateResult updateResult = null;
+        boolean persisted = false;
         boolean isReplicated = context.eventQueueItem().isReplicated();
         try {
             // Step 1: Update TaskStore FIRST (persistence before clients see it)
             // If this throws, we distribute an error to ensure "persist before client visibility"
 
             try {
-                updateResult = updateTaskStore(taskId, event, isReplicated);
+                Message initialMessage = initialMessages.get(taskId);
+                updateResult = updateTaskStore(taskId, event, isReplicated, initialMessage);
+                if (event instanceof Task || event instanceof TaskStatusUpdateEvent
+                        || event instanceof TaskArtifactUpdateEvent || event instanceof A2AError) {
+                    initialMessages.remove(taskId);
+                }
                 boolean isFinal = updateResult.isFinal();
 
-                eventToDistribute = event; // Success - distribute original event
+                eventToDistribute = event instanceof Task && updateResult.taskSnapshot() != null
+                        ? updateResult.taskSnapshot() : event;
 
                 // Trigger replication AFTER successful persistence
                 // SKIP replication if task is final - ReplicatedQueueManager handles this via TaskFinalizedEvent
@@ -243,11 +275,13 @@ public class MainEventBusProcessor implements Runnable {
                     EventEnqueueHook hook = mainQueue.getEnqueueHook();
                     if (hook != null) {
                         LOGGER.debug("Triggering replication hook for task {} after successful persistence", taskId);
-                        hook.onEnqueue(context.eventQueueItem());
+                        hook.onEnqueue(eventToDistribute == event ? context.eventQueueItem()
+                                : new LocalEventQueueItem(eventToDistribute));
                     }
                 } else {
                     LOGGER.debug("Task {} is final - skipping replication hook (handled by ReplicatedQueueManager)", taskId);
                 }
+                persisted = true;
             } catch (InternalError e) {
                 // Persistence failed - create error event to distribute instead
                 LOGGER.error("Failed to persist event for task {}, distributing error to clients", taskId, e);
@@ -263,7 +297,8 @@ public class MainEventBusProcessor implements Runnable {
             // Skip push notifications for replicated events to avoid duplicate notifications in multi-instance deployments
             // Push notifications are sent for all StreamingEventKind events (Task, Message, TaskStatusUpdateEvent, TaskArtifactUpdateEvent)
             // per A2A spec section 4.3.3
-            if (!isReplicated && eventToDistribute == event && event instanceof StreamingEventKind streamingEvent) {
+            if (!isReplicated && persisted && eventToDistribute instanceof StreamingEventKind streamingEvent
+                    && (!(eventToDistribute instanceof Message message) || message.taskId() != null)) {
                 // Send the streaming event directly - it will be wrapped in StreamResponse format by PushNotificationSender
                 sendPushNotification(taskId, streamingEvent, updateResult != null ? updateResult.taskSnapshot() : null);
             }
@@ -299,7 +334,7 @@ public class MainEventBusProcessor implements Runnable {
 
                     // Step 5: If this is a final event, notify task finalization
                     // Only for successful persistence (not for errors)
-                    if (eventToDistribute == event && isFinalEvent(event)) {
+                    if (persisted && isFinalEvent(eventToDistribute)) {
                         callback.onTaskFinalized(taskId);
                     }
                 }
@@ -329,13 +364,14 @@ public class MainEventBusProcessor implements Runnable {
      * @return true if the task reached a final state, false otherwise
      * @throws InternalError if persistence fails
      */
-    private UpdateResult updateTaskStore(String taskId, Event event, boolean isReplicated) throws InternalError {
+    private UpdateResult updateTaskStore(String taskId, Event event, boolean isReplicated,
+            @Nullable Message initialMessage) throws InternalError {
         try {
             // Extract contextId from event (all relevant events have it)
             String contextId = extractContextId(event);
 
             // Create temporary TaskManager instance for this event
-            TaskManager taskManager = new TaskManager(taskId, contextId, taskStore, null);
+            TaskManager taskManager = new TaskManager(taskId, contextId, taskStore, initialMessage);
 
             // Use TaskManager.process() - handles all event types with existing logic
             AtomicReference<Task> taskSnapshot = new AtomicReference<>();
