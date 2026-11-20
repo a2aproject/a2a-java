@@ -764,10 +764,8 @@ public class RestHandler {
                 throw new InvalidRequestError("Request body is required");
             }
             validate(body);
-            if (builder instanceof org.a2aproject.sdk.grpc.SendMessageRequest.Builder) {
-                body = ProtoJsonUtils.retainKnownFields(JsonParser.parseString(body), builder.getDescriptorForType()).toString();
-            }
-            JsonFormat.parser().merge(body, builder);
+            // Spec Section 5.7: ignore unrecognized field names for forward compatibility.
+            ProtoJsonUtils.mergeIgnoringUnknownFields(body, builder);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
                     body != null ? body.length() : 0);

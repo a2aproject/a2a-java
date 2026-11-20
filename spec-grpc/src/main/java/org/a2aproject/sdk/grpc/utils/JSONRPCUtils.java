@@ -263,7 +263,7 @@ public class JSONRPCUtils {
             }
             case SEND_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
-                parseSendMessageParams(params, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
@@ -293,7 +293,7 @@ public class JSONRPCUtils {
             }
             case SEND_STREAMING_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
-                parseSendMessageParams(params, builder, id);
+                parseRequestBody(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
@@ -465,14 +465,9 @@ public class JSONRPCUtils {
     }
 
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
-        parseJsonString(jsonRpc.toString(), builder, id);
-    }
-
-    // SendMessage permits extra top-level operation parameters; nested protocol objects remain strict.
-    private static void parseSendMessageParams(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id)
-            throws JsonProcessingException {
-        JsonElement params = ProtoJsonUtils.retainKnownFields(jsonRpc, builder.getDescriptorForType());
-        parseJsonString(params.toString(), builder, id);
+        // Spec Section 5.7: ignore unrecognized field names for forward compatibility. The values
+        // of recognized fields, such as enum values, are still checked by the strict parser.
+        parseJsonString(ProtoJsonUtils.removeUnknownFields(jsonRpc, builder.getDescriptorForType()).toString(), builder, id);
     }
 
     public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {

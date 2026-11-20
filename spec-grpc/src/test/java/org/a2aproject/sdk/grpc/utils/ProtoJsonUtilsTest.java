@@ -2,12 +2,19 @@ package org.a2aproject.sdk.grpc.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
+import org.a2aproject.sdk.grpc.AgentCard;
+import org.a2aproject.sdk.grpc.Role;
+import org.a2aproject.sdk.grpc.SendMessageRequest;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.TextPart;
@@ -107,5 +114,95 @@ public class ProtoJsonUtilsTest {
         var parsed = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
         JsonFormat.parser().merge(json, parsed);
         assertEquals(text, parsed.getMessage().getParts(0).getText());
+    }
+
+    @Test
+    public void removeUnknownFields_removesUnknownKeysAtEveryLevel() {
+        JsonElement json = JsonParser.parseString("""
+            {
+              "message": {
+                "messageId": "message-1234",
+                "context_id": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{"text": "hi", "unknownPartField": 1}],
+                "metadata": {"unknownLooking": {"nested": true}},
+                "unknownMessageField": "x"
+              },
+              "unknownParam": 42
+            }
+            """);
+        String before = json.toString();
+
+        JsonElement result = ProtoJsonUtils.removeUnknownFields(json, SendMessageRequest.getDescriptor());
+
+        // Both the JSON name and the proto name of a field are kept, and the contents of a
+        // google.protobuf.Struct are not described by a descriptor, so they are kept too.
+        assertEquals(JsonParser.parseString("""
+            {
+              "message": {
+                "messageId": "message-1234",
+                "context_id": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{"text": "hi"}],
+                "metadata": {"unknownLooking": {"nested": true}}
+              }
+            }
+            """), result);
+        assertEquals(before, json.toString(), "the input must not be modified");
+    }
+
+    @Test
+    public void removeUnknownFields_removesUnknownKeysInMapValues() {
+        JsonElement json = JsonParser.parseString("""
+            {
+              "name": "agent",
+              "securitySchemes": {
+                "bearer": {
+                  "httpAuthSecurityScheme": {"scheme": "Bearer", "unknownSchemeField": 1},
+                  "unknownSecuritySchemeField": 2
+                }
+              }
+            }
+            """);
+
+        JsonElement result = ProtoJsonUtils.removeUnknownFields(json, AgentCard.getDescriptor());
+
+        assertEquals(JsonParser.parseString("""
+            {
+              "name": "agent",
+              "securitySchemes": {
+                "bearer": {
+                  "httpAuthSecurityScheme": {"scheme": "Bearer"}
+                }
+              }
+            }
+            """), result);
+    }
+
+    @Test
+    public void mergeIgnoringUnknownFields_ignoresUnknownFields() throws Exception {
+        SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
+
+        ProtoJsonUtils.mergeIgnoringUnknownFields("""
+            {"message": {"messageId": "m1", "role": "ROLE_USER", "parts": [{"text": "hi"}], "unknown": 1}, "unknownParam": 2}
+            """, builder);
+
+        assertEquals("m1", builder.getMessage().getMessageId());
+        assertEquals(Role.ROLE_USER, builder.getMessage().getRole());
+    }
+
+    @Test
+    public void mergeIgnoringUnknownFields_rejectsUnrecognizedEnumValue() {
+        InvalidProtocolBufferException exception = assertThrows(InvalidProtocolBufferException.class,
+            () -> ProtoJsonUtils.mergeIgnoringUnknownFields("""
+                {"message": {"messageId": "m1", "role": "NOT_A_ROLE", "parts": [{"text": "hi"}]}}
+                """, SendMessageRequest.newBuilder()));
+        assertTrue(exception.getMessage().contains("NOT_A_ROLE"), exception.getMessage());
+    }
+
+    @Test
+    public void mergeIgnoringUnknownFields_rejectsMalformedJson() {
+        assertThrows(InvalidProtocolBufferException.class,
+            () -> ProtoJsonUtils.mergeIgnoringUnknownFields("{\"message\": ", SendMessageRequest.newBuilder()));
     }
 }
