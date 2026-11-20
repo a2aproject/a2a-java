@@ -89,8 +89,11 @@ public class InMemoryQueueManager implements QueueManager {
         if (existing == null) {
             throw new NoTaskQueueException();
         }
-        // Close the queue to stop EventConsumer polling loop
         LOGGER.debug("Closing queue {} for task {}", System.identityHashCode(existing), taskId);
+        // A graceful MainQueue close leaves its children open, and EventConsumers poll the children
+        if (existing instanceof EventQueue.MainQueue mainQueue) {
+            mainQueue.closeChildren();
+        }
         existing.close();
     }
 
