@@ -150,10 +150,16 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
         builder.setId(taskQueryParams.id());
+        if (taskQueryParams.historyLength() != null) {
+            builder.setHistoryLength(taskQueryParams.historyLength());
+        }
+        if (taskQueryParams.tenant() != null) {
+            builder.setTenant(taskQueryParams.tenant());
+        }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_METHOD, builder, agentCard, context);
         try {
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, taskQueryParams.tenant()));
-            if (taskQueryParams.historyLength() != null && taskQueryParams.historyLength() > 0) {
+            if (taskQueryParams.historyLength() != null) {
                 url.append(String.format("/tasks/%s?historyLength=%d", taskQueryParams.id(), taskQueryParams.historyLength()));
             } else {
                 url.append(String.format("/tasks/%1s", taskQueryParams.id()));

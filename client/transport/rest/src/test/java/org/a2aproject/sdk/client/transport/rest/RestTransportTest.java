@@ -204,6 +204,52 @@ public class RestTransportTest {
      * Test of getTask method, of class JSONRestTransport.
      */
     @Test
+    public void getTaskIncludesZeroHistoryLength() throws Exception {
+        AtomicReference<Object> capturedPayload = new AtomicReference<>();
+        ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
+            @Override
+            public PayloadAndHeaders intercept(String methodName, Object payload,
+                    java.util.Map<String, String> headers, AgentCard agentCard,
+                    ClientCallContext clientCallContext) {
+                capturedPayload.set(payload);
+                return new PayloadAndHeaders(payload, headers);
+            }
+        };
+        this.server.when(
+                request()
+                        .withMethod("GET")
+                        .withPath("/acme/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .withQueryStringParameter("historyLength", "0")
+        ).respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
+
+        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
+        RestTransport instance = new RestTransport(null, CARD, agentInterface, List.of(capturingInterceptor));
+        Task task = instance.getTask(new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64", 0, "acme"), null);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        org.a2aproject.sdk.grpc.GetTaskRequest proto =
+                ((org.a2aproject.sdk.grpc.GetTaskRequest.Builder) capturedPayload.get()).build();
+        assertTrue(proto.hasHistoryLength());
+        assertEquals(0, proto.getHistoryLength());
+        assertEquals("acme", proto.getTenant());
+    }
+
+    @Test
+    public void getTaskOmitsUnsetHistoryLength() throws Exception {
+        var requestMatcher = request()
+                .withMethod("GET")
+                .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64");
+        this.server.when(requestMatcher)
+                .respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
+
+        RestTransport instance = new RestTransport(CARD);
+        instance.getTask(new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
+
+        var requests = this.server.retrieveRecordedRequests(requestMatcher);
+        assertEquals(1, requests.length);
+        assertTrue(requests[0].getQueryStringParameterList().isEmpty());
+    }
+
+    @Test
     public void testGetTask() throws Exception {
         this.server.when(
                 request()
