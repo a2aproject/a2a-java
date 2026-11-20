@@ -24,9 +24,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.IdJsonMappingException;
@@ -486,8 +489,65 @@ public class JSONRPCUtils {
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
             LOGGER.log(Level.FINE, "Proto parsing error details", e);
+            String message = e.getMessage();
+            if (message != null && message.startsWith("Invalid enum value:") && message.contains(" for enum type: ")) {
+                int typeIndex = message.lastIndexOf(" for enum type: ");
+                String enumType = message.substring(typeIndex + " for enum type: ".length());
+                String value = message.substring("Invalid enum value:".length(), typeIndex).trim();
+                try {
+                    String field = findEnumField(JsonParser.parseString(body), builder.getDescriptorForType(), enumType, value);
+                    if (field != null) {
+                        throw new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted("Invalid value for field " + field), id);
+                    }
+                } catch (JsonSyntaxException ignored) {
+                    // Fall through to generic conversion.
+                }
+            }
             throw convertProtoBufExceptionToJsonProcessingException(e, id);
         }
+    }
+
+    private static @Nullable String findEnumField(JsonElement json, Descriptor descriptor, String enumType, String value) {
+        if (json.isJsonArray()) {
+            for (JsonElement element : json.getAsJsonArray()) {
+                String field = findEnumField(element, descriptor, enumType, value);
+                if (field != null) {
+                    return field;
+                }
+            }
+        } else if (json.isJsonObject()) {
+            for (FieldDescriptor field : descriptor.getFields()) {
+                JsonObject object = json.getAsJsonObject();
+                String name = object.has(field.getJsonName()) ? field.getJsonName() : field.getName();
+                JsonElement element = object.get(name);
+                if (element == null || element.isJsonNull()) {
+                    continue;
+                }
+                if (field.getJavaType() == FieldDescriptor.JavaType.ENUM
+                        && field.getEnumType().getFullName().equals(enumType) && containsEnumValue(element, value)) {
+                    return name;
+                }
+                if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+                    String nested = findEnumField(element, field.getMessageType(), enumType, value);
+                    if (nested != null) {
+                        return nested;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean containsEnumValue(JsonElement element, String value) {
+        if (element.isJsonArray()) {
+            for (JsonElement item : element.getAsJsonArray()) {
+                if (containsEnumValue(item, value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return element.isJsonPrimitive() && element.getAsString().equals(value);
     }
 
     /**
@@ -524,8 +584,17 @@ public class JSONRPCUtils {
             return new JsonProcessingException(ERROR_MESSAGE.formatted("unknown parsing error"));
         }
 
+        if (message.startsWith("Invalid enum value:")) {
+            String value = message.substring("Invalid enum value:".length());
+            int typeIndex = value.lastIndexOf(" for enum type:");
+            if (typeIndex >= 0) {
+                value = value.substring(0, typeIndex);
+            }
+            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted("Invalid enum value: " + value.trim()), id);
+        }
+
         // Extract field name if present in error message - check common prefixes
-        String[] prefixes = {"Cannot find field: ", "Invalid value for", "Invalid enum value:", "Failed to parse"};
+        String[] prefixes = {"Cannot find field: ", "Invalid value for", "Failed to parse"};
         for (String prefix : prefixes) {
             if (message.contains(prefix)) {
                 return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
