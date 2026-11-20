@@ -28,6 +28,81 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(5)
 class GrpcTransportTest {
 
+    @Test
+    void interceptorReplacementReachesGrpcServer() throws Exception {
+        var interceptor = new org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor() {
+            @Override
+            public org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders intercept(String method, Object payload,
+                    java.util.Map<String, String> headers, AgentCard card,
+                    org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext context) {
+                var request = (GetTaskPushNotificationConfigRequest) payload;
+                return new org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders(
+                        request.toBuilder().setTaskId("changed").build(), headers);
+            }
+        };
+        var transport = new GrpcTransport(channel, CARD, null, List.of(interceptor));
+        transport.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(TASK_ID, "config"), null);
+        assertEquals("changed", receivedRequest.get().getTaskId());
+    }
+
+    @Test
+    void interceptorBuilderAndNullPayloadAreSupported() throws Exception {
+        for (boolean useNull : List.of(false, true)) {
+            var interceptor = new org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor() {
+                @Override
+                public org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders intercept(String method, Object payload,
+                        java.util.Map<String, String> headers, AgentCard card,
+                        org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext context) {
+                    var request = (GetTaskPushNotificationConfigRequest) payload;
+                    return new org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders(
+                            useNull ? null : request.toBuilder().setTaskId("builder"), headers);
+                }
+            };
+            var transport = new GrpcTransport(channel, CARD, null, List.of(interceptor));
+            transport.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(TASK_ID, "config"), null);
+            assertEquals(useNull ? TASK_ID : "builder", receivedRequest.get().getTaskId());
+        }
+    }
+
+    @Test
+    void interceptorRejectsPayloadOfWrongType() {
+        var interceptor = new org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor() {
+            @Override
+            public org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders intercept(String method, Object payload,
+                    java.util.Map<String, String> headers, AgentCard card,
+                    org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext context) {
+                return new org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders("wrong", headers);
+            }
+        };
+        var transport = new GrpcTransport(channel, CARD, null, List.of(interceptor));
+        org.junit.jupiter.api.Assertions.assertThrows(ClassCastException.class, () ->
+                transport.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(TASK_ID, "config"), null));
+        org.junit.jupiter.api.Assertions.assertNull(receivedRequest.get());
+    }
+
+    @Test
+    void streamUsesInterceptorPayloadAndHeaders() throws Exception {
+        for (boolean useNull : List.of(false, true)) {
+            var interceptor = new org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor() {
+                @Override
+                public org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders intercept(String method, Object payload,
+                        java.util.Map<String, String> headers, AgentCard card,
+                        org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext context) {
+                    var request = (org.a2aproject.sdk.grpc.SubscribeToTaskRequest) payload;
+                    var updated = new java.util.HashMap<>(headers);
+                    updated.put("x-test", "header-value");
+                    return new org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders(
+                            useNull ? null : request.toBuilder().setId("changed").setTenant("new-tenant").build(), updated);
+                }
+            };
+            var transport = new GrpcTransport(channel, CARD, "default-tenant", List.of(interceptor));
+            transport.subscribeToTask(new org.a2aproject.sdk.spec.TaskIdParams(TASK_ID), event -> {}, error -> {}, null);
+            assertEquals(useNull ? TASK_ID : "changed", receivedSubscription.get().getId());
+            assertEquals(useNull ? "default-tenant" : "new-tenant", receivedSubscription.get().getTenant());
+            assertEquals("header-value", receivedHeader.get());
+        }
+    }
+
     private static final String TASK_ID = "task-1";
     private static final String CALLBACK_URL = "https://example.com/callback";
     private static final AgentCard CARD = AgentCard.builder()
@@ -42,6 +117,8 @@ class GrpcTransportTest {
             .build();
 
     private final AtomicReference<GetTaskPushNotificationConfigRequest> receivedRequest = new AtomicReference<>();
+    private final AtomicReference<org.a2aproject.sdk.grpc.SubscribeToTaskRequest> receivedSubscription = new AtomicReference<>();
+    private final AtomicReference<String> receivedHeader = new AtomicReference<>();
     private Server server;
     private ManagedChannel channel;
 
@@ -50,7 +127,13 @@ class GrpcTransportTest {
         String serverName = InProcessServerBuilder.generateName();
         server = InProcessServerBuilder.forName(serverName)
                 .directExecutor()
-                .addService(new A2AServiceGrpc.A2AServiceImplBase() {
+                .addService(io.grpc.ServerInterceptors.intercept(new A2AServiceGrpc.A2AServiceImplBase() {
+                    @Override
+                    public void subscribeToTask(org.a2aproject.sdk.grpc.SubscribeToTaskRequest request,
+                            StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> responseObserver) {
+                        receivedSubscription.set(request);
+                        responseObserver.onCompleted();
+                    }
                     @Override
                     public void getTaskPushNotificationConfig(GetTaskPushNotificationConfigRequest request,
                             StreamObserver<org.a2aproject.sdk.grpc.TaskPushNotificationConfig> responseObserver) {
@@ -62,7 +145,15 @@ class GrpcTransportTest {
                                 .build());
                         responseObserver.onCompleted();
                     }
-                })
+                }, new io.grpc.ServerInterceptor() {
+                    @Override
+                    public <ReqT, RespT> io.grpc.ServerCall.Listener<ReqT> interceptCall(
+                            io.grpc.ServerCall<ReqT, RespT> call, io.grpc.Metadata headers,
+                            io.grpc.ServerCallHandler<ReqT, RespT> next) {
+                        receivedHeader.set(headers.get(io.grpc.Metadata.Key.of("x-test", io.grpc.Metadata.ASCII_STRING_MARSHALLER)));
+                        return next.startCall(call, headers);
+                    }
+                }))
                 .build()
                 .start();
         channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
