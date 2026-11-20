@@ -51,7 +51,7 @@ public class AuthInterceptor extends ClientCallInterceptor {
     }
 
     @Override
-    public PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
+    public PayloadAndHeaders intercept(String methodName, Object payload, Map<String, String> headers,
                                        @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         Map<String, String> updatedHeaders = new HashMap<>(headers == null ? new HashMap<>() : headers);
         if (agentCard == null || agentCard.securityRequirements()== null || agentCard.securitySchemes() == null) {
@@ -70,10 +70,10 @@ public class AuthInterceptor extends ClientCallInterceptor {
                     }
                     if (securityScheme instanceof HTTPAuthSecurityScheme httpAuthSecurityScheme) {
                         String scheme = httpAuthSecurityScheme.scheme().toLowerCase(Locale.ROOT);
-                        if (scheme.equals(BEARER_SCHEME)) {
+                        if (BEARER_SCHEME.equals(scheme)) {
                             updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
                             return new PayloadAndHeaders(payload, updatedHeaders);
-                        } else if (scheme.equals(BASIC_SCHEME)) {
+                        } else if (BASIC_SCHEME.equals(scheme)) {
                             updatedHeaders.put(AUTHORIZATION, getBasicValue(credential));
                             return new PayloadAndHeaders(payload, updatedHeaders);
                         }

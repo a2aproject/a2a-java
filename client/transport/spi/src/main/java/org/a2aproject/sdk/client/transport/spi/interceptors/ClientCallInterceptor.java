@@ -16,12 +16,12 @@ public abstract class ClientCallInterceptor {
      * Intercept a client call before the request is sent.
      *
      * @param methodName the name of the protocol method (e.g., 'message/send')
-     * @param payload the request payload
+     * @param payload the non-null request payload
      * @param headers the headers to use
      * @param agentCard the agent card (may be {@code null})
      * @param clientCallContext the {@code ClientCallContext} for this call (may be {@code null})
-     * @return the potentially modified payload and headers
+     * @return the potentially modified payload and headers; the payload must not be null
      */
-    public abstract PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
+    public abstract PayloadAndHeaders intercept(String methodName, Object payload, Map<String, String> headers,
                                                 @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext);
 }
