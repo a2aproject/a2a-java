@@ -1,10 +1,9 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 
 /**
@@ -68,7 +67,7 @@ public record Artifact_v0_3(String artifactId, String name, String description, 
         }
 
         public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = Collections.unmodifiableMap(new HashMap<>(metadata));
+            this.metadata = Utils_v0_3.unmodifiableShallowMap(metadata);
             return this;
         }
 
