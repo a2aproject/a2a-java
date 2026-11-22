@@ -1108,9 +1108,13 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
         CountDownLatch streamEventLatch = new CountDownLatch(2);  // artifact-2 + completion
         List<UpdateEvent_v0_3> streamReceivedEvents = new CopyOnWriteArrayList<>();
         AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
+        AtomicBoolean streamReceivedInitialTask = new AtomicBoolean(false);
 
         BiConsumer<ClientEvent_v0_3, AgentCard_v0_3> streamConsumer = (event, agentCard) -> {
-            if (event instanceof TaskUpdateEvent_v0_3 tue) {
+            // Per A2A spec 3.1.2, the stream begins with the Task, then its updates
+            if (event instanceof TaskEvent_v0_3 && !streamReceivedInitialTask.get() && streamReceivedEvents.isEmpty()) {
+                streamReceivedInitialTask.set(true);
+            } else if (event instanceof TaskUpdateEvent_v0_3 tue) {
                 streamReceivedEvents.add(tue.getUpdateEvent());
                 streamEventLatch.countDown();
             } else {
@@ -1139,6 +1143,7 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
 
         assertFalse(resubUnexpectedEvent.get());
         assertFalse(streamUnexpectedEvent.get());
+        assertTrue(streamReceivedInitialTask.get(), "The send stream must begin with the Task");
         assertNull(resubErrorRef.get());
 
         // Both should have received 2 events: artifact-2 and completion
