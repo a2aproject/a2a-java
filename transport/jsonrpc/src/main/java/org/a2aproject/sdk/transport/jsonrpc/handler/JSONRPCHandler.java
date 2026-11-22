@@ -76,6 +76,7 @@ import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -308,14 +309,25 @@ public class JSONRPCHandler {
      * @param request the JSON-RPC request containing message params
      * @param context the server call context containing authentication and metadata
      * @return publisher of JSON-RPC response objects containing streaming events
+     * @throws UnsupportedOperationError if the agent card does not support streaming; no stream is opened
      * @see #onMessageSend(SendMessageRequest, ServerCallContext)
      * @see RequestHandler#onMessageSendStream(org.a2aproject.sdk.spec.MessageSendParams, ServerCallContext)
      */
     public Flow.Publisher<SendStreamingMessageResponse> onMessageSendStream(
-            SendStreamingMessageRequest request, ServerCallContext context) {
+            SendStreamingMessageRequest request, ServerCallContext context) throws A2AError {
         String tenant = request.getParams() != null ? request.getParams().tenant() : null;
+        EffectiveAgentCard effective;
         try {
-            EffectiveAgentCard effective = preflight(tenant, context, STREAMING);
+            effective = preflight(tenant, context, STREAMING);
+        } catch (UnsupportedOperationError e) {
+            // Thrown rather than streamed so that no stream is opened, as in RestHandler
+            throw e;
+        } catch (A2AError e) {
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
+        } catch (Throwable throwable) {
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), internalError(throwable)));
+        }
+        try {
             MessageSendParams params = request.getParams();
             InputModeValidator.validate(params.message(), effective.card());
             Flow.Publisher<StreamingEventKind> publisher =
@@ -404,6 +416,7 @@ public class JSONRPCHandler {
      * @param request the JSON-RPC request containing task ID params
      * @param context the server call context containing authentication and metadata
      * @return publisher of JSON-RPC response objects containing task updates
+     * @throws UnsupportedOperationError if the agent card does not support streaming; no stream is opened
      * @see RequestHandler#onSubscribeToTask(org.a2aproject.sdk.spec.TaskIdParams, ServerCallContext)
      * @see #onMessageSendStream(SendStreamingMessageRequest, ServerCallContext)
      */
@@ -413,6 +426,9 @@ public class JSONRPCHandler {
         EffectiveAgentCard effective;
         try {
             effective = preflight(tenant, context, STREAMING);
+        } catch (UnsupportedOperationError e) {
+            // Thrown rather than streamed so that no stream is opened, as in RestHandler
+            throw e;
         } catch (A2AError e) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         }
