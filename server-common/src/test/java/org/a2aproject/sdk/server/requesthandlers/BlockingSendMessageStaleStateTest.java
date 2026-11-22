@@ -2,11 +2,15 @@ package org.a2aproject.sdk.server.requesthandlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Predicate;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -74,6 +78,11 @@ class BlockingSendMessageStaleStateTest {
 
     private RequestHandler buildHandler(
             TaskStore taskStore, TaskStateProvider stateProvider, AgentExecutor agentExecutor) {
+        return buildHandler(taskStore, stateProvider, agentExecutor, 30);
+    }
+
+    private RequestHandler buildHandler(TaskStore taskStore, TaskStateProvider stateProvider,
+            AgentExecutor agentExecutor, int agentCompletionTimeoutSeconds) {
         MainEventBus mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager = new InMemoryQueueManager(stateProvider, mainEventBus);
         mainEventBusProcessor =
@@ -89,6 +98,7 @@ class BlockingSendMessageStaleStateTest {
                 .executor(internalExecutor)
                 .eventConsumerExecutor(internalExecutor)
                 .authorizationRequired(false)
+                .agentCompletionTimeoutSeconds(agentCompletionTimeoutSeconds)
                 .build();
     }
 
@@ -173,6 +183,63 @@ class BlockingSendMessageStaleStateTest {
                 "terminal states were already handled before the fix and must stay correct");
     }
 
+    @Test
+    void blockingSendReturnsATrailingArtifactEvenWhenItIsStillBeingPersisted() {
+        InMemoryTaskStore backing = new InMemoryTaskStore();
+        TaskStore slowStore = new SlowPersistTaskStore(backing, task -> !task.artifacts().isEmpty(),
+                SLOW_PERSIST_MILLIS);
+
+        RequestHandler handler = buildHandler(slowStore, backing, agent((context, emitter) -> {
+            emitter.startWork();
+            emitter.addArtifact(List.of(new TextPart("answer")), "answer-id", "answer", null);
+        }));
+
+        EventKind result = handler.onMessageSend(MessageSendParams.builder().message(MESSAGE).build(), CONTEXT);
+
+        assertInstanceOf(Task.class, result, "blocking send should return a Task");
+        Task returned = (Task) result;
+        assertEquals(TaskState.TASK_STATE_WORKING, returned.status().state(),
+                "an artifact-only tail does not change the state");
+        assertEquals(1, returned.artifacts().size(),
+                "the artifact the agent added last must be in the returned task");
+        assertEquals("answer-id", returned.artifacts().get(0).artifactId());
+    }
+
+    @Test
+    void blockingSendDoesNotWaitForTheQueueToDrainWhenTheAgentIsStillRunning() throws Exception {
+        InMemoryTaskStore backing = new InMemoryTaskStore();
+        // Persisting the artifact keeps an event in flight well past the agent completion timeout
+        long slowArtifactMillis = 4000;
+        TaskStore slowStore = new SlowPersistTaskStore(backing, task -> !task.artifacts().isEmpty(),
+                slowArtifactMillis);
+        CountDownLatch agentMayFinish = new CountDownLatch(1);
+
+        RequestHandler handler = buildHandler(slowStore, backing, agent((context, emitter) -> {
+            emitter.startWork();
+            emitter.addArtifact(List.of(new TextPart("partial")), "partial-id", "partial", null);
+            try {
+                // Still running when the handler gives up waiting for it
+                agentMayFinish.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }), 1);
+
+        try {
+            long startNanos = System.nanoTime();
+            EventKind result = handler.onMessageSend(MessageSendParams.builder().message(MESSAGE).build(), CONTEXT);
+            long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+
+            assertInstanceOf(Task.class, result, "blocking send should return a Task");
+            assertEquals(TaskState.TASK_STATE_WORKING, ((Task) result).status().state());
+            // 1s agent timeout plus consumption; waiting for the drain would take about 4s
+            assertTrue(elapsedMillis < 3000,
+                    "the handler waited for in-flight events of an agent that is still running: " + elapsedMillis + "ms");
+        } finally {
+            agentMayFinish.countDown();
+        }
+    }
+
     /**
      * Wraps a store and slows down the save of one particular task state, so that the last event
      * of an agent run is still being persisted when the handler reads the task back.
@@ -180,18 +247,22 @@ class BlockingSendMessageStaleStateTest {
     private static final class SlowPersistTaskStore implements TaskStore {
 
         private final InMemoryTaskStore delegate;
-        private final TaskState slowState;
+        private final Predicate<Task> slow;
         private final long delayMillis;
 
         SlowPersistTaskStore(InMemoryTaskStore delegate, TaskState slowState, long delayMillis) {
+            this(delegate, task -> task.status() != null && task.status().state() == slowState, delayMillis);
+        }
+
+        SlowPersistTaskStore(InMemoryTaskStore delegate, Predicate<Task> slow, long delayMillis) {
             this.delegate = delegate;
-            this.slowState = slowState;
+            this.slow = slow;
             this.delayMillis = delayMillis;
         }
 
         @Override
         public void save(Task task, boolean isReplicated) {
-            if (task.status() != null && task.status().state() == slowState) {
+            if (slow.test(task)) {
                 LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(delayMillis));
             }
             delegate.save(task, isReplicated);

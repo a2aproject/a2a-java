@@ -86,4 +86,52 @@ class EventQueueDrainTest {
         parent.releaseSemaphore();
         assertTrue(child.awaitDrained(200, TimeUnit.MILLISECONDS));
     }
+
+    @Test
+    void aQueueThatDoesNotTrackInFlightEventsCountsAsDrained() throws Exception {
+        // A custom EventQueue written before awaitDrained existed must still compile and must not
+        // make the blocking SendMessage path wait.
+        EventQueue custom = new EventQueue() {
+            @Override
+            public void awaitQueuePollerStart() {
+            }
+
+            @Override
+            public void signalQueuePollerStarted() {
+            }
+
+            @Override
+            public void enqueueItem(EventQueueItem item) {
+            }
+
+            @Override
+            public EventQueue tap() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public EventQueueItem dequeueEventItem(int waitMilliSeconds) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public int size() {
+                return 1;
+            }
+
+            @Override
+            public void close() {
+            }
+
+            @Override
+            public void close(boolean immediate) {
+            }
+
+            @Override
+            public void close(boolean immediate, boolean notifyParent) {
+            }
+        };
+
+        assertTrue(custom.awaitDrained(0, TimeUnit.MILLISECONDS));
+    }
 }

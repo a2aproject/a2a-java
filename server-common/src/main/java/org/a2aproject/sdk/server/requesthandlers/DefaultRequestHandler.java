@@ -913,18 +913,20 @@ public class DefaultRequestHandler implements RequestHandler {
                 // 1. Wait for agent to finish enqueueing events (or timeout)
                 // 2. Close the queue to signal consumption can complete
                 // 3. Wait for consumption to finish processing events
-                // 4. (Implicit) MainEventBusProcessor persistence guarantee via consumption completion
+                // 4. Wait for MainEventBusProcessor to finish the events the agent enqueued (skipped if the agent timed out)
                 // 5. Fetch current task state from TaskStore (includes all consumed & persisted events)
                 LOGGER.debug("DefaultRequestHandler: Entering blocking fire-and-forget handling for task {}", taskId.get());
 
                 try {
                     // Step 1: Wait for agent to finish (with configurable timeout)
+                    boolean agentCompleted = true;
                     if (agentFuture != null) {
                         try {
                             agentFuture.get(agentCompletionTimeoutSeconds, SECONDS);
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent completed for task {}", taskId.get());
                         } catch (java.util.concurrent.TimeoutException e) {
                             // Agent still running after timeout - that's fine, events already being processed
+                            agentCompleted = false;
                             LOGGER.debug("DefaultRequestHandler: Step 1 - Agent still running for task {} after {}s timeout",
                                 taskId.get(), agentCompletionTimeoutSeconds);
                         }
@@ -952,7 +954,15 @@ public class DefaultRequestHandler implements RequestHandler {
                     // Terminal states are not affected because the awaitingFinalEvent machinery
                     // keeps the consumer waiting for the final event; interrupted states
                     // (INPUT_REQUIRED, AUTH_REQUIRED) and artifact-only tails are.
-                    if (!queue.awaitDrained(consumptionCompletionTimeoutSeconds, SECONDS)) {
+                    //
+                    // If the agent is still running after the Step 1 timeout, it can keep enqueueing
+                    // events, so the queue may never drain while we wait. Those events are persisted
+                    // asynchronously and are not part of the task returned here, so skip the wait
+                    // instead of adding up to consumptionCompletionTimeoutSeconds to the response.
+                    if (!agentCompleted) {
+                        LOGGER.debug("DefaultRequestHandler: Step 4 - Skipped for task {}; agent is still running",
+                            taskId.get());
+                    } else if (!queue.awaitDrained(consumptionCompletionTimeoutSeconds, SECONDS)) {
                         LOGGER.warn("DefaultRequestHandler: Step 4 - Queue for task {} still has events in flight "
                             + "after {}s; the returned task may not include the latest event",
                             taskId.get(), consumptionCompletionTimeoutSeconds);
