@@ -2,6 +2,7 @@ package org.a2aproject.sdk.server.events;
 
 import static org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.fromJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -11,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,10 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.server.tasks.InMemoryTaskStore;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
+import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AServerException;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Event;
+import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
@@ -32,6 +37,8 @@ import org.a2aproject.sdk.spec.TextPart;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class EventConsumerTest {
 
@@ -139,7 +146,8 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeOneQueueEmpty() throws A2AServerException {
-        assertThrows(A2AServerException.class, () -> eventConsumer.consumeOne());
+        A2AServerException exception = assertThrows(A2AServerException.class, () -> eventConsumer.consumeOne());
+        assertInstanceOf(InternalError.class, exception.getCause());
     }
 
     @Test
@@ -587,6 +595,89 @@ public class EventConsumerTest {
 
         // The poison pill should not be delivered to subscribers
         assertEquals(0, receivedEvents.size(), "QueueClosedEvent should be intercepted, not delivered");
+    }
+
+    @ParameterizedTest(name = "agentCompleted={0}")
+    @ValueSource(booleans = {false, true})
+    public void testConsumeAllStopsWhenPollingThreadIsInterrupted(boolean agentCompleted) throws Exception {
+        assertInterruptedConsumerFailsAndClosesQueue(eventQueue, agentCompleted);
+    }
+
+    @Test
+    public void testInterruptedConsumerFailsWithInternalErrorWhenClosingItsQueueThrows() throws Exception {
+        EventQueue childQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TASK_ID)
+                .mainEventBus(mainEventBus)
+                .taskStateProvider(new TaskStateProvider() {
+                    @Override
+                    public boolean isTaskActive(String taskId) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isTaskFinalized(String taskId) {
+                        // As a JDBC pool does when it must wait for a connection on an interrupted thread
+                        if (Thread.currentThread().isInterrupted()) {
+                            throw new IllegalStateException("Interrupted while acquiring");
+                        }
+                        return false;
+                    }
+                })
+                .build().tap();
+        assertInterruptedConsumerFailsAndClosesQueue(childQueue, false);
+    }
+
+    private void assertInterruptedConsumerFailsAndClosesQueue(EventQueue queue, boolean agentCompleted) throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        EventConsumer consumer = new EventConsumer(queue, executor);
+        if (agentCompleted) {
+            consumer.createAgentRunnableDoneCallback().done(new EnhancedRunnable() {
+                @Override
+                public void run() {
+                }
+            });
+        }
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        CountDownLatch terminated = new CountDownLatch(1);
+
+        consumer.consumeAll().subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(EventQueueItem item) {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                error.set(throwable);
+                terminated.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                terminated.countDown();
+            }
+        });
+
+        try {
+            queue.awaitQueuePollerStart();
+            executor.shutdownNow();
+
+            assertTrue(terminated.await(5, TimeUnit.SECONDS),
+                    "Interrupted consumer should stop instead of polling again");
+            assertInstanceOf(InternalError.class, error.get());
+            // The consumer closes its queue after it fails the stream
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
+            assertTrue(queue.isClosed(), "Interrupted consumer should close its queue");
+        } finally {
+            // A loop that ignores the interrupt only ends when the queue closes; close it so the executor can terminate.
+            queue.close();
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
+        }
     }
 
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {

@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import mutiny.zero.ZeroPublisher;
@@ -184,6 +185,49 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         Assertions.assertTrue(response.getBody().contains("InvalidRequestError"));
     }
 
+    @Test
+    public void testSendMessageMissingMessageId() {
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+
+        String requestBody = """
+            {
+              "message": {
+                "role": "ROLE_USER",
+                "content": [{
+                  "text": "tell me a joke"
+                }]
+              }
+            }""";
+
+        RestHandler_v0_3.HTTPRestResponse response = handler.sendMessage(requestBody, callContext);
+
+        Assertions.assertEquals(422, response.getStatusCode(), response.getBody());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("InvalidParamsError"), response.getBody());
+        Assertions.assertTrue(response.getBody().contains("messageId"), response.getBody());
+    }
+
+    @Test
+    public void testSendMessageEmptyParts() {
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+
+        String requestBody = """
+            {
+              "message": {
+                "messageId": "message-1234",
+                "role": "ROLE_USER",
+                "content": []
+              }
+            }""";
+
+        RestHandler_v0_3.HTTPRestResponse response = handler.sendMessage(requestBody, callContext);
+
+        Assertions.assertEquals(422, response.getStatusCode(), response.getBody());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("InvalidParamsError"), response.getBody());
+        Assertions.assertTrue(response.getBody().contains("Parts cannot be empty"), response.getBody());
+    }
+
     // ========================================
     // CancelTask Tests
     // ========================================
@@ -260,6 +304,47 @@ public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         assertNotNull(streamingResponse.getPublisher(), "Publisher should not be null");
         assertEquals("text/event-stream", streamingResponse.getContentType(),
                 "Content type should be text/event-stream for SSE");
+    }
+
+    @Test
+    public void testSendStreamingMessageMissingMessageId() throws Exception {
+        RestHandler_v0_3 handler = new RestHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+
+        String requestBody = """
+            {
+              "message": {
+                "role": "ROLE_USER",
+                "content": [{
+                  "text": "tell me some jokes"
+                }]
+              }
+            }""";
+
+        RestHandler_v0_3.HTTPRestStreamingResponse response = assertInstanceOf(
+                RestHandler_v0_3.HTTPRestStreamingResponse.class,
+                handler.sendStreamingMessage(requestBody, callContext));
+        CompletableFuture<String> first = new CompletableFuture<>();
+        response.getPublisher().subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+            @Override
+            public void onNext(String item) {
+                first.complete(item);
+            }
+            @Override
+            public void onError(Throwable error) {
+                first.completeExceptionally(error);
+            }
+            @Override
+            public void onComplete() {
+            }
+        });
+        assertEquals(200, response.getStatusCode());
+        JsonObject event = JsonParser.parseString(first.get(5, TimeUnit.SECONDS)).getAsJsonObject();
+        assertEquals("org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3", event.get("error").getAsString());
+        assertEquals("Parameter 'messageId' may not be null", event.get("message").getAsString());
     }
 
     @Test

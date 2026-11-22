@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.compat03.client.transport.jsonrpc.sse;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
@@ -9,6 +10,7 @@ import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent_v0_3;
 import org.a2aproject.sdk.compat03.spec.Task_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.jsonrpc.ResponseCorrelation_v0_3;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,6 +22,7 @@ public class SSEEventListener_v0_3 {
     private static final Logger LOGGER = Logger.getLogger(SSEEventListener_v0_3.class.getName());
     private final Consumer<StreamingEventKind_v0_3> eventHandler;
     private final Consumer<Throwable> errorHandler;
+    private final JsonElement expectedId;
     private final AtomicBoolean terminalSignaled = new AtomicBoolean(false);
     /**
      * Set as soon as this listener decides the stream is over, which can happen before the future
@@ -31,8 +34,14 @@ public class SSEEventListener_v0_3 {
 
     public SSEEventListener_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler,
                                  Consumer<Throwable> errorHandler) {
+        this(eventHandler, errorHandler, null);
+    }
+
+    public SSEEventListener_v0_3(Consumer<StreamingEventKind_v0_3> eventHandler,
+                                 Consumer<Throwable> errorHandler, JsonElement expectedId) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
+        this.expectedId = expectedId;
     }
 
     /**
@@ -40,6 +49,9 @@ public class SSEEventListener_v0_3 {
      *                          not returned yet
      */
     public void onMessage(String message, Future<Void> completableFuture) {
+        if (terminalSignaled.get()) {
+            return;
+        }
         try {
             handleMessage(JsonParser.parseString(message).getAsJsonObject(), completableFuture);
         } catch (JsonSyntaxException e) {
@@ -108,9 +120,13 @@ public class SSEEventListener_v0_3 {
     }
 
     private void handleMessage(JsonObject jsonObject, Future<Void> future) throws JsonProcessingException_v0_3 {
+        if (expectedId != null) {
+            ResponseCorrelation_v0_3.validate(jsonObject, expectedId);
+        }
         if (jsonObject.has("error")) {
             JSONRPCError_v0_3 error = JsonUtil_v0_3.fromJson(jsonObject.get("error").toString(), JSONRPCError_v0_3.class);
             signalTerminal(error);
+            requestClose(future);
         } else if (jsonObject.has("result")) {
             // result can be a Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent
             String resultJson = jsonObject.get("result").toString();

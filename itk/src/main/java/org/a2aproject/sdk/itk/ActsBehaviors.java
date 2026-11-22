@@ -175,6 +175,14 @@ final class ActsBehaviors {
             return;
         }
 
+        // A multi-turn task is intentionally interrupted at the end of each turn. Emitting a
+        // transient WORKING update first makes a blocking send_message response race with the
+        // following INPUT_REQUIRED update, so return the requested state directly.
+        if ("tck-multi-turn".equals(behavior)) {
+            multiTurn(context, emitter);
+            return;
+        }
+
         // Persists WORKING before anything blocks, so a concurrent cancel_task finds a non-final
         // task in the store and a blocking send_message is released by the first event.
         emitter.startWork();

@@ -86,12 +86,10 @@ public class JSONRPCTransportStreamingTest {
                                 .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
 
                 )
-                .respond(
-                        response()
+                .respond((org.mockserver.mock.action.ExpectationResponseCallback) req -> response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
-                );
+                                .withBody(ResponseFixture.echoId(SEND_MESSAGE_STREAMING_TEST_RESPONSE, req)));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
@@ -131,11 +129,10 @@ public class JSONRPCTransportStreamingTest {
                                 .withBody(JsonBody.json(TASK_SUBSCRIPTION_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
 
                 )
-                .respond(response()
+                .respond((org.mockserver.mock.action.ExpectationResponseCallback) req -> response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE)
-                );
+                                .withBody(ResponseFixture.echoId(TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE, req)));
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskIdParams taskIdParams = new TaskIdParams("task-1234");

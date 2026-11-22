@@ -100,10 +100,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(SEND_MESSAGE_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Message_v0_3 message = new Message_v0_3.Builder()
                 .role(Message_v0_3.Role.USER)
                 .parts(Collections.singletonList(new TextPart_v0_3("tell me a joke")))
@@ -148,10 +148,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE)
+                                .withBody(FixedRequestId.response(SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Message_v0_3 message = new Message_v0_3.Builder()
                 .role(Message_v0_3.Role.USER)
                 .parts(Collections.singletonList(new TextPart_v0_3("tell me a joke")))
@@ -190,10 +190,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_ERROR_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(SEND_MESSAGE_ERROR_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Message_v0_3 message = new Message_v0_3.Builder()
                 .role(Message_v0_3.Role.USER)
                 .parts(Collections.singletonList(new TextPart_v0_3("tell me a joke")))
@@ -229,10 +229,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(GET_TASK_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(GET_TASK_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Task_v0_3 task = client.getTask(new TaskQueryParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 10), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
@@ -282,10 +282,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(CANCEL_TASK_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(CANCEL_TASK_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Task_v0_3 task = client.cancelTask(new TaskIdParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new HashMap<>()), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
@@ -306,10 +306,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         TaskPushNotificationConfig_v0_3 taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64", null,
                         new HashMap<>()), null);
@@ -333,10 +333,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         TaskPushNotificationConfig_v0_3 taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(
                 new TaskPushNotificationConfig_v0_3("de38c76d-d54c-436c-8b9f-4c2703648d64",
                         new PushNotificationConfig_v0_3.Builder()
@@ -366,7 +366,7 @@ public class JSONRPCTransport_v0_3_Test {
                                 .withBody(AGENT_CARD)
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         AgentCard_v0_3 agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
         assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
@@ -452,10 +452,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE)
+                                .withBody(FixedRequestId.response(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         AgentCard_v0_3 agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
@@ -527,10 +527,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Message_v0_3 message = new Message_v0_3.Builder()
                 .role(Message_v0_3.Role.USER)
                 .parts(List.of(
@@ -578,10 +578,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
 
         Map<String, Object> data = new HashMap<>();
         data.put("temperature", 25.5);
@@ -636,10 +636,10 @@ public class JSONRPCTransport_v0_3_Test {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE)
+                                .withBody(FixedRequestId.response(SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
 
         Map<String, Object> data = new HashMap<>();
         data.put("chartType", "bar");
@@ -692,9 +692,9 @@ public class JSONRPCTransport_v0_3_Test {
                        "metadata":{"optional":null}}],"metadata":{"optional":null}}],"metadata":{"optional":null}}}
                 """;
         server.when(request().withMethod("POST").withPath("/"))
-                .respond(response().withStatusCode(200).withBody(json));
+                .respond(response().withStatusCode(200).withBody(FixedRequestId.response(json)));
 
-        var task = new JSONRPCTransport_v0_3("http://localhost:4001").getTask(new TaskQueryParams_v0_3("task-null", 0), null);
+        var task = FixedRequestId.transport(null).getTask(new TaskQueryParams_v0_3("task-null", 0), null);
         Map<String, Object> nullField = Collections.singletonMap("optional", null);
         assertEquals(nullField, task.metadata());
         assertEquals(nullField, task.history().get(0).metadata());

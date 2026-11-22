@@ -68,7 +68,8 @@ public class MultiVersion_v0_3_RestTest extends AbstractA2AServerServerTest_v0_3
             request.header("A2A-Version", header);
         }
         HttpResponse<String> response = HttpClient.newHttpClient().send(request.build(), HttpResponse.BodyHandlers.ofString());
-        assertEquals("application/json", response.headers().firstValue("Content-Type").orElseThrow());
+        assertEquals("1.0".equals(header) ? "application/a2a+json" : "application/json",
+                response.headers().firstValue("Content-Type").orElseThrow());
         return response;
     }
 

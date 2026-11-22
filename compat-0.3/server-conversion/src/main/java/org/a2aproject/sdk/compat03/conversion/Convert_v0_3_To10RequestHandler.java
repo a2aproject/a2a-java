@@ -32,6 +32,7 @@ import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.EventKind;
 import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
+import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.MessageSendParams;
@@ -146,7 +147,7 @@ public class Convert_v0_3_To10RequestHandler {
             ServerCallContext context) throws A2AError {
 
         // Convert v0.3 params → v1.0 params
-        MessageSendParams v10Params = MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
+        MessageSendParams v10Params = toV10(v03Params);
 
         // Enable v0.3 compatibility mode: disable strict context ID validation
         // v0.3 allowed messages with both taskId and contextId even if they didn't match
@@ -174,7 +175,7 @@ public class Convert_v0_3_To10RequestHandler {
             ServerCallContext context) throws A2AError {
 
         // Convert v0.3 params → v1.0 params
-        MessageSendParams v10Params = MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
+        MessageSendParams v10Params = toV10(v03Params);
 
         // Enable v0.3 compatibility mode: disable strict context ID validation
         // v0.3 allowed messages with both taskId and contextId even if they didn't match
@@ -391,5 +392,14 @@ public class Convert_v0_3_To10RequestHandler {
                 subscriber.onComplete();
             }
         });
+    }
+
+    // v1.0 records reject what v0.3 accepted (e.g. a null messageId): report it as invalid params, like v1.0 does
+    private static MessageSendParams toV10(MessageSendParams_v0_3 v03Params) {
+        try {
+            return MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParamsError(e.getMessage());
+        }
     }
 }

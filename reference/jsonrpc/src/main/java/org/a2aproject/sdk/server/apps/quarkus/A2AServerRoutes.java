@@ -729,6 +729,9 @@ public class A2AServerRoutes {
         }
         // Convert domain response to protobuf message and serialize
         com.google.protobuf.MessageOrBuilder protoMessage = convertToProto(response);
+        if (response instanceof ListTasksResponse) {
+            return JSONRPCUtils.toJsonRPCListTasksResultResponse(response.getId(), protoMessage);
+        }
         return JSONRPCUtils.toJsonRPCResultResponse(response.getId(), protoMessage);
     }
 

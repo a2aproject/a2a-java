@@ -42,6 +42,7 @@ import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigResponse_v0
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
+import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
@@ -704,6 +705,49 @@ public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3
         // Verify that an InternalError response was returned
         assertEquals(1, results.size(), "Should receive exactly one error response");
         assertInstanceOf(InternalError_v0_3.class, results.get(0).getError(), "Error should be InternalError");
+    }
+
+    @Test
+    public void testOnMessageStreamMissingMessageId() {
+        JSONRPCHandler_v0_3 handler = new JSONRPCHandler_v0_3(CARD, internalExecutor, convert03To10Handler);
+
+        // v0.3 accepts a null messageId, the v1.0 Message it is converted to does not
+        Message_v0_3 message = new Message_v0_3(MESSAGE.role(), MESSAGE.parts(), null, null, null, null, null, null);
+        SendStreamingMessageRequest_v0_3 request = new SendStreamingMessageRequest_v0_3(
+                "1", new MessageSendParams_v0_3(message, null, null));
+        Flow.Publisher<SendStreamingMessageResponse_v0_3> response = handler.onMessageSendStream(request, callContext);
+
+        List<SendStreamingMessageResponse_v0_3> results = new ArrayList<>();
+
+        response.subscribe(new Flow.Subscriber<>() {
+            private Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(SendStreamingMessageResponse_v0_3 item) {
+                results.add(item);
+                subscription.request(1);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                subscription.cancel();
+            }
+
+            @Override
+            public void onComplete() {
+                subscription.cancel();
+            }
+        });
+
+        assertEquals(1, results.size(), "Should receive exactly one error response");
+        assertInstanceOf(InvalidParamsError_v0_3.class, results.get(0).getError(), "Error should be InvalidParamsError");
+        assertEquals("Parameter 'messageId' may not be null", results.get(0).getError().getMessage());
     }
 
     @Test

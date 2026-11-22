@@ -263,7 +263,7 @@ public class JSONRPCUtils {
             }
             case SEND_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
-                parseRequestBody(params, builder, id);
+                parseSendMessageParams(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
@@ -293,7 +293,7 @@ public class JSONRPCUtils {
             }
             case SEND_STREAMING_MESSAGE_METHOD -> {
                 org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
-                parseRequestBody(params, builder, id);
+                parseSendMessageParams(params, builder, id);
                 setTenantIfAbsent(builder::getTenant, builder::setTenant, tenant);
                 return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
@@ -327,12 +327,15 @@ public class JSONRPCUtils {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
-        Object id = getAndValidateId(jsonRpc);
-        JsonElement paramsNode = jsonRpc.get("result");
         JsonElement errorNode = jsonRpc.get("error");
         if (errorNode != null && !errorNode.isJsonNull()) {
-            return parseError(errorNode.getAsJsonObject(), id, method);
+            if (jsonRpc.has("id") && jsonRpc.get("id").isJsonNull()) {
+                return parseError(errorNode.getAsJsonObject(), null, method);
+            }
+            return parseError(errorNode.getAsJsonObject(), getAndValidateId(jsonRpc), method);
         }
+        Object id = getAndValidateId(jsonRpc);
+        JsonElement paramsNode = jsonRpc.get("result");
         switch (method) {
             case GET_TASK_METHOD -> {
                 org.a2aproject.sdk.grpc.Task.Builder builder = org.a2aproject.sdk.grpc.Task.newBuilder();
@@ -385,7 +388,7 @@ public class JSONRPCUtils {
         }
     }
 
-    public static A2AResponse<?> parseError(JsonObject error, Object id, String method) throws JsonMappingException {
+    public static A2AResponse<?> parseError(JsonObject error, @Nullable Object id, String method) throws JsonMappingException {
         A2AError rpcError = processError(error);
         switch (method) {
             case GET_TASK_METHOD -> {
@@ -412,8 +415,11 @@ public class JSONRPCUtils {
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id, rpcError);
             }
+            case GET_EXTENDED_AGENT_CARD_METHOD -> {
+                return new GetExtendedAgentCardResponse(id, rpcError);
+            }
             default ->
-                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id);
+                throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id == null ? "UNDETERMINED ID" : id);
         }
     }
 
@@ -460,6 +466,13 @@ public class JSONRPCUtils {
 
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
         parseJsonString(jsonRpc.toString(), builder, id);
+    }
+
+    // SendMessage permits extra top-level operation parameters; nested protocol objects remain strict.
+    private static void parseSendMessageParams(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id)
+            throws JsonProcessingException {
+        JsonElement params = ProtoJsonUtils.retainKnownFields(jsonRpc, builder.getDescriptorForType());
+        parseJsonString(params.toString(), builder, id);
     }
 
     public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
@@ -613,11 +626,42 @@ public class JSONRPCUtils {
     }
 
     public static String toJsonRPCResultResponse(@Nullable Object requestId, com.google.protobuf.MessageOrBuilder builder) {
+        return toJsonRPCResultResponse(requestId, builder, RESPONSE_PRINTER);
+    }
+
+    /**
+     * Serializes a ListTasks success response without empty task artifact arrays.
+     *
+     * <p>Other empty response fields, including {@code tasks}, remain present.</p>
+     *
+     * @param requestId the request identifier
+     * @param builder the protobuf response
+     * @return a JSON-RPC success response
+     */
+    public static String toJsonRPCListTasksResultResponse(@Nullable Object requestId,
+            com.google.protobuf.MessageOrBuilder builder) {
+        return toJsonRPCResultResponse(requestId, builder, RESPONSE_PRINTER, true);
+    }
+
+    private static String toJsonRPCResultResponse(@Nullable Object requestId,
+            com.google.protobuf.MessageOrBuilder builder, JsonFormat.Printer printer) {
+        return toJsonRPCResultResponse(requestId, builder, printer, false);
+    }
+
+    private static String toJsonRPCResultResponse(@Nullable Object requestId,
+            com.google.protobuf.MessageOrBuilder builder, JsonFormat.Printer printer, boolean omitEmptyTaskArtifacts) {
         try (StringWriter result = new StringWriter(); JsonWriter output = GSON.newJsonWriter(result)) {
             output.beginObject();
             output.name("jsonrpc").value("2.0");
             JsonUtil.writeJsonRpcId(output, requestId);
-            String resultValue = ProtoJsonUtils.toJson(RESPONSE_PRINTER, builder);
+            String resultValue = ProtoJsonUtils.toJson(printer, builder);
+            if (builder instanceof org.a2aproject.sdk.grpc.SendMessageResponseOrBuilder
+                    || builder instanceof org.a2aproject.sdk.grpc.StreamResponseOrBuilder) {
+                resultValue = ProtoJsonUtils.omitEmptyMessageTaskId(resultValue);
+            }
+            if (omitEmptyTaskArtifacts) {
+                resultValue = ProtoJsonUtils.omitEmptyTaskArtifacts(resultValue);
+            }
             output.name("result").jsonValue(resultValue);
             output.endObject();
             return result.toString();
