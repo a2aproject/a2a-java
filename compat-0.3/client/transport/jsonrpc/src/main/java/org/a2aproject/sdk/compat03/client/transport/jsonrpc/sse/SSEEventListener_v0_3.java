@@ -92,6 +92,22 @@ public class SSEEventListener_v0_3 {
         }
     }
 
+    /**
+     * Closes the SSE connection and reports normal completion. Completion is signalled before
+     * the connection is cancelled, so the error the HTTP client raises for the cancelled request
+     * is dropped by {@link #signalTerminal(Throwable)} instead of reaching the error handler.
+     * The connection is cancelled even if the error handler throws.
+     *
+     * @param future the future controlling the SSE connection
+     */
+    public void closeStream(Future<Void> future) {
+        try {
+            signalTerminal(null);
+        } finally {
+            requestClose(future);
+        }
+    }
+
     private void requestClose(Future<Void> future) {
         // Set the flag before reading the future, mirroring onStreamFuturePublished.
         closeRequested.set(true);
@@ -133,8 +149,7 @@ public class SSEEventListener_v0_3 {
             StreamingEventKind_v0_3 event = JsonUtil_v0_3.fromJson(resultJson, StreamingEventKind_v0_3.class);
             eventHandler.accept(event);
             if (shouldAutoClose(event)) {
-                signalTerminal(null);
-                requestClose(future);
+                closeStream(future);
             }
         } else {
             throw new IllegalArgumentException("Unknown message type");
