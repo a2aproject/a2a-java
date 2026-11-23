@@ -208,13 +208,13 @@ public class RestTransport_v0_3_Test {
                 () -> client.resubscribe(new TaskIdParams_v0_3("original"), event -> {}, error -> {}, null));
         for (org.junit.jupiter.api.function.Executable call : calls) {
             IllegalArgumentException error = assertThrows(IllegalArgumentException.class, call);
-            assertTrue(error.getMessage().contains("interceptor payload"));
+            assertTrue(error.getMessage().contains("payload"));
         }
         assertEquals(0, server.retrieveRecordedRequests(request()).length);
     }
 
     @Test
-    public void authenticatedExtendedCardAllowsNullPayloadAndHeaders() throws Exception {
+    public void authenticatedExtendedCardPassesRequestAndAllowsNullHeaders() throws Exception {
         server.when(request().withMethod("GET").withPath("/.well-known/agent-card.json"))
                 .respond(response().withStatusCode(200).withBody(JsonRestMessages_v0_3.AGENT_CARD_SUPPORTS_EXTENDED));
         server.when(request().withMethod("GET").withPath("/v1/card"))
@@ -225,9 +225,9 @@ public class RestTransport_v0_3_Test {
             public org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3 intercept(
                     String method, Object payload, Map<String, String> headers, AgentCard_v0_3 card,
                     ClientCallContext_v0_3 context) {
-                assertNull(payload);
+                assertTrue(payload instanceof org.a2aproject.sdk.compat03.grpc.GetAgentCardRequestOrBuilder);
                 calls.incrementAndGet();
-                return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(null, null);
+                return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(payload, null);
             }
         };
         RestTransport_v0_3 client = new RestTransport_v0_3(null, null, CARD.url(), List.of(interceptor));
