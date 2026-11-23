@@ -43,6 +43,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConf
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
@@ -410,7 +411,7 @@ public class JSONRPCUtilsTest {
               "method": "CreateTaskPushNotificationConfig",
               "id": "4",
               "params": {
-                "invalid_field": "value"
+                "authentication": "not-an-object"
               }
             }
             """;
@@ -420,7 +421,7 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
         assertEquals("4", exception.getId());
-        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.TaskPushNotificationConfig"), exception.getMessage());
+        assertEquals(ERROR_MESSAGE.formatted("message object"), exception.getMessage());
     }
 
     @Test
@@ -589,8 +590,8 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testParseUnknownField_ThrowsJsonMappingException() throws JsonMappingException {
-        String unknownFieldMessage=  """
+    public void testParseUnknownFields_AreIgnored() throws JsonProcessingException {
+        String unknownFieldMessage = """
            {
               "jsonrpc":"2.0",
               "method":"SendMessage",
@@ -607,16 +608,42 @@ public class JSONRPCUtilsTest {
                     }
                   ],
                   "metadata":{
-                    
+
                   }
-                }
+                },
+                "unknownParam": 42
               }
             }""";
-        JsonMappingException exception = assertThrows(
-            JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(unknownFieldMessage, null)
-        );
-        assertEquals(ERROR_MESSAGE.formatted("unknown in message lf.a2a.v1.Message"), exception.getMessage());
+        SendMessageRequest request = assertInstanceOf(SendMessageRequest.class,
+                JSONRPCUtils.parseRequestBody(unknownFieldMessage, null));
+        assertEquals("18", request.getId());
+        assertEquals("message-1234", request.getParams().message().messageId());
+        assertEquals(Message.Role.ROLE_AGENT, request.getParams().message().role());
+    }
+
+    @Test
+    public void testParseResponseUnknownFields_AreIgnored() throws JsonProcessingException {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "id": "task-1",
+                    "contextId": "context-1",
+                    "status": {
+                      "state": "TASK_STATE_COMPLETED",
+                      "unknownStatusField": true
+                    },
+                    "unknownTaskField": {"nested": "value"}
+                  }
+                }
+                """;
+        GetTaskResponse response = assertInstanceOf(GetTaskResponse.class,
+                JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD));
+        Task task = response.getResult();
+        assertNotNull(task);
+        assertEquals("task-1", task.id());
+        assertEquals("context-1", task.contextId());
     }
 
     @Test
@@ -645,7 +672,7 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testSendMessageStillRequiresMessageAndRejectsNestedExtras() {
+    public void testSendMessageStillRequiresMessageAndIgnoresNestedExtras() throws Exception {
         for (String method : List.of("SendMessage", "SendStreamingMessage")) {
             String missing = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"" + method
                     + "\",\"params\":{\"extra\":true}}";
@@ -653,17 +680,23 @@ public class JSONRPCUtilsTest {
             String nested = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"" + method
                     + "\",\"params\":{\"message\":{\"role\":\"ROLE_USER\",\"messageId\":\"m\","
                     + "\"parts\":[{\"text\":\"hello\"}],\"extra\":true}}}";
-            assertThrows(JsonProcessingException.class, () -> JSONRPCUtils.parseRequestBody(nested, null));
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(nested, null);
+            MessageSendParams params = request instanceof SendMessageRequest send
+                    ? send.getParams()
+                    : assertInstanceOf(SendStreamingMessageRequest.class, request).getParams();
+            assertEquals("m", params.message().messageId());
         }
     }
 
     @Test
-    void rejectsExtraParametersForOtherMethods() {
+    void ignoresExtraParametersForOtherMethods() throws Exception {
         String json = """
                 {"jsonrpc":"2.0","id":1,"method":"GetTask",
                  "params":{"id":"task-1","histroyLength":2}}
                 """;
-        assertThrows(JsonMappingException.class, () -> JSONRPCUtils.parseRequestBody(json, null));
+        GetTaskRequest request = assertInstanceOf(GetTaskRequest.class, JSONRPCUtils.parseRequestBody(json, null));
+        assertEquals("task-1", request.getParams().id());
+        assertNull(request.getParams().historyLength());
     }
 
     @Test
@@ -676,6 +709,91 @@ public class JSONRPCUtilsTest {
                 .getAsJsonObject("result").getAsJsonObject("message");
         assertFalse(resultMessage.has("taskId"));
         assertEquals("context", resultMessage.get("contextId").getAsString());
+    }
+
+    @Test
+    public void testParseListTasks_UnknownFieldIgnoredAndStatusKept() throws JsonProcessingException {
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "20",
+              "params": {
+                "status": "TASK_STATE_WORKING",
+                "unknownParam": 42
+              }
+            }
+            """;
+        ListTasksRequest parsed = assertInstanceOf(ListTasksRequest.class,
+            JSONRPCUtils.parseRequestBody(request, null));
+        assertEquals(TaskState.TASK_STATE_WORKING, parsed.getParams().status());
+    }
+
+    @Test
+    public void testParseListTasks_UnrecognizedStatusValue_ThrowsInvalidParams() {
+        // Unknown field names are ignored, but an unrecognized value for a known enum field is
+        // still rejected. Dropping it would turn the status filter into no filter at all.
+        String request = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "21",
+              "params": {
+                "status": "NOT_A_TASK_STATE"
+              }
+            }
+            """;
+        InvalidParamsJsonMappingException exception = assertThrows(
+            InvalidParamsJsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(request, null)
+        );
+        assertEquals("21", exception.getId());
+    }
+
+    @Test
+    public void testParseResponse_UnrecognizedEnumValue_Throws() {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "id": "task-1",
+                    "contextId": "context-1",
+                    "status": {
+                      "state": "NOT_A_TASK_STATE"
+                    },
+                    "unknownTaskField": true
+                  }
+                }
+                """;
+        assertThrows(
+            JsonProcessingException.class,
+            () -> JSONRPCUtils.parseResponseBody(json, GET_TASK_METHOD)
+        );
+    }
+
+    @Test
+    public void testParseResponseEvent_UnrecognizedEnumValue_Throws() {
+        String json = """
+                {
+                  "jsonrpc": "2.0",
+                  "id": "1",
+                  "result": {
+                    "statusUpdate": {
+                      "taskId": "task-1",
+                      "contextId": "context-1",
+                      "status": {
+                        "state": "NOT_A_TASK_STATE"
+                      },
+                      "unknownEventField": true
+                    }
+                  }
+                }
+                """;
+        assertThrows(
+            JsonProcessingException.class,
+            () -> JSONRPCUtils.parseResponseEvent(json)
+        );
     }
 
     @Test

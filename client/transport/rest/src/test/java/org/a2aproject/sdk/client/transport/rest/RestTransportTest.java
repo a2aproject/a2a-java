@@ -238,6 +238,79 @@ public class RestTransportTest {
         assertNull(history.referenceTaskIds());
     }
 
+    @Test
+    public void testSendMessageIgnoresUnknownResponseFields() throws Exception {
+        Message message = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build();
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/message:send")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("""
+                                        {
+                                          "task": {
+                                            "id": "task-1234",
+                                            "contextId": "context-1234",
+                                            "status": {
+                                              "state": "TASK_STATE_SUBMITTED"
+                                            },
+                                            "unknownTaskField": "ignored"
+                                          },
+                                          "unknownResponseField": 42
+                                        }""")
+                );
+        MessageSendParams messageSendParams = new MessageSendParams(message, null, null, "");
+
+        RestTransport instance = new RestTransport(CARD);
+        Task task = (Task) instance.sendMessage(messageSendParams, null);
+        assertEquals("task-1234", task.id());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, task.status().state());
+    }
+
+    @Test
+    public void testSendMessageRejectsUnrecognizedEnumValueInResponse() throws Exception {
+        Message message = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("tell me a joke")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build();
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/message:send")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("""
+                                        {
+                                          "task": {
+                                            "id": "task-1234",
+                                            "contextId": "context-1234",
+                                            "status": {
+                                              "state": "NOT_A_TASK_STATE"
+                                            },
+                                            "unknownTaskField": "ignored"
+                                          }
+                                        }""")
+                );
+        MessageSendParams messageSendParams = new MessageSendParams(message, null, null, "");
+
+        RestTransport instance = new RestTransport(CARD);
+        A2AClientException exception = assertThrows(A2AClientException.class,
+                () -> instance.sendMessage(messageSendParams, null));
+        assertTrue(exception.getMessage().contains("NOT_A_TASK_STATE"), exception.getMessage());
+    }
+
     /**
      * Test of cancelTask method, of class JSONRestTransport.
      */

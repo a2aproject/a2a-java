@@ -228,6 +228,32 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testSendMessageIgnoresUnknownFields() {
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+        String requestBody = """
+            {
+              "message":
+                {
+                  "messageId": "message-1234",
+                  "contextId": "context-1234",
+                  "role": "ROLE_USER",
+                  "parts": [{
+                    "text": "tell me a joke"
+                  }],
+                  "unknownMessageField": "ignored"
+              },
+              "unknownParam": 42
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
+        Assertions.assertEquals(200, response.getStatusCode(), response.toString());
+        Assertions.assertTrue(response.getBody().contains("message-1234"), response.getBody());
+    }
+
+    @Test
     public void testSendMessageInvalidBody() {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
@@ -239,7 +265,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testSendMessageAllowsExtraTopLevelFieldsOnly() {
+    public void testSendMessageIgnoresExtraFieldsButRequiresMessage() {
         RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         agentExecutorExecute = (context, emitter) -> emitter.sendMessage("response");
         String message = "\"message\":{\"messageId\":\"message-1\",\"role\":\"ROLE_USER\",\"parts\":[{\"text\":\"hello\"}]}";
@@ -251,8 +277,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         String nested = "{\"message\":{\"messageId\":\"message-1\",\"role\":\"ROLE_USER\","
                 + "\"parts\":[{\"text\":\"hello\"}],\"extra\":true}}";
-        Assertions.assertEquals(422, handler.sendMessage(callContext, "", nested).getStatusCode());
-        assertStreamingError(handler.sendStreamingMessage(callContext, "", nested));
+        Assertions.assertEquals(200, handler.sendMessage(callContext, "", nested).getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class,
+                handler.sendStreamingMessage(callContext, "", nested));
         Assertions.assertNotEquals(200, handler.sendMessage(callContext, "", "{\"extra\":true}").getStatusCode());
         assertStreamingError(handler.sendStreamingMessage(callContext, "", "{\"extra\":true}"));
     }
@@ -589,10 +616,10 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "scheme": "Bearer",
                 "credentials": "oauth-secret-67890"
               },
-              "unknownField": "trigger-parse-error"
+              "tenant": {"invalid": "trigger-parse-error"}
             }""".formatted(MINIMAL_TASK.id());
 
-        // Request body with sensitive data and an unknown field to trigger parse error
+        // Request body with sensitive data and a wrongly typed field to trigger parse error
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RestHandler.class.getName());
         LogCaptureAssertions.assertSensitiveDataNotLogged(logger,
                 () -> Assertions.assertEquals(422,
