@@ -31,6 +31,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
+import java.util.List;
 import org.a2aproject.sdk.grpc.SendMessageResponse;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
@@ -456,6 +457,106 @@ public class JSONRPCUtilsTest {
                 () -> JSONRPCUtils.parseRequestBody(invalidRequest, null)
         );
         assertEquals("2", exception.getId());
+    }
+
+    @Test
+    public void testInvalidRoleDoesNotExposeProtoEnumType() {
+        String request = """
+            {"jsonrpc":"2.0","id":"1","method":"SendMessage","params":{
+              "message":{"role":"system_user","parts":[{"text":"hi"}],"metadata":{}}}}
+            """;
+        InvalidParamsJsonMappingException exception = assertThrows(InvalidParamsJsonMappingException.class,
+                () -> JSONRPCUtils.parseRequestBody(request, null));
+        assertEquals("1", exception.getId());
+        assertEquals(ERROR_MESSAGE.formatted("Invalid value for field role"), exception.getMessage());
+    }
+
+    @Test
+    public void testInvalidTaskStatusIdentifiesField() {
+        String request = """
+            {"jsonrpc":"2.0","id":"2","method":"ListTasks","params":{"status":"wrong"}}
+            """;
+        InvalidParamsJsonMappingException exception = assertThrows(InvalidParamsJsonMappingException.class,
+                () -> JSONRPCUtils.parseRequestBody(request, null));
+        assertEquals("2", exception.getId());
+        assertEquals(ERROR_MESSAGE.formatted("Invalid value for field status"), exception.getMessage());
+    }
+
+    @Test
+    public void testInvalidEnumWithTrailingJsonFallsBackToGenericError() {
+        InvalidParamsJsonMappingException exception = assertThrows(InvalidParamsJsonMappingException.class,
+                () -> JSONRPCUtils.parseJsonString("{\"status\":\"wrong\"} trailing",
+                        org.a2aproject.sdk.grpc.ListTasksRequest.newBuilder(), "2"));
+        assertEquals("2", exception.getId());
+        assertEquals(ERROR_MESSAGE.formatted("Invalid enum value: wrong"), exception.getMessage());
+    }
+
+    @Test
+    public void testInvalidNumericAndBooleanValues() {
+        for (String params : List.of("\"pageSize\":\"bad\"", "\"includeArtifacts\":\"bad\"",
+                "\"includeArtifacts\":123")) {
+            String request = """
+                {"jsonrpc":"2.0","id":"type-error","method":"ListTasks","params":{%s}}
+                """.formatted(params);
+            JsonProcessingException exception = assertThrows(JsonProcessingException.class,
+                    () -> JSONRPCUtils.parseRequestBody(request, null), params);
+            assertTrue(exception.getMessage().contains("Invalid request content"), exception.getMessage());
+            assertFalse(exception.getMessage().contains("lf.a2a.v1."), exception.getMessage());
+            assertFalse(exception.getMessage().contains("google.protobuf."), exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testNumericStringIsAcceptedForIntegerField() throws JsonProcessingException {
+        String request = """
+            {"jsonrpc":"2.0","id":"numeric-string","method":"ListTasks","params":{"pageSize":"12"}}
+            """;
+        ListTasksRequest parsed = assertInstanceOf(ListTasksRequest.class, JSONRPCUtils.parseRequestBody(request, null));
+        assertEquals(12, parsed.getParams().pageSize());
+    }
+
+    @Test
+    public void testBooleanValuesAreAccepted() throws JsonProcessingException {
+        for (boolean value : new boolean[] {true, false}) {
+            String request = """
+                {"jsonrpc":"2.0","id":"boolean","method":"ListTasks","params":{"includeArtifacts":%s}}
+                """.formatted(value);
+            ListTasksRequest parsed = assertInstanceOf(ListTasksRequest.class, JSONRPCUtils.parseRequestBody(request, null));
+            assertEquals(value, parsed.getParams().shouldIncludeArtifacts());
+            if (!value) {
+                assertNull(parsed.getParams().includeArtifacts());
+            }
+        }
+    }
+
+    @Test
+    public void testNumericValueForStringField() throws JsonProcessingException {
+        String request = """
+            {"jsonrpc":"2.0","id":"number","method":"ListTasks","params":{"contextId":123}}
+            """;
+        ListTasksRequest parsed = assertInstanceOf(ListTasksRequest.class, JSONRPCUtils.parseRequestBody(request, null));
+        assertEquals("123", parsed.getParams().contextId());
+    }
+
+    @Test
+    public void testTimestampValues() throws JsonProcessingException {
+        String valid = """
+            {"jsonrpc":"2.0","id":"timestamp","method":"ListTasks",
+             "params":{"statusTimestampAfter":"2023-10-27T10:00:00Z"}}
+            """;
+        ListTasksRequest parsed = assertInstanceOf(ListTasksRequest.class, JSONRPCUtils.parseRequestBody(valid, null));
+        assertEquals(java.time.Instant.parse("2023-10-27T10:00:00Z"), parsed.getParams().statusTimestampAfter());
+
+        for (String value : List.of("\"not-a-timestamp\"", "123")) {
+            String invalid = """
+                {"jsonrpc":"2.0","id":"timestamp","method":"ListTasks",
+                 "params":{"statusTimestampAfter":%s}}
+                """.formatted(value);
+            JsonProcessingException exception = assertThrows(JsonProcessingException.class,
+                    () -> JSONRPCUtils.parseRequestBody(invalid, null), value);
+            assertFalse(exception.getMessage().contains("lf.a2a.v1."), exception.getMessage());
+            assertFalse(exception.getMessage().contains("google.protobuf."), exception.getMessage());
+        }
     }
 
     @Test
