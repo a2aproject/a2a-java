@@ -53,6 +53,11 @@ public class AgentExecutorProducer {
                 String taskId = context.getTaskId();
                 String input = context.getMessage() != null ? extractTextFromMessage(context.getMessage()) : "";
 
+                if (input.startsWith("tck-message-response")) {
+                    agentEmitter.sendMessage("tck message response");
+                    return;
+                }
+
                 // Agent-to-agent communication test (routed by message content prefix)
                 if (input.startsWith("delegate:") || input.startsWith("a2a-local:")) {
                     handleAgentToAgentTest(context, agentEmitter);
@@ -64,6 +69,13 @@ public class AgentExecutorProducer {
                     agentEmitter.startWork();
                     String value = requestScopedBean.getValue();
                     agentEmitter.addArtifact(List.of(new TextPart("request-scoped:" + value)));
+                    agentEmitter.complete();
+                    return;
+                }
+
+                // Create and finish a task for the finalized queue lifecycle test.
+                if (input.startsWith("queue-finalization:")) {
+                    agentEmitter.startWork();
                     agentEmitter.complete();
                     return;
                 }
@@ -93,6 +105,13 @@ public class AgentExecutorProducer {
                     // First call: emit INPUT_REQUIRED
                     agentEmitter.requiresInput(agentEmitter.newAgentMessage(
                             List.of(new TextPart("Please provide additional information")),
+                            context.getMessage().metadata()));
+                    return;
+                }
+
+                if (input.startsWith("history-workflow:")) {
+                    agentEmitter.requiresInput(agentEmitter.newAgentMessage(
+                            List.of(new TextPart("Please provide the next history message")),
                             context.getMessage().metadata()));
                     return;
                 }

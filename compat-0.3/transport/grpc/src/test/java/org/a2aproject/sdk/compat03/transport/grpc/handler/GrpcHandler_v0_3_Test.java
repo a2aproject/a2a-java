@@ -246,6 +246,38 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
+    @Test
+    public void testOnMessageMissingMessageId() throws Exception {
+        TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE.toBuilder().clearMessageId())
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertEquals("InvalidParamsError: Parameter 'messageId' may not be null",
+                Status.fromThrowable(streamRecorder.getError()).getDescription());
+    }
+
+    @Test
+    public void testOnMessageEmptyParts() throws Exception {
+        TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE.toBuilder().clearContent())
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertEquals("InvalidParamsError: Parts cannot be empty",
+                Status.fromThrowable(streamRecorder.getError()).getDescription());
+    }
+
     // ========================================
     // Streaming Tests
     // ========================================
@@ -273,6 +305,22 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
         assertTrue(response.hasMsg(), "Response should contain a message");
         Message message = response.getMsg();
         assertEquals(GRPC_MESSAGE.getMessageId(), message.getMessageId());
+    }
+
+    @Test
+    public void testOnMessageStreamMissingMessageId() throws Exception {
+        TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE.toBuilder().clearMessageId())
+                .build();
+        StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
+        handler.sendStreamingMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+        assertEquals("InvalidParamsError: Parameter 'messageId' may not be null",
+                Status.fromThrowable(streamRecorder.getError()).getDescription());
     }
 
     @Test

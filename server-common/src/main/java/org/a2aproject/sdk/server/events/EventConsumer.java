@@ -6,6 +6,7 @@ import java.util.concurrent.Flow;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AServerException;
 import org.a2aproject.sdk.spec.Event;
+import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskState;
@@ -129,6 +130,21 @@ public class EventConsumer {
                                 System.identityHashCode(queue), error, agentCompleted);
                             item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
                             if (item == null) {
+                                // dequeueEventItem returns null on a timeout and also on an interrupt, with the
+                                // interrupt flag still set. Only an interrupt ends this consumer: while the flag
+                                // is set, each later poll returns at once, so polling again would spin.
+                                if (Thread.currentThread().isInterrupted()) {
+                                    LOGGER.warn("EventConsumer polling thread interrupted, exiting polling loop for queue {}", System.identityHashCode(queue));
+                                    completed = true;
+                                    tube.fail(new InternalError("EventConsumer polling thread was interrupted"));
+                                    // The close can read the task store, which can throw on an interrupted thread
+                                    try {
+                                        queue.close(true);
+                                    } catch (RuntimeException e) {
+                                        LOGGER.warn("Failed to close the queue {} of an interrupted EventConsumer", System.identityHashCode(queue), e);
+                                    }
+                                    return;
+                                }
                                 int queueSize = queue.size();
                                 boolean awaitingFinal = queue.isAwaitingFinalEvent();
                                 LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}, queue.size()={}, awaitingFinalEvent={}, timeoutCount={}, awaitingTimeoutCount={}",

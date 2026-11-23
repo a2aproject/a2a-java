@@ -135,6 +135,28 @@ client.deleteTaskPushNotificationConfigurations(
 
 ## Transport Configuration
 
+### Client Interceptor Payloads
+
+Client call interceptors receive a non-null request payload and must return a
+`PayloadAndHeaders` with a non-null payload. The `PayloadAndHeaders` constructor
+throws `IllegalArgumentException` if the payload is null. Headers may still be
+null, in which case they are treated as an empty map.
+
+**Migration:** Existing interceptors that construct `PayloadAndHeaders` with a
+null payload must pass through the received payload or provide a non-null
+replacement of the appropriate request type. For an interceptor that only
+changes headers, return the original payload:
+
+```java
+return new PayloadAndHeaders(payload, updatedHeaders);
+```
+
+For REST extended-agent-card calls, interceptors previously received a null
+payload. They now receive a `GetExtendedAgentCardRequest.Builder` containing
+the tenant, or an empty tenant string when none was supplied. The REST URL uses
+the tenant from the request returned by the interceptor, including when it
+returns a replacement `GetExtendedAgentCardRequest`.
+
 ### JSON-RPC with a Custom HTTP Client
 
 ```java

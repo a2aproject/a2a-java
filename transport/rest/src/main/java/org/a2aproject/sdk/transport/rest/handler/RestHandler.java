@@ -4,6 +4,7 @@ import static org.a2aproject.sdk.server.AgentCardOperation.EXTENDED_CARD;
 import static org.a2aproject.sdk.server.AgentCardOperation.PUSH_NOTIFICATIONS;
 import static org.a2aproject.sdk.server.AgentCardOperation.STREAMING;
 
+import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
 import static org.a2aproject.sdk.common.MediaType.APPLICATION_JSON;
 import static org.a2aproject.sdk.server.util.async.AsyncUtils.createTubeConfig;
 
@@ -44,6 +45,7 @@ import org.a2aproject.sdk.server.CachingAgentCardTransportValidator;
 import org.a2aproject.sdk.server.EffectiveAgentCard;
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.FixedInstance;
+import org.a2aproject.sdk.server.InputModeValidator;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskOperation;
@@ -244,7 +246,9 @@ public class RestHandler {
             org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(Utils.defaultIfNull(effectiveCard.tenant(), ""));
-            EventKind result = requestHandler.onMessageSend(ProtoUtils.FromProto.messageSendParams(request), context);
+            MessageSendParams params = ProtoUtils.FromProto.messageSendParams(request);
+            InputModeValidator.validate(params.message(), effectiveCard.card());
+            EventKind result = requestHandler.onMessageSend(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder(ProtoUtils.ToProto.taskOrMessage(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
@@ -314,6 +318,7 @@ public class RestHandler {
             parseRequestBody(body, request);
             request.setTenant(Utils.defaultIfNull(effectiveCard.tenant(), ""));
             MessageSendParams params = ProtoUtils.FromProto.messageSendParams(request);
+            InputModeValidator.validate(params.message(), effectiveCard.card());
             try {
                 requestHandler.authorizeTaskAccess(params.message().taskId(), context, TaskOperation.MESSAGE_SEND_STREAM);
             } catch (A2AError e) {
@@ -621,7 +626,8 @@ public class RestHandler {
             ListTasksParams params = paramsBuilder.build();
 
             ListTasksResult result = requestHandler.onListTasks(params, context);
-            return createSuccessResponse(200, org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder(ProtoUtils.ToProto.listTasksResult(result)));
+            return createListTasksSuccessResponse(200,
+                    org.a2aproject.sdk.grpc.ListTasksResponse.newBuilder(ProtoUtils.ToProto.listTasksResult(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -717,7 +723,7 @@ public class RestHandler {
             EffectiveAgentCard effectiveCard = preflight(tenant, context, PUSH_NOTIFICATIONS);
             DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(requiredTaskId, requiredConfigId, effectiveCard.tenant());
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
-            return new HTTPRestResponse(204, APPLICATION_JSON, "");
+            return new HTTPRestResponse(204, APPLICATION_A2A_JSON, "");
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -758,6 +764,9 @@ public class RestHandler {
                 throw new InvalidRequestError("Request body is required");
             }
             validate(body);
+            if (builder instanceof org.a2aproject.sdk.grpc.SendMessageRequest.Builder) {
+                body = ProtoJsonUtils.retainKnownFields(JsonParser.parseString(body), builder.getDescriptorForType()).toString();
+            }
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.SEVERE, "Error parsing JSON request body (length={0})", 
@@ -779,7 +788,21 @@ public class RestHandler {
         try {
             // Include default value fields to ensure empty arrays, zeros, etc. are present in JSON
             String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
-            return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
+            if (builder instanceof org.a2aproject.sdk.grpc.SendMessageResponseOrBuilder) {
+                jsonBody = ProtoJsonUtils.omitEmptyMessageTaskId(jsonBody);
+            }
+            return new HTTPRestResponse(statusCode, APPLICATION_A2A_JSON, jsonBody);
+        } catch (InvalidProtocolBufferException e) {
+            LOGGER.log(Level.SEVERE, "Failed to serialize response", e);
+            return createErrorResponse(new InternalError("Internal error"));
+        }
+    }
+
+    private HTTPRestResponse createListTasksSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
+        try {
+            String jsonBody = ProtoJsonUtils.toJson(JsonFormat.printer().alwaysPrintFieldsWithNoPresence(), builder);
+            jsonBody = ProtoJsonUtils.omitEmptyTaskArtifacts(jsonBody);
+            return new HTTPRestResponse(statusCode, APPLICATION_A2A_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
             LOGGER.log(Level.SEVERE, "Failed to serialize response", e);
             return createErrorResponse(new InternalError("Internal error"));
@@ -799,7 +822,7 @@ public class RestHandler {
 
     private HTTPRestResponse createErrorResponse(int statusCode, A2AError error) {
         String jsonBody = new HTTPRestErrorResponse(error).toJson();
-        return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
+        return new HTTPRestResponse(statusCode, APPLICATION_A2A_JSON, jsonBody);
     }
 
     /**
@@ -931,7 +954,7 @@ public class RestHandler {
             if (extCard == null) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
-            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extCard));
+            return new HTTPRestResponse(200, APPLICATION_A2A_JSON, JsonUtil.toJson(extCard));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable t) {

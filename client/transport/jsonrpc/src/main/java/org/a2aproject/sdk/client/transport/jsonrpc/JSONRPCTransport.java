@@ -16,6 +16,7 @@ import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -67,6 +68,7 @@ import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransport implements ClientTransport {
@@ -126,18 +128,21 @@ public class JSONRPCTransport implements ClientTransport {
                 ProtoUtils.ToProto.sendMessageRequest(request), agentCard, context);
 
         final AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
+        String requestId = UUID.randomUUID().toString();
+        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer, requestId);
 
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(
-                    agentInterface.url(), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD, false);
-            ref.set(builder.postAsyncSSE(
+                    agentInterface.url(), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD, false, requestId);
+            CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    });
+            ref.set(streamFuture);
+            sseEventListener.bindFuture(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -277,18 +282,21 @@ public class JSONRPCTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SUBSCRIBE_TO_TASK_METHOD, ProtoUtils.ToProto.subscribeToTaskRequest(request), agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
+        String requestId = UUID.randomUUID().toString();
+        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer, requestId);
 
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(
-                    agentInterface.url(), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD, false);
-            ref.set(builder.postAsyncSSE(
+                    agentInterface.url(), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD, false, requestId);
+            CompletableFuture<Void> streamFuture = builder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    });
+            ref.set(streamFuture);
+            sseEventListener.bindFuture(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
@@ -321,7 +329,7 @@ public class JSONRPCTransport implements ClientTransport {
         // no-op
     }
 
-    private PayloadAndHeaders applyInterceptors(String methodName, @Nullable Object payload,
+    private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
                                                 @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
         if (interceptors != null && ! interceptors.isEmpty()) {
@@ -334,25 +342,28 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders, String method) throws IOException, InterruptedException, JsonProcessingException {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders, method, followRedirects);
+        String requestId = UUID.randomUUID().toString();
+        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders, method, followRedirects, requestId);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
+            JsonRpcCorrelation.validateIfErrorEnvelope(response.body(), requestId);
             int status = response.status();
             String message = "Request failed with HTTP " + status;
             throw new A2AClientException(message, new A2AClientHTTPError(status, message, response.body(), response.headers().toMap()));
         }
+        JsonRpcCorrelation.validate(response.body(), requestId);
         return response.body();
     }
 
     private A2AHttpClient.PostBuilder createPostBuilder(
-            String url, PayloadAndHeaders payloadAndHeaders, String method, boolean followRedirects)
+            String url, PayloadAndHeaders payloadAndHeaders, String method, boolean followRedirects, String requestId)
             throws JsonProcessingException {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
                 .addHeader(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
                 .followRedirects(followRedirects)
-                .body(JSONRPCUtils.toJsonRPCRequest(null, method, (MessageOrBuilder) payloadAndHeaders.getPayload()));
+                .body(JSONRPCUtils.toJsonRPCRequest(requestId, method, InterceptorPayloads.cast(payloadAndHeaders.getPayload(), MessageOrBuilder.class)));
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {

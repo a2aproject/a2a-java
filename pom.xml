@@ -64,7 +64,7 @@
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <junit.version>6.1.3</junit.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <mapstruct-spi-protobuf.version>1.76.0</mapstruct-spi-protobuf.version>
+        <mapstruct-spi-protobuf.version>1.78.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.24.0</mockito-core.version>
         <weld-se-core.version>6.0.4.Final</weld-se-core.version>
         <mockserver.version>9.2.0</mockserver.version>
@@ -72,16 +72,16 @@
         <mutiny-zero.version>1.3.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <protobuf-java.version>4.36.2</protobuf-java.version>
-        <protobuf-maven-plugin.version>5.1.11</protobuf-maven-plugin.version>
+        <protobuf-maven-plugin.version>5.1.12</protobuf-maven-plugin.version>
         <!-- Keep generation compatible with the protobuf runtime supplied by the WildFly gRPC feature pack. -->
         <protobuf-protoc.version>4.35.0</protobuf-protoc.version>
         <quarkus.platform.version>3.40.1.2</quarkus.platform.version>
         <rest-assured.version>6.3.0</rest-assured.version>
         <slf4j.version>2.0.20</slf4j.version>
-        <logback.version>1.6.3</logback.version>
+        <logback.version>1.6.6</logback.version>
         <version.testcontainers>2.0.5</version.testcontainers>
-        <error-prone.version>2.51.0</error-prone.version>
-        <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
+        <error-prone.version>2.52.0</error-prone.version>
+        <spotless-maven-plugin.version>3.11.0</spotless-maven-plugin.version>
         <google-java-format.version>1.37.0</google-java-format.version>
         <nullaway.version>0.14.3</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>

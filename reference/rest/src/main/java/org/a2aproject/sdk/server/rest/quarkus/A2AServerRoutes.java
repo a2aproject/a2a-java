@@ -83,7 +83,7 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_K
  * GET    /{tenant}/tasks                  → listTasks()
  * GET    /{tenant}/tasks/{taskId}         → getTask()
  * POST   /{tenant}/tasks/{taskId}:cancel  → cancelTask()
- * POST   /{tenant}/tasks/{taskId}:subscribe → subscribeToTask()
+ * GET/POST /{tenant}/tasks/{taskId}:subscribe → subscribeToTask()
  * GET    /.well-known/agent-card.json     → getAgentCard()
  * GET    /{tenant}/extendedAgentCard      → getExtendedAgentCard()
  * </pre>
@@ -206,7 +206,10 @@ public class A2AServerRoutes {
                 cancelTask(body, ctx);
             }), false);
 
-        // POST /{tenant}/tasks/{taskId}:subscribe - Subscribe to task updates (SSE)
+        // GET and POST /{tenant}/tasks/{taskId}:subscribe - Subscribe to task updates (SSE)
+        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$")
+            .order(1)
+            .blockingHandler(authenticatedStreaming(this::subscribeToTask), false);
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$")
             .order(1)
             .blockingHandler(authenticatedStreaming(this::subscribeToTask), false);
@@ -254,7 +257,6 @@ public class A2AServerRoutes {
         // GET /{tenant}/extendedAgentCard - Extended agent card (auth required)
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
             .order(1)
-            .produces(APPLICATION_JSON)
             .blockingHandler(authenticated(this::getExtendedAgentCard), false);
     }
 
@@ -497,7 +499,7 @@ public class A2AServerRoutes {
     /**
      * Subscribes to task updates via Server-Sent Events.
      *
-     * <p>Maps {@code POST /{tenant}/tasks/{taskId}:subscribe} to {@link RestHandler#subscribeToTask}.
+     * <p>Maps GET and POST {@code /{tenant}/tasks/{taskId}:subscribe} to {@link RestHandler#subscribeToTask}.
      * Returns a stream of task events allowing clients to reconnect to ongoing tasks.
      *
      * <p><b>URL Pattern:</b> {@code /tasks/{taskId}:subscribe}

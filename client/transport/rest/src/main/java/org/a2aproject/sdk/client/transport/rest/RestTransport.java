@@ -62,6 +62,7 @@ import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.util.Utils;
+import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
 public class RestTransport implements ClientTransport {
@@ -441,8 +442,15 @@ public class RestTransport implements ClientTransport {
     @Override
     public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
         try {
-            PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD, null, agentCard, context);
-            String url = Utils.buildBaseUrl(agentInterface, params.tenant()) + "/extendedAgentCard";
+            org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.Builder builder = org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.newBuilder();
+            if (params.tenant() != null) {
+                builder.setTenant(params.tenant());
+            }
+            PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD, builder, agentCard, context);
+            org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder interceptedRequest =
+                    InterceptorPayloads.cast(payloadAndHeaders.getPayload(),
+                            org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder.class);
+            String url = Utils.buildBaseUrl(agentInterface, interceptedRequest.getTenant()) + "/extendedAgentCard";
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             addStandardHeaders(getBuilder, payloadAndHeaders);
             A2AHttpResponse response = getBuilder.get();
@@ -463,7 +471,7 @@ public class RestTransport implements ClientTransport {
         // no-op
     }
 
-    private PayloadAndHeaders applyInterceptors(String methodName, @Nullable MessageOrBuilder payload,
+    private PayloadAndHeaders applyInterceptors(String methodName, MessageOrBuilder payload,
             AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
         if (interceptors != null && !interceptors.isEmpty()) {
@@ -476,7 +484,7 @@ public class RestTransport implements ClientTransport {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException {
-        MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
+        MessageOrBuilder payload = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), MessageOrBuilder.class);
         String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
@@ -495,7 +503,7 @@ public class RestTransport implements ClientTransport {
     private A2AHttpClient.PostBuilder createPostBuilder(
             String url, PayloadAndHeaders payloadAndHeaders, boolean followRedirects)
             throws JsonProcessingException, InvalidProtocolBufferException {
-        String body = ProtoJsonUtils.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
+        String body = ProtoJsonUtils.toJson(JsonFormat.printer(), InterceptorPayloads.cast(payloadAndHeaders.getPayload(), MessageOrBuilder.class));
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
         }

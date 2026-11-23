@@ -91,10 +91,10 @@ public class JSONRPCTransportStreaming_v0_3_Test {
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
+                                .withBody(FixedRequestId.sse(SEND_MESSAGE_STREAMING_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         Message_v0_3 message = new Message_v0_3.Builder()
                 .role(Message_v0_3.Role.USER)
                 .parts(Collections.singletonList(new TextPart_v0_3("tell me some jokes")))
@@ -137,10 +137,10 @@ public class JSONRPCTransportStreaming_v0_3_Test {
                         response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
+                                .withBody(FixedRequestId.sse(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE))
                 );
 
-        JSONRPCTransport_v0_3 client = new JSONRPCTransport_v0_3("http://localhost:4001");
+        JSONRPCTransport_v0_3 client = FixedRequestId.transport(null);
         TaskIdParams_v0_3 taskIdParams = new TaskIdParams_v0_3("task-1234");
 
         AtomicReference<StreamingEventKind_v0_3> receivedEvent = new AtomicReference<>();

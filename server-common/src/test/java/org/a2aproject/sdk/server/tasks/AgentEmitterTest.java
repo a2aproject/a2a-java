@@ -22,8 +22,10 @@ import org.a2aproject.sdk.server.events.MainEventBusProcessor;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Part;
+import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
 import org.junit.jupiter.api.AfterEach;
@@ -438,6 +440,62 @@ public class AgentEmitterTest {
     }
 
     @Test
+    public void sendGeneratedMessageWithoutTaskOmitsTaskId() throws Exception {
+        agentEmitter.sendMessage("direct response");
+
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
+        assertNotNull(item);
+        Message message = assertInstanceOf(Message.class, item.getEvent());
+        assertNull(message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+    }
+
+    @Test
+    public void sendExplicitGeneratedMessageWithoutTaskOmitsTaskId() throws Exception {
+        agentEmitter.sendMessage(agentEmitter.newAgentMessage(SAMPLE_PARTS, null));
+        Message message = assertInstanceOf(Message.class, eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS).getEvent());
+        assertNull(message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+    }
+
+    @Test
+    public void sendExplicitGeneratedMessageAfterTaskIncludesTaskId() throws Exception {
+        agentEmitter.startWork();
+        assertNotNull(eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS));
+        agentEmitter.sendMessage(agentEmitter.newAgentMessage(SAMPLE_PARTS, null));
+        Message message = assertInstanceOf(Message.class, eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS).getEvent());
+        assertEquals(TEST_TASK_ID, message.taskId());
+    }
+
+    @Test
+    public void sendGeneratedMessageAfterTaskEventIncludesTaskId() throws Exception {
+        agentEmitter.startWork();
+        assertNotNull(eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS));
+        agentEmitter.sendMessage("task response");
+
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
+        assertNotNull(item);
+        Message message = assertInstanceOf(Message.class, item.getEvent());
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+    }
+
+    @Test
+    public void sendGeneratedMessageForExistingTaskIncludesTaskId() throws Exception {
+        Task task = Task.builder().id(TEST_TASK_ID).contextId(TEST_TASK_CONTEXT_ID)
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING)).build();
+        RequestContext context = new RequestContext.Builder().setTaskId(TEST_TASK_ID)
+                .setContextId(TEST_TASK_CONTEXT_ID).setTask(task).build();
+        new AgentEmitter(context, eventQueue).sendMessage("task response");
+
+        EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
+        assertNotNull(item);
+        Message message = assertInstanceOf(Message.class, item.getEvent());
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+    }
+
+    @Test
     public void sendMessageWithMatchingIdsSucceeds() throws Exception {
         agentEmitter.sendMessage(SAMPLE_MESSAGE);
 
@@ -445,7 +503,7 @@ public class AgentEmitterTest {
         assertNotNull(item);
         assertInstanceOf(Message.class, item.getEvent());
         Message message = (Message) item.getEvent();
-        assertEquals(TEST_TASK_ID, message.taskId());
+        assertNull(message.taskId());
         assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
     }
 
