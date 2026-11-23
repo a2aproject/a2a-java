@@ -8,6 +8,13 @@ layout: page
 
 The A2A Java SDK is a multi-module Maven library for implementing the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/) in Java. It provides both client and server support for agent communication over JSON-RPC, gRPC, and REST transports.
 
+## SDK Release Support
+
+The **1.x SDK release line** is actively supported. The legacy **0.3.x SDK
+release line** is not actively supported. This refers to SDK releases, not
+protocol versions: the 1.x SDK provides [compatibility modules](compatibility)
+for communicating with A2A v0.3 clients and agents.
+
 ## What You Can Build
 
 - **A2A Servers** — Expose your Java agent as an A2A-compliant service that other agents and clients can discover and communicate with.
