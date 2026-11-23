@@ -9,7 +9,6 @@ import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.compat03.client.http.A2ACardResolver_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.sse.RestSSEEventListener_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;
@@ -57,6 +56,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
+import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
 public class RestTransport_v0_3 implements ClientTransport_v0_3 {
@@ -339,7 +339,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
             if (!needsExtendedCard) {
                 return agentCard;
             }
-            PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest_v0_3.METHOD, null,
+            org.a2aproject.sdk.compat03.grpc.GetAgentCardRequestOrBuilder builder = org.a2aproject.sdk.compat03.grpc.GetAgentCardRequest.newBuilder();
+            PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest_v0_3.METHOD, builder,
                     agentCard, context);
             String url = agentUrl + String.format("/v1/card");
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
@@ -368,7 +369,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         // no-op
     }
 
-    private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, @Nullable MessageOrBuilder payload,
+    private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, MessageOrBuilder payload,
                                                      AgentCard_v0_3 agentCard, @Nullable ClientCallContext_v0_3 clientCallContext) {
         PayloadAndHeaders_v0_3 payloadAndHeaders = new PayloadAndHeaders_v0_3(payload, getHttpHeaders(clientCallContext));
         if (interceptors != null && !interceptors.isEmpty()) {
@@ -381,7 +382,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException_v0_3 {
-        MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
+        MessageOrBuilder payload = InterceptorPayloads.castNullable(payloadAndHeaders.getPayload(), MessageOrBuilder.class);
         String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
@@ -398,7 +399,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     }
 
     private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws JsonProcessingException_v0_3, InvalidProtocolBufferException {
-        String body = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
+        String body = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), InterceptorPayloads.castNullable(payloadAndHeaders.getPayload(), MessageOrBuilder.class));
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
         }
