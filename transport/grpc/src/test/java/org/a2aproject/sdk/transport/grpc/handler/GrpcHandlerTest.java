@@ -446,15 +446,21 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         }
         Assertions.assertNull(streamRecorder.getError());
         List<StreamResponse> result = streamRecorder.getValues();
-        Assertions.assertEquals(2, result.size());
-        StreamResponse first = result.get(0);
+        // Per A2A spec 3.1.2 the stream begins with the Task (as this request updated it), then the events
+        Assertions.assertEquals(3, result.size());
+        StreamResponse initial = result.get(0);
+        Assertions.assertTrue(initial.hasTask(), "The stream must begin with the Task");
+        assertEquals(task.id(), initial.getTask().getId());
+        assertEquals(task.contextId(), initial.getTask().getContextId());
+        assertEquals(0, initial.getTask().getArtifactsCount());
+        StreamResponse first = result.get(1);
         Assertions.assertTrue(first.hasArtifactUpdate());
         org.a2aproject.sdk.grpc.TaskArtifactUpdateEvent taskArtifactUpdateEvent = first.getArtifactUpdate();
         assertEquals(task.id(), taskArtifactUpdateEvent.getTaskId());
         assertEquals(task.contextId(), taskArtifactUpdateEvent.getContextId());
         assertEquals("11", taskArtifactUpdateEvent.getArtifact().getArtifactId());
         assertEquals("text", taskArtifactUpdateEvent.getArtifact().getParts(0).getText());
-        StreamResponse second = result.get(1);
+        StreamResponse second = result.get(2);
         Assertions.assertTrue(second.hasStatusUpdate());
         org.a2aproject.sdk.grpc.TaskStatusUpdateEvent taskStatusUpdateEvent = second.getStatusUpdate();
         assertEquals(task.id(), taskStatusUpdateEvent.getTaskId());

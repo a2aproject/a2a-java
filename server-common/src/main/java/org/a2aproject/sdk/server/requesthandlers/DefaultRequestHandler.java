@@ -27,6 +27,8 @@ import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
+import mutiny.zero.ZeroPublisher;
+
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.EffectiveAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -76,6 +78,7 @@ import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.util.Assert;
@@ -1056,6 +1059,16 @@ public class DefaultRequestHandler implements RequestHandler {
                 mss.requestContext.getTaskId(), "TaskId must be non-null after RequestContext.build()");
         final AtomicReference<@NonNull String> taskId = new AtomicReference<>(queueTaskId);
 
+        // The Task this stream begins with if the agent's first event is a status or artifact update
+        // (see prependTaskBeforeFirstUpdate). For an existing task it is the task as this request updated
+        // it; for a new task it is registered below as the Task that the first event creates.
+        Task initialTask = mss.task() != null ? mss.task() : Task.builder()
+                .id(queueTaskId)
+                .contextId(mss.requestContext.getContextId())
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+                .history(List.of(params.message()))
+                .build();
+
         boolean agentStarted = false;
         EventQueue queue;
         ResultAggregator resultAggregator;
@@ -1063,6 +1076,7 @@ public class DefaultRequestHandler implements RequestHandler {
         try {
             if (mss.task() == null) {
                 mainEventBusProcessor.registerInitialMessage(queueTaskId, params.message());
+                mainEventBusProcessor.registerInitialTask(queueTaskId, initialTask);
             }
             // Create queue with real taskId (no tempId parameter needed)
             queue = queueManager.createOrTap(queueTaskId);
@@ -1124,6 +1138,8 @@ public class DefaultRequestHandler implements RequestHandler {
 
             // Then convert EventQueueItem -> Event
             Flow.Publisher<Event> eventPublisher = convertingProcessor(processed, EventQueueItem::getEvent);
+
+            eventPublisher = prependTaskBeforeFirstUpdate(eventPublisher, initialTask);
 
             Flow.Publisher<StreamingEventKind> finalPublisher = convertingProcessor(eventPublisher, event -> (StreamingEventKind) event);
 
@@ -1211,6 +1227,59 @@ public class DefaultRequestHandler implements RequestHandler {
                         });
             }
         }
+    }
+
+    /**
+     * Per A2A Protocol Spec 3.1.2 (Send Streaming Message):
+     * "If the agent returns a Task, the stream MUST begin with the Task object."
+     * <p>
+     * An agent may begin with a status or artifact update (e.g. {@link AgentEmitter#startWork()}); the
+     * client would then receive an update of a Task it was never sent. This emits {@code initialTask}
+     * before such a first event. A first Task or Message passes unchanged.
+     * </p>
+     * <p>
+     * {@code initialTask} is fixed before the agent runs (the existing task as this request updated it, or
+     * the Task that a new task's first event creates), not read back from the TaskStore when the first
+     * event is relayed: by then the TaskStore may already hold later events, whose status and artifacts
+     * would reach the client ahead of, and again in, the updates that follow.
+     * </p>
+     *
+     * @param source the stream's events
+     * @param initialTask the Task to emit before a first status or artifact update
+     * @return the events, with {@code initialTask} before a first status or artifact update
+     */
+    private static Flow.Publisher<Event> prependTaskBeforeFirstUpdate(Flow.Publisher<Event> source, Task initialTask) {
+        return ZeroPublisher.create(createTubeConfig(), tube -> {
+            source.subscribe(new Flow.Subscriber<Event>() {
+                private boolean firstEventSeen = false;
+
+                @Override
+                public void onSubscribe(Flow.Subscription subscription) {
+                    subscription.request(Long.MAX_VALUE);
+                }
+
+                @Override
+                public void onNext(Event event) {
+                    if (!firstEventSeen) {
+                        firstEventSeen = true;
+                        if (event instanceof TaskStatusUpdateEvent || event instanceof TaskArtifactUpdateEvent) {
+                            tube.send(initialTask);
+                        }
+                    }
+                    tube.send(event);
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    tube.fail(throwable);
+                }
+
+                @Override
+                public void onComplete() {
+                    tube.complete();
+                }
+            });
+        });
     }
 
     @Override

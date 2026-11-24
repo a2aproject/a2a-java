@@ -2014,10 +2014,13 @@ public abstract class AbstractA2AServerTest {
         CountDownLatch streamConsumerReadyLatch = new CountDownLatch(1);
         List<UpdateEvent> streamReceivedEvents = new CopyOnWriteArrayList<>();
         AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
+        AtomicBoolean streamReceivedInitialTask = new AtomicBoolean(false);
 
         BiConsumer<ClientEvent, AgentCard> streamConsumer = (event, agentCard) -> {
-            // This consumer is for sendMessage() (not subscribe), so it doesn't get initial TaskEvent
-            if (event instanceof TaskUpdateEvent tue) {
+            // Per A2A spec 3.1.2, the stream begins with the Task, then its updates
+            if (event instanceof TaskEvent && !streamReceivedInitialTask.get() && streamReceivedEvents.isEmpty()) {
+                streamReceivedInitialTask.set(true);
+            } else if (event instanceof TaskUpdateEvent tue) {
                 streamReceivedEvents.add(tue.getUpdateEvent());
                 streamEventLatch.countDown();
                 streamConsumerReadyLatch.countDown();  // Signal that consumer is receiving events
@@ -2048,6 +2051,7 @@ public abstract class AbstractA2AServerTest {
 
         assertFalse(resubUnexpectedEvent.get());
         assertFalse(streamUnexpectedEvent.get());
+        assertTrue(streamReceivedInitialTask.get(), "The send stream must begin with the Task");
         assertNull(resubErrorRef.get());
 
         // Both should have received 2 events: artifact-2 and completion

@@ -97,6 +97,13 @@ public class MainEventBusProcessor implements Runnable {
      */
     private final ConcurrentHashMap<String, Message> initialMessages = new ConcurrentHashMap<>();
 
+    /**
+     * Initial Tasks for new streaming tasks that have not emitted their first event yet. When that
+     * first event is a status or artifact update, this Task is what the TaskStore creates for the
+     * task, so the streaming response can begin with the same Task object.
+     */
+    private final ConcurrentHashMap<String, Task> initialTasks = new ConcurrentHashMap<>();
+
     private MainEventBus eventBus;
 
     private TaskStore taskStore;
@@ -148,9 +155,24 @@ public class MainEventBusProcessor implements Runnable {
         initialMessages.put(taskId, message);
     }
 
+    /**
+     * Registers the Task that a new task's first event creates in the TaskStore when that event is a
+     * status or artifact update, until its first event is persisted. Without a registration, the
+     * TaskManager creates it.
+     *
+     * @param taskId the new task identifier
+     * @param initialTask the Task to create: SUBMITTED, with the opening message as its history
+     */
+    public void registerInitialTask(String taskId, Task initialTask) {
+        initialTasks.put(taskId, initialTask);
+    }
+
     /** Remove a registration after all events already submitted by the agent are processed. */
     public void clearInitialMessageAfterEvents(String taskId) {
-        eventBus.submit(() -> initialMessages.remove(taskId));
+        eventBus.submit(() -> {
+            initialMessages.remove(taskId);
+            initialTasks.remove(taskId);
+        });
     }
 
     /**
@@ -258,10 +280,12 @@ public class MainEventBusProcessor implements Runnable {
 
             try {
                 Message initialMessage = initialMessages.get(taskId);
-                updateResult = updateTaskStore(taskId, event, isReplicated, initialMessage);
+                Task initialTask = initialTasks.get(taskId);
+                updateResult = updateTaskStore(taskId, event, isReplicated, initialMessage, initialTask);
                 if (event instanceof Task || event instanceof TaskStatusUpdateEvent
                         || event instanceof TaskArtifactUpdateEvent || event instanceof A2AError) {
                     initialMessages.remove(taskId);
+                    initialTasks.remove(taskId);
                 }
                 boolean isFinal = updateResult.isFinal();
 
@@ -365,8 +389,15 @@ public class MainEventBusProcessor implements Runnable {
      * @throws InternalError if persistence fails
      */
     private UpdateResult updateTaskStore(String taskId, Event event, boolean isReplicated,
-            @Nullable Message initialMessage) throws InternalError {
+            @Nullable Message initialMessage, @Nullable Task initialTask) throws InternalError {
         try {
+            // A new task opened by a status or artifact update: create it as registered (see
+            // registerInitialTask); TaskManager then finds it in the TaskStore and applies the update
+            if (initialTask != null && (event instanceof TaskStatusUpdateEvent
+                    || event instanceof TaskArtifactUpdateEvent) && taskStore.get(taskId) == null) {
+                taskStore.save(initialTask, false);
+            }
+
             // Extract contextId from event (all relevant events have it)
             String contextId = extractContextId(event);
 

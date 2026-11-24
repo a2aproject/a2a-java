@@ -858,7 +858,14 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         future.join();
 
-        Assertions.assertEquals(events, results);
+        // Per A2A spec 3.1.2 the stream begins with the Task (as this request updated it), then the events
+        assertEquals(events.size() + 1, results.size());
+        Task first = assertInstanceOf(Task.class, results.get(0), "The stream must begin with the Task");
+        assertEquals(task.id(), first.id());
+        assertEquals(task.contextId(), first.contextId());
+        assertEquals(task.status(), first.status());
+        assertEquals(List.of(message.messageId()), first.history().stream().map(Message::messageId).toList());
+        Assertions.assertEquals(events, results.subList(1, results.size()));
     }
 
     @Test
