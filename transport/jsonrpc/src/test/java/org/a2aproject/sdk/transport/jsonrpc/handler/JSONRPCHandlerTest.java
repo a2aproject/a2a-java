@@ -2516,6 +2516,24 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testNoCardAtAllStreamsInternalErrorForBothStreamingMethods() throws Exception {
+        JSONRPCHandler handler = new JSONRPCHandler(
+                FixedInstance.empty(), FixedInstance.empty(), requestHandler, internalExecutor, null);
+
+        List<SendStreamingMessageResponse> streaming = drainStream(handler.onMessageSendStream(
+                new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null)), callContext));
+        List<SendStreamingMessageResponse> subscription = drainStream(handler.onSubscribeToTask(
+                new SubscribeToTaskRequest("2", new TaskIdParams("task")), callContext));
+
+        assertEquals(1, streaming.size());
+        assertEquals("1", streaming.get(0).getId());
+        assertInstanceOf(InternalError.class, streaming.get(0).getError());
+        assertEquals(1, subscription.size());
+        assertEquals("2", subscription.get(0).getId());
+        assertInstanceOf(InternalError.class, subscription.get(0).getError());
+    }
+
+    @Test
     public void testConvenienceConstructorWithNullCard() {
         JSONRPCHandler handler = new JSONRPCHandler(null, requestHandler, internalExecutor);
         assertNull(handler.getAgentCard());
