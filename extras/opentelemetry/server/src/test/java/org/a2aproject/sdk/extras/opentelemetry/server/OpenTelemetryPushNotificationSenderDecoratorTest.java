@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.util.Collections;
 import java.util.List;
+import org.a2aproject.sdk.extras.opentelemetry.ProtocolLogEmitter;
 import org.a2aproject.sdk.server.tasks.PushNotificationSender;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
@@ -134,6 +136,20 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
     }
 
     @Test
+    void sendNotification_emitsAggregateDeliveryOutcome() {
+        ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+        TestablePushNotificationSenderDecorator instrumented = new TestablePushNotificationSenderDecorator(delegate, tracer, emitter);
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
+                .taskId("task").contextId("context")
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING)).build();
+        when(delegate.sendNotification(any(), any())).thenReturn(false);
+
+        assertFalse(instrumented.sendNotification(event, null));
+
+        verify(emitter).emitMetadata("a2a.notification.delivery", SEND_PUSH_NOTIFICATION, "outbound", "failure", event);
+    }
+
+    @Test
     void sendNotification_setsErrorStatusOnException() {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("task-err")
@@ -203,6 +219,10 @@ class OpenTelemetryPushNotificationSenderDecoratorTest {
         TestablePushNotificationSenderDecorator(PushNotificationSender delegate, Tracer tracer,
                                                  boolean extractResponse) {
             super(delegate, tracer, extractResponse);
+        }
+
+        TestablePushNotificationSenderDecorator(PushNotificationSender delegate, Tracer tracer, ProtocolLogEmitter emitter) {
+            super(delegate, tracer, false, emitter);
         }
     }
 }

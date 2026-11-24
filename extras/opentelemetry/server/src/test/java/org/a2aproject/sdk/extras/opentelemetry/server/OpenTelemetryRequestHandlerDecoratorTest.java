@@ -36,14 +36,17 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Flow;
+import org.a2aproject.sdk.extras.opentelemetry.ProtocolLogEmitter;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.requesthandlers.RequestHandler;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.A2AMethods;
@@ -155,6 +158,11 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         public TestableOpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer, Meter meter) {
             super(delegate, tracer, meter);
+        }
+
+        public TestableOpenTelemetryRequestHandlerDecorator(RequestHandler delegate, Tracer tracer, Meter meter,
+                ProtocolLogEmitter emitter) {
+            super(delegate, tracer, meter, emitter);
         }
     }
 
@@ -274,6 +282,33 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     @Nested
     class MessageSendTests {
         @Test
+        void onMessageSend_ignoresFailureInResponseLogging() throws A2AError {
+            MessageSendParams params = new MessageSendParams(Message.builder().role(Message.Role.ROLE_USER)
+                    .parts(List.of(new TextPart("message"))).messageId("id").build(), null, null, "");
+            EventKind response = mock(EventKind.class);
+            when(delegate.onMessageSend(params, context)).thenReturn(response);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs = new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter,
+                    mock(ProtocolLogEmitter.class));
+
+            assertEquals(response, withLogs.onMessageSend(params, context));
+        }
+
+        @Test
+        void onMessageSend_emitsRequestAndResponseWhenEnabled() throws A2AError {
+            Message message = Message.builder().role(Message.Role.ROLE_USER)
+                    .parts(List.of(new TextPart("message"))).messageId("id").build();
+            MessageSendParams params = new MessageSendParams(message, null, null, "");
+            when(delegate.onMessageSend(params, context)).thenReturn(message);
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs = new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+
+            assertEquals(message, withLogs.onMessageSend(params, context));
+
+            verify(emitter).emit("a2a.task.request", A2AMethods.SEND_MESSAGE_METHOD, "inbound", null, params);
+            verify(emitter).emitResponse("a2a.task.response", A2AMethods.SEND_MESSAGE_METHOD, "outbound", message);
+        }
+
+        @Test
         void onMessageSend_createsSpanAndDelegatesToHandler() throws A2AError {
             Message message = Message.builder()
                     .role(Message.Role.ROLE_USER)
@@ -324,6 +359,32 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
     @Nested
     class MessageSendStreamTests {
+        @Test
+        @SuppressWarnings("unchecked")
+        void streamEmitsEventAndOnlyOneTerminalLog() throws A2AError {
+            Message message = Message.builder().role(Message.Role.ROLE_USER)
+                    .parts(List.of(new TextPart("message"))).messageId("id").build();
+            MessageSendParams params = new MessageSendParams(message, null, null, "");
+            Flow.Publisher<StreamingEventKind> publisher = mock(Flow.Publisher.class);
+            when(delegate.onMessageSendStream(params, context)).thenReturn(publisher);
+            mockEventSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_EVENT_SUFFIX, mock(Span.class));
+            mockClosingSpanBuilder(tracer, A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX, mock(Span.class));
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs = new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+
+            withLogs.onMessageSendStream(params, context).subscribe(mock(Flow.Subscriber.class));
+            ArgumentCaptor<Flow.Subscriber> subscriber = ArgumentCaptor.forClass(Flow.Subscriber.class);
+            verify(publisher).subscribe(subscriber.capture());
+            subscriber.getValue().onNext(message);
+            subscriber.getValue().onComplete();
+            subscriber.getValue().onComplete();
+
+            verify(emitter).emit("a2a.task.request", A2AMethods.SEND_STREAMING_MESSAGE_METHOD, "inbound", null, params);
+            verify(emitter).emit("a2a.task.event", A2AMethods.SEND_STREAMING_MESSAGE_METHOD, "outbound", message.kind(), message);
+            verify(emitter, times(1)).emit("a2a.task.stream.end", A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
+                    "outbound", "complete", null);
+        }
+
         @Test
         void onMessageSendStream_createsSpanAndWrapsPublisher() throws A2AError {
             Message message = Message.builder()
@@ -396,7 +457,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             otelSubscriber.onComplete();
 
             verify(tracer).spanBuilder(A2AMethods.SEND_STREAMING_MESSAGE_METHOD + STREAMING_END_SUFFIX);
-            verify(closingSpanBuilder).addLink(spanContext);
+            verify(closingSpanBuilder).setParent(any(Context.class));
             verify(closingSpan).setStatus(StatusCode.OK);
             verify(closingSpan).end();
             verify(testSubscriber).onComplete();
@@ -624,6 +685,21 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     @Nested
     class SetTaskPushNotificationConfigTests {
         @Test
+        void onSetTaskPushNotificationConfig_emitsOutboundCompletion() throws A2AError {
+            TaskPushNotificationConfig params = TaskPushNotificationConfig.builder()
+                    .id("config-1").taskId("task-123").url("http://example.com").build();
+            when(delegate.onCreateTaskPushNotificationConfig(params, context)).thenReturn(params);
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs =
+                    new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+
+            withLogs.onCreateTaskPushNotificationConfig(params, context);
+
+            verify(emitter).emitMetadata("a2a.notification.subscription",
+                    A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, "outbound", "created", params);
+        }
+
+        @Test
         void onSetTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
             TaskPushNotificationConfig params = TaskPushNotificationConfig.builder()
                     .id("config-1").taskId("task-123").url("http://example.com").build();
@@ -744,7 +820,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             otelSubscriber.onComplete();
 
             verify(tracer).spanBuilder(A2AMethods.SUBSCRIBE_TO_TASK_METHOD + STREAMING_END_SUFFIX);
-            verify(closingSpanBuilder).addLink(spanContext);
+            verify(closingSpanBuilder).setParent(any(Context.class));
             verify(closingSpan).setStatus(StatusCode.OK);
             verify(closingSpan).end();
             verify(testSubscriber).onComplete();
@@ -867,6 +943,20 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     @Nested
     class DeleteTaskPushNotificationConfigTests {
         @Test
+        void onDeleteTaskPushNotificationConfig_emitsOutboundCompletion() throws A2AError {
+            DeleteTaskPushNotificationConfigParams params =
+                    new DeleteTaskPushNotificationConfigParams("task-123", "config-123");
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs =
+                    new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+
+            withLogs.onDeleteTaskPushNotificationConfig(params, context);
+
+            verify(emitter).emitMetadata("a2a.notification.subscription",
+                    A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, "outbound", "deleted", params);
+        }
+
+        @Test
         void onDeleteTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
             DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams("task-123", "config-123");
             doNothing().when(delegate).onDeleteTaskPushNotificationConfig(params, context);
@@ -891,6 +981,53 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());
             verify(span).end();
+        }
+    }
+
+    @Nested
+    class AuthorizeTaskAccessTests {
+        @Test
+        void authorizeTaskAccess_emitsAllowWhenGranted() throws A2AError {
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs =
+                    new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+
+            withLogs.authorizeTaskAccess("task-123", context, TaskOperation.GET_TASK);
+
+            verify(delegate).authorizeTaskAccess("task-123", context, TaskOperation.GET_TASK);
+            verify(emitter).emitAuthorization("GET_TASK", "task-123", null);
+        }
+
+        @Test
+        void authorizeTaskAccess_emitsDenyWithErrorTypeAndRethrows() throws A2AError {
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs =
+                    new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+            doThrow(new TaskNotFoundError()).when(delegate)
+                    .authorizeTaskAccess("task-123", context, TaskOperation.CANCEL_TASK);
+
+            assertThrows(TaskNotFoundError.class,
+                    () -> withLogs.authorizeTaskAccess("task-123", context, TaskOperation.CANCEL_TASK));
+
+            verify(emitter).emitAuthorization("CANCEL_TASK", "task-123", "TaskNotFoundError");
+        }
+
+        @Test
+        void authorizeTaskAccess_emitsDecisionForOperationsWithoutATask() throws A2AError {
+            ProtocolLogEmitter emitter = mock(ProtocolLogEmitter.class);
+            TestableOpenTelemetryRequestHandlerDecorator withLogs =
+                    new TestableOpenTelemetryRequestHandlerDecorator(delegate, tracer, meter, emitter);
+
+            withLogs.authorizeTaskAccess(null, context, TaskOperation.LIST_TASKS);
+
+            verify(emitter).emitAuthorization("LIST_TASKS", null, null);
+        }
+
+        @Test
+        void authorizeTaskAccess_withoutEmitterStillDelegates() throws A2AError {
+            decorator.authorizeTaskAccess("task-123", context, TaskOperation.GET_TASK);
+
+            verify(delegate).authorizeTaskAccess("task-123", context, TaskOperation.GET_TASK);
         }
     }
 
