@@ -42,9 +42,6 @@ public abstract class EventQueue implements AutoCloseable {
      */
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
-    /** Poll interval used by {@link #awaitDrained(long, TimeUnit)}. */
-    static final long DRAIN_POLL_INTERVAL_MILLIS = 1;
-
     private final int queueSize;
     private volatile boolean closed = false;
 
@@ -231,12 +228,19 @@ public abstract class EventQueue implements AutoCloseable {
      * {@code DefaultRequestHandler#onMessageSend}) use this to make sure the read reflects every
      * event the agent produced, not just the ones that happened to be processed in time.
      *
+     * <p>
+     * The default implementation returns {@code true} right away, so a custom queue that does
+     * not track in-flight events keeps working. {@code MainQueue} waits for its in-flight count
+     * to reach zero, and {@code ChildQueue} delegates to its parent.
+     *
      * @param timeout the maximum time to wait
      * @param unit the timeout unit
      * @return {@code true} if the queue drained, {@code false} if the timeout elapsed first
      * @throws InterruptedException if the thread is interrupted while waiting
      */
-    public abstract boolean awaitDrained(long timeout, TimeUnit unit) throws InterruptedException;
+    public boolean awaitDrained(long timeout, TimeUnit unit) throws InterruptedException {
+        return true;
+    }
 
     /**
      * Enqueues an event for processing.
@@ -523,6 +527,9 @@ public abstract class EventQueue implements AutoCloseable {
         private final @Nullable TaskStreamLifecycleHook streamLifecycleHook;
 
         private final ThreadLocal<Boolean> closingChildren = ThreadLocal.withInitial(() -> false);
+        // Notified every time a permit is released, so awaitDrained() wakes up as soon as the
+        // last in-flight event is done instead of polling.
+        private final Object drainLock = new Object();
 
         private final StreamCloseHandle streamCloseHandle = new StreamCloseHandle() {
             @Override
@@ -681,7 +688,7 @@ public abstract class EventQueue implements AutoCloseable {
                 // releaseSemaphore() (see MainEventBusProcessor.processEvent finally block).
                 // Release the permit here to avoid leaking it and eventually blocking
                 // all event processing for this task.
-                semaphore.release();
+                releaseSemaphore();
                 awaitingChildren.forEach(ChildQueue::cancelSubmittedFinalEvent);
                 throw e;
             }
@@ -748,18 +755,18 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         public boolean awaitDrained(long timeout, TimeUnit unit) throws InterruptedException {
             long deadline = System.nanoTime() + unit.toNanos(timeout);
-            int inFlight = size();
-            while (inFlight > 0) {
-                long remainingNanos = deadline - System.nanoTime();
-                if (remainingNanos <= 0) {
-                    LOGGER.warn("MainQueue {} did not drain within {} {}; {} event(s) still in flight",
-                            taskId, timeout, unit, inFlight);
-                    return false;
+            synchronized (drainLock) {
+                int inFlight = size();
+                while (inFlight > 0) {
+                    long remainingNanos = deadline - System.nanoTime();
+                    if (remainingNanos <= 0) {
+                        LOGGER.warn("MainQueue {} did not drain within {} {}; {} event(s) still in flight",
+                                taskId, timeout, unit, inFlight);
+                        return false;
+                    }
+                    TimeUnit.NANOSECONDS.timedWait(drainLock, remainingNanos);
+                    inFlight = size();
                 }
-                long sleepMillis = Math.min(DRAIN_POLL_INTERVAL_MILLIS,
-                        Math.max(1, TimeUnit.NANOSECONDS.toMillis(remainingNanos)));
-                Thread.sleep(sleepMillis);
-                inFlight = size();
             }
             return true;
         }
@@ -841,6 +848,9 @@ public abstract class EventQueue implements AutoCloseable {
          */
         void releaseSemaphore() {
             semaphore.release();
+            synchronized (drainLock) {
+                drainLock.notifyAll();
+            }
         }
 
         /**
