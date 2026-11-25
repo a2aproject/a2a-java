@@ -3,6 +3,7 @@ package org.a2aproject.sdk.client.transport.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -216,6 +218,113 @@ class RestTransportCloseTest {
         }
     }
 
+    @Test
+    void normalCompletionPrecedesCancellationError() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.reportCancellationErrors = true;
+        RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
+        List<Throwable> sendTerminal = Collections.synchronizedList(new ArrayList<>());
+        sendStreaming(transport, event -> {}, sendTerminal::add);
+        sendStreaming(transport, event -> {}, sendTerminal::add);
+
+        transport.close();
+        transport.close();
+
+        assertEquals(Collections.nCopies(2, null), sendTerminal);
+        assertEquals(2, http.requests.size());
+        for (CountingFuture request : http.requests) {
+            assertTrue(request.isCancelled());
+        }
+    }
+
+    @Test
+    void normalSubscriptionCompletionPrecedesCancellationError() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.reportCancellationErrors = true;
+        RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
+        List<Throwable> subscribeTerminal = Collections.synchronizedList(new ArrayList<>());
+        transport.subscribeToTask(new TaskIdParams("task-1234"), event -> {}, subscribeTerminal::add, null);
+        transport.subscribeToTask(new TaskIdParams("task-5678"), event -> {}, subscribeTerminal::add, null);
+
+        transport.close();
+        transport.close();
+
+        assertEquals(Collections.nCopies(2, null), subscribeTerminal);
+        assertEquals(2, http.requests.size());
+        for (CountingFuture request : http.requests) {
+            assertTrue(request.isCancelled());
+        }
+    }
+
+    @Test
+    void throwingHandlersCloseEveryStream() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.reportCancellationErrors = true;
+        RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
+        RuntimeException first = new RuntimeException("first");
+        RuntimeException second = new RuntimeException("second");
+        sendStreaming(transport, event -> {}, error -> { throw first; });
+        sendStreaming(transport, event -> {}, error -> { throw second; });
+
+        RuntimeException thrown = null;
+        try {
+            transport.close();
+        } catch (RuntimeException e) {
+            thrown = e;
+        }
+
+        assertEquals(2, http.requests.size());
+        for (CountingFuture request : http.requests) {
+            assertTrue(request.isCancelled());
+        }
+        assertTrue(thrown == first || thrown == second);
+        Throwable[] suppressed = thrown.getSuppressed();
+        assertEquals(1, suppressed.length);
+        Throwable other = thrown == first ? second : first;
+        assertEquals(other, suppressed[0]);
+    }
+
+    @Test
+    void sameExceptionInstanceIsNotSelfSuppressed() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.reportCancellationErrors = true;
+        RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
+        RuntimeException shared = new RuntimeException("shared");
+        sendStreaming(transport, event -> {}, error -> { throw shared; });
+        sendStreaming(transport, event -> {}, error -> { throw shared; });
+        sendStreaming(transport, event -> {}, error -> { throw shared; });
+
+        RuntimeException thrown = null;
+        try {
+            transport.close();
+        } catch (RuntimeException e) {
+            thrown = e;
+        }
+
+        assertSame(shared, thrown);
+        assertEquals(0, thrown.getSuppressed().length);
+        assertEquals(3, http.requests.size());
+        for (CountingFuture request : http.requests) {
+            assertTrue(request.isCancelled());
+        }
+    }
+
+    @Test
+    void closeDuringSetupReportsNormalCompletion() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.reportCancellationErrors = true;
+        RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
+        List<Throwable> terminal = Collections.synchronizedList(new ArrayList<>());
+        http.duringSetup = () -> CompletableFuture.runAsync(transport::close).orTimeout(5, TimeUnit.SECONDS).join();
+
+        sendStreaming(transport, event -> {}, terminal::add);
+
+        assertEquals(1, terminal.size());
+        assertNull(terminal.get(0));
+        assertEquals(1, http.requests.size());
+        assertTrue(http.requests.get(0).isCancelled());
+    }
+
     private static void sendStreaming(RestTransport transport, Consumer<StreamingEventKind> consumer)
             throws Exception {
         sendStreaming(transport, consumer, error -> {});
@@ -232,11 +341,18 @@ class RestTransportCloseTest {
     private static class CountingFuture extends CompletableFuture<Void> {
         private int cancellations;
         private Runnable completion = () -> {};
+        private Consumer<Throwable> errors = error -> {};
+        private boolean reportCancellationErrors;
 
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             cancellations++;
-            return super.cancel(mayInterruptIfRunning);
+            boolean firstCancellation = !isDone();
+            boolean cancelled = super.cancel(mayInterruptIfRunning);
+            if (firstCancellation && reportCancellationErrors) {
+                errors.accept(new IOException("Request cancelled"));
+            }
+            return cancelled;
         }
     }
 
@@ -244,6 +360,7 @@ class RestTransportCloseTest {
         private final List<CountingFuture> requests = new ArrayList<>();
         private final List<Boolean> followRedirectCalls = new ArrayList<>();
         private volatile Runnable duringSetup = () -> {};
+        private boolean reportCancellationErrors;
 
         @Override
         public PostBuilder createPost() {
@@ -278,6 +395,8 @@ class RestTransportCloseTest {
                         Consumer<Throwable> errors, Runnable complete) {
                     CountingFuture request = new CountingFuture();
                     request.completion = complete;
+                    request.errors = errors;
+                    request.reportCancellationErrors = reportCancellationErrors;
                     requests.add(request);
                     duringSetup.run();
                     return request;

@@ -16,12 +16,10 @@ import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -72,7 +70,7 @@ public class RestTransport implements ClientTransport {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
-    private final Set<CompletableFuture<Void>> activeStreams = new HashSet<>();
+    private final Map<CompletableFuture<Void>, SSEEventListener> activeStreams = new HashMap<>();
     private boolean closed;
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
@@ -141,7 +139,7 @@ public class RestTransport implements ClientTransport {
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    })));
+                    }), sseEventListener));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -434,7 +432,7 @@ public class RestTransport implements ClientTransport {
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    })));
+                    }), sseEventListener));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -473,26 +471,38 @@ public class RestTransport implements ClientTransport {
 
     @Override
     public void close() {
-        List<CompletableFuture<Void>> streams;
+        Map<CompletableFuture<Void>, SSEEventListener> streams;
         synchronized (activeStreams) {
             if (closed) {
                 return;
             }
             closed = true;
-            streams = new ArrayList<>(activeStreams);
+            streams = new HashMap<>(activeStreams);
             activeStreams.clear();
         }
-        for (CompletableFuture<Void> stream : streams) {
-            stream.cancel(true);
+        RuntimeException failure = null;
+        for (Map.Entry<CompletableFuture<Void>, SSEEventListener> entry : streams.entrySet()) {
+            try {
+                closeStream(entry.getKey(), entry.getValue());
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else if (failure != e) {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
         }
     }
 
-    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream) {
+    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, SSEEventListener listener) {
         boolean cancel;
         synchronized (activeStreams) {
             cancel = closed;
             if (!cancel) {
-                activeStreams.add(stream);
+                activeStreams.put(stream, listener);
             }
         }
         stream.whenComplete((result, error) -> {
@@ -502,9 +512,18 @@ public class RestTransport implements ClientTransport {
         });
         if (cancel) {
             // close() can run while the HTTP client is setting up the stream.
-            stream.cancel(true);
+            closeStream(stream, listener);
         }
         return stream;
+    }
+
+    /** Signals normal completion before cancellation can report an I/O error. */
+    private static void closeStream(CompletableFuture<Void> stream, SSEEventListener listener) {
+        try {
+            listener.onComplete();
+        } finally {
+            stream.cancel(true);
+        }
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, MessageOrBuilder payload,

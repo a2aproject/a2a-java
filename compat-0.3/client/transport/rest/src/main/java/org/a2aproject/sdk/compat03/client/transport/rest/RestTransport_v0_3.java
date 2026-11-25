@@ -47,14 +47,12 @@ import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -66,7 +64,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3.class.getName());
     private final A2AHttpClient httpClient;
-    private final Set<CompletableFuture<Void>> activeStreams = new HashSet<>();
+    private final Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> activeStreams = new HashMap<>();
     private boolean closed;
     private final String agentUrl;
     private @Nullable final List<ClientCallInterceptor_v0_3> interceptors;
@@ -127,7 +125,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(trackStream(streamFuture));
+            ref.set(trackStream(streamFuture, sseEventListener));
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -321,7 +319,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(trackStream(streamFuture));
+            ref.set(trackStream(streamFuture, sseEventListener));
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -371,26 +369,38 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     @Override
     public void close() {
-        List<CompletableFuture<Void>> streams;
+        Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> streams;
         synchronized (activeStreams) {
             if (closed) {
                 return;
             }
             closed = true;
-            streams = new ArrayList<>(activeStreams);
+            streams = new HashMap<>(activeStreams);
             activeStreams.clear();
         }
-        for (CompletableFuture<Void> stream : streams) {
-            stream.cancel(true);
+        RuntimeException failure = null;
+        for (Map.Entry<CompletableFuture<Void>, RestSSEEventListener_v0_3> entry : streams.entrySet()) {
+            try {
+                closeStream(entry.getKey(), entry.getValue());
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else if (failure != e) {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
         }
     }
 
-    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream) {
+    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
         boolean cancel;
         synchronized (activeStreams) {
             cancel = closed;
             if (!cancel) {
-                activeStreams.add(stream);
+                activeStreams.put(stream, listener);
             }
         }
         stream.whenComplete((result, error) -> {
@@ -400,9 +410,18 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         });
         if (cancel) {
             // close() can run while the HTTP client is setting up the stream.
-            stream.cancel(true);
+            closeStream(stream, listener);
         }
         return stream;
+    }
+
+    /** Signals normal completion before cancellation can report an I/O error. */
+    private static void closeStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
+        try {
+            listener.onComplete();
+        } finally {
+            stream.cancel(true);
+        }
     }
 
     private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, MessageOrBuilder payload,
