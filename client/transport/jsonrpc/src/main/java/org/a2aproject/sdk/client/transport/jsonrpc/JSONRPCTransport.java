@@ -363,6 +363,9 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     private void trackStream(CompletableFuture<Void> stream, SSEEventListener listener) {
+        if (stream == null) {
+            return; // the client did not return a future, so there is nothing to close
+        }
         boolean alreadyClosed;
         synchronized (activeStreams) {
             alreadyClosed = closed;
