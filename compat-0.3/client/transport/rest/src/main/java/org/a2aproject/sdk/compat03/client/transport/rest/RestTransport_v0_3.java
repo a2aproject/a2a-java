@@ -48,6 +48,7 @@ import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +64,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3.class.getName());
     private final A2AHttpClient httpClient;
+    private final Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> activeStreams = new HashMap<>();
+    private boolean closed;
     private final String agentUrl;
     private @Nullable final List<ClientCallInterceptor_v0_3> interceptors;
     private AgentCard_v0_3 agentCard;
@@ -122,7 +125,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(streamFuture);
+            ref.set(trackStream(streamFuture, sseEventListener));
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -316,7 +319,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(streamFuture);
+            ref.set(trackStream(streamFuture, sseEventListener));
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -366,7 +369,59 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     @Override
     public void close() {
-        // no-op
+        Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> streams;
+        synchronized (activeStreams) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            streams = new HashMap<>(activeStreams);
+            activeStreams.clear();
+        }
+        RuntimeException failure = null;
+        for (Map.Entry<CompletableFuture<Void>, RestSSEEventListener_v0_3> entry : streams.entrySet()) {
+            try {
+                closeStream(entry.getKey(), entry.getValue());
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else if (failure != e) {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
+        boolean cancel;
+        synchronized (activeStreams) {
+            cancel = closed;
+            if (!cancel) {
+                activeStreams.put(stream, listener);
+            }
+        }
+        stream.whenComplete((result, error) -> {
+            synchronized (activeStreams) {
+                activeStreams.remove(stream);
+            }
+        });
+        if (cancel) {
+            // close() can run while the HTTP client is setting up the stream.
+            closeStream(stream, listener);
+        }
+        return stream;
+    }
+
+    /** Signals normal completion before cancellation can report an I/O error. */
+    private static void closeStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
+        try {
+            listener.onComplete();
+        } finally {
+            stream.cancel(true);
+        }
     }
 
     private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, MessageOrBuilder payload,

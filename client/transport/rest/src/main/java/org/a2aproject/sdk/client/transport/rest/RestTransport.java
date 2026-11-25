@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -69,6 +70,8 @@ public class RestTransport implements ClientTransport {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
+    private final Map<CompletableFuture<Void>, SSEEventListener> activeStreams = new HashMap<>();
+    private boolean closed;
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
     private final AgentCard agentCard;
@@ -130,13 +133,13 @@ public class RestTransport implements ClientTransport {
                     Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream",
                     payloadAndHeaders,
                     false);
-            ref.set(postBuilder.postAsyncSSE(
+            ref.set(trackStream(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    }), sseEventListener));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -423,13 +426,13 @@ public class RestTransport implements ClientTransport {
         try {
             String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders, false);
-            ref.set(postBuilder.postAsyncSSE(
+            ref.set(trackStream(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }));
+                    }), sseEventListener));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -468,7 +471,59 @@ public class RestTransport implements ClientTransport {
 
     @Override
     public void close() {
-        // no-op
+        Map<CompletableFuture<Void>, SSEEventListener> streams;
+        synchronized (activeStreams) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            streams = new HashMap<>(activeStreams);
+            activeStreams.clear();
+        }
+        RuntimeException failure = null;
+        for (Map.Entry<CompletableFuture<Void>, SSEEventListener> entry : streams.entrySet()) {
+            try {
+                closeStream(entry.getKey(), entry.getValue());
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else if (failure != e) {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, SSEEventListener listener) {
+        boolean cancel;
+        synchronized (activeStreams) {
+            cancel = closed;
+            if (!cancel) {
+                activeStreams.put(stream, listener);
+            }
+        }
+        stream.whenComplete((result, error) -> {
+            synchronized (activeStreams) {
+                activeStreams.remove(stream);
+            }
+        });
+        if (cancel) {
+            // close() can run while the HTTP client is setting up the stream.
+            closeStream(stream, listener);
+        }
+        return stream;
+    }
+
+    /** Signals normal completion before cancellation can report an I/O error. */
+    private static void closeStream(CompletableFuture<Void> stream, SSEEventListener listener) {
+        try {
+            listener.onComplete();
+        } finally {
+            stream.cancel(true);
+        }
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, MessageOrBuilder payload,
