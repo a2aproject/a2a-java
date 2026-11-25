@@ -363,6 +363,48 @@ public class A2AServerRoutesTest {
     }
 
     @Test
+    public void testSendStreamingMessage_StreamingNotSupportedReturnsPlainError() {
+        String jsonRpcRequest = """
+                {"jsonrpc":"2.0","id":"stream-refused","method":"SendStreamingMessage","params":{
+                  "message":{"messageId":"message-1234","role":"ROLE_USER","parts":[{"text":"hello"}]}}}
+                """;
+        when(mockJsonRpcHandler.onMessageSendStream(any(SendStreamingMessageRequest.class),
+                any(ServerCallContext.class)))
+                .thenThrow(new org.a2aproject.sdk.spec.UnsupportedOperationError(
+                        null, "Streaming is not supported by the agent", null));
+
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        assertStreamingRefused("stream-refused");
+    }
+
+    @Test
+    public void testSubscribeToTask_StreamingNotSupportedReturnsPlainError() {
+        String jsonRpcRequest = """
+                {"jsonrpc":"2.0","id":"subscribe-refused","method":"SubscribeToTask","params":{"id":"task"}}
+                """;
+        when(mockJsonRpcHandler.onSubscribeToTask(any(SubscribeToTaskRequest.class),
+                any(ServerCallContext.class)))
+                .thenThrow(new org.a2aproject.sdk.spec.UnsupportedOperationError(
+                        null, "Streaming is not supported by the agent", null));
+
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        assertStreamingRefused("subscribe-refused");
+    }
+
+    private void assertStreamingRefused(String requestId) {
+        // A plain JSON-RPC error response, not an SSE stream carrying the error
+        verify(mockHttpResponse).setStatusCode(200);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
+        JsonObject response = captureResponse();
+        assertEquals(requestId, response.get("id").getAsString());
+        JsonObject error = response.getAsJsonObject("error");
+        assertEquals(new org.a2aproject.sdk.spec.UnsupportedOperationError().getCode(), error.get("code").getAsInt());
+        assertEquals("Streaming is not supported by the agent", error.get("message").getAsString());
+    }
+
+    @Test
     public void testCreateTaskPushNotificationConfig_MethodNameSetInContext() {
         // Arrange - using protobuf JSON format
         String jsonRpcRequest = """

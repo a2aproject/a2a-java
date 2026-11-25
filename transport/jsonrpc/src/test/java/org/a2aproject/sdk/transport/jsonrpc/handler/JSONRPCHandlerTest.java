@@ -297,15 +297,15 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard card = AgentCard.builder(CARD).capabilities(AgentCapabilities.builder().build()).build();
         RequestHandler customHandler = Mockito.mock(RequestHandler.class);
         JSONRPCHandler handler = new JSONRPCHandler(card, customHandler, internalExecutor);
-        SendStreamingMessageResponse streaming = drainStream(handler.onMessageSendStream(
-                new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null)), callContext)).get(0);
-        SendStreamingMessageResponse subscription = drainStream(handler.onSubscribeToTask(
-                new SubscribeToTaskRequest("1", new TaskIdParams("task")), callContext)).get(0);
+        UnsupportedOperationError streaming = Assertions.assertThrows(UnsupportedOperationError.class,
+                () -> handler.onMessageSendStream(
+                        new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null)), callContext));
+        UnsupportedOperationError subscription = Assertions.assertThrows(UnsupportedOperationError.class,
+                () -> handler.onSubscribeToTask(
+                        new SubscribeToTaskRequest("1", new TaskIdParams("task")), callContext));
 
-        assertInstanceOf(UnsupportedOperationError.class, streaming.getError());
-        assertEquals("Streaming is not supported by the agent", streaming.getError().getMessage());
-        assertInstanceOf(UnsupportedOperationError.class, subscription.getError());
-        assertEquals("Streaming is not supported by the agent", subscription.getError().getMessage());
+        assertEquals("Streaming is not supported by the agent", streaming.getMessage());
+        assertEquals("Streaming is not supported by the agent", subscription.getMessage());
         assertInstanceOf(PushNotificationNotSupportedError.class, handler.getPushNotificationConfig(
                 new GetTaskPushNotificationConfigRequest("1", new GetTaskPushNotificationConfigParams("task", "config")), callContext).getError());
         Mockito.verifyNoInteractions(customHandler);
@@ -1231,44 +1231,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .configuration(defaultConfiguration())
                         .build())
                 .build();
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
 
-        List<SendStreamingMessageResponse> results = new ArrayList<>();
-        AtomicReference<Throwable> error = new AtomicReference<>();
-
-        response.subscribe(new Flow.Subscriber<SendStreamingMessageResponse>() {
-            private Flow.Subscription subscription;
-
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(SendStreamingMessageResponse item) {
-                results.add(item);
-                subscription.request(1);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-                subscription.cancel();
-            }
-
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
-
-        assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
-            assertEquals("Streaming is not supported by the agent", ire.getMessage());
-        } else {
-            fail("Expected a response containing an error");
-        }
+        // Thrown, not streamed: the route returns it as a plain JSON-RPC error and opens no stream
+        UnsupportedOperationError thrown = Assertions.assertThrows(UnsupportedOperationError.class,
+                () -> handler.onMessageSendStream(request, callContext));
+        assertEquals("Streaming is not supported by the agent", thrown.getMessage());
     }
 
     @Test
@@ -1278,44 +1245,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
         SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onSubscribeToTask(request, callContext);
 
-        List<SendStreamingMessageResponse> results = new ArrayList<>();
-        AtomicReference<Throwable> error = new AtomicReference<>();
-
-        response.subscribe(new Flow.Subscriber<SendStreamingMessageResponse>() {
-            private Flow.Subscription subscription;
-
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(SendStreamingMessageResponse item) {
-                results.add(item);
-                subscription.request(1);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-                subscription.cancel();
-            }
-
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
-
-        assertEquals(1, results.size());
-        if (results.get(0).getError() != null && results.get(0).getError() instanceof UnsupportedOperationError ire) {
-            assertEquals("Streaming is not supported by the agent", ire.getMessage());
-        } else {
-            fail("Expected a response containing an error");
-        }
+        // Thrown, not streamed: the route returns it as a plain JSON-RPC error and opens no stream
+        UnsupportedOperationError thrown = Assertions.assertThrows(UnsupportedOperationError.class,
+                () -> handler.onSubscribeToTask(request, callContext));
+        assertEquals("Streaming is not supported by the agent", thrown.getMessage());
     }
 
     @Test
@@ -2586,6 +2520,24 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         assertNotNull(response.getError());
         assertInstanceOf(InternalError.class, response.getError());
+    }
+
+    @Test
+    public void testNoCardAtAllStreamsInternalErrorForBothStreamingMethods() throws Exception {
+        JSONRPCHandler handler = new JSONRPCHandler(
+                FixedInstance.empty(), FixedInstance.empty(), requestHandler, internalExecutor, null);
+
+        List<SendStreamingMessageResponse> streaming = drainStream(handler.onMessageSendStream(
+                new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null)), callContext));
+        List<SendStreamingMessageResponse> subscription = drainStream(handler.onSubscribeToTask(
+                new SubscribeToTaskRequest("2", new TaskIdParams("task")), callContext));
+
+        assertEquals(1, streaming.size());
+        assertEquals("1", streaming.get(0).getId());
+        assertInstanceOf(InternalError.class, streaming.get(0).getError());
+        assertEquals(1, subscription.size());
+        assertEquals("2", subscription.get(0).getId());
+        assertInstanceOf(InternalError.class, subscription.get(0).getError());
     }
 
     @Test

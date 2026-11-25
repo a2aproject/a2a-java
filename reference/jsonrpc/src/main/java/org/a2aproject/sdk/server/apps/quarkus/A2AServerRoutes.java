@@ -350,8 +350,9 @@ public class A2AServerRoutes {
         A2AResponse<?> nonStreamingResponse = null;
         Multi<? extends A2AResponse<?>> streamingResponse = null;
         A2AErrorResponse error = null;
+        A2ARequest<?> request = null;
         try {
-            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body, extractTenant(rc));
+            request = JSONRPCUtils.parseRequestBody(body, extractTenant(rc));
             context.getState().put(METHOD_NAME_KEY, request.getMethod());
             if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
                 nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
@@ -360,7 +361,7 @@ public class A2AServerRoutes {
                 streamingResponse = processStreamingRequest(request, context);
             }
         } catch (A2AError e) {
-            error = new A2AErrorResponse(e);
+            error = request == null ? new A2AErrorResponse(e) : new A2AErrorResponse(request.getId(), e);
         } catch (InvalidParamsJsonMappingException e) {
             error = new A2AErrorResponse(e.getId(), new org.a2aproject.sdk.spec.InvalidParamsError(null, e.getMessage(), null));
         } catch (MethodNotFoundJsonMappingException e) {
@@ -559,19 +560,17 @@ public class A2AServerRoutes {
             jsonRpcHandler.authorizeTaskAccess(req.getParams().id(), context,
                     TaskOperation.SUBSCRIBE_TO_TASK);
         }
-        try {
-            Flow.Publisher<? extends A2AResponse<?>> publisher;
-            if (request instanceof SendStreamingMessageRequest req) {
-                publisher = jsonRpcHandler.onMessageSendStream(req, context);
-            } else if (request instanceof SubscribeToTaskRequest req) {
-                publisher = jsonRpcHandler.onSubscribeToTask(req, context);
-            } else {
-                return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
-            }
-            return Multi.createFrom().publisher(publisher);
-        } catch (A2AError error) {
-            return Multi.createFrom().item(generateErrorResponse(request, error));
+        // An A2AError thrown by the handler means no stream was opened, so it propagates to
+        // invokeJSONRPCHandler and is returned as a plain JSON-RPC error response.
+        Flow.Publisher<? extends A2AResponse<?>> publisher;
+        if (request instanceof SendStreamingMessageRequest req) {
+            publisher = jsonRpcHandler.onMessageSendStream(req, context);
+        } else if (request instanceof SubscribeToTaskRequest req) {
+            publisher = jsonRpcHandler.onSubscribeToTask(req, context);
+        } else {
+            return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
         }
+        return Multi.createFrom().publisher(publisher);
     }
 
     /**
