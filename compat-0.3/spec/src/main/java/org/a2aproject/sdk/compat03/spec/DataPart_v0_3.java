@@ -1,9 +1,8 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -19,8 +18,8 @@ public record DataPart_v0_3(Map<String, Object> data, @Nullable Map<String, Obje
         if (kind != Kind.DATA) {
             throw new IllegalArgumentException("Invalid DataPart kind: " + kind);
         }
-        this.data = Collections.unmodifiableMap(new HashMap<>(data));
-        this.metadata = metadata == null ? Map.of() : Collections.unmodifiableMap(new HashMap<>(metadata));
+        this.data = Utils_v0_3.unmodifiableShallowMap(data);
+        this.metadata = metadata == null ? Map.of() : Utils_v0_3.unmodifiableShallowMap(metadata);
         this.kind = kind;
     }
 
