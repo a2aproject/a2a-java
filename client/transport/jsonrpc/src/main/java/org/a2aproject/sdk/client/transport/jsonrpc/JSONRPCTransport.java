@@ -14,6 +14,7 @@ import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,6 +79,8 @@ public class JSONRPCTransport implements ClientTransport {
     private final @Nullable List<ClientCallInterceptor> interceptors;
     private final @Nullable AgentCard agentCard;
     private final boolean followRedirects;
+    private final Map<CompletableFuture<Void>, SSEEventListener> activeStreams = new HashMap<>();
+    private boolean closed;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, new AgentInterface("JSONRPC", agentUrl),  null);
@@ -143,6 +146,7 @@ public class JSONRPCTransport implements ClientTransport {
                     });
             ref.set(streamFuture);
             sseEventListener.bindFuture(streamFuture);
+            trackStream(streamFuture, sseEventListener);
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -297,6 +301,7 @@ public class JSONRPCTransport implements ClientTransport {
                     });
             ref.set(streamFuture);
             sseEventListener.bindFuture(streamFuture);
+            trackStream(streamFuture, sseEventListener);
         } catch (IOException e) {
             throw new A2AClientException("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
@@ -326,7 +331,58 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public void close() {
-        // no-op
+        Map<CompletableFuture<Void>, SSEEventListener> streams;
+        synchronized (activeStreams) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            streams = Map.copyOf(activeStreams);
+            activeStreams.clear();
+        }
+        // Close outside the lock: closing a stream runs the user's handler on this thread.
+        closeStreams(streams);
+    }
+
+    private static void closeStreams(Map<CompletableFuture<Void>, SSEEventListener> streams) {
+        RuntimeException failure = null;
+        for (Map.Entry<CompletableFuture<Void>, SSEEventListener> entry : streams.entrySet()) {
+            try {
+                entry.getValue().closeStream(entry.getKey());
+            } catch (RuntimeException e) {
+                // A throwing handler must not leave the remaining streams open.
+                if (failure == null) {
+                    failure = e;
+                } else if (failure != e) {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    private void trackStream(CompletableFuture<Void> stream, SSEEventListener listener) {
+        if (stream == null) {
+            return; // the client did not return a future, so there is nothing to close
+        }
+        boolean alreadyClosed;
+        synchronized (activeStreams) {
+            alreadyClosed = closed;
+            if (!alreadyClosed) {
+                activeStreams.put(stream, listener);
+            }
+        }
+        stream.whenComplete((result, error) -> {
+            synchronized (activeStreams) {
+                activeStreams.remove(stream);
+            }
+        });
+        if (alreadyClosed) {
+            // close() can run while the HTTP client is setting up the stream.
+            listener.closeStream(stream);
+        }
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, Object payload,

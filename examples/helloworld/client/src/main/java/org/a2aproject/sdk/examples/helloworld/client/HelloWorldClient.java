@@ -84,6 +84,9 @@ public class HelloWorldClient {
 
             // Create error handler for streaming errors
             Consumer<Throwable> streamingErrorHandler = (error) -> {
+                if (error == null) {
+                    return; // null means the stream completed normally
+                }
                 System.err.println("Streaming error occurred: " + error.getMessage());
                 error.printStackTrace();
                 messageResponse.completeExceptionally(error);
@@ -98,27 +101,27 @@ public class HelloWorldClient {
                     .addConsumers(consumers)
                     .streamingErrorHandler(streamingErrorHandler);
             configureTransport(clientBuilder, openTelemetrySdk);
-             Client client = clientBuilder.build();
+            try (Client client = clientBuilder.build()) {
+                if (publicAgentCard.capabilities().extendedAgentCard()) {
+                    // The client uses the extended card for the calls that follow
+                    AgentCard extendedAgentCard = client.getExtendedAgentCard();
+                    System.out.println("Successfully fetched extended agent card:");
+                    System.out.println(JsonUtil.toJson(extendedAgentCard));
+                } else {
+                    System.out.println("Public card does not indicate support for an extended card. Using public card.");
+                }
 
-            if (publicAgentCard.capabilities().extendedAgentCard()) {
-                // The client uses the extended card for the calls that follow
-                AgentCard extendedAgentCard = client.getExtendedAgentCard();
-                System.out.println("Successfully fetched extended agent card:");
-                System.out.println(JsonUtil.toJson(extendedAgentCard));
-            } else {
-                System.out.println("Public card does not indicate support for an extended card. Using public card.");
-            }
+                Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
+                try {
+                    System.out.println("Sending message: " + MESSAGE_TEXT);
+                    client.sendMessage(message);
+                    System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
 
-            Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
-            try {
-                System.out.println("Sending message: " + MESSAGE_TEXT);
-                client.sendMessage(message);
-                System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
-
-                String responseText = messageResponse.get();
-                System.out.println("Response: " + responseText);
-            } catch (Exception e) {
-                System.err.println("Failed to get response: " + e.getMessage());
+                    String responseText = messageResponse.get();
+                    System.out.println("Response: " + responseText);
+                } catch (Exception e) {
+                    System.err.println("Failed to get response: " + e.getMessage());
+                }
             }
         } catch (Exception e) {
             System.err.println("An error occurred: " + e.getMessage());

@@ -103,6 +103,22 @@ public abstract class AbstractSSEEventListener {
     }
 
     /**
+     * Closes the SSE connection and reports normal completion. Completion is signalled before
+     * the connection is cancelled, so the error the HTTP client raises for the cancelled request
+     * is dropped by {@link #signalTerminal(Throwable)} instead of reaching the error handler.
+     * The connection is cancelled even if the error handler throws.
+     *
+     * @param future the future controlling the SSE connection
+     */
+    public void closeStream(Future<Void> future) {
+        try {
+            signalTerminal(null);
+        } finally {
+            future.cancel(true); // close SSE channel
+        }
+    }
+
+    /**
      * Processes a parsed streaming event and handles auto-close logic for final events.
      * This method encapsulates the common logic for handling events and determining
      * when to close the SSE connection.
@@ -118,8 +134,7 @@ public abstract class AbstractSSEEventListener {
         // This covers late subscriptions to completed tasks and ensures no connection leaks
         if (shouldAutoClose(event) && future != null) {
             LOGGER.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
-            signalTerminal(null);
-            future.cancel(true); // close SSE channel
+            closeStream(future);
         }
     }
 
