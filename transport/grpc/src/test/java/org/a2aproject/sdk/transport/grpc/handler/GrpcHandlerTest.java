@@ -76,11 +76,29 @@ import org.mockito.Mockito;
 @Timeout(value = 1, unit = TimeUnit.MINUTES)
 public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
+    @Test
+    void rejectsInvalidClientRoleInSendAndStream() throws Exception {
+        AtomicBoolean executed = new AtomicBoolean();
+        agentExecutorExecute = (context, emitter) -> executed.set(true);
+        GrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor);
+        for (Role role : List.of(Role.ROLE_AGENT, Role.ROLE_UNSPECIFIED)) {
+            Message message = GRPC_MESSAGE.toBuilder().clearTaskId().clearContextId().setRole(role).build();
+            SendMessageRequest request = SendMessageRequest.newBuilder().setMessage(message).build();
+            StreamRecorder<SendMessageResponse> response = StreamRecorder.create();
+            StreamRecorder<StreamResponse> stream = StreamRecorder.create();
+            handler.sendMessage(request, response);
+            handler.sendStreamingMessage(request, stream);
+            assertGrpcReason(response, Status.Code.INVALID_ARGUMENT, "INVALID_PARAMS");
+            assertGrpcReason(stream, Status.Code.INVALID_ARGUMENT, "INVALID_PARAMS");
+        }
+        Assertions.assertFalse(executed.get());
+    }
+
     private static final Message GRPC_MESSAGE = Message.newBuilder()
             .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
             .setContextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
             .setMessageId(AbstractA2ARequestHandlerTest.MESSAGE.messageId())
-            .setRole(Role.ROLE_AGENT)
+            .setRole(Role.ROLE_USER)
             .addParts(Part.newBuilder()
                     .setText(((TextPart) AbstractA2ARequestHandlerTest.MESSAGE.parts().get(0)).text())
                     .setMetadata(Struct.newBuilder().build())
