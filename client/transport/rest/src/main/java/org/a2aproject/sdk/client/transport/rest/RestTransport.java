@@ -102,7 +102,7 @@ public class RestTransport implements ClientTransport {
         org.a2aproject.sdk.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SEND_MESSAGE_METHOD, builder, agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:send", payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SendMessageRequestOrBuilder.class).getTenant()) + "/message:send", payloadAndHeaders);
             org.a2aproject.sdk.grpc.SendMessageResponse.Builder responseBuilder = org.a2aproject.sdk.grpc.SendMessageResponse.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             if (responseBuilder.hasMessage()) {
@@ -130,7 +130,7 @@ public class RestTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(
-                    Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream",
+                    Utils.buildBaseUrl(agentInterface, InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SendMessageRequestOrBuilder.class).getTenant()) + "/message:stream",
                     payloadAndHeaders,
                     false);
             ref.set(trackStream(postBuilder.postAsyncSSE(
@@ -154,13 +154,20 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
         builder.setId(taskQueryParams.id());
+        if (taskQueryParams.historyLength() != null) {
+            builder.setHistoryLength(taskQueryParams.historyLength());
+        }
+        if (taskQueryParams.tenant() != null) {
+            builder.setTenant(taskQueryParams.tenant());
+        }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_METHOD, builder, agentCard, context);
         try {
-            StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, taskQueryParams.tenant()));
-            if (taskQueryParams.historyLength() != null && taskQueryParams.historyLength() > 0) {
-                url.append(String.format("/tasks/%s?historyLength=%d", taskQueryParams.id(), taskQueryParams.historyLength()));
+            org.a2aproject.sdk.grpc.GetTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.GetTaskRequestOrBuilder.class);
+            StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
+            if (effective.hasHistoryLength()) {
+                url.append(String.format("/tasks/%s?historyLength=%d", effective.getId(), effective.getHistoryLength()));
             } else {
-                url.append(String.format("/tasks/%1s", taskQueryParams.id()));
+                url.append(String.format("/tasks/%1s", effective.getId()));
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
@@ -185,7 +192,8 @@ public class RestTransport implements ClientTransport {
         org.a2aproject.sdk.grpc.CancelTaskRequest.Builder builder = org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder(ProtoUtils.ToProto.cancelTaskRequest(taskIdParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(CANCEL_TASK_METHOD, builder, agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, taskIdParams.tenant()) + String.format("/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
+            org.a2aproject.sdk.grpc.CancelTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.CancelTaskRequestOrBuilder.class);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:cancel", effective.getId()), payloadAndHeaders);
             org.a2aproject.sdk.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.grpc.Task.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
@@ -218,8 +226,8 @@ public class RestTransport implements ClientTransport {
         if (request.tenant() != null) {
             builder.setTenant(request.tenant());
         }
-        if (request.includeArtifacts() != null && request.includeArtifacts()) {
-            builder.setIncludeArtifacts(true);
+        if (request.includeArtifacts() != null) {
+            builder.setIncludeArtifacts(request.includeArtifacts());
         }
         if (request.statusTimestampAfter() != null) {
             builder.setStatusTimestampAfter(com.google.protobuf.Timestamp.newBuilder()
@@ -232,9 +240,10 @@ public class RestTransport implements ClientTransport {
 
         try {
             // Build query string
-            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
+            org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder.class);
+            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             urlBuilder.append("/tasks");
-            String queryParams = buildListTasksQueryString(request);
+            String queryParams = buildListTasksQueryString(effective, request);
             if (!queryParams.isEmpty()) {
                 urlBuilder.append("?").append(queryParams);
             }
@@ -263,29 +272,31 @@ public class RestTransport implements ClientTransport {
     }
 
     
-    private String buildListTasksQueryString(ListTasksParams request) {
+    private String buildListTasksQueryString(org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder request, ListTasksParams original) {
         java.util.List<String> queryParts = new java.util.ArrayList<>();
-        if (request.contextId() != null) {
-            queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
+        if (!request.getContextId().isEmpty() || "".equals(original.contextId())) {
+            queryParts.add("contextId=" + URLEncoder.encode(request.getContextId(), StandardCharsets.UTF_8));
         }
-        if (request.status() != null) {
-            queryParts.add("status=" + URLEncoder.encode(request.status().toString(), StandardCharsets.UTF_8));
+        if (request.getStatus() != org.a2aproject.sdk.grpc.TaskState.TASK_STATE_UNSPECIFIED
+                || original.status() == org.a2aproject.sdk.spec.TaskState.TASK_STATE_UNSPECIFIED) {
+            queryParts.add("status=" + URLEncoder.encode(request.getStatus().toString(), StandardCharsets.UTF_8));
         }
-        if (request.pageSize() != null) {
-            queryParts.add("pageSize=" + request.pageSize());
+        if (request.hasPageSize()) {
+            queryParts.add("pageSize=" + request.getPageSize());
         }
-        if (request.pageToken() != null) {
-            queryParts.add("pageToken=" + URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
+        if (!request.getPageToken().isEmpty() || "".equals(original.pageToken())) {
+            queryParts.add("pageToken=" + URLEncoder.encode(request.getPageToken(), StandardCharsets.UTF_8));
         }
-        if (request.historyLength() != null) {
-            queryParts.add("historyLength=" + request.historyLength());
+        if (request.hasHistoryLength()) {
+            queryParts.add("historyLength=" + request.getHistoryLength());
         }
-        if (request.statusTimestampAfter() != null) {
-            queryParts.add("statusTimestampAfter=" + URLEncoder.encode(
-                    request.statusTimestampAfter().toString(), StandardCharsets.UTF_8));
+        if (request.hasStatusTimestampAfter()) {
+            var timestamp = request.getStatusTimestampAfter();
+            var instant = java.time.Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+            queryParts.add("statusTimestampAfter=" + URLEncoder.encode(instant.toString(), StandardCharsets.UTF_8));
         }
-        if (request.includeArtifacts() != null && request.includeArtifacts()) {
-            queryParts.add("includeArtifacts=true");
+        if (request.hasIncludeArtifacts()) {
+            queryParts.add("includeArtifacts=" + request.getIncludeArtifacts());
         }
         return String.join("&", queryParts);
     }
@@ -308,7 +319,8 @@ public class RestTransport implements ClientTransport {
                 = ProtoUtils.ToProto.taskPushNotificationConfig(request).toBuilder();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder, agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
+            org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder.class);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs", effective.getTaskId()), payloadAndHeaders);
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
@@ -324,19 +336,24 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("request", request);
         org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder builder
                 = org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
-        StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
-        String configId = request.id();
-        if (configId != null && !configId.isEmpty()) {
-            builder.setId(configId).setTaskId(request.taskId());
-            url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.taskId(), configId));
-        } else {
-            // Use trailing slash to distinguish GET from LIST
-            builder.setTaskId(request.taskId());
-            url.append(String.format("/tasks/%1s/pushNotificationConfigs/", request.taskId()));
+        builder.setTaskId(request.taskId());
+        if (request.id() != null) {
+            builder.setId(request.id());
+        }
+        if (request.tenant() != null) {
+            builder.setTenant(request.tenant());
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
+            org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequestOrBuilder.class);
+            StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
+            String configId = effective.getId();
+            if (!configId.isEmpty()) {
+                url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", effective.getTaskId(), configId));
+            } else {
+                url.append(String.format("/tasks/%1s/pushNotificationConfigs/", effective.getTaskId()));
+            }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
             A2AHttpResponse response = getBuilder.get();
@@ -360,6 +377,9 @@ public class RestTransport implements ClientTransport {
         org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder
                 = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
         builder.setTaskId(request.id());
+        if (request.tenant() != null) {
+            builder.setTenant(request.tenant());
+        }
         if (request.pageSize() > 0) {
             builder.setPageSize(request.pageSize());
         }
@@ -369,9 +389,10 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
-            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
-            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
-            String queryString = buildListPushNotificationConfigsQueryString(request);
+            org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder.class);
+            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
+            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", effective.getTaskId()));
+            String queryString = buildListPushNotificationConfigsQueryString(ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(effective));
             if (!queryString.isEmpty()) {
                 urlBuilder.append("?").append(queryString);
             }
@@ -395,11 +416,15 @@ public class RestTransport implements ClientTransport {
     @Override
     public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder builder = org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
+        org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder().setTaskId(request.taskId()).setId(request.id());
+        if (request.tenant() != null) {
+            builder.setTenant(request.tenant());
+        }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
-            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.taskId(), request.id());
+            org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder.class);
+            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", effective.getTaskId(), effective.getId());
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
             addStandardHeaders(deleteBuilder, payloadAndHeaders);
             A2AHttpResponse response = deleteBuilder.delete();
@@ -419,12 +444,16 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("request", request);
         org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder builder = org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder();
         builder.setId(request.id());
+        if (request.tenant() != null) {
+            builder.setTenant(request.tenant());
+        }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SUBSCRIBE_TO_TASK_METHOD, builder,
                 agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
-            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
+            org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder.class);
+            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:subscribe", effective.getId());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders, false);
             ref.set(trackStream(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),

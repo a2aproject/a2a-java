@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -35,6 +36,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentSkill_v0_3;
@@ -107,6 +109,130 @@ public class RestTransport_v0_3_Test {
     }
 
     public RestTransport_v0_3_Test() {
+    }
+
+    @Test
+    public void getTaskUsesInterceptorResourceName() throws Exception {
+        this.server.when(request().withMethod("GET").withPath("/v1/tasks/changed"))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
+        ClientCallInterceptor_v0_3 interceptor = new ClientCallInterceptor_v0_3() {
+            @Override
+            public org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3 intercept(
+                    String method, Object payload, Map<String, String> headers, AgentCard_v0_3 card,
+                    ClientCallContext_v0_3 context) {
+                ((org.a2aproject.sdk.compat03.grpc.GetTaskRequest.Builder) payload).setName("tasks/changed");
+                return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(payload, null);
+            }
+        };
+        RestTransport_v0_3 client = new RestTransport_v0_3(null, CARD, CARD.url(), List.of(interceptor));
+        client.getTask(new TaskQueryParams_v0_3("original"), null);
+    }
+
+    @Test
+    public void urlBoundFieldsFollowInterceptorBuilderAndImmutableMessages() throws Exception {
+        this.server.when(request().withMethod("GET").withPath("/v1/tasks/changed")
+                .withQueryStringParameter("historyLength", "5"))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
+        this.server.when(request().withMethod("POST").withPath("/v1/tasks/changed:cancel"))
+                .respond(response().withStatusCode(200).withBody(CANCEL_TASK_TEST_RESPONSE));
+        this.server.when(request().withMethod("POST").withPath("/v1/tasks/changed/pushNotificationConfigs"))
+                .respond(response().withStatusCode(200).withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+        this.server.when(request().withMethod("GET").withPath("/v1/tasks/changed/pushNotificationConfigs/other"))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+        this.server.when(request().withMethod("GET").withPath("/v1/tasks/changed/pushNotificationConfigs")
+                .withQueryStringParameter("pageSize", "12").withQueryStringParameter("pageToken", "a b"))
+                .respond(response().withStatusCode(200).withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+        this.server.when(request().withMethod("DELETE").withPath("/v1/tasks/changed/pushNotificationConfigs/other"))
+                .respond(response().withStatusCode(200));
+        this.server.when(request().withMethod("POST").withPath("/v1/tasks/changed:subscribe"))
+                .respond(response().withStatusCode(200).withHeader("Content-Type", "text/event-stream")
+                        .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE));
+        for (boolean immutable : new boolean[] { false, true }) {
+            ClientCallInterceptor_v0_3 interceptor = new ClientCallInterceptor_v0_3() {
+                @Override
+                public org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3 intercept(
+                        String method, Object payload, Map<String, String> headers, AgentCard_v0_3 card,
+                        ClientCallContext_v0_3 context) {
+                    Object result = payload;
+                    if (payload instanceof org.a2aproject.sdk.compat03.grpc.GetTaskRequest.Builder b) {
+                        b.setName("tasks/changed").setHistoryLength(5); result = immutable ? b.build() : b;
+                    } else if (payload instanceof org.a2aproject.sdk.compat03.grpc.CancelTaskRequest.Builder b) {
+                        b.setName("tasks/changed"); result = immutable ? b.build() : b;
+                    } else if (payload instanceof org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder b) {
+                        b.setParent("tasks/changed"); result = immutable ? b.build() : b;
+                    } else if (payload instanceof org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequest.Builder b) {
+                        b.setName("tasks/changed/pushNotificationConfigs/other"); result = immutable ? b.build() : b;
+                    } else if (payload instanceof org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequest.Builder b) {
+                        b.setParent("tasks/changed").setPageSize(12).setPageToken("a b"); result = immutable ? b.build() : b;
+                    } else if (payload instanceof org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.Builder b) {
+                        b.setName("tasks/changed/pushNotificationConfigs/other"); result = immutable ? b.build() : b;
+                    } else if (payload instanceof org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest.Builder b) {
+                        b.setName("tasks/changed"); result = immutable ? b.build() : b;
+                    }
+                    return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(result, headers);
+                }
+            };
+            RestTransport_v0_3 client = new RestTransport_v0_3(null, CARD, CARD.url(), List.of(interceptor));
+            client.getTask(new TaskQueryParams_v0_3("original", 2), null);
+            client.cancelTask(new TaskIdParams_v0_3("original"), null);
+            client.setTaskPushNotificationConfiguration(new TaskPushNotificationConfig_v0_3("original",
+                    new PushNotificationConfig_v0_3.Builder().url("https://example.com/callback").build()), null);
+            client.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams_v0_3("original", "old", null), null);
+            client.listTaskPushNotificationConfigurations(new ListTaskPushNotificationConfigParams_v0_3("original"), null);
+            client.deleteTaskPushNotificationConfigurations(new DeleteTaskPushNotificationConfigParams_v0_3("original", "old"), null);
+            CountDownLatch latch = new CountDownLatch(1);
+            client.resubscribe(new TaskIdParams_v0_3("original"), event -> latch.countDown(), error -> {}, null);
+            assertTrue(latch.await(10, TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    public void urlBoundOperationsRejectNullInterceptorPayloadBeforeSending() throws Exception {
+        ClientCallInterceptor_v0_3 interceptor = new ClientCallInterceptor_v0_3() {
+            @Override
+            public org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3 intercept(
+                    String method, Object payload, Map<String, String> headers, AgentCard_v0_3 card,
+                    ClientCallContext_v0_3 context) {
+                return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(null, null);
+            }
+        };
+        RestTransport_v0_3 client = new RestTransport_v0_3(null, CARD, CARD.url(), List.of(interceptor));
+        List<org.junit.jupiter.api.function.Executable> calls = List.of(
+                () -> client.getTask(new TaskQueryParams_v0_3("original", 2), null),
+                () -> client.cancelTask(new TaskIdParams_v0_3("original"), null),
+                () -> client.setTaskPushNotificationConfiguration(new TaskPushNotificationConfig_v0_3("original",
+                        new PushNotificationConfig_v0_3.Builder().url("https://example.com/callback").build()), null),
+                () -> client.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams_v0_3("original", "old", null), null),
+                () -> client.listTaskPushNotificationConfigurations(new ListTaskPushNotificationConfigParams_v0_3("original"), null),
+                () -> client.deleteTaskPushNotificationConfigurations(new DeleteTaskPushNotificationConfigParams_v0_3("original", "old"), null),
+                () -> client.resubscribe(new TaskIdParams_v0_3("original"), event -> {}, error -> {}, null));
+        for (org.junit.jupiter.api.function.Executable call : calls) {
+            IllegalArgumentException error = assertThrows(IllegalArgumentException.class, call);
+            assertTrue(error.getMessage().contains("payload"));
+        }
+        assertEquals(0, server.retrieveRecordedRequests(request()).length);
+    }
+
+    @Test
+    public void authenticatedExtendedCardPassesRequestAndAllowsNullHeaders() throws Exception {
+        server.when(request().withMethod("GET").withPath("/.well-known/agent-card.json"))
+                .respond(response().withStatusCode(200).withBody(JsonRestMessages_v0_3.AGENT_CARD_SUPPORTS_EXTENDED));
+        server.when(request().withMethod("GET").withPath("/v1/card"))
+                .respond(response().withStatusCode(200).withBody(JsonRestMessages_v0_3.AUTHENTICATION_EXTENDED_AGENT_CARD));
+        AtomicInteger calls = new AtomicInteger();
+        ClientCallInterceptor_v0_3 interceptor = new ClientCallInterceptor_v0_3() {
+            @Override
+            public org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3 intercept(
+                    String method, Object payload, Map<String, String> headers, AgentCard_v0_3 card,
+                    ClientCallContext_v0_3 context) {
+                assertTrue(payload instanceof org.a2aproject.sdk.compat03.grpc.GetAgentCardRequestOrBuilder);
+                calls.incrementAndGet();
+                return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(payload, null);
+            }
+        };
+        RestTransport_v0_3 client = new RestTransport_v0_3(null, null, CARD.url(), List.of(interceptor));
+        assertEquals("GeoSpatial Route Planner Agent Extended", client.getAgentCard(null).name());
+        assertEquals(1, calls.get());
     }
 
     /**
