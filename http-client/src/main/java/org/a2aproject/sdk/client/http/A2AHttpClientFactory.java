@@ -154,6 +154,16 @@ public final class A2AHttpClientFactory {
      * @throws IllegalStateException if no eligible provider could be instantiated
      */
     public static A2AHttpClient create(A2AHttpClientConfiguration configuration) {
+        return createWithOwnership(configuration).client();
+    }
+
+    /**
+     * Selects a client and reports whether the selected provider transfers ownership.
+     *
+     * @param configuration provider exclusions and optional client settings
+     * @return the selected client and its ownership
+     */
+    public static ClientSelection createWithOwnership(A2AHttpClientConfiguration configuration) {
         Assert.checkNotNullParam("configuration", configuration);
         return createInternal(
                 p -> !configuration.excludedProviderNames().contains(p.name()) && supports(p, configuration),
@@ -165,13 +175,14 @@ public final class A2AHttpClientFactory {
                 && (configuration.redirectHeaderPolicy() == null || provider.supportsRedirectHeaderPolicy());
     }
 
-    private static A2AHttpClient createInternal(
+    private static ClientSelection createInternal(
             Predicate<A2AHttpClientProvider> filter, A2AHttpClientConfiguration configuration) {
         return PROVIDERS.stream()
                 .filter(filter)
                 .flatMap(p -> {
                     try {
-                        return Stream.of(p.create(configuration));
+                        boolean owned = p.transfersOwnership();
+                        return Stream.of(new ClientSelection(p.create(configuration), owned));
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, e, () -> "Provider " + p.name() + " skipped");
                         return Stream.empty();
@@ -179,6 +190,18 @@ public final class A2AHttpClientFactory {
                 })
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No A2AHttpClientProvider could be instantiated"));
+    }
+
+    /**
+     * The HTTP client returned by a provider and its lifecycle ownership.
+     *
+     * @param client selected client
+     * @param owned whether the caller may close the client
+     */
+    public record ClientSelection(A2AHttpClient client, boolean owned) {
+        public ClientSelection {
+            Assert.checkNotNullParam("client", client);
+        }
     }
 
 }

@@ -2,7 +2,6 @@ package org.a2aproject.sdk.client.http.cdi;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.CDI;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientProvider;
 
@@ -42,6 +41,11 @@ public final class CdiA2AHttpClientProvider implements A2AHttpClientProvider {
             throw new IllegalStateException("No unambiguous A2AHttpClient CDI bean found");
         }
         return instance.get();
+    }
+
+    @Override
+    public boolean transfersOwnership() {
+        return false;
     }
 
     @Override

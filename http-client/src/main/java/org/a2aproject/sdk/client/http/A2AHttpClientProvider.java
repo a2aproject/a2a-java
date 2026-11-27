@@ -24,6 +24,16 @@ public interface A2AHttpClientProvider {
     A2AHttpClient create();
 
     /**
+     * Returns whether the caller owns and may close a client returned by this provider.
+     * Providers returning shared or container-managed clients override this method.
+     *
+     * @return whether lifecycle ownership transfers to the caller
+     */
+    default boolean transfersOwnership() {
+        return true;
+    }
+
+    /**
      * Creates a client using the supplied factory configuration.
      *
      * <p>The default implementation supports SSE parser configuration when this provider

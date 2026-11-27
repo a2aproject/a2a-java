@@ -5,14 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.enterprise.inject.se.SeContainer;
-import jakarta.enterprise.inject.se.SeContainerInitializer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
@@ -74,6 +75,13 @@ public class CdiA2AHttpClientFactoryTest {
             assertNotNull(result);
             assertInstanceOf(DummyA2AHttpClient.class, result,
                     "Factory should return CDI-provided client (priority 200) over JDK/Vert.x");
+        }
+
+        @Test
+        void selectingSharedCdiClientDoesNotTransferOwnership() {
+            var selected = A2AHttpClientFactory.createWithOwnership(A2AHttpClientConfiguration.DEFAULT);
+            assertInstanceOf(DummyA2AHttpClient.class, selected.client());
+            assertFalse(selected.owned());
         }
 
         @Test
