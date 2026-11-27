@@ -68,6 +68,23 @@ import org.jspecify.annotations.Nullable;
 
 public class RestTransport implements ClientTransport {
 
+    private static String encodePathSegment(String value) {
+        StringBuilder encoded = new StringBuilder();
+        boolean dotSegment = value.equals(".") || value.equals("..");
+        for (byte b : value.getBytes(StandardCharsets.UTF_8)) {
+            int c = b & 0xff;
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                    || c == '-' || c == '_' || c == '~' || (c == '.' && !dotSegment)) {
+                encoded.append((char) c);
+            } else {
+                encoded.append('%');
+                encoded.append("0123456789ABCDEF".charAt(c >>> 4));
+                encoded.append("0123456789ABCDEF".charAt(c & 0x0f));
+            }
+        }
+        return encoded.toString();
+    }
+
     private static final Logger LOGGER = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
     private final Map<CompletableFuture<Void>, SSEEventListener> activeStreams = new HashMap<>();
@@ -165,9 +182,9 @@ public class RestTransport implements ClientTransport {
             org.a2aproject.sdk.grpc.GetTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.GetTaskRequestOrBuilder.class);
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             if (effective.hasHistoryLength()) {
-                url.append(String.format("/tasks/%s?historyLength=%d", effective.getId(), effective.getHistoryLength()));
+                url.append(String.format("/tasks/%s?historyLength=%d", encodePathSegment(effective.getId()), effective.getHistoryLength()));
             } else {
-                url.append(String.format("/tasks/%1s", effective.getId()));
+                url.append(String.format("/tasks/%1s", encodePathSegment(effective.getId())));
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
@@ -193,7 +210,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(CANCEL_TASK_METHOD, builder, agentCard, context);
         try {
             org.a2aproject.sdk.grpc.CancelTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.CancelTaskRequestOrBuilder.class);
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:cancel", effective.getId()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:cancel", encodePathSegment(effective.getId())), payloadAndHeaders);
             org.a2aproject.sdk.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.grpc.Task.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
@@ -320,7 +337,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder, agentCard, context);
         try {
             org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder.class);
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs", effective.getTaskId()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs", encodePathSegment(effective.getTaskId())), payloadAndHeaders);
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
@@ -350,9 +367,9 @@ public class RestTransport implements ClientTransport {
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             String configId = effective.getId();
             if (!configId.isEmpty()) {
-                url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", effective.getTaskId(), configId));
+                url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", encodePathSegment(effective.getTaskId()), encodePathSegment(configId)));
             } else {
-                url.append(String.format("/tasks/%1s/pushNotificationConfigs/", effective.getTaskId()));
+                url.append(String.format("/tasks/%1s/pushNotificationConfigs/", encodePathSegment(effective.getTaskId())));
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
@@ -391,7 +408,7 @@ public class RestTransport implements ClientTransport {
         try {
             org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder.class);
             StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
-            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", effective.getTaskId()));
+            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", encodePathSegment(effective.getTaskId())));
             String queryString = buildListPushNotificationConfigsQueryString(ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(effective));
             if (!queryString.isEmpty()) {
                 urlBuilder.append("?").append(queryString);
@@ -424,7 +441,7 @@ public class RestTransport implements ClientTransport {
                 agentCard, context);
         try {
             org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder.class);
-            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", effective.getTaskId(), effective.getId());
+            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", encodePathSegment(effective.getTaskId()), encodePathSegment(effective.getId()));
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
             addStandardHeaders(deleteBuilder, payloadAndHeaders);
             A2AHttpResponse response = deleteBuilder.delete();
@@ -453,7 +470,7 @@ public class RestTransport implements ClientTransport {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder.class);
-            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:subscribe", effective.getId());
+            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:subscribe", encodePathSegment(effective.getId()));
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders, false);
             ref.set(trackStream(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
