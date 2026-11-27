@@ -66,6 +66,8 @@
                         <configuration>
                             <includes>
                                 <include>**/Abstract*.class</include>
+                                <include>**/HttpsDefaultPortFixture*.class</include>
+                                <include>**/PendingSseHttpClient*.class</include>
                             </includes>
                         </configuration>
                     </execution>

@@ -10,9 +10,14 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
+import com.sun.net.httpserver.HttpServer;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +30,8 @@ public abstract class AbstractA2AHttpClientIntegrationTest {
     private A2AHttpClient client;
 
     protected abstract A2AHttpClient createClient();
+
+    protected abstract A2AHttpClient createClientWithProxy(InetSocketAddress proxy);
 
     @BeforeEach
     public void setup() {
@@ -41,6 +48,63 @@ public abstract class AbstractA2AHttpClientIntegrationTest {
 
     private String getBaseUrl() {
         return "http://localhost:" + mockServer.getPort();
+    }
+
+    /** Compare Host headers using a local proxy, without binding a privileged port. */
+    public static void assertDefaultPortHostOnWire(Function<InetSocketAddress, A2AHttpClient> factory) throws Exception {
+        var proxy = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        var hosts = new CopyOnWriteArrayList<String>();
+        proxy.createContext("/", exchange -> {
+            hosts.add(exchange.getRequestHeaders().getFirst("Host"));
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+        });
+        proxy.start();
+        A2AHttpClient client = null;
+        try {
+            client = factory.apply(proxy.getAddress());
+            assertEquals(200, client.createGet().url("http://example.test/agent").get().status());
+            assertEquals(200, client.createGet().url(HttpEndpoint.normalize("http://example.test/agent")).get().status());
+            assertEquals(hosts.get(0), hosts.get(1), "normalizing the default port must preserve Host");
+        } finally {
+            try {
+                if (client instanceof AutoCloseable closeable) {
+                    closeable.close();
+                }
+            } finally {
+                proxy.stop(0);
+            }
+        }
+    }
+
+    @Test
+    public void defaultPortPreservesHostHeader() throws Exception {
+        assertDefaultPortHostOnWire(this::createClientWithProxy);
+    }
+
+    /** Verify the HTTP client preserves encoded path segments on the wire. */
+    public static void assertEncodedPathOnWire(A2AHttpClient client) throws Exception {
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        var rawPath = new AtomicReference<String>();
+        server.createContext("/", exchange -> {
+            rawPath.set(exchange.getRequestURI().getRawPath());
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+        });
+        server.start();
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort();
+            String path = "/tasks/" + HttpEndpoint.pathSegment("urn:uuid:café%2e");
+            assertEquals(200, client.createGet().url(HttpEndpoint.normalizeRest(base) + path).get().status());
+            assertEquals("/tasks/urn%3Auuid%3Acaf%C3%A9%252e", rawPath.get());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    public void encodedPathIsPreservedOnWire() throws Exception {
+        assertEncodedPathOnWire(client);
     }
 
     @Test

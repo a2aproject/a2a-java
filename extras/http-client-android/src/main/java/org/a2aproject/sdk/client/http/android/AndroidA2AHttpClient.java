@@ -1,11 +1,10 @@
 package org.a2aproject.sdk.client.http.android;
 
-import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
-
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -26,13 +26,16 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.BoundedLineAccumulator;
 import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
@@ -59,6 +62,8 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
   private final SSEParserConfig sseParserConfig;
   private final RedirectHeaderPolicy redirectHeaderPolicy;
+  private final @Nullable Proxy proxy;
+  private final @Nullable SSLSocketFactory tlsSocketFactory;
 
   public AndroidA2AHttpClient() {
     this(SSEParserConfig.DEFAULT, RedirectHeaderPolicy.DEFAULT);
@@ -92,8 +97,16 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
    */
   public AndroidA2AHttpClient(
       SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
+    this(sseParserConfig, redirectHeaderPolicy, null, null);
+  }
+
+  AndroidA2AHttpClient(
+      SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy,
+      @Nullable Proxy proxy, @Nullable SSLSocketFactory tlsSocketFactory) {
     this.sseParserConfig = checkNotNullParam("sseParserConfig", sseParserConfig);
     this.redirectHeaderPolicy = checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
+    this.proxy = proxy;
+    this.tlsSocketFactory = tlsSocketFactory;
   }
 
   @Override
@@ -111,7 +124,15 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
     return new AndroidDeleteBuilder(sseParserConfig, redirectHeaderPolicy);
   }
 
-  private abstract static class AndroidBuilder<T extends Builder<T>> implements Builder<T> {
+  private HttpURLConnection openConnection(URL url) throws IOException {
+    HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
+    if (tlsSocketFactory != null && connection instanceof HttpsURLConnection secure) {
+      secure.setSSLSocketFactory(tlsSocketFactory);
+    }
+    return connection;
+  }
+
+  private abstract class AndroidBuilder<T extends Builder<T>> implements Builder<T> {
     protected String url = "";
     protected Map<String, String> headers = new HashMap<>();
     protected final SSEParserConfig sseParserConfig;
@@ -160,7 +181,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
       } catch (URISyntaxException e) {
         throw new MalformedURLException("Invalid URL: " + url);
       }
-      HttpURLConnection connection = (HttpURLConnection) urlObj.openConnection();
+      HttpURLConnection connection = openConnection(urlObj);
       connection.setRequestMethod(method);
       connection.setConnectTimeout(15000); // 15 seconds
       connection.setReadTimeout(60000);    // 60 seconds
@@ -371,7 +392,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
     }
   }
 
-  private static class AndroidGetBuilder extends AndroidBuilder<GetBuilder> implements GetBuilder {
+  private class AndroidGetBuilder extends AndroidBuilder<GetBuilder> implements GetBuilder {
     private boolean followRedirects = false;
 
 AndroidGetBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
@@ -424,7 +445,7 @@ AndroidGetBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirect
     }
   }
 
-  private static class AndroidPostBuilder extends AndroidBuilder<PostBuilder>
+  private class AndroidPostBuilder extends AndroidBuilder<PostBuilder>
       implements PostBuilder {
     private String body = "";
     private boolean followRedirects = false;
@@ -514,7 +535,7 @@ AndroidPostBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirec
     }
   }
 
-  private static class AndroidDeleteBuilder extends AndroidBuilder<DeleteBuilder>
+  private class AndroidDeleteBuilder extends AndroidBuilder<DeleteBuilder>
       implements DeleteBuilder {
 AndroidDeleteBuilder(SSEParserConfig sseParserConfig, RedirectHeaderPolicy redirectHeaderPolicy) {
       super(sseParserConfig, redirectHeaderPolicy);

@@ -3,6 +3,8 @@ package org.a2aproject.sdk.client.http.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -22,9 +24,10 @@ import okhttp3.ResponseBody;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.HttpsDefaultPortFixture.Connection;
 import org.a2aproject.sdk.client.http.RedirectHeaderPolicy;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.SSEParserConfig;
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.http.ServerSentEventParser;
 import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
@@ -33,7 +36,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Test-only {@link A2AHttpClient} backed by OkHttp, simulating Android's HTTP stack.
  *
- * <p>Android uses OkHttp internally for {@link java.net.HttpURLConnection}. This class
+ * <p>Android uses OkHttp internally for {@link HttpURLConnection}. This class
  * exercises the same redirect and header-forwarding semantics without requiring a real
  * Android runtime, allowing the shared abstract test suites to validate behaviour on
  * both JDK and OkHttp.
@@ -53,13 +56,22 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
     });
 
     private final SSEParserConfig sseParserConfig;
+    private final @Nullable Proxy proxy;
+    private final @Nullable Connection tlsConnection;
 
     OkHttpA2AHttpClient() {
         this(SSEParserConfig.DEFAULT);
     }
 
     OkHttpA2AHttpClient(SSEParserConfig sseParserConfig) {
+        this(sseParserConfig, null, null);
+    }
+
+    OkHttpA2AHttpClient(SSEParserConfig sseParserConfig, @Nullable Proxy proxy,
+            @Nullable Connection tlsConnection) {
         this.sseParserConfig = sseParserConfig;
+        this.proxy = proxy;
+        this.tlsConnection = tlsConnection;
     }
 
     @Override
@@ -77,7 +89,7 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
         return new OkHttpDeleteBuilder(sseParserConfig);
     }
 
-    private abstract static class OkHttpBuilder<T extends Builder<T>> implements Builder<T> {
+    private abstract class OkHttpBuilder<T extends Builder<T>> implements Builder<T> {
         protected String url = "";
         protected final Map<String, String> headers = new HashMap<>();
         protected final SSEParserConfig sseParserConfig;
@@ -112,10 +124,14 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
         }
 
         protected OkHttpClient buildClient(boolean followRedirects) {
-            return new OkHttpClient.Builder()
+            var builder = new OkHttpClient.Builder()
+                    .proxy(proxy)
                     .followRedirects(followRedirects)
-                    .followSslRedirects(followRedirects)
-                    .build();
+                    .followSslRedirects(followRedirects);
+            if (tlsConnection != null) {
+                builder.sslSocketFactory(tlsConnection.tls().getSocketFactory(), tlsConnection.trustManager());
+            }
+            return builder.build();
         }
 
         protected Request.Builder applyHeaders(Request.Builder builder) {
@@ -237,7 +253,7 @@ class OkHttpA2AHttpClient implements A2AHttpClient {
         }
     }
 
-    private static class OkHttpGetBuilder extends OkHttpBuilder<GetBuilder> implements GetBuilder {
+    private class OkHttpGetBuilder extends OkHttpBuilder<GetBuilder> implements GetBuilder {
         private boolean followRedirects = false;
 
 OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
@@ -301,7 +317,7 @@ OkHttpGetBuilder(SSEParserConfig sseParserConfig) {
         }
     }
 
-    private static class OkHttpPostBuilder extends OkHttpBuilder<PostBuilder> implements PostBuilder {
+    private class OkHttpPostBuilder extends OkHttpBuilder<PostBuilder> implements PostBuilder {
         private String body = "";
         private boolean followRedirects = false;
 
@@ -383,7 +399,7 @@ OkHttpPostBuilder(SSEParserConfig sseParserConfig) {
         }
     }
 
-    private static class OkHttpDeleteBuilder extends OkHttpBuilder<DeleteBuilder> implements DeleteBuilder {
+    private class OkHttpDeleteBuilder extends OkHttpBuilder<DeleteBuilder> implements DeleteBuilder {
 OkHttpDeleteBuilder(SSEParserConfig sseParserConfig) {
             super(sseParserConfig);
         }

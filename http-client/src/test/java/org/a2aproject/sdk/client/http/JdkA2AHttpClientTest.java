@@ -1,13 +1,20 @@
 package org.a2aproject.sdk.client.http;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockserver.integration.ClientAndServer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.CookieManager;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -34,15 +41,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
+import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.mockserver.integration.ClientAndServer;
 
 public class JdkA2AHttpClientTest {
 
@@ -57,6 +59,40 @@ public class JdkA2AHttpClientTest {
         if (collector != null) {
             collector.stop();
         }
+    }
+
+    @Test
+    void normalizedHttpsDefaultPortPreservesHostHeader() throws Exception {
+        HttpsDefaultPortFixture.assertHostPreserved(connection -> new JdkA2AHttpClient(HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .proxy(ProxySelector.of(connection.proxy()))
+                .sslContext(connection.tls()).build()));
+    }
+
+    @Test
+    public void normalizedDefaultPortIsOmittedFromHostHeader() throws Exception {
+        var proxy = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        var host = new AtomicReference<String>();
+        proxy.createContext("/", exchange -> {
+            host.set(exchange.getRequestHeaders().getFirst("Host"));
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+        });
+        proxy.start();
+        try {
+            var jdkClient = HttpClient.newBuilder().proxy(ProxySelector.of(
+                    new InetSocketAddress("127.0.0.1", proxy.getAddress().getPort()))).build();
+            var client = new JdkA2AHttpClient(jdkClient);
+            assertEquals(200, client.createGet().url(HttpEndpoint.normalize("http://example.test/agent")).get().status());
+            assertEquals("example.test", host.get());
+        } finally {
+            proxy.stop(0);
+        }
+    }
+
+    @Test
+    public void encodedPathIsPreservedOnWire() throws Exception {
+        AbstractA2AHttpClientIntegrationTest.assertEncodedPathOnWire(new JdkA2AHttpClient());
     }
 
     @Test
@@ -128,7 +164,7 @@ public class JdkA2AHttpClientTest {
 
     @Test
     public void testConstructorRejectsNullHttpClient() {
-        assertThrows(IllegalArgumentException.class, () -> new JdkA2AHttpClient((java.net.http.HttpClient) null), "foo");
+        assertThrows(IllegalArgumentException.class, () -> new JdkA2AHttpClient((HttpClient) null), "foo");
     }
 
     @Test
