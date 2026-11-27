@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.rest;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.jspecify.annotations.Nullable;
 
@@ -43,6 +44,10 @@ import org.jspecify.annotations.Nullable;
  *     .build();
  * }</pre>
  *
+ * <p>Each transport built without an explicit HTTP client selects one from the configured
+ * providers. The transport closes clients whose providers transfer lifecycle ownership.
+ * An explicitly supplied client remains owned by the application.
+ *
  * @see RestTransportConfigBuilder
  * @see RestTransport
  * @see A2AHttpClient
@@ -52,11 +57,12 @@ public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
 
     private final @Nullable A2AHttpClient httpClient;
     private final boolean followRedirects;
+    private final A2AHttpClientConfiguration httpClientConfiguration;
 
     /**
      * Create a REST transport configuration with the default HTTP client.
      * <p>
-     * The default JDK-based HTTP client will be used. Consider using
+     * The default provider selects the HTTP client. Consider using
      * {@link RestTransportConfigBuilder} instead for a more fluent API.
      */
     public RestTransportConfig() {
@@ -81,8 +87,18 @@ public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
      * @param followRedirects whether POST requests may follow a single redirect
      */
     public RestTransportConfig(@Nullable A2AHttpClient httpClient, boolean followRedirects) {
+        this(httpClient, followRedirects, A2AHttpClientConfiguration.DEFAULT);
+    }
+
+    RestTransportConfig(@Nullable A2AHttpClient httpClient, boolean followRedirects,
+            A2AHttpClientConfiguration httpClientConfiguration) {
         this.httpClient = httpClient;
         this.followRedirects = followRedirects;
+        this.httpClientConfiguration = httpClientConfiguration;
+    }
+
+    A2AHttpClientConfiguration httpClientConfiguration() {
+        return httpClientConfiguration;
     }
 
     /**

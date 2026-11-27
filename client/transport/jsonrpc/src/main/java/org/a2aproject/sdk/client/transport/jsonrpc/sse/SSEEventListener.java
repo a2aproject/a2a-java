@@ -28,7 +28,10 @@ public class SSEEventListener extends AbstractSSEEventListener {
     private final AtomicBoolean failed = new AtomicBoolean(false);
     private final AtomicReference<Future<Void>> boundFuture = new AtomicReference<>();
 
-    public void bindFuture(Future<Void> future) {
+    public void bindFuture(@Nullable Future<Void> future) {
+        if (future == null) {
+            return;
+        }
         boundFuture.set(future);
         if (failed.get()) future.cancel(true);
     }

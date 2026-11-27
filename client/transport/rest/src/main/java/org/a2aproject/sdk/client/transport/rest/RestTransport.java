@@ -17,12 +17,12 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +32,9 @@ import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.transport.rest.sse.SSEEventListener;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
@@ -66,16 +68,16 @@ import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
-public class RestTransport implements ClientTransport {
+public class RestTransport implements ClientTransport, AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
-    private final Map<CompletableFuture<Void>, SSEEventListener> activeStreams = new HashMap<>();
-    private boolean closed;
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
     private final AgentCard agentCard;
     private final boolean followRedirects;
+
+    private final HttpStreamLifecycle streams;
 
     public RestTransport(AgentCard agentCard) {
         this(null, agentCard, Utils.getFavoriteInterface(agentCard), null);
@@ -89,10 +91,19 @@ public class RestTransport implements ClientTransport {
     public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors,
             boolean followRedirects) {
-        this.httpClient = httpClient == null ? A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT) : httpClient;
-        this.agentCard = agentCard;
+        this(httpClient, agentCard, agentInterface, interceptors, followRedirects,
+                () -> A2AHttpClientFactory.createWithOwnership(A2AHttpClientConfiguration.DEFAULT));
+    }
+
+    RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard, AgentInterface agentInterface,
+            @Nullable List<ClientCallInterceptor> interceptors, boolean followRedirects,
+            Supplier<ClientSelection> defaultClientFactory) {
         this.agentInterface = agentInterface;
-        this.interceptors = interceptors;
+        var selected = httpClient == null ? defaultClientFactory.get() : new ClientSelection(httpClient, false);
+        this.httpClient = selected.client();
+        this.streams = new HttpStreamLifecycle(selected);
+        this.agentCard = agentCard;
+        this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
         this.followRedirects = followRedirects;
     }
 
@@ -133,13 +144,16 @@ public class RestTransport implements ClientTransport {
                     Utils.buildBaseUrl(agentInterface, InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SendMessageRequestOrBuilder.class).getTenant()) + "/message:stream",
                     payloadAndHeaders,
                     false);
-            ref.set(trackStream(postBuilder.postAsyncSSE(
+            var streamFuture = streams.track(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }), sseEventListener));
+                    }), sseEventListener::onCancel);
+            if (streamFuture != null) {
+                ref.set(streamFuture);
+            }
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -454,13 +468,16 @@ public class RestTransport implements ClientTransport {
             org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder.class);
             String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:subscribe", effective.getId());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders, false);
-            ref.set(trackStream(postBuilder.postAsyncSSE(
+            var streamFuture = streams.track(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
-                    }), sseEventListener));
+                    }), sseEventListener::onCancel);
+            if (streamFuture != null) {
+                ref.set(streamFuture);
+            }
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -499,59 +516,7 @@ public class RestTransport implements ClientTransport {
 
     @Override
     public void close() {
-        Map<CompletableFuture<Void>, SSEEventListener> streams;
-        synchronized (activeStreams) {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            streams = new HashMap<>(activeStreams);
-            activeStreams.clear();
-        }
-        RuntimeException failure = null;
-        for (Map.Entry<CompletableFuture<Void>, SSEEventListener> entry : streams.entrySet()) {
-            try {
-                closeStream(entry.getKey(), entry.getValue());
-            } catch (RuntimeException e) {
-                if (failure == null) {
-                    failure = e;
-                } else if (failure != e) {
-                    failure.addSuppressed(e);
-                }
-            }
-        }
-        if (failure != null) {
-            throw failure;
-        }
-    }
-
-    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, SSEEventListener listener) {
-        boolean cancel;
-        synchronized (activeStreams) {
-            cancel = closed;
-            if (!cancel) {
-                activeStreams.put(stream, listener);
-            }
-        }
-        stream.whenComplete((result, error) -> {
-            synchronized (activeStreams) {
-                activeStreams.remove(stream);
-            }
-        });
-        if (cancel) {
-            // close() can run while the HTTP client is setting up the stream.
-            closeStream(stream, listener);
-        }
-        return stream;
-    }
-
-    /** Signals normal completion before cancellation can report an I/O error. */
-    private static void closeStream(CompletableFuture<Void> stream, SSEEventListener listener) {
-        try {
-            listener.onComplete();
-        } finally {
-            stream.cancel(true);
-        }
+        streams.close();
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, MessageOrBuilder payload,

@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.jsonrpc;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.jspecify.annotations.Nullable;
 
@@ -8,7 +9,7 @@ import org.jspecify.annotations.Nullable;
  * Configuration for the JSON-RPC transport protocol.
  * <p>
  * This configuration class allows customization of the HTTP client used for JSON-RPC
- * communication with A2A agents. If no HTTP client is specified, the default JDK-based
+ * communication with A2A agents. If no HTTP client is specified, the default provider's
  * implementation is used.
  * <p>
  * <b>Basic usage:</b>
@@ -52,11 +53,12 @@ public class JSONRPCTransportConfig extends ClientTransportConfig<JSONRPCTranspo
 
     private final @Nullable A2AHttpClient httpClient;
     private final boolean followRedirects;
+    private final A2AHttpClientConfiguration httpClientConfiguration;
 
     /**
      * Create a JSON-RPC transport configuration with the default HTTP client.
      * <p>
-     * The default JDK-based HTTP client will be used. Consider using
+     * The default provider selects the HTTP client when the transport is created. Consider using
      * {@link JSONRPCTransportConfigBuilder} instead for a more fluent API.
      */
     public JSONRPCTransportConfig() {
@@ -81,8 +83,18 @@ public class JSONRPCTransportConfig extends ClientTransportConfig<JSONRPCTranspo
      * @param followRedirects whether POST requests may follow a single redirect
      */
     public JSONRPCTransportConfig(@Nullable A2AHttpClient httpClient, boolean followRedirects) {
+        this(httpClient, followRedirects, A2AHttpClientConfiguration.DEFAULT);
+    }
+
+    JSONRPCTransportConfig(@Nullable A2AHttpClient httpClient, boolean followRedirects,
+            A2AHttpClientConfiguration httpClientConfiguration) {
         this.httpClient = httpClient;
         this.followRedirects = followRedirects;
+        this.httpClientConfiguration = httpClientConfiguration;
+    }
+
+    A2AHttpClientConfiguration httpClientConfiguration() {
+        return httpClientConfiguration;
     }
 
     /**

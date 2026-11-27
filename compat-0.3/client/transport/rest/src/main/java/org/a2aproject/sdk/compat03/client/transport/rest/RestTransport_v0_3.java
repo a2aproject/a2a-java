@@ -2,6 +2,9 @@ package org.a2aproject.sdk.compat03.client.transport.rest;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
+import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
@@ -50,8 +53,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
@@ -62,16 +65,16 @@ import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
-public class RestTransport_v0_3 implements ClientTransport_v0_3 {
+public class RestTransport_v0_3 implements ClientTransport_v0_3, AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3.class.getName());
     private final A2AHttpClient httpClient;
-    private final Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> activeStreams = new HashMap<>();
-    private boolean closed;
     private final String agentUrl;
     private @Nullable final List<ClientCallInterceptor_v0_3> interceptors;
     private AgentCard_v0_3 agentCard;
     private boolean needsExtendedCard = false;
+
+    private final HttpStreamLifecycle streams;
 
     public RestTransport_v0_3(AgentCard_v0_3 agentCard) {
         this(null, agentCard, agentCard.url(), null);
@@ -79,10 +82,18 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     public RestTransport_v0_3(@Nullable A2AHttpClient httpClient, AgentCard_v0_3 agentCard,
                               String agentUrl, @Nullable List<ClientCallInterceptor_v0_3> interceptors) {
-        this.httpClient = httpClient == null ? A2AHttpClientFactory.create() : httpClient;
+        this(httpClient, agentCard, agentUrl, interceptors,
+                () -> A2AHttpClientFactory.createWithOwnership(A2AHttpClientConfiguration.DEFAULT));
+    }
+
+    RestTransport_v0_3(@Nullable A2AHttpClient httpClient, AgentCard_v0_3 agentCard, String agentUrl,
+            @Nullable List<ClientCallInterceptor_v0_3> interceptors, Supplier<ClientSelection> defaultClientFactory) {
+        this.agentUrl = agentUrl;
+        var selected = httpClient == null ? defaultClientFactory.get() : new ClientSelection(httpClient, false);
+        this.httpClient = selected.client();
+        this.streams = new HttpStreamLifecycle(selected);
         this.agentCard = agentCard;
-        this.agentUrl = agentUrl.endsWith("/") ? agentUrl.substring(0, agentUrl.length() - 1) : agentUrl;
-        this.interceptors = interceptors;
+        this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
     }
 
     @Override
@@ -127,7 +138,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(trackStream(streamFuture, sseEventListener));
+            streams.track(streamFuture, sseEventListener::onCancel);
+            if (streamFuture != null) {
+                ref.set(streamFuture);
+            }
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -334,7 +348,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(trackStream(streamFuture, sseEventListener));
+            streams.track(streamFuture, sseEventListener::onCancel);
+            if (streamFuture != null) {
+                ref.set(streamFuture);
+            }
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -384,59 +401,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     @Override
     public void close() {
-        Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> streams;
-        synchronized (activeStreams) {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            streams = new HashMap<>(activeStreams);
-            activeStreams.clear();
-        }
-        RuntimeException failure = null;
-        for (Map.Entry<CompletableFuture<Void>, RestSSEEventListener_v0_3> entry : streams.entrySet()) {
-            try {
-                closeStream(entry.getKey(), entry.getValue());
-            } catch (RuntimeException e) {
-                if (failure == null) {
-                    failure = e;
-                } else if (failure != e) {
-                    failure.addSuppressed(e);
-                }
-            }
-        }
-        if (failure != null) {
-            throw failure;
-        }
-    }
-
-    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
-        boolean cancel;
-        synchronized (activeStreams) {
-            cancel = closed;
-            if (!cancel) {
-                activeStreams.put(stream, listener);
-            }
-        }
-        stream.whenComplete((result, error) -> {
-            synchronized (activeStreams) {
-                activeStreams.remove(stream);
-            }
-        });
-        if (cancel) {
-            // close() can run while the HTTP client is setting up the stream.
-            closeStream(stream, listener);
-        }
-        return stream;
-    }
-
-    /** Signals normal completion before cancellation can report an I/O error. */
-    private static void closeStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
-        try {
-            listener.onComplete();
-        } finally {
-            stream.cancel(true);
-        }
+        streams.close();
     }
 
     private String resourceUrl(String name) {

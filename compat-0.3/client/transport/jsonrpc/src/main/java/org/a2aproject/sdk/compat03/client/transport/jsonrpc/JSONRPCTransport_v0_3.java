@@ -3,13 +3,15 @@ package org.a2aproject.sdk.compat03.client.transport.jsonrpc;
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonParseException;
 
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
+import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 
@@ -61,7 +63,7 @@ import org.a2aproject.sdk.compat03.client.transport.jsonrpc.sse.SSEEventListener
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
+public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3, AutoCloseable {
 
     private static final Class<SendMessageResponse_v0_3> SEND_MESSAGE_RESPONSE_REFERENCE = SendMessageResponse_v0_3.class;
     private static final Class<GetTaskResponse_v0_3> GET_TASK_RESPONSE_REFERENCE = GetTaskResponse_v0_3.class;
@@ -73,12 +75,11 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
     private static final Class<GetAuthenticatedExtendedCardResponse_v0_3> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = GetAuthenticatedExtendedCardResponse_v0_3.class;
 
     private final A2AHttpClient httpClient;
+    private final HttpStreamLifecycle httpLifecycle;
     private final String agentUrl;
     private final List<ClientCallInterceptor_v0_3> interceptors;
     private AgentCard_v0_3 agentCard;
     private boolean needsExtendedCard = false;
-    private final Map<CompletableFuture<Void>, SSEEventListener_v0_3> activeStreams = new HashMap<>();
-    private boolean closed;
 
     public JSONRPCTransport_v0_3(String agentUrl) {
         this(null, null, agentUrl, null);
@@ -90,10 +91,13 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
 
     public JSONRPCTransport_v0_3(A2AHttpClient httpClient, AgentCard_v0_3 agentCard,
                                  String agentUrl, List<ClientCallInterceptor_v0_3> interceptors) {
-        this.httpClient = httpClient == null ? A2AHttpClientFactory.create() : httpClient;
-        this.agentCard = agentCard;
         this.agentUrl = agentUrl;
-        this.interceptors = interceptors;
+        var selected = httpClient == null ? A2AHttpClientFactory.createWithOwnership(A2AHttpClientConfiguration.DEFAULT)
+                : new ClientSelection(httpClient, false);
+        this.httpClient = selected.client();
+        this.httpLifecycle = new HttpStreamLifecycle(selected);
+        this.agentCard = agentCard;
+        this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
         this.needsExtendedCard = agentCard == null || agentCard.supportsAuthenticatedExtendedCard();
     }
 
@@ -152,7 +156,7 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
             // above is available to the listener. Handing it over lets the listener close the
             // channel the event asked for.
             sseEventListener.onStreamFuturePublished(streamFuture);
-            trackStream(streamFuture, sseEventListener);
+            httpLifecycle.track(streamFuture, () -> sseEventListener.closeStream(streamFuture));
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -338,7 +342,7 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
             ref.set(streamFuture);
             // Same as sendMessageStreaming: replay a close request raised before the future existed.
             sseEventListener.onStreamFuturePublished(streamFuture);
-            trackStream(streamFuture, sseEventListener);
+            httpLifecycle.track(streamFuture, () -> sseEventListener.closeStream(streamFuture));
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
@@ -386,58 +390,7 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3 {
 
     @Override
     public void close() {
-        Map<CompletableFuture<Void>, SSEEventListener_v0_3> streams;
-        synchronized (activeStreams) {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            streams = Map.copyOf(activeStreams);
-            activeStreams.clear();
-        }
-        // Close outside the lock: closing a stream runs the user's handler on this thread.
-        closeStreams(streams);
-    }
-
-    private static void closeStreams(Map<CompletableFuture<Void>, SSEEventListener_v0_3> streams) {
-        RuntimeException failure = null;
-        for (Map.Entry<CompletableFuture<Void>, SSEEventListener_v0_3> entry : streams.entrySet()) {
-            try {
-                entry.getValue().closeStream(entry.getKey());
-            } catch (RuntimeException e) {
-                // A throwing handler must not leave the remaining streams open.
-                if (failure == null) {
-                    failure = e;
-                } else if (failure != e) {
-                    failure.addSuppressed(e);
-                }
-            }
-        }
-        if (failure != null) {
-            throw failure;
-        }
-    }
-
-    private void trackStream(CompletableFuture<Void> stream, SSEEventListener_v0_3 listener) {
-        if (stream == null) {
-            return; // the client did not return a future, so there is nothing to close
-        }
-        boolean alreadyClosed;
-        synchronized (activeStreams) {
-            alreadyClosed = closed;
-            if (!alreadyClosed) {
-                activeStreams.put(stream, listener);
-            }
-        }
-        stream.whenComplete((result, error) -> {
-            synchronized (activeStreams) {
-                activeStreams.remove(stream);
-            }
-        });
-        if (alreadyClosed) {
-            // close() can run while the HTTP client is setting up the stream.
-            listener.closeStream(stream);
-        }
+        httpLifecycle.close();
     }
 
     private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, Object payload,

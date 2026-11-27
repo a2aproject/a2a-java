@@ -14,7 +14,6 @@ import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +25,8 @@ import com.google.protobuf.MessageOrBuilder;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
+import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -72,15 +73,14 @@ import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
-public class JSONRPCTransport implements ClientTransport {
+public class JSONRPCTransport implements ClientTransport, AutoCloseable {
 
     private final A2AHttpClient httpClient;
+    private final HttpStreamLifecycle httpLifecycle;
     private final AgentInterface agentInterface;
     private final @Nullable List<ClientCallInterceptor> interceptors;
     private final @Nullable AgentCard agentCard;
     private final boolean followRedirects;
-    private final Map<CompletableFuture<Void>, SSEEventListener> activeStreams = new HashMap<>();
-    private boolean closed;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, new AgentInterface("JSONRPC", agentUrl),  null);
@@ -98,10 +98,19 @@ public class JSONRPCTransport implements ClientTransport {
     public JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
                             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors,
                             boolean followRedirects) {
-        this.httpClient = httpClient == null ? A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT) : httpClient;
-        this.agentCard = agentCard;
+        this(httpClient, agentCard, agentInterface, interceptors, followRedirects, A2AHttpClientConfiguration.DEFAULT);
+    }
+
+    JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
+            AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors,
+            boolean followRedirects, A2AHttpClientConfiguration configuration) {
         this.agentInterface = agentInterface;
-        this.interceptors = interceptors;
+        var selected = httpClient == null ? A2AHttpClientFactory.createWithOwnership(configuration)
+                : new ClientSelection(httpClient, false);
+        this.httpClient = selected.client();
+        this.httpLifecycle = new HttpStreamLifecycle(selected);
+        this.agentCard = agentCard;
+        this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
         this.followRedirects = followRedirects;
     }
 
@@ -146,7 +155,7 @@ public class JSONRPCTransport implements ClientTransport {
                     });
             ref.set(streamFuture);
             sseEventListener.bindFuture(streamFuture);
-            trackStream(streamFuture, sseEventListener);
+            httpLifecycle.track(streamFuture, () -> sseEventListener.closeStream(streamFuture));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
@@ -301,7 +310,7 @@ public class JSONRPCTransport implements ClientTransport {
                     });
             ref.set(streamFuture);
             sseEventListener.bindFuture(streamFuture);
-            trackStream(streamFuture, sseEventListener);
+            httpLifecycle.track(streamFuture, () -> sseEventListener.closeStream(streamFuture));
         } catch (IOException e) {
             throw new A2AClientException("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
@@ -331,58 +340,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public void close() {
-        Map<CompletableFuture<Void>, SSEEventListener> streams;
-        synchronized (activeStreams) {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            streams = Map.copyOf(activeStreams);
-            activeStreams.clear();
-        }
-        // Close outside the lock: closing a stream runs the user's handler on this thread.
-        closeStreams(streams);
-    }
-
-    private static void closeStreams(Map<CompletableFuture<Void>, SSEEventListener> streams) {
-        RuntimeException failure = null;
-        for (Map.Entry<CompletableFuture<Void>, SSEEventListener> entry : streams.entrySet()) {
-            try {
-                entry.getValue().closeStream(entry.getKey());
-            } catch (RuntimeException e) {
-                // A throwing handler must not leave the remaining streams open.
-                if (failure == null) {
-                    failure = e;
-                } else if (failure != e) {
-                    failure.addSuppressed(e);
-                }
-            }
-        }
-        if (failure != null) {
-            throw failure;
-        }
-    }
-
-    private void trackStream(CompletableFuture<Void> stream, SSEEventListener listener) {
-        if (stream == null) {
-            return; // the client did not return a future, so there is nothing to close
-        }
-        boolean alreadyClosed;
-        synchronized (activeStreams) {
-            alreadyClosed = closed;
-            if (!alreadyClosed) {
-                activeStreams.put(stream, listener);
-            }
-        }
-        stream.whenComplete((result, error) -> {
-            synchronized (activeStreams) {
-                activeStreams.remove(stream);
-            }
-        });
-        if (alreadyClosed) {
-            // close() can run while the HTTP client is setting up the stream.
-            listener.closeStream(stream);
-        }
+        httpLifecycle.close();
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, Object payload,

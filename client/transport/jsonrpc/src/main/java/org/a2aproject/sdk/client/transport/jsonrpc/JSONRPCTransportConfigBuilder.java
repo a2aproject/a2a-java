@@ -101,7 +101,7 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
         return this;
     }
 
-    /** Sets the configuration used when this builder creates the HTTP client. */
+    /** Sets the configuration used when the transport creates its default HTTP client. */
     public JSONRPCTransportConfigBuilder httpClientConfiguration(A2AHttpClientConfiguration httpClientConfiguration) {
         this.httpClientConfiguration = org.a2aproject.sdk.util.Assert.checkNotNullParam(
                 "httpClientConfiguration", httpClientConfiguration);
@@ -128,19 +128,14 @@ public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<
     /**
      * Build the JSON-RPC transport configuration.
      * <p>
-     * If no HTTP client was configured, one is auto-selected via {@link A2AHttpClientFactory}.
+     * If no HTTP client was configured, the transport selects one via {@link A2AHttpClientFactory}.
      * Any configured interceptors are transferred to the configuration.
      *
      * @return the configured JSON-RPC transport configuration
      */
     @Override
     public JSONRPCTransportConfig build() {
-        // No HTTP client provided, use factory to get best available implementation
-        if (httpClient == null) {
-            httpClient = A2AHttpClientFactory.create(httpClientConfiguration);
-        }
-
-        JSONRPCTransportConfig config = new JSONRPCTransportConfig(httpClient, followRedirects);
+        JSONRPCTransportConfig config = new JSONRPCTransportConfig(httpClient, followRedirects, httpClientConfiguration);
         config.setInterceptors(this.interceptors);
         return config;
     }
