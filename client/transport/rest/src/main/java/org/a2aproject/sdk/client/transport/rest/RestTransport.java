@@ -34,6 +34,7 @@ import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.HttpEndpoint;
 import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.transport.rest.sse.SSEEventListener;
@@ -98,7 +99,8 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard, AgentInterface agentInterface,
             @Nullable List<ClientCallInterceptor> interceptors, boolean followRedirects,
             Supplier<ClientSelection> defaultClientFactory) {
-        this.agentInterface = agentInterface;
+        this.agentInterface = new AgentInterface(agentInterface.protocolBinding(),
+                HttpEndpoint.normalizeRest(agentInterface.url()), agentInterface.tenant(), agentInterface.protocolVersion());
         var selected = httpClient == null ? defaultClientFactory.get() : new ClientSelection(httpClient, false);
         this.httpClient = selected.client();
         this.streams = new HttpStreamLifecycle(selected);

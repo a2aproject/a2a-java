@@ -4,6 +4,7 @@ import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
+import org.a2aproject.sdk.client.http.HttpEndpoint;
 import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -88,7 +89,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3, AutoCloseable {
 
     RestTransport_v0_3(@Nullable A2AHttpClient httpClient, AgentCard_v0_3 agentCard, String agentUrl,
             @Nullable List<ClientCallInterceptor_v0_3> interceptors, Supplier<ClientSelection> defaultClientFactory) {
-        this.agentUrl = agentUrl;
+        this.agentUrl = HttpEndpoint.normalizeRest(agentUrl);
         var selected = httpClient == null ? defaultClientFactory.get() : new ClientSelection(httpClient, false);
         this.httpClient = selected.client();
         this.streams = new HttpStreamLifecycle(selected);

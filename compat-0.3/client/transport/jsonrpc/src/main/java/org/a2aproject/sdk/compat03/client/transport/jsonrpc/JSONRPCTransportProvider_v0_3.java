@@ -13,7 +13,11 @@ public class JSONRPCTransportProvider_v0_3 implements ClientTransportProvider_v0
             clientTransportConfig = new JSONRPCTransportConfig_v0_3();
         }
 
-        return new JSONRPCTransport_v0_3(clientTransportConfig.getHttpClient(), agentCard, agentUrl, clientTransportConfig.getInterceptors());
+        try {
+            return new JSONRPCTransport_v0_3(clientTransportConfig.getHttpClient(), agentCard, agentUrl, clientTransportConfig.getInterceptors());
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException_v0_3("Invalid HTTP transport endpoint", e);
+        }
     }
 
     @Override

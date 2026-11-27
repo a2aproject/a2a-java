@@ -17,9 +17,13 @@ public class RestTransportProvider implements ClientTransportProvider<RestTransp
     @Override
     public RestTransport create(RestTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         RestTransportConfig transportConfig = clientTransportConfig == null ? new RestTransportConfig() : clientTransportConfig;
-        return new RestTransport(transportConfig.getHttpClient(), agentCard, agentInterface,
-                transportConfig.getInterceptors(), transportConfig.isFollowRedirects(),
-                () -> A2AHttpClientFactory.createWithOwnership(transportConfig.httpClientConfiguration()));
+        try {
+            return new RestTransport(transportConfig.getHttpClient(), agentCard, agentInterface,
+                    transportConfig.getInterceptors(), transportConfig.isFollowRedirects(),
+                    () -> A2AHttpClientFactory.createWithOwnership(transportConfig.httpClientConfiguration()));
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException("Invalid HTTP transport endpoint", e);
+        }
     }
 
     @Override

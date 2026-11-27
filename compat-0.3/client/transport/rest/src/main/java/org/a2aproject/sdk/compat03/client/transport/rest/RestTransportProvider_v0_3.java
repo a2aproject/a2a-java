@@ -17,7 +17,11 @@ public class RestTransportProvider_v0_3 implements ClientTransportProvider_v0_3<
         if (clientTransportConfig == null) {
             clientTransportConfig = new RestTransportConfig_v0_3();
         }
-        return new RestTransport_v0_3(clientTransportConfig.getHttpClient(), agentCard, agentUrl, clientTransportConfig.getInterceptors());
+        try {
+            return new RestTransport_v0_3(clientTransportConfig.getHttpClient(), agentCard, agentUrl, clientTransportConfig.getInterceptors());
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException_v0_3("Invalid HTTP transport endpoint", e);
+        }
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
 import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
+import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity;
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -104,7 +105,7 @@ public class JSONRPCTransport implements ClientTransport, AutoCloseable {
     JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors,
             boolean followRedirects, A2AHttpClientConfiguration configuration) {
-        this.agentInterface = agentInterface;
+        this.agentInterface = HttpTransportSecurity.normalizeJsonRpcEndpoint(agentInterface);
         var selected = httpClient == null ? A2AHttpClientFactory.createWithOwnership(configuration)
                 : new ClientSelection(httpClient, false);
         this.httpClient = selected.client();

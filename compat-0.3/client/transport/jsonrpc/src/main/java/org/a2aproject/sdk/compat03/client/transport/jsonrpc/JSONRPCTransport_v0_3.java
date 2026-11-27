@@ -11,6 +11,7 @@ import com.google.gson.JsonParseException;
 
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
+import org.a2aproject.sdk.client.http.HttpEndpoint;
 import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
@@ -91,7 +92,7 @@ public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3, AutoCloseabl
 
     public JSONRPCTransport_v0_3(A2AHttpClient httpClient, AgentCard_v0_3 agentCard,
                                  String agentUrl, List<ClientCallInterceptor_v0_3> interceptors) {
-        this.agentUrl = agentUrl;
+        this.agentUrl = HttpEndpoint.normalizeJsonRpc(agentUrl);
         var selected = httpClient == null ? A2AHttpClientFactory.createWithOwnership(A2AHttpClientConfiguration.DEFAULT)
                 : new ClientSelection(httpClient, false);
         this.httpClient = selected.client();

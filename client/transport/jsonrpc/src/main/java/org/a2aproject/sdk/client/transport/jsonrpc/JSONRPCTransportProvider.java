@@ -12,8 +12,12 @@ public class JSONRPCTransportProvider implements ClientTransportProvider<JSONRPC
     @Override
     public JSONRPCTransport create(@Nullable JSONRPCTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         JSONRPCTransportConfig config = clientTransportConfig == null ? new JSONRPCTransportConfig() : clientTransportConfig;
-        return new JSONRPCTransport(config.getHttpClient(), agentCard, agentInterface,
-                config.getInterceptors(), config.isFollowRedirects(), config.httpClientConfiguration());
+        try {
+            return new JSONRPCTransport(config.getHttpClient(), agentCard, agentInterface,
+                    config.getInterceptors(), config.isFollowRedirects(), config.httpClientConfiguration());
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException("Invalid HTTP transport endpoint", e);
+        }
     }
 
     @Override
