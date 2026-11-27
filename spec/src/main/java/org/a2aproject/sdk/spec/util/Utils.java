@@ -45,7 +45,7 @@ public class Utils {
     static final int MAX_TENANT_LENGTH = 256;
 
     /** Matches both {@code /.well-known/agent-card.json} and {@code /.well-known/{tenant}/agent-card.json} at end of URL.
-     *  Tenant characters are constrained to the same set enforced by {@link #validateTenant}: {@code [a-zA-Z0-9_.-]}. */
+     *  Tenant characters are constrained to the same set enforced by {@link #canonicalizeTenant}: {@code [a-zA-Z0-9_.-]}. */
     private static final Pattern WELL_KNOWN_SUFFIX = Pattern.compile("/\\.well-known/([a-zA-Z0-9_.\\-]+/)?agent-card\\.json$");
 
     /** Validates that a (normalized) tenant identifier contains only safe characters: {@code [a-zA-Z0-9_.-]}. */
@@ -267,27 +267,23 @@ public class Utils {
     }
 
     /**
-     * Validates that a tenant identifier is safe and well-formed.
+     * Validates a tenant and strips optional leading and trailing slashes.
      * <p>
-     * A tenant must be a simple identifier — it must not contain URL path elements
-     * such as {@code /} or {@code ?}. Null and blank values are silently accepted
-     * (they mean "no tenant"). This method rejects:
-     * <ul>
-     * <li>Excessive length (max 256 characters)</li>
-     * <li>Invalid characters (only allows {@code a-zA-Z0-9_-.})</li>
-     * </ul>
+     * After stripping optional boundary slashes, a tenant must be at most 256 characters long
+     * and contain only {@code a-zA-Z0-9_-.}. The dot segments {@code .} and {@code ..} are invalid.
      *
-     * @param tenant the tenant identifier to validate, may be {@code null}
+     * @param tenant supplied tenant identifier
+     * @return the canonical tenant, or {@code null} for unscoped requests with null, blank, or empty normalized tenants
      * @throws IllegalArgumentException if the tenant is invalid or unsafe
      */
-    public static void validateTenant(@Nullable String tenant) {
+    public static @Nullable String canonicalizeTenant(@Nullable String tenant) {
         if (tenant == null || tenant.isBlank()) {
-            return;
+            return null;
         }
 
         String stripped = normalizeTenant(tenant);
         if (stripped.isEmpty()) {
-            return;
+            return null;
         }
 
         if (stripped.length() > MAX_TENANT_LENGTH) {
@@ -298,6 +294,10 @@ public class Utils {
             throw new IllegalArgumentException(
                     "Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed");
         }
+        if (stripped.equals(".") || stripped.equals("..")) {
+            throw new IllegalArgumentException("Tenant cannot be a dot segment");
+        }
+        return stripped;
     }
 
     /**
@@ -310,7 +310,13 @@ public class Utils {
         return "/.well-known/" + normalizeTenant(tenant) + "/agent-card.json";
     }
 
-    static String normalizeTenant(String tenant) {
+    /**
+     * Removes optional leading and trailing slashes from a tenant identifier.
+     *
+     * @param tenant tenant identifier
+     * @return the tenant identifier without the surrounding slashes
+     */
+    public static String normalizeTenant(String tenant) {
         String stripped = tenant;
         if (stripped.startsWith("/")) {
             stripped = stripped.substring(1);
@@ -337,22 +343,8 @@ public class Utils {
      * @throws IllegalArgumentException if the tenant is invalid or unsafe
      */
     private static String extractTenant(@Nullable String agentTenant, @Nullable String tenant) {
-        String raw = tenant;
-        if (raw == null || raw.isBlank()) {
-            raw = agentTenant;
-        }
-        if (raw == null || raw.isBlank()) {
-            return "";
-        }
-
-        validateTenant(raw);
-
-        String stripped = normalizeTenant(raw);
-        if (stripped.isEmpty()) {
-            return "";
-        }
-
-        return "/" + stripped;
+        String selected = canonicalizeTenant(tenant == null || tenant.isBlank() ? agentTenant : tenant);
+        return selected == null ? "" : "/" + selected;
     }
 
     /**

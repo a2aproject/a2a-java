@@ -29,7 +29,7 @@ public record CancelTaskParams(String id, @Nullable String tenant, Map<String, O
      */
     public CancelTaskParams {
         Assert.checkNotNullParam("id", id);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
         metadata = CollectionCopies.unmodifiableShallowMap(metadata);
     }
 

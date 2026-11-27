@@ -24,7 +24,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nulla
      */
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }

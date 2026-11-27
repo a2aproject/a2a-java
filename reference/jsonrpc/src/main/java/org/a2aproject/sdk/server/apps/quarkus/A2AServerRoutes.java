@@ -467,7 +467,7 @@ public class A2AServerRoutes {
         if (tenant == null) {
             throw new IllegalArgumentException("Missing tenant path parameter");
         }
-        Utils.validateTenant(tenant);
+        Utils.canonicalizeTenant(tenant);
         AgentCard card = jsonRpcHandler.getAgentCard(tenant);
         if (card == null) {
             return null;

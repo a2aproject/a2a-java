@@ -48,7 +48,7 @@ public record TaskPushNotificationConfig(@Nullable String id, @Nullable String t
      */
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("url", url);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
     }
 
     /**

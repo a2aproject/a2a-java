@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 public class ServerCallContext {
@@ -60,7 +61,7 @@ public class ServerCallContext {
 
     /** Atomically attaches a card; only the same canonical tenant and card instance may be reattached. */
     public void attachEffectiveAgentCard(@Nullable String tenant, AgentCard card) {
-        String normalizedTenant = AgentCardResolver.normalizeTenantForResolution(tenant);
+        String normalizedTenant = Utils.canonicalizeTenant(tenant);
         state.compute(EFFECTIVE_AGENT_CARD_KEY, (key, oldValue) -> {
             EffectiveAgentCard next = new EffectiveAgentCard(normalizedTenant, card);
             if (oldValue == null) {

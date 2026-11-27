@@ -45,7 +45,7 @@ public record ListTasksParams(
      * @throws InvalidParamsError if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
         // Validate pageSize (1-100)
         if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
             throw new InvalidParamsError(null,

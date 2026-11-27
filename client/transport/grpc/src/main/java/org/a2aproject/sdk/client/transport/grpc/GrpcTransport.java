@@ -86,20 +86,20 @@ public class GrpcTransport implements ClientTransport {
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
         this.agentCard = agentCard;
         this.interceptors = interceptors;
-        if (agentTenant != null && !agentTenant.isBlank()) {
-            Utils.validateTenant(agentTenant);
-        }
-        this.agentTenant = agentTenant == null || agentTenant.isBlank() ? "" : agentTenant;
+        this.agentTenant = Utils.defaultIfNull(Utils.canonicalizeTenant(agentTenant), "");
     }
 
     /**
      * Resolves the tenant to use, preferring the request tenant over the agent default.
      *
      * @param requestTenant the tenant from the request, may be null or blank
-     * @return the tenant to use (request tenant if provided, otherwise agent default)
+     * @return the canonical tenant, or the protobuf default of an empty string for an unscoped request
      */
     private String resolveTenant(@Nullable String requestTenant) {
-        return (requestTenant == null || requestTenant.isBlank()) ? agentTenant : requestTenant;
+        if (requestTenant == null || requestTenant.isBlank()) {
+            return agentTenant;
+        }
+        return Utils.defaultIfNull(Utils.canonicalizeTenant(requestTenant), "");
     }
 
     @Override
@@ -107,7 +107,7 @@ public class GrpcTransport implements ClientTransport {
         checkNotNullParam("request", request);
         MessageSendParams tenantRequest = createRequestWithTenant(request);
 
-        org.a2aproject.sdk.grpc.SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(tenantRequest, context);
+        org.a2aproject.sdk.grpc.SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(tenantRequest);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SEND_MESSAGE_METHOD, sendMessageRequest,
                 agentCard, context);
 
@@ -133,7 +133,7 @@ public class GrpcTransport implements ClientTransport {
         checkNotNullParam("eventConsumer", eventConsumer);
         MessageSendParams tenantRequest = createRequestWithTenant(request);
 
-        org.a2aproject.sdk.grpc.SendMessageRequest grpcRequest = createGrpcSendMessageRequest(tenantRequest, context);
+        org.a2aproject.sdk.grpc.SendMessageRequest grpcRequest = createGrpcSendMessageRequest(tenantRequest);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SEND_STREAMING_MESSAGE_METHOD,
                 grpcRequest, agentCard, context);
         StreamObserver<org.a2aproject.sdk.grpc.StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
@@ -379,7 +379,7 @@ public class GrpcTransport implements ClientTransport {
     public void close() {
     }
 
-    private org.a2aproject.sdk.grpc.SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, @Nullable ClientCallContext context) {
+    private org.a2aproject.sdk.grpc.SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams) {
         return ToProto.sendMessageRequest(messageSendParams);
     }
 

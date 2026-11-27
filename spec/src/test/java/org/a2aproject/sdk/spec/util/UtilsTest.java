@@ -1,14 +1,18 @@
 package org.a2aproject.sdk.spec.util;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Unit tests for {@link Utils} tenant-related methods.
@@ -81,6 +85,23 @@ class UtilsTest {
         assertEquals("Tenant contains invalid characters. Only a-zA-Z0-9_-. are allowed", ex.getMessage());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {".", "..", "/./", "/../"})
+    void tenantValidationRejectsDotSegments(String tenant) {
+        assertThrows(IllegalArgumentException.class, () -> Utils.canonicalizeTenant(tenant));
+    }
+
+    @Test
+    void canonicalTenantNormalizesDefaultSpellingsAndPermittedSlashes() {
+        for (String tenant : new String[] {null, "", " ", "/", "//"}) {
+            assertNull(Utils.canonicalizeTenant(tenant));
+        }
+        for (String tenant : List.of("acme", "/acme", "acme/", "/acme/")) {
+            assertEquals("acme", Utils.canonicalizeTenant(tenant));
+        }
+        assertThrows(IllegalArgumentException.class, () -> Utils.canonicalizeTenant(" acme "));
+    }
+
     @Test
     void testValidateTenant_tooLong_throws() {
         String longTenant = "a".repeat(257);
@@ -142,23 +163,23 @@ class UtilsTest {
     }
 
     @Test
-    void testValidateTenant_leadingSlashMultiSegment_throws() {
+    void testCanonicalizeTenant_leadingSlashMultiSegment_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Utils.validateTenant("/multi/level");
+            Utils.canonicalizeTenant("/multi/level");
         });
     }
 
     @Test
-    void testValidateTenant_intermediateSegments_throws() {
+    void testCanonicalizeTenant_intermediateSegments_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Utils.validateTenant("tenant/api/v1");
+            Utils.canonicalizeTenant("tenant/api/v1");
         });
     }
 
     @Test
-    void testValidateTenant_trailingSlashMultiSegment_throws() {
+    void testCanonicalizeTenant_trailingSlashMultiSegment_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Utils.validateTenant("multi/level/");
+            Utils.canonicalizeTenant("multi/level/");
         });
     }
 

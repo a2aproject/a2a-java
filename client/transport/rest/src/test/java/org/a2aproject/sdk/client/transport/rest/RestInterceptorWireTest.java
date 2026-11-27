@@ -280,9 +280,7 @@ class RestInterceptorWireTest {
                                 null,
                                 null);
                 plain.listTasks(explicitDefaults, null);
-                assertEquals(
-                        "GET /defaulttenant/tasks?contextId=&status=TASK_STATE_UNSPECIFIED&pageToken=",
-                        queue.poll(5, TimeUnit.SECONDS));
+                assertEquals("GET /defaulttenant/tasks", queue.poll(5, TimeUnit.SECONDS));
                 ClientCallInterceptor nullPayload =
                         new ClientCallInterceptor() {
                             @Override

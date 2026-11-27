@@ -29,7 +29,7 @@ public final class AgentCardResolver {
 
     /** Selects public then extended cards, never using defaults for a routed nonblank tenant. */
     public AgentCard resolveEffectiveCard(@Nullable String tenant) {
-        String normalizedTenant = normalizeTenantForResolution(tenant);
+        String normalizedTenant = Utils.canonicalizeTenant(tenant);
         return resolveEffectiveCardForNormalizedTenant(normalizedTenant);
     }
 
@@ -63,7 +63,7 @@ public final class AgentCardResolver {
 
     /** Selects public cards only; extended cards are never exposed through public discovery. */
     public @Nullable AgentCard resolvePublicDiscoveryCard(@Nullable String tenant) {
-        String normalizedTenant = normalizeTenantForResolution(tenant);
+        String normalizedTenant = Utils.canonicalizeTenant(tenant);
         if (router != null && normalizedTenant != null) {
             AgentCard card = router.resolvePublicCard(normalizedTenant);
             if (card == null) {
@@ -80,26 +80,10 @@ public final class AgentCardResolver {
 
     /** Selects a routed extended card for nonblank tenants and the default extended card otherwise. */
     public @Nullable AgentCard resolveExtendedDiscoveryCard(@Nullable String tenant) {
-        String normalizedTenant = normalizeTenantForResolution(tenant);
+        String normalizedTenant = Utils.canonicalizeTenant(tenant);
         if (router != null && normalizedTenant != null) {
             return router.resolveExtendedCard(normalizedTenant);
         }
         return extendedCard.get();
-    }
-
-    /** Validates a tenant and removes its optional boundary slashes; blank denotes the default tenant. */
-    public static @Nullable String normalizeTenantForResolution(@Nullable String tenant) {
-        Utils.validateTenant(tenant);
-        if (tenant == null || tenant.isBlank()) {
-            return null;
-        }
-        String normalizedTenant = tenant;
-        if (normalizedTenant.startsWith("/")) {
-            normalizedTenant = normalizedTenant.substring(1);
-        }
-        if (normalizedTenant.endsWith("/")) {
-            normalizedTenant = normalizedTenant.substring(0, normalizedTenant.length() - 1);
-        }
-        return normalizedTenant.isEmpty() ? null : normalizedTenant;
     }
 }

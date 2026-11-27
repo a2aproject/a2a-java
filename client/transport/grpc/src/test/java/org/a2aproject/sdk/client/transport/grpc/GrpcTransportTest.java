@@ -207,13 +207,19 @@ class GrpcTransportTest {
     @Test
     void testGetPushNotificationConfigWithExplicitIdAndDefaultTenant() throws Exception {
         assertGetPushNotificationConfig(new GetTaskPushNotificationConfigParams(TASK_ID, "config-1"),
-                "default-tenant", "config-1", "default-tenant");
+                "/default-tenant/", "config-1", "default-tenant");
     }
 
     @Test
     void testGetPushNotificationConfigWithOmittedIdAndRequestTenant() throws Exception {
-        assertGetPushNotificationConfig(new GetTaskPushNotificationConfigParams(TASK_ID, null, "request-tenant"),
+        assertGetPushNotificationConfig(new GetTaskPushNotificationConfigParams(TASK_ID, null, "/request-tenant/"),
                 "default-tenant", "", "request-tenant");
+    }
+
+    @Test
+    void testGetPushNotificationConfigWithUnscopedRequestTenant() throws Exception {
+        assertGetPushNotificationConfig(new GetTaskPushNotificationConfigParams(TASK_ID, null, "/"),
+                "default-tenant", "", "");
     }
 
     private void assertGetPushNotificationConfig(GetTaskPushNotificationConfigParams params,
