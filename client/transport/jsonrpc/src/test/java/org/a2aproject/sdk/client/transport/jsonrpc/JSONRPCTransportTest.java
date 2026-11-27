@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockserver.model.HttpRequest.request;
@@ -40,10 +41,12 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.AgentSkill;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.AuthenticationInfo;
@@ -145,6 +148,23 @@ public class JSONRPCTransportTest {
     @Test
     public void configBuilderEnablesRedirectFollowing() {
         assertTrue(new JSONRPCTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
+    }
+
+    @Test
+    public void requestHeadersDisableCrossOriginRedirects() {
+        ClientAndServer target = new ClientAndServer(4002);
+        try {
+            server.when(request().withMethod("POST").withPath("/agent-a"))
+                    .respond(response().withStatusCode(307).withHeader("Location", "http://localhost:4002/agent-b"));
+            JSONRPCTransport transport = new JSONRPCTransport(null, null,
+                    new AgentInterface("JSONRPC", "http://localhost:4001/agent-a"), null, true);
+            ClientCallContext context = new ClientCallContext(Map.of(), Map.of("Authorization", "Bearer token-a"));
+
+            assertThrows(A2AClientException.class, () -> transport.listTasks(new ListTasksParams(), context));
+            assertEquals(0, target.retrieveRecordedRequests(request().withPath("/agent-b")).length);
+        } finally {
+            target.stop();
+        }
     }
 
     @Test

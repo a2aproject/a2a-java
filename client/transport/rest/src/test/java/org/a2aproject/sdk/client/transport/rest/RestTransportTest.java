@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
@@ -37,6 +38,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
+import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientRoutingInterceptor;
@@ -84,6 +86,8 @@ import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.MatchType;
 import org.mockserver.model.JsonBody;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 public class RestTransportTest {
 
@@ -129,6 +133,45 @@ public class RestTransportTest {
     @Test
     public void configBuilderEnablesRedirectFollowing() {
         assertTrue(new RestTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
+    }
+
+    @Test
+    public void requestIdAllowsSameOriginRedirect() throws Exception {
+        server.when(request().withMethod("POST").withPath("/agent-a/tasks/task-1:cancel"))
+                .respond(response().withStatusCode(307).withHeader("Location", "http://localhost:4001/agent-b"));
+        server.when(request().withMethod("POST").withPath("/agent-b"))
+                .respond(response().withStatusCode(200).withBody(CANCEL_TASK_TEST_RESPONSE));
+        var transport = new RestTransport(null, CARD,
+                new AgentInterface("HTTP+JSON", "http://localhost:4001/agent-a"), null, true);
+        transport.cancelTask(new CancelTaskParams("task-1"),
+                new ClientCallContext(Map.of(), Map.of("X-Request-Id", "request-1")));
+        assertEquals(1, server.retrieveRecordedRequests(request().withMethod("POST").withPath("/agent-b")).length);
+    }
+
+    @Test
+    public void requestHeadersDisableRedirectsAndWarnOnce() {
+        server.when(request().withMethod("POST").withPath("/agent-a/tasks/task-1:cancel"))
+                .respond(response().withStatusCode(307).withHeader("Location", "http://localhost:4001/agent-b"));
+        RestTransport transport = new RestTransport(null, CARD,
+                new AgentInterface("HTTP+JSON", "http://localhost:4001/agent-a"), null, true);
+        ClientCallContext context = new ClientCallContext(Map.of(), Map.of("X-Custom-Header", "private-value"));
+        var logger = Logger.getLogger(HttpTransportSecurity.class.getName());
+        var output = new ByteArrayOutputStream();
+        var handler = new StreamHandler(output, new SimpleFormatter());
+        logger.addHandler(handler);
+        try {
+            assertThrows(A2AClientException.class, () -> transport.cancelTask(new CancelTaskParams("task-1"), context));
+            assertThrows(A2AClientException.class, () -> transport.cancelTask(new CancelTaskParams("task-1"), context));
+        } finally {
+            logger.removeHandler(handler);
+            handler.close();
+            transport.close();
+        }
+
+        String log = output.toString();
+        assertEquals(1, log.lines().filter(line -> line.contains("Requested POST redirects disabled by request header X-Custom-Header")).count());
+        assertFalse(log.contains("private-value"));
+        assertEquals(0, server.retrieveRecordedRequests(request().withPath("/agent-b")).length);
     }
 
     @Test

@@ -32,6 +32,7 @@ import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.client.transport.jsonrpc.sse.SSEEventListener;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity;
+import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity.PostRedirectPolicy;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientRoutingInterceptor;
@@ -83,7 +84,7 @@ public class JSONRPCTransport implements ClientTransport, AutoCloseable {
     private final AgentInterface agentInterface;
     private final @Nullable List<ClientCallInterceptor> interceptors;
     private final @Nullable AgentCard agentCard;
-    private final boolean followRedirects;
+    private final PostRedirectPolicy postRedirectPolicy;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, new AgentInterface("JSONRPC", agentUrl),  null);
@@ -114,7 +115,7 @@ public class JSONRPCTransport implements ClientTransport, AutoCloseable {
         this.httpLifecycle = new HttpStreamLifecycle(selected);
         this.agentCard = agentCard;
         this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
-        this.followRedirects = followRedirects;
+        this.postRedirectPolicy = new PostRedirectPolicy(followRedirects);
     }
 
     @Override
@@ -369,6 +370,7 @@ public class JSONRPCTransport implements ClientTransport, AutoCloseable {
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders, String method) throws IOException, InterruptedException, JsonProcessingException {
         String requestId = UUID.randomUUID().toString();
+        boolean followRedirects = postRedirectPolicy.allows(payloadAndHeaders.getHeaders(), interceptors);
         A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders, method, followRedirects, requestId);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {

@@ -42,6 +42,7 @@ import org.a2aproject.sdk.client.http.HttpEndpoint;
 import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.client.transport.rest.sse.SSEEventListener;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
+import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity.PostRedirectPolicy;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientRoutingInterceptor;
@@ -105,7 +106,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
     private final AgentCard agentCard;
-    private final boolean followRedirects;
+    private final PostRedirectPolicy postRedirectPolicy;
     private final String credentialDestination;
 
     private final HttpStreamLifecycle streams;
@@ -136,7 +137,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
         this.streams = new HttpStreamLifecycle(selected);
         this.agentCard = agentCard;
         this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
-        this.followRedirects = followRedirects;
+        this.postRedirectPolicy = new PostRedirectPolicy(followRedirects);
     }
 
     @Override
@@ -607,6 +608,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(body);
         }
+        boolean followRedirects = postRedirectPolicy.allows(payloadAndHeaders.getHeaders(), interceptors);
         A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body, followRedirects);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
