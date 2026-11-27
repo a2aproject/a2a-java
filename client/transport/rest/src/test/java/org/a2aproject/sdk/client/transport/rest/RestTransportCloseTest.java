@@ -2,6 +2,7 @@ package org.a2aproject.sdk.client.transport.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -28,10 +29,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import org.a2aproject.sdk.client.http.A2AHttpClient;
-import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
 import org.a2aproject.sdk.client.http.JdkA2AHttpClient;
-import org.a2aproject.sdk.client.http.ServerSentEvent;
+import org.a2aproject.sdk.client.http.PendingSseHttpClient;
+import org.a2aproject.sdk.client.http.PendingSseHttpClient.CountingFuture;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -57,8 +58,37 @@ class RestTransportCloseTest {
             .defaultInputModes(List.of("text")).defaultOutputModes(List.of("text")).skills(List.of()).build();
 
     @Test
+    void closesOwnedHttpClientWithoutClosingInjectedClients() {
+        var owned = new PendingSseHttpClient();
+        var injected = new PendingSseHttpClient();
+        var owner = new RestTransport(null, CARD, INTERFACE, null, false, () -> new ClientSelection(owned, true));
+        var borrower = new RestTransport(injected, CARD, INTERFACE, null);
+
+        owner.close();
+        owner.close();
+        borrower.close();
+
+        assertEquals(1, owned.closeCount());
+        assertEquals(0, injected.closeCount());
+    }
+
+    @Test
+    void leavesSharedProviderClientUsableByAnotherTransport() throws Exception {
+        var shared = new PendingSseHttpClient();
+        var selection = new ClientSelection(shared, false);
+        var first = new RestTransport(null, CARD, INTERFACE, null, false, () -> selection);
+        try (var second = new RestTransport(null, CARD, INTERFACE, null, false, () -> selection)) {
+            first.close();
+            sendStreaming(second, event -> {});
+            assertEquals(1, shared.requests().size());
+            assertEquals(0, shared.closeCount());
+        }
+        assertEquals(0, shared.closeCount());
+    }
+
+    @Test
     void closeCancelsAllActiveStreamsAndIsIdempotent() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
+        PendingSseHttpClient http = new PendingSseHttpClient();
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         sendStreaming(transport, event -> {});
         transport.subscribeToTask(new TaskIdParams("task-1234"), event -> {}, error -> {}, null);
@@ -66,31 +96,31 @@ class RestTransportCloseTest {
         transport.close();
         transport.close();
 
-        assertEquals(2, http.requests.size());
-        for (CountingFuture request : http.requests) {
+        assertEquals(2, http.requests().size());
+        for (CountingFuture request : http.requests()) {
             assertTrue(request.isCancelled(), "Closing REST must cancel each active HTTP stream");
-            assertEquals(1, request.cancellations, "Repeated close must not cancel a request again");
+            assertEquals(1, request.cancellations(), "Repeated close must not cancel a request again");
         }
-        assertEquals(List.of(false, false), http.followRedirectCalls,
+        assertEquals(List.of(false, false), http.followRedirectCalls(),
                 "Streaming POST requests must keep redirect following disabled");
     }
 
     @Test
     void closeDoesNotCancelCompletedStreams() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
+        PendingSseHttpClient http = new PendingSseHttpClient();
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         sendStreaming(transport, event -> {});
-        CountingFuture request = http.requests.get(0);
+        CountingFuture request = http.requests().get(0);
         request.complete(null);
 
         transport.close();
 
-        assertEquals(0, request.cancellations, "Completed streams must be removed from the active requests");
+        assertEquals(0, request.cancellations(), "Completed streams must be removed from the active requests");
     }
 
     @Test
     void normalStreamCompletionIsForwardedToTheListenerOnce() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
+        PendingSseHttpClient http = new PendingSseHttpClient();
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         AtomicInteger completions = new AtomicInteger();
         AtomicReference<Throwable> terminal = new AtomicReference<>();
@@ -99,8 +129,8 @@ class RestTransportCloseTest {
             terminal.set(error);
         });
 
-        CountingFuture request = http.requests.get(0);
-        request.completion.run();
+        CountingFuture request = http.requests().get(0);
+        request.signalCompletion();
 
         assertEquals(1, completions.get(), "Normal stream completion must reach the listener exactly once");
         assertNull(terminal.get(), "Normal stream completion must not report an error");
@@ -108,14 +138,14 @@ class RestTransportCloseTest {
         request.complete(null);
         transport.close();
 
-        assertEquals(0, request.cancellations, "A stream completed before close must not be cancelled");
+        assertEquals(0, request.cancellations(), "A stream completed before close must not be cancelled");
         assertFalse(request.isCancelled(), "The completed future must stay completed");
         assertEquals(1, completions.get(), "Close must not emit another completion callback");
     }
 
     @Test
     void normalSubscriptionCompletionIsForwardedToTheListenerOnce() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
+        PendingSseHttpClient http = new PendingSseHttpClient();
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         AtomicInteger completions = new AtomicInteger();
         AtomicReference<Throwable> terminal = new AtomicReference<>();
@@ -124,8 +154,8 @@ class RestTransportCloseTest {
             terminal.set(error);
         }, null);
 
-        CountingFuture request = http.requests.get(0);
-        request.completion.run();
+        CountingFuture request = http.requests().get(0);
+        request.signalCompletion();
 
         assertEquals(1, completions.get(), "Normal subscription completion must reach the listener exactly once");
         assertNull(terminal.get(), "Normal subscription completion must not report an error");
@@ -133,32 +163,32 @@ class RestTransportCloseTest {
         request.complete(null);
         transport.close();
 
-        assertEquals(0, request.cancellations, "A subscription completed before close must not be cancelled");
+        assertEquals(0, request.cancellations(), "A subscription completed before close must not be cancelled");
         assertFalse(request.isCancelled(), "The completed future must stay completed");
         assertEquals(1, completions.get(), "Close must not emit another completion callback");
     }
 
     @Test
     void closeDoesNotRetainStreamsCompletedDuringSetup() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
+        PendingSseHttpClient http = new PendingSseHttpClient();
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
-        http.duringSetup = () -> http.requests.get(0).complete(null);
+        http.duringSetup(() -> http.requests().get(0).complete(null));
 
         sendStreaming(transport, event -> {});
         transport.close();
 
-        assertEquals(0, http.requests.get(0).cancellations, "Synchronous completion must not leave a tracked stream");
+        assertEquals(0, http.requests().get(0).cancellations(), "Synchronous completion must not leave a tracked stream");
     }
 
     @Test
     void closeDuringRequestSetupCancelsTheLateRegisteredStream() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
+        PendingSseHttpClient http = new PendingSseHttpClient();
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
-        http.duringSetup = () -> CompletableFuture.runAsync(transport::close).orTimeout(5, TimeUnit.SECONDS).join();
+        http.duringSetup(() -> CompletableFuture.runAsync(transport::close).orTimeout(5, TimeUnit.SECONDS).join());
 
         sendStreaming(transport, event -> {});
 
-        assertTrue(http.requests.get(0).isCancelled(), "Close must not lose a future returned after close began");
+        assertTrue(http.requests().get(0).isCancelled(), "Close must not lose a future returned after close began");
     }
 
     @Test
@@ -219,9 +249,9 @@ class RestTransportCloseTest {
     }
 
     @Test
-    void normalCompletionPrecedesCancellationError() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
-        http.reportCancellationErrors = true;
+    void transportCancellationPrecedesHttpError() throws Exception {
+        PendingSseHttpClient http = new PendingSseHttpClient();
+        http.reportCancellationErrors(true);
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         List<Throwable> sendTerminal = Collections.synchronizedList(new ArrayList<>());
         sendStreaming(transport, event -> {}, sendTerminal::add);
@@ -230,17 +260,18 @@ class RestTransportCloseTest {
         transport.close();
         transport.close();
 
-        assertEquals(Collections.nCopies(2, null), sendTerminal);
-        assertEquals(2, http.requests.size());
-        for (CountingFuture request : http.requests) {
+        assertEquals(2, sendTerminal.size());
+        sendTerminal.forEach(error -> assertInstanceOf(CancellationException.class, error));
+        assertEquals(2, http.requests().size());
+        for (CountingFuture request : http.requests()) {
             assertTrue(request.isCancelled());
         }
     }
 
     @Test
-    void normalSubscriptionCompletionPrecedesCancellationError() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
-        http.reportCancellationErrors = true;
+    void subscriptionCancellationPrecedesHttpError() throws Exception {
+        PendingSseHttpClient http = new PendingSseHttpClient();
+        http.reportCancellationErrors(true);
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         List<Throwable> subscribeTerminal = Collections.synchronizedList(new ArrayList<>());
         transport.subscribeToTask(new TaskIdParams("task-1234"), event -> {}, subscribeTerminal::add, null);
@@ -249,17 +280,18 @@ class RestTransportCloseTest {
         transport.close();
         transport.close();
 
-        assertEquals(Collections.nCopies(2, null), subscribeTerminal);
-        assertEquals(2, http.requests.size());
-        for (CountingFuture request : http.requests) {
+        assertEquals(2, subscribeTerminal.size());
+        subscribeTerminal.forEach(error -> assertInstanceOf(CancellationException.class, error));
+        assertEquals(2, http.requests().size());
+        for (CountingFuture request : http.requests()) {
             assertTrue(request.isCancelled());
         }
     }
 
     @Test
     void throwingHandlersCloseEveryStream() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
-        http.reportCancellationErrors = true;
+        PendingSseHttpClient http = new PendingSseHttpClient();
+        http.reportCancellationErrors(true);
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         RuntimeException first = new RuntimeException("first");
         RuntimeException second = new RuntimeException("second");
@@ -273,8 +305,8 @@ class RestTransportCloseTest {
             thrown = e;
         }
 
-        assertEquals(2, http.requests.size());
-        for (CountingFuture request : http.requests) {
+        assertEquals(2, http.requests().size());
+        for (CountingFuture request : http.requests()) {
             assertTrue(request.isCancelled());
         }
         assertTrue(thrown == first || thrown == second);
@@ -286,8 +318,8 @@ class RestTransportCloseTest {
 
     @Test
     void sameExceptionInstanceIsNotSelfSuppressed() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
-        http.reportCancellationErrors = true;
+        PendingSseHttpClient http = new PendingSseHttpClient();
+        http.reportCancellationErrors(true);
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         RuntimeException shared = new RuntimeException("shared");
         sendStreaming(transport, event -> {}, error -> { throw shared; });
@@ -303,26 +335,26 @@ class RestTransportCloseTest {
 
         assertSame(shared, thrown);
         assertEquals(0, thrown.getSuppressed().length);
-        assertEquals(3, http.requests.size());
-        for (CountingFuture request : http.requests) {
+        assertEquals(3, http.requests().size());
+        for (CountingFuture request : http.requests()) {
             assertTrue(request.isCancelled());
         }
     }
 
     @Test
-    void closeDuringSetupReportsNormalCompletion() throws Exception {
-        PendingHttpClient http = new PendingHttpClient();
-        http.reportCancellationErrors = true;
+    void closeDuringSetupReportsCancellation() throws Exception {
+        PendingSseHttpClient http = new PendingSseHttpClient();
+        http.reportCancellationErrors(true);
         RestTransport transport = new RestTransport(http, CARD, INTERFACE, null);
         List<Throwable> terminal = Collections.synchronizedList(new ArrayList<>());
-        http.duringSetup = () -> CompletableFuture.runAsync(transport::close).orTimeout(5, TimeUnit.SECONDS).join();
+        http.duringSetup(() -> CompletableFuture.runAsync(transport::close).orTimeout(5, TimeUnit.SECONDS).join());
 
         sendStreaming(transport, event -> {}, terminal::add);
 
         assertEquals(1, terminal.size());
-        assertNull(terminal.get(0));
-        assertEquals(1, http.requests.size());
-        assertTrue(http.requests.get(0).isCancelled());
+        assertInstanceOf(CancellationException.class, terminal.get(0));
+        assertEquals(1, http.requests().size());
+        assertTrue(http.requests().get(0).isCancelled());
     }
 
     private static void sendStreaming(RestTransport transport, Consumer<StreamingEventKind> consumer)
@@ -336,72 +368,5 @@ class RestTransportCloseTest {
                 .parts(List.of(new TextPart("hello"))).build();
         transport.sendMessageStreaming(MessageSendParams.builder().message(message).build(), consumer,
                 terminalConsumer, null);
-    }
-
-    private static class CountingFuture extends CompletableFuture<Void> {
-        private int cancellations;
-        private Runnable completion = () -> {};
-        private Consumer<Throwable> errors = error -> {};
-        private boolean reportCancellationErrors;
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            cancellations++;
-            boolean firstCancellation = !isDone();
-            boolean cancelled = super.cancel(mayInterruptIfRunning);
-            if (firstCancellation && reportCancellationErrors) {
-                errors.accept(new IOException("Request cancelled"));
-            }
-            return cancelled;
-        }
-    }
-
-    private static class PendingHttpClient extends JdkA2AHttpClient {
-        private final List<CountingFuture> requests = new ArrayList<>();
-        private final List<Boolean> followRedirectCalls = new ArrayList<>();
-        private volatile Runnable duringSetup = () -> {};
-        private boolean reportCancellationErrors;
-
-        @Override
-        public PostBuilder createPost() {
-            return new A2AHttpClient.PostBuilder() {
-                @Override
-                public PostBuilder url(String url) {
-                    return this;
-                }
-                @Override
-                public PostBuilder addHeaders(Map<String, String> headers) {
-                    return this;
-                }
-                @Override
-                public PostBuilder addHeader(String name, String value) {
-                    return this;
-                }
-                @Override
-                public PostBuilder followRedirects(boolean follow) {
-                    followRedirectCalls.add(follow);
-                    return this;
-                }
-                @Override
-                public PostBuilder body(String body) {
-                    return this;
-                }
-                @Override
-                public A2AHttpResponse post() {
-                    throw new UnsupportedOperationException();
-                }
-                @Override
-                public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messages,
-                        Consumer<Throwable> errors, Runnable complete) {
-                    CountingFuture request = new CountingFuture();
-                    request.completion = complete;
-                    request.errors = errors;
-                    request.reportCancellationErrors = reportCancellationErrors;
-                    requests.add(request);
-                    duringSetup.run();
-                    return request;
-                }
-            };
-        }
     }
 }

@@ -30,7 +30,7 @@ public record DeleteTaskPushNotificationConfigParams(String taskId, String id, @
     public DeleteTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("id", id);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
     }
 
     /**

@@ -2,7 +2,6 @@ package org.a2aproject.sdk.client.transport.rest;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
-import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfigBuilder;
 import org.jspecify.annotations.Nullable;
 
@@ -12,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  * This builder provides a fluent API for configuring the REST transport protocol.
  * All configuration options are optional - if not specified, sensible defaults are used:
  * <ul>
- *   <li><b>HTTP client:</b> Auto-selected via {@link A2AHttpClientFactory} (prefers Vert.x, falls back to JDK)</li>
+ *   <li><b>HTTP client:</b> Auto-selected via the HTTP client factory when a transport is created (prefers Vert.x, falls back to JDK)</li>
  *   <li><b>Interceptors:</b> None</li>
  * </ul>
  * <p>
@@ -81,7 +80,7 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
      *   <li>Custom header handling</li>
      * </ul>
      * <p>
-     * If not specified, a client is auto-selected via {@link A2AHttpClientFactory}.
+     * If not specified, a client is auto-selected via the HTTP client factory when a transport is created.
      * <p>
      * Example:
      * <pre>{@code
@@ -128,19 +127,14 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
     /**
      * Build the REST transport configuration.
      * <p>
-     * If no HTTP client was configured, one is auto-selected via {@link A2AHttpClientFactory}.
+     * If no HTTP client was configured, one is auto-selected via the HTTP client factory when a transport is created.
      * Any configured interceptors are transferred to the configuration.
      *
      * @return the configured REST transport configuration
      */
     @Override
     public RestTransportConfig build() {
-        // No HTTP client provided, use factory to get best available implementation
-        if (httpClient == null) {
-            httpClient = A2AHttpClientFactory.create(httpClientConfiguration);
-        }
-
-        RestTransportConfig config = new RestTransportConfig(httpClient, followRedirects);
+        RestTransportConfig config = new RestTransportConfig(httpClient, followRedirects, httpClientConfiguration);
         config.setInterceptors(this.interceptors);
         return config;
     }

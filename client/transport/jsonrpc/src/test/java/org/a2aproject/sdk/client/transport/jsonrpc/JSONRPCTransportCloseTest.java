@@ -48,6 +48,18 @@ class JSONRPCTransportCloseTest {
     private static final AgentInterface INTERFACE = new AgentInterface("JSONRPC", "http://localhost:4001");
 
     @Test
+    void nullStreamFutureIsIgnoredBeforeAndAfterClose() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.returnNull = true;
+        JSONRPCTransport transport = new JSONRPCTransport(http, null, INTERFACE, null);
+        List<Throwable> terminals = terminals();
+        sendStreaming(transport, terminals::add);
+        transport.close();
+        transport.subscribeToTask(new TaskIdParams("task"), event -> {}, terminals::add, null);
+        assertTrue(terminals.isEmpty());
+    }
+
+    @Test
     void closeEndsEveryActiveStreamOnceAndIsIdempotent() throws Exception {
         PendingHttpClient http = new PendingHttpClient();
         JSONRPCTransport transport = new JSONRPCTransport(http, null, INTERFACE, null);
@@ -228,6 +240,7 @@ class JSONRPCTransportCloseTest {
     private static class PendingHttpClient implements A2AHttpClient {
         private final List<CountingFuture> requests = new ArrayList<>();
         private volatile Runnable duringSetup = () -> {};
+        private boolean returnNull;
 
         @Override
         public GetBuilder createGet() {
@@ -266,6 +279,9 @@ class JSONRPCTransportCloseTest {
                 public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer,
                                                             Consumer<Throwable> errorConsumer,
                                                             Runnable completeRunnable) {
+                    if (returnNull) {
+                        return null;
+                    }
                     CountingFuture request = new CountingFuture();
                     request.errors = errorConsumer;
                     request.completion = completeRunnable;

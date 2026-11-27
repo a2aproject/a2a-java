@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.client.transport.rest.sse;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -33,6 +34,11 @@ public class SSEEventListener extends AbstractSSEEventListener {
     public void onComplete() {
         LOGGER.fine("SSEEventListener.onComplete() called - signaling successful stream completion");
         signalTerminal(null);
+    }
+
+    /** Signals cancellation by the transport. */
+    public void onCancel() {
+        signalTerminal(new CancellationException("REST transport closed"));
     }
 
     @Override

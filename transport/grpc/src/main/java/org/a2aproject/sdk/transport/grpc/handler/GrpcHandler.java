@@ -589,7 +589,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                            StreamObserver<org.a2aproject.sdk.grpc.AgentCard> responseObserver) {
         try {
             String tenant = request.getTenant();
-            Utils.validateTenant(tenant);
+            Utils.canonicalizeTenant(tenant);
             AgentCardResolver resolver = getAgentCardResolver();
             AgentCardRequestPolicy policy = getRequestPolicy();
             AgentCard card = policy.resolveAndValidateCapability(tenant, transportValidator, EXTENDED_CARD);

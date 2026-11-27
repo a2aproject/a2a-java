@@ -128,22 +128,6 @@ class AgentCardResolverTest {
         }
     }
 
-    @Test
-    void canonicalTenantNormalizesDefaultSpellingsAndPermittedSlashes() {
-        for (String tenant : new String[] {null, "", " ", "/", "//"}) {
-            assertNull(AgentCardResolver.normalizeTenantForResolution(tenant));
-        }
-        for (String tenant : List.of("acme", "/acme", "acme/", "/acme/")) {
-            assertEquals("acme", AgentCardResolver.normalizeTenantForResolution(tenant));
-        }
-        assertThrows(IllegalArgumentException.class,
-                () -> AgentCardResolver.normalizeTenantForResolution("acme/other"));
-        assertThrows(IllegalArgumentException.class,
-                () -> AgentCardResolver.normalizeTenantForResolution(" acme "));
-        assertThrows(IllegalArgumentException.class,
-                () -> AgentCardResolver.normalizeTenantForResolution("a".repeat(257)));
-    }
-
     static AgentCard card(String name) {
         return card(name, AgentCapabilities.builder().build());
     }

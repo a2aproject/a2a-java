@@ -2,13 +2,27 @@ package org.a2aproject.sdk.compat03.client.transport.rest;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
-import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.HttpEndpoint;
+import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.compat03.client.http.A2ACardResolver_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.sse.RestSSEEventListener_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;
@@ -16,62 +30,68 @@ import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallC
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3;
 import org.a2aproject.sdk.compat03.grpc.CancelTaskRequest;
+import org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder;
 import org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder;
+import org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder;
+import org.a2aproject.sdk.compat03.grpc.GetAgentCardRequest;
+import org.a2aproject.sdk.compat03.grpc.GetAgentCardRequestOrBuilder;
 import org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder;
 import org.a2aproject.sdk.compat03.grpc.GetTaskRequest;
+import org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder;
 import org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
+import org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder;
+import org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.compat03.grpc.SendMessageRequest;
+import org.a2aproject.sdk.compat03.grpc.SendMessageResponse;
+import org.a2aproject.sdk.compat03.grpc.Task;
+import org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig;
+import org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest;
+import org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
+import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
-import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
-import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
-import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
+import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
-public class RestTransport_v0_3 implements ClientTransport_v0_3 {
+public class RestTransport_v0_3 implements ClientTransport_v0_3, AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(RestTransport_v0_3.class.getName());
+    private static final String PUSH_CONFIG_COLLECTION = "pushNotificationConfigs";
     private final A2AHttpClient httpClient;
-    private final Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> activeStreams = new HashMap<>();
-    private boolean closed;
     private final String agentUrl;
     private @Nullable final List<ClientCallInterceptor_v0_3> interceptors;
     private AgentCard_v0_3 agentCard;
     private boolean needsExtendedCard = false;
+
+    private final HttpStreamLifecycle streams;
 
     public RestTransport_v0_3(AgentCard_v0_3 agentCard) {
         this(null, agentCard, agentCard.url(), null);
@@ -79,20 +99,28 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
 
     public RestTransport_v0_3(@Nullable A2AHttpClient httpClient, AgentCard_v0_3 agentCard,
                               String agentUrl, @Nullable List<ClientCallInterceptor_v0_3> interceptors) {
-        this.httpClient = httpClient == null ? A2AHttpClientFactory.create() : httpClient;
+        this(httpClient, agentCard, agentUrl, interceptors,
+                () -> A2AHttpClientFactory.createWithOwnership(A2AHttpClientConfiguration.DEFAULT));
+    }
+
+    RestTransport_v0_3(@Nullable A2AHttpClient httpClient, AgentCard_v0_3 agentCard, String agentUrl,
+            @Nullable List<ClientCallInterceptor_v0_3> interceptors, Supplier<ClientSelection> defaultClientFactory) {
+        this.agentUrl = HttpEndpoint.normalizeRest(agentUrl);
+        var selected = httpClient == null ? defaultClientFactory.get() : new ClientSelection(httpClient, false);
+        this.httpClient = selected.client();
+        this.streams = new HttpStreamLifecycle(selected);
         this.agentCard = agentCard;
-        this.agentUrl = agentUrl.endsWith("/") ? agentUrl.substring(0, agentUrl.length() - 1) : agentUrl;
-        this.interceptors = interceptors;
+        this.interceptors = interceptors == null ? null : List.copyOf(interceptors);
     }
 
     @Override
     public EventKind_v0_3 sendMessage(MessageSendParams_v0_3 messageSendParams, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("messageSendParams", messageSendParams);
-        org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder(ProtoUtils_v0_3.ToProto.sendMessageRequest(messageSendParams));
+        SendMessageRequest.Builder builder = SendMessageRequest.newBuilder(ProtoUtils_v0_3.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SendMessageRequest_v0_3.METHOD, builder, agentCard, context);
         try {
             String httpResponseBody = sendPostRequest(agentUrl + "/v1/message:send", payloadAndHeaders);
-            org.a2aproject.sdk.compat03.grpc.SendMessageResponse.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder();
+            SendMessageResponse.Builder responseBuilder = SendMessageResponse.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             if (responseBuilder.hasMsg()) {
                 return ProtoUtils_v0_3.FromProto.message(responseBuilder.getMsg());
@@ -113,7 +141,7 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         checkNotNullParam("request", messageSendParams);
         checkNotNullParam("eventConsumer", eventConsumer);
         checkNotNullParam("messageSendParams", messageSendParams);
-        org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder(ProtoUtils_v0_3.ToProto.sendMessageRequest(messageSendParams));
+        SendMessageRequest.Builder builder = SendMessageRequest.newBuilder(ProtoUtils_v0_3.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest_v0_3.METHOD,
                 builder, agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
@@ -127,7 +155,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(trackStream(streamFuture, sseEventListener));
+            streams.track(streamFuture, sseEventListener::onCancel);
+            if (streamFuture != null) {
+                ref.set(streamFuture);
+            }
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -142,28 +173,26 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     public Task_v0_3 getTask(TaskQueryParams_v0_3 taskQueryParams, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         GetTaskRequest.Builder builder = GetTaskRequest.newBuilder();
-        builder.setName("tasks/" + taskQueryParams.id());
+        builder.setName(taskName(taskQueryParams.id()));
         builder.setHistoryLength(taskQueryParams.historyLength());
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetTaskRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.GetTaskRequestOrBuilder.class);
-            String url = resourceUrl(effective.getName());
+            GetTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), GetTaskRequestOrBuilder.class);
+            String url = taskUrl(effective.getName());
             if (effective.getHistoryLength() > 0) {
                 url += "?historyLength=" + effective.getHistoryLength();
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
             }
             A2AHttpResponse response = getBuilder.get();
             if (!response.success()) {
                 throw RestErrorMapper_v0_3.mapRestError(response);
             }
             String httpResponseBody = response.body();
-            org.a2aproject.sdk.compat03.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.Task.newBuilder();
+            Task.Builder responseBuilder = Task.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils_v0_3.FromProto.task(responseBuilder);
         } catch (A2AClientException_v0_3 e) {
@@ -177,13 +206,13 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     public Task_v0_3 cancelTask(TaskIdParams_v0_3 taskIdParams, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("taskIdParams", taskIdParams);
         CancelTaskRequest.Builder builder = CancelTaskRequest.newBuilder();
-        builder.setName("tasks/" + taskIdParams.id());
+        builder.setName(taskName(taskIdParams.id()));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(CancelTaskRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder.class);
-            String httpResponseBody = sendPostRequest(resourceUrl(effective.getName()) + ":cancel", payloadAndHeaders);
-            org.a2aproject.sdk.compat03.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.Task.newBuilder();
+            CancelTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), CancelTaskRequestOrBuilder.class);
+            String httpResponseBody = sendPostRequest(taskUrl(effective.getName()) + ":cancel", payloadAndHeaders);
+            Task.Builder responseBuilder = Task.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils_v0_3.FromProto.task(responseBuilder);
         } catch (A2AClientException_v0_3 e) {
@@ -196,17 +225,24 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     @Override
     public TaskPushNotificationConfig_v0_3 setTaskPushNotificationConfiguration(TaskPushNotificationConfig_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
+        String parent = taskName(request.taskId());
         CreateTaskPushNotificationConfigRequest.Builder builder = CreateTaskPushNotificationConfigRequest.newBuilder();
         builder.setConfig(ProtoUtils_v0_3.ToProto.taskPushNotificationConfig(request))
-                .setParent("tasks/" + request.taskId());
+                .setParent(parent);
         if (request.pushNotificationConfig().id() != null) {
             builder.setConfigId(request.pushNotificationConfig().id());
         }
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest_v0_3.METHOD, builder, agentCard, context);
         try {
-            org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequestOrBuilder.class);
-            String httpResponseBody = sendPostRequest(resourceUrl(effective.getParent()) + "/pushNotificationConfigs", payloadAndHeaders);
-            org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
+            CreateTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), CreateTaskPushNotificationConfigRequestOrBuilder.class);
+            var wireRequest = effective instanceof CreateTaskPushNotificationConfigRequest message
+                    ? message.toBuilder() : ((CreateTaskPushNotificationConfigRequest.Builder) effective).clone();
+            String taskId = taskIdFromName(wireRequest.getParent());
+            wireRequest.setParent(taskName(taskId));
+            alignPushConfigurationName(wireRequest);
+            String httpResponseBody = sendPostRequest(taskUrlFromId(taskId) + "/" + PUSH_CONFIG_COLLECTION,
+                    new PayloadAndHeaders_v0_3(wireRequest.build(), payloadAndHeaders.getHeaders()));
+            TaskPushNotificationConfig.Builder responseBuilder = TaskPushNotificationConfig.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(responseBuilder);
         } catch (A2AClientException_v0_3 e) {
@@ -222,24 +258,22 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         // When configId is not specified, use taskId as the default configId
         String configId = request.pushNotificationConfigId() != null ? request.pushNotificationConfigId() : request.id();
         GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
-        builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
+        builder.setName(pushNotificationConfigName(request.id(), configId));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetTaskPushNotificationConfigRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.GetTaskPushNotificationConfigRequestOrBuilder.class);
-            String url = resourceUrl(effective.getName());
+            GetTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), GetTaskPushNotificationConfigRequestOrBuilder.class);
+            String url = configUrl(effective.getName());
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
             }
             A2AHttpResponse response = getBuilder.get();
             if (!response.success()) {
                 throw RestErrorMapper_v0_3.mapRestError(response);
             }
             String httpResponseBody = response.body();
-            org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder();
+            TaskPushNotificationConfig.Builder responseBuilder = TaskPushNotificationConfig.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils_v0_3.FromProto.taskPushNotificationConfig(responseBuilder);
         } catch (A2AClientException_v0_3 e) {
@@ -253,30 +287,22 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     public List<TaskPushNotificationConfig_v0_3> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
         ListTaskPushNotificationConfigRequest.Builder builder = ListTaskPushNotificationConfigRequest.newBuilder();
-        builder.setParent(String.format("tasks/%1s", request.id()));
+        builder.setParent(taskName(request.id()));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigRequestOrBuilder.class);
-            String url = resourceUrl(effective.getParent()) + "/pushNotificationConfigs";
-            if (effective.getPageSize() != 0) {
-                url += "?pageSize=" + effective.getPageSize();
-            }
-            if (!effective.getPageToken().isEmpty()) {
-                url += (url.contains("?") ? "&" : "?") + "pageToken=" + URLEncoder.encode(effective.getPageToken(), StandardCharsets.UTF_8);
-            }
+            ListTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), ListTaskPushNotificationConfigRequestOrBuilder.class);
+            String url = taskUrl(effective.getParent()) + "/" + PUSH_CONFIG_COLLECTION;
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
             }
             A2AHttpResponse response = getBuilder.get();
             if (!response.success()) {
                 throw RestErrorMapper_v0_3.mapRestError(response);
             }
             String httpResponseBody = response.body();
-            org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.Builder responseBuilder = org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
+            ListTaskPushNotificationConfigResponse.Builder responseBuilder = ListTaskPushNotificationConfigResponse.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils_v0_3.FromProto.listTaskPushNotificationConfigParams(responseBuilder);
         } catch (A2AClientException_v0_3 e) {
@@ -289,18 +315,16 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     @Override
     public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
-        org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder()
-                .setName(String.format("tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
+        DeleteTaskPushNotificationConfigRequest.Builder builder = DeleteTaskPushNotificationConfigRequest.newBuilder()
+                .setName(pushNotificationConfigName(request.id(), request.pushNotificationConfigId()));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(DeleteTaskPushNotificationConfigRequest_v0_3.METHOD, builder,
                 agentCard, context);
         try {
-            org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder.class);
-            String url = resourceUrl(effective.getName());
+            DeleteTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), DeleteTaskPushNotificationConfigRequestOrBuilder.class);
+            String url = configUrl(effective.getName());
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    deleteBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                deleteBuilder.addHeader(entry.getKey(), entry.getValue());
             }
             A2AHttpResponse response = deleteBuilder.delete();
             if (!response.success()) {
@@ -317,15 +341,15 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     public void resubscribe(TaskIdParams_v0_3 request, Consumer<StreamingEventKind_v0_3> eventConsumer,
                             Consumer<Throwable> errorConsumer, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
-        org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest.newBuilder();
-        builder.setName("tasks/" + request.id());
+        TaskSubscriptionRequest.Builder builder = TaskSubscriptionRequest.newBuilder();
+        builder.setName(taskName(request.id()));
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(TaskResubscriptionRequest_v0_3.METHOD, builder,
                 agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         RestSSEEventListener_v0_3 sseEventListener = new RestSSEEventListener_v0_3(eventConsumer, errorConsumer);
         try {
-            org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequestOrBuilder.class);
-            String url = resourceUrl(effective.getName()) + ":subscribe";
+            TaskSubscriptionRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), TaskSubscriptionRequestOrBuilder.class);
+            String url = taskUrl(effective.getName()) + ":subscribe";
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
             CompletableFuture<Void> streamFuture = postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event.data(), ref.get()),
@@ -334,7 +358,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                         // Signal normal stream completion to error handler (null error means success)
                         sseEventListener.onComplete();
                     });
-            ref.set(trackStream(streamFuture, sseEventListener));
+            streams.track(streamFuture, sseEventListener::onCancel);
+            if (streamFuture != null) {
+                ref.set(streamFuture);
+            }
             sseEventListener.onStreamFuturePublished(streamFuture);
         } catch (IOException e) {
             throw new A2AClientException_v0_3("Failed to send streaming message request: " + e, e);
@@ -357,15 +384,13 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
             if (!needsExtendedCard) {
                 return agentCard;
             }
-            org.a2aproject.sdk.compat03.grpc.GetAgentCardRequestOrBuilder builder = org.a2aproject.sdk.compat03.grpc.GetAgentCardRequest.newBuilder();
+            GetAgentCardRequestOrBuilder builder = GetAgentCardRequest.newBuilder();
             PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest_v0_3.METHOD, builder,
                     agentCard, context);
             String url = agentUrl + String.format("/v1/card");
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
             }
             A2AHttpResponse response = getBuilder.get();
             if (!response.success()) {
@@ -382,65 +407,83 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         }
     }
 
+    /**
+     * Cancels active streams and releases the HTTP client created by this transport, if closeable.
+     * Each interrupted stream receives a cancellation error through its terminal callback.
+     * Subsequent close calls have no effect.
+     */
     @Override
     public void close() {
-        Map<CompletableFuture<Void>, RestSSEEventListener_v0_3> streams;
-        synchronized (activeStreams) {
-            if (closed) {
+        streams.close();
+    }
+
+    private String taskUrl(String name) {
+        return taskUrlFromId(taskIdFromName(name));
+    }
+
+    private String taskUrlFromId(String taskId) {
+        return agentUrl + "/v1/tasks/" + HttpEndpoint.pathSegment(taskId);
+    }
+
+    private static String taskName(String taskId) {
+        HttpEndpoint.checkPathSegment(taskId);
+        return "tasks/" + taskId;
+    }
+
+    private static String pushNotificationConfigName(String taskId, String configId) {
+        HttpEndpoint.checkPathSegment(configId);
+        return taskName(taskId) + "/" + PUSH_CONFIG_COLLECTION + "/" + configId;
+    }
+
+    private String configUrl(String name) {
+        String[] segments = configNameSegments(name);
+        if (segments.length != 4) {
+            throw new IllegalArgumentException("Expected a push notification configuration resource name");
+        }
+        return taskUrlFromId(segments[1]) + "/" + PUSH_CONFIG_COLLECTION + "/" + HttpEndpoint.pathSegment(segments[3]);
+    }
+
+    private static void alignPushConfigurationName(CreateTaskPushNotificationConfigRequest.Builder request) {
+        if (!request.hasConfig()) {
+            return;
+        }
+        String configId = request.getConfigId();
+        // The explicit configId takes precedence over the ID embedded in the name.
+        if (configId.isBlank()) {
+            String name = request.getConfig().getName();
+            if (name.isBlank()) {
                 return;
             }
-            closed = true;
-            streams = new HashMap<>(activeStreams);
-            activeStreams.clear();
+            String[] segments = configNameSegments(name);
+            configId = segments.length == 4 ? segments[3] : "";
         }
-        RuntimeException failure = null;
-        for (Map.Entry<CompletableFuture<Void>, RestSSEEventListener_v0_3> entry : streams.entrySet()) {
-            try {
-                closeStream(entry.getKey(), entry.getValue());
-            } catch (RuntimeException e) {
-                if (failure == null) {
-                    failure = e;
-                } else if (failure != e) {
-                    failure.addSuppressed(e);
-                }
-            }
-        }
-        if (failure != null) {
-            throw failure;
-        }
+        String collectionName = request.getParent() + "/" + PUSH_CONFIG_COLLECTION;
+        request.getConfigBuilder().setName(configId.isEmpty() ? collectionName : collectionName + "/" + configId);
     }
 
-    private CompletableFuture<Void> trackStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
-        boolean cancel;
-        synchronized (activeStreams) {
-            cancel = closed;
-            if (!cancel) {
-                activeStreams.put(stream, listener);
-            }
+    private static String taskIdFromName(String name) {
+        String[] segments = resourceSegments(name);
+        if (segments.length != 2) {
+            throw new IllegalArgumentException("Invalid task resource name");
         }
-        stream.whenComplete((result, error) -> {
-            synchronized (activeStreams) {
-                activeStreams.remove(stream);
-            }
-        });
-        if (cancel) {
-            // close() can run while the HTTP client is setting up the stream.
-            closeStream(stream, listener);
-        }
-        return stream;
+        return segments[1];
     }
 
-    /** Signals normal completion before cancellation can report an I/O error. */
-    private static void closeStream(CompletableFuture<Void> stream, RestSSEEventListener_v0_3 listener) {
-        try {
-            listener.onComplete();
-        } finally {
-            stream.cancel(true);
+    private static String[] configNameSegments(String name) {
+        String[] segments = resourceSegments(name);
+        if (segments.length < 3 || segments.length > 4 || !PUSH_CONFIG_COLLECTION.equals(segments[2])) {
+            throw new IllegalArgumentException("Expected a push notification configuration resource name");
         }
+        return segments;
     }
 
-    private String resourceUrl(String name) {
-        return agentUrl + "/v1" + (name.startsWith("/") ? name : "/" + name);
+    private static String[] resourceSegments(String name) {
+        String relativeName = name.startsWith("/") ? name.substring(1) : name;
+        String[] segments = relativeName.split("/", -1);
+        if (segments.length < 2 || !"tasks".equals(segments[0])) {
+            throw new IllegalArgumentException("Invalid task resource name");
+        }
+        return segments;
     }
 
     private PayloadAndHeaders_v0_3 applyInterceptors(String methodName, MessageOrBuilder payload,
@@ -486,10 +529,8 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
                 .addHeader("Content-Type", "application/json")
                 .body(body);
 
-        if (payloadAndHeaders.getHeaders() != null) {
-            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                postBuilder.addHeader(entry.getKey(), entry.getValue());
-            }
+        for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+            postBuilder.addHeader(entry.getKey(), entry.getValue());
         }
         return postBuilder;
     }

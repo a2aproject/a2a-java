@@ -21,6 +21,7 @@ import org.a2aproject.sdk.compat03.spec.SecurityScheme_v0_3;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuthInterceptor_v0_3_Test {
 
@@ -484,5 +485,68 @@ public class AuthInterceptor_v0_3_Test {
             .security(List.of(Map.of(schemeName, List.of())))
             .securitySchemes(Map.of(schemeName, securityScheme))
             .build();
+    }
+
+    @Test
+    void requiresEverySchemeInAnAlternative() {
+        var card = new AgentCard_v0_3.Builder().name("agent").description("agent").version("1").url("http://agent")
+                .capabilities(new AgentCapabilities_v0_3.Builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of())
+                .security(List.of(Map.of("bearer", List.of(), "key", List.of())))
+                .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme_v0_3(null, "bearer", "Bearer"),
+                        "key", new APIKeySecurityScheme_v0_3("header", "X-API-Key", "key"))).build();
+        var context = new ClientCallContext_v0_3(Map.of("sessionId", "session"), Map.of());
+        credentialStore.setCredential("session", "bearer", "token");
+        assertEquals(Map.of(), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), card, context).getHeaders());
+        credentialStore.setCredential("session", "key", "api-key");
+        assertEquals(Map.of("Authorization", "Bearer token", "X-API-Key", "api-key"),
+                authInterceptor.intercept("SendMessage", Map.of(), Map.of(), card, context).getHeaders());
+    }
+
+    @Test
+    void firstAnonymousAlternativeTakesPrecedenceOverAvailableCredentials() {
+        var card = new AgentCard_v0_3.Builder().name("agent").description("agent").url("http://agent").version("1")
+                .capabilities(new AgentCapabilities_v0_3.Builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of())
+                .security(List.of(Map.of(), Map.of("bearer", List.of())))
+                .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme_v0_3(null, "bearer", "Bearer"))).build();
+        var calls = new AtomicInteger();
+        var auth = new AuthInterceptor_v0_3((scheme, context) -> {
+            calls.incrementAndGet();
+            return "token";
+        });
+        assertEquals(Map.of(), auth.intercept("SendMessage", Map.of(), Map.of(), card, null).getHeaders());
+        assertEquals(0, calls.get());
+    }
+
+    @Test
+    void anonymousAlternativeWorksWithoutSecuritySchemes() {
+        var card = new AgentCard_v0_3.Builder().name("agent").description("agent").url("http://agent").version("1")
+                .capabilities(new AgentCapabilities_v0_3.Builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of())
+                .security(List.of(Map.of("missing", List.of()), Map.of()))
+                .build();
+        assertNull(card.securitySchemes());
+        assertEquals(Map.of(), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), card, null).getHeaders());
+    }
+
+    @Test
+    void selectsAnAlternativeAndRejectsConflictingHeaders() {
+        var context = new ClientCallContext_v0_3(Map.of("sessionId", "session"), Map.of());
+        credentialStore.setCredential("session", "bearer", "token");
+        credentialStore.setCredential("session", "basic", "basic-token");
+        var alternate = new AgentCard_v0_3.Builder().name("agent").description("agent").version("1").url("http://agent")
+                .capabilities(new AgentCapabilities_v0_3.Builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of()) .security(List.of(Map.of("missing", List.of()), Map.of("bearer", List.of()))) .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme_v0_3(null, "bearer", "Bearer"),
+                        "basic", new HTTPAuthSecurityScheme_v0_3(null, "basic", "Basic"))).build();
+        assertEquals(Map.of("Authorization", "Bearer token"), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), alternate, context).getHeaders());
+        assertEquals(Map.of("Authorization", "Bearer token", "other", "value"),
+                authInterceptor.intercept("SendMessage", Map.of(),
+                        Map.of("authorization", "old", "AUTHORIZATION", "older", "other", "value"), alternate, context).getHeaders());
+        var conflict = new AgentCard_v0_3.Builder().name("agent").description("agent").version("1").url("http://agent")
+                .capabilities(new AgentCapabilities_v0_3.Builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of()) .security(List.of(Map.of("bearer", List.of(), "basic", List.of()))) .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme_v0_3(null, "bearer", "Bearer"),
+                        "basic", new HTTPAuthSecurityScheme_v0_3(null, "basic", "Basic"))).build();
+        assertEquals(Map.of(), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), conflict, context).getHeaders());
     }
 }

@@ -37,7 +37,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
      */
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
         metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 

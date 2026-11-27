@@ -25,7 +25,7 @@ public record TaskIdParams(String id, @Nullable String tenant) {
      */
     public TaskIdParams  {
         Assert.checkNotNullParam("id", id);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
     }
 
     /**

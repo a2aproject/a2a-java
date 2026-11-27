@@ -103,6 +103,14 @@ public class ClientBuilderTest {
     }
 
     @Test
+    void rejectsInvalidAgentCardEndpointThroughClientException() {
+        var invalid = buildCard(List.of(new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://my_host/agent")));
+        var error = Assertions.assertThrows(A2AClientException.class,
+                () -> Client.builder(invalid).withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()).build());
+        Assertions.assertInstanceOf(IllegalArgumentException.class, error.getCause());
+    }
+
+    @Test
     public void shouldPreserveTenantFromAgentInterface() throws A2AClientException {
         ClientBuilder builder = Client
                 .builder(cardWithTenant)

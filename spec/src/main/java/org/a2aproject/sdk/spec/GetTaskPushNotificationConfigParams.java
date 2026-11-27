@@ -30,7 +30,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, @Nullable Strin
      */
     public GetTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("taskId", taskId);
-        Utils.validateTenant(tenant);
+    Utils.canonicalizeTenant(tenant);
     }
 
     /**

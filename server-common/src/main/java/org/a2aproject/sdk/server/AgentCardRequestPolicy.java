@@ -6,6 +6,7 @@ import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.version.A2AVersionValidator;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.InvalidParamsError;
+import org.a2aproject.sdk.spec.util.Utils;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -61,7 +62,7 @@ public final class AgentCardRequestPolicy {
 
     private static @Nullable String normalizeTenant(@Nullable String tenant) {
         try {
-            return AgentCardResolver.normalizeTenantForResolution(tenant);
+            return Utils.canonicalizeTenant(tenant);
         } catch (IllegalArgumentException e) {
             throw new InvalidParamsError(e.getMessage());
         }

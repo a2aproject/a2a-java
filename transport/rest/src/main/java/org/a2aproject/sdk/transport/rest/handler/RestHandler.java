@@ -945,7 +945,7 @@ public class RestHandler {
      */
     public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, @Nullable String tenant) {
         try {
-            Utils.validateTenant(tenant);
+            Utils.canonicalizeTenant(tenant);
             EffectiveAgentCard effectiveCard = preflight(tenant, context,
                     EXTENDED_CARD);
             AgentCard extCard = agentCardResolver.resolveExtendedDiscoveryCard(effectiveCard.tenant());
@@ -1012,7 +1012,7 @@ public class RestHandler {
      */
     public HTTPRestResponse getAgentCard(@Nullable String tenant) {
         try {
-            Utils.validateTenant(tenant);
+            Utils.canonicalizeTenant(tenant);
             AgentCard card = agentCardResolver.resolvePublicDiscoveryCard(tenant);
             if (card == null) {
                 return new HTTPRestResponse(404, "text/plain", "Public agent card not configured");

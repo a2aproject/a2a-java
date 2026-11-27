@@ -263,7 +263,7 @@ public class A2ACardResolver {
         String cardUrl;
         if (tenant != null && !tenant.isBlank()) {
             // {base}/.well-known/{tenant}/agent-card.json
-            Utils.validateTenant(tenant);
+            Utils.canonicalizeTenant(tenant);
             Utils.validateAbsoluteUrl(cleanBase);
             cardUrl = Utils.buildCardUrl(cleanBase, Utils.buildTenantCardPath(tenant));
         } else {

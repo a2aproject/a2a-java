@@ -24,20 +24,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
+import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientRoutingInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
+import org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder;
+import org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest;
+import org.a2aproject.sdk.grpc.ListTasksRequest;
+import org.a2aproject.sdk.grpc.SendMessageRequest;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -71,11 +80,14 @@ import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.MatchType;
 import org.mockserver.model.JsonBody;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 public class RestTransportTest {
 
@@ -85,7 +97,7 @@ public class RestTransportTest {
     private static final AgentCard CARD = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new org.a2aproject.sdk.spec.AgentInterface("HTTP+JSON", "http://localhost:4001")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("HTTP+JSON", "http://localhost:4001")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(AgentCapabilities.builder()
@@ -123,26 +135,97 @@ public class RestTransportTest {
         assertTrue(new RestTransportConfigBuilder().followRedirects(true).build().isFollowRedirects());
     }
 
-    public RestTransportTest() {
+    @Test
+    public void requestIdAllowsSameOriginRedirect() throws Exception {
+        server.when(request().withMethod("POST").withPath("/agent-a/tasks/task-1:cancel"))
+                .respond(response().withStatusCode(307).withHeader("Location", "http://localhost:4001/agent-b"));
+        server.when(request().withMethod("POST").withPath("/agent-b"))
+                .respond(response().withStatusCode(200).withBody(CANCEL_TASK_TEST_RESPONSE));
+        var transport = new RestTransport(null, CARD,
+                new AgentInterface("HTTP+JSON", "http://localhost:4001/agent-a"), null, true);
+        transport.cancelTask(new CancelTaskParams("task-1"),
+                new ClientCallContext(Map.of(), Map.of("X-Request-Id", "request-1")));
+        assertEquals(1, server.retrieveRecordedRequests(request().withMethod("POST").withPath("/agent-b")).length);
+    }
+
+    @Test
+    public void requestHeadersDisableRedirectsAndWarnOnce() {
+        server.when(request().withMethod("POST").withPath("/agent-a/tasks/task-1:cancel"))
+                .respond(response().withStatusCode(307).withHeader("Location", "http://localhost:4001/agent-b"));
+        RestTransport transport = new RestTransport(null, CARD,
+                new AgentInterface("HTTP+JSON", "http://localhost:4001/agent-a"), null, true);
+        ClientCallContext context = new ClientCallContext(Map.of(), Map.of("X-Custom-Header", "private-value"));
+        var logger = Logger.getLogger(HttpTransportSecurity.class.getName());
+        var output = new ByteArrayOutputStream();
+        var handler = new StreamHandler(output, new SimpleFormatter());
+        logger.addHandler(handler);
+        try {
+            assertThrows(A2AClientException.class, () -> transport.cancelTask(new CancelTaskParams("task-1"), context));
+            assertThrows(A2AClientException.class, () -> transport.cancelTask(new CancelTaskParams("task-1"), context));
+        } finally {
+            logger.removeHandler(handler);
+            handler.close();
+            transport.close();
+        }
+
+        String log = output.toString();
+        assertEquals(1, log.lines().filter(line -> line.contains("Requested POST redirects disabled by request header X-Custom-Header")).count());
+        assertFalse(log.contains("private-value"));
+        assertEquals(0, server.retrieveRecordedRequests(request().withPath("/agent-b")).length);
+    }
+
+    @Test
+    public void acceptsAtSignInTaskId() throws Exception {
+        server.when(request().withMethod("GET").withPath("/tasks/job@east"))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_TEST_RESPONSE));
+        var transport = new RestTransport(null, CARD, new AgentInterface("HTTP+JSON", "http://localhost:4001"), null);
+        assertNotNull(transport.getTask(new TaskQueryParams("job@east"), null));
+        assertEquals(1, server.retrieveRecordedRequests(request().withMethod("GET").withPath("/tasks/job@east")).length);
+        server.when(request().withMethod("GET").withPath("/tasks/job@east/pushNotificationConfigs/config@east"))
+                .respond(response().withStatusCode(200).withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE));
+        assertNotNull(transport.getTaskPushNotificationConfiguration(
+                new GetTaskPushNotificationConfigParams("job@east", "config@east"), null));
+    }
+
+    @Test
+    public void rejectsTenantChangesBeforeSendingMessage() {
+        ClientCallInterceptor interceptor = new ClientCallInterceptor() {
+            @Override
+            public PayloadAndHeaders intercept(String methodName, Object payload, Map<String, String> headers,
+                    AgentCard card, ClientCallContext context) {
+                var request = (SendMessageRequest.Builder) payload;
+                request.setTenant("tenant-b");
+                return new PayloadAndHeaders(request, headers);
+            }
+        };
+        var transport = new RestTransport(null, CARD,
+                new AgentInterface("HTTP+JSON", "http://localhost:4001"), List.of(interceptor));
+        var message = Message.builder().role(Message.Role.ROLE_USER)
+                .parts(List.of(new TextPart("hello"))).messageId("message-1").build();
+        var params = new MessageSendParams(message, null, null, "tenant-a");
+        assertThrows(IllegalArgumentException.class, () -> transport.sendMessage(params, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> transport.sendMessageStreaming(params, event -> {}, error -> {}, null));
+        assertEquals(0, server.retrieveRecordedRequests(request().withMethod("POST")).length);
     }
 
     @Test
     public void testExtendedAgentCardUsesInterceptedTenant() throws Exception {
-        ClientCallInterceptor interceptor = new ClientCallInterceptor() {
+        var routingCalls = new AtomicInteger();
+        ClientCallInterceptor interceptor = new ClientRoutingInterceptor() {
             @Override
-            public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard,
-                    ClientCallContext clientCallContext) {
-                org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.Builder request =
-                        (org.a2aproject.sdk.grpc.GetExtendedAgentCardRequest.Builder) payload;
-                assertEquals("original", request.getTenant());
-                return new PayloadAndHeaders(request.setTenant("intercepted").build(), headers);
+            public String routeTenant(String destination, String methodName, String tenant, AgentCard agentCard,
+                    ClientCallContext context) {
+                assertEquals(1, routingCalls.incrementAndGet());
+                assertEquals("original", tenant);
+                return "intercepted";
             }
         };
-        server.when(request().withMethod("GET").withPath("/intercepted/extendedAgentCard"))
-                .respond(response().withStatusCode(200).withBody(new Gson().toJson(CARD)));
+        var extendedCardRequest = request().withMethod("GET").withPath("/intercepted/extendedAgentCard");
+        server.when(extendedCardRequest).respond(response().withStatusCode(200).withBody(new Gson().toJson(CARD)));
 
-        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", "http://localhost:4001");
+        String endpoint = "http://localhost:4001";
+        AgentInterface agentInterface = new AgentInterface("HTTP+JSON", endpoint);
         RestTransport client = new RestTransport(null, CARD, agentInterface, List.of(interceptor));
         assertEquals(CARD.name(), client.getExtendedAgentCard(new GetExtendedAgentCardParams("original"), null).name());
     }
@@ -153,10 +236,10 @@ public class RestTransportTest {
         ClientCallInterceptor interceptor = new ClientCallInterceptor() {
             @Override
             public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard,
+                    Map<String, String> headers, AgentCard agentCard,
                     ClientCallContext clientCallContext) {
-                org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder request =
-                        (org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder) payload;
+                GetExtendedAgentCardRequestOrBuilder request =
+                        (GetExtendedAgentCardRequestOrBuilder) payload;
                 capturedTenant.set(request.getTenant());
                 return new PayloadAndHeaders(payload, headers);
             }
@@ -175,7 +258,7 @@ public class RestTransportTest {
         ClientCallInterceptor interceptor = new ClientCallInterceptor() {
             @Override
             public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard, ClientCallContext context) {
+                    Map<String, String> headers, AgentCard agentCard, ClientCallContext context) {
                 return new PayloadAndHeaders("unexpected", headers);
             }
         };
@@ -184,8 +267,7 @@ public class RestTransportTest {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> client.getExtendedAgentCard(new GetExtendedAgentCardParams(null), null));
-        assertEquals("Interceptor payload must be org.a2aproject.sdk.grpc.GetExtendedAgentCardRequestOrBuilder; got java.lang.String",
-                exception.getMessage());
+        assertEquals("Interceptor payload must be a protobuf request", exception.getMessage());
     }
 
     /**
@@ -213,7 +295,7 @@ public class RestTransportTest {
                 );
         MessageSendParams messageSendParams = new MessageSendParams(message, null, null, "");
         ClientCallContext context = null;
-        
+
         RestTransport instance = new RestTransport(CARD);
         EventKind result = instance.sendMessage(messageSendParams, context);
         assertEquals("task", result.kind());
@@ -232,7 +314,7 @@ public class RestTransportTest {
         assertEquals("message-1234", history.messageId());
         assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.taskId());
         assertEquals(1, history.parts().size());
-        assertTrue(history.parts().get(0) instanceof org.a2aproject.sdk.spec.TextPart);
+        assertTrue(history.parts().get(0) instanceof TextPart);
         assertEquals("tell me a joke", ((TextPart) history.parts().get(0)).text());
         assertNull(task.metadata());
         assertNull(history.referenceTaskIds());
@@ -368,7 +450,7 @@ public class RestTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertNull(artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
-        assertTrue(artifact.parts().get(0) instanceof org.a2aproject.sdk.spec.TextPart);
+        assertTrue(artifact.parts().get(0) instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).text());
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
@@ -376,7 +458,7 @@ public class RestTransportTest {
         assertEquals(Message.Role.ROLE_USER, history.role());
         assertEquals("message-123", history.messageId());
         assertEquals(3, history.parts().size());
-        assertTrue(history.parts().get(0) instanceof org.a2aproject.sdk.spec.TextPart);
+        assertTrue(history.parts().get(0) instanceof TextPart);
         assertEquals("tell me a joke", ((TextPart) history.parts().get(0)).text());
         assertTrue(history.parts().get(1) instanceof FilePart);
         FilePart part = (FilePart) history.parts().get(1);
@@ -627,7 +709,7 @@ public class RestTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
-        assertTrue(part instanceof org.a2aproject.sdk.spec.TextPart);
+        assertTrue(part instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
 
@@ -753,7 +835,7 @@ public class RestTransportTest {
         // Should throw A2AClientException with ExtensionSupportRequiredError as cause
         try {
             client.sendMessage(params, null);
-            org.junit.jupiter.api.Assertions.fail("Expected A2AClientException to be thrown");
+            Assertions.fail("Expected A2AClientException to be thrown");
         } catch (A2AClientException e) {
             // Verify the cause is ExtensionSupportRequiredError
             assertInstanceOf(ExtensionSupportRequiredError.class, e.getCause());
@@ -801,7 +883,7 @@ public class RestTransportTest {
         // Should throw A2AClientException with VersionNotSupportedError as cause
         try {
             client.sendMessage(params, null);
-            org.junit.jupiter.api.Assertions.fail("Expected A2AClientException to be thrown");
+            Assertions.fail("Expected A2AClientException to be thrown");
         } catch (A2AClientException e) {
             // Verify the cause is VersionNotSupportedError
             assertInstanceOf(VersionNotSupportedError.class, e.getCause());
@@ -886,7 +968,7 @@ public class RestTransportTest {
         ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
             @Override
             public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard,
+                    Map<String, String> headers, AgentCard agentCard,
                     ClientCallContext clientCallContext) {
                 capturedPayload.set(payload);
                 return new PayloadAndHeaders(payload, headers);
@@ -904,8 +986,8 @@ public class RestTransportTest {
         client.listTasks(params, null);
 
         assertNotNull(capturedPayload.get());
-        org.a2aproject.sdk.grpc.ListTasksRequest proto =
-                ((org.a2aproject.sdk.grpc.ListTasksRequest.Builder) capturedPayload.get()).build();
+        ListTasksRequest proto =
+                ((ListTasksRequest.Builder) capturedPayload.get()).build();
         assertTrue(proto.hasStatusTimestampAfter(), "proto builder must set statusTimestampAfter");
         assertEquals(cutoff.getEpochSecond(), proto.getStatusTimestampAfter().getSeconds());
         assertEquals(cutoff.getNano(), proto.getStatusTimestampAfter().getNanos());
@@ -922,7 +1004,7 @@ public class RestTransportTest {
         ClientCallInterceptor capturingInterceptor = new ClientCallInterceptor() {
             @Override
             public PayloadAndHeaders intercept(String methodName, Object payload,
-                    java.util.Map<String, String> headers, AgentCard agentCard,
+                    Map<String, String> headers, AgentCard agentCard,
                     ClientCallContext clientCallContext) {
                 capturedPayload.set(payload);
                 return new PayloadAndHeaders(payload, headers);
@@ -945,8 +1027,8 @@ public class RestTransportTest {
         client.listTaskPushNotificationConfigurations(params, null);
 
         assertNotNull(capturedPayload.get());
-        org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest proto =
-                ((org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder) capturedPayload.get()).build();
+        ListTaskPushNotificationConfigsRequest proto =
+                ((ListTaskPushNotificationConfigsRequest.Builder) capturedPayload.get()).build();
         assertEquals(10, proto.getPageSize(), "proto builder must set pageSize");
         assertEquals("next-page-token", proto.getPageToken(), "proto builder must set pageToken");
     }

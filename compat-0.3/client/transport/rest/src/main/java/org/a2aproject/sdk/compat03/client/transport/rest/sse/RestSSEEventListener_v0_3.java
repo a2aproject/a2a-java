@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.compat03.client.transport.rest.sse;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -90,6 +91,11 @@ public class RestSSEEventListener_v0_3 {
     public void onComplete() {
         LOGGER.fine("RestSSEEventListener_v0_3.onComplete() called - signaling successful stream completion");
         signalTerminal(null);
+    }
+
+    /** Signals cancellation by the transport. */
+    public void onCancel() {
+        signalTerminal(new CancellationException("REST transport closed"));
     }
 
     /**

@@ -13,6 +13,11 @@ import io.grpc.Channel;
 public class GrpcTransportProvider implements ClientTransportProvider<GrpcTransport, GrpcTransportConfig> {
 
     @Override
+    public boolean supportsTenantRouting() {
+        return true;
+    }
+
+    @Override
     public GrpcTransport create(GrpcTransportConfig grpcTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         // not making use of the interceptors for gRPC for now
 

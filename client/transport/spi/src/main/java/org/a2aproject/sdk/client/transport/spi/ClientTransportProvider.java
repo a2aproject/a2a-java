@@ -19,6 +19,11 @@ public interface ClientTransportProvider<T extends ClientTransport, C extends Cl
      */
     T create(C clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException;
 
+    /** @return whether the transport runs the tenant routing interceptor phase */
+    default boolean supportsTenantRouting() {
+        return false;
+    }
+
     /**
      * Get the name of the client transport.
      */

@@ -186,15 +186,17 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     }
 
     private VertxA2AHttpClient(Vertx vertx, boolean ownsVertx, RedirectHeaderPolicy redirectHeaderPolicy) {
+        this(vertx, ownsVertx, redirectHeaderPolicy, new HttpClientOptions().setKeepAlive(true));
+    }
+
+    VertxA2AHttpClient(Vertx vertx, boolean ownsVertx, RedirectHeaderPolicy redirectHeaderPolicy,
+            HttpClientOptions options) {
         this.vertx = Assert.checkNotNullParam("vertx", vertx);
         this.ownsVertx = ownsVertx;
         this.redirectHeaderPolicy = Assert.checkNotNullParam("redirectHeaderPolicy", redirectHeaderPolicy);
-        WebClientOptions options = new WebClientOptions()
-                .setFollowRedirects(false)
-                .setKeepAlive(true);
-        this.webClient = WebClient.create(vertx, options);
-        this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
-       LOGGER.fine("Vert.x client is ready.");
+        this.webClient = WebClient.create(vertx, new WebClientOptions(options).setFollowRedirects(false));
+        this.httpClient = vertx.createHttpClient(options);
+        LOGGER.fine("Vert.x client is ready.");
     }
 
     private static ManagedVertx createVertx() {

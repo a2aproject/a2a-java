@@ -1,7 +1,5 @@
 package org.a2aproject.sdk.client.transport.jsonrpc;
 
-import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
-import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportProvider;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
@@ -12,14 +10,19 @@ import org.jspecify.annotations.Nullable;
 public class JSONRPCTransportProvider implements ClientTransportProvider<JSONRPCTransport, JSONRPCTransportConfig> {
 
     @Override
+    public boolean supportsTenantRouting() {
+        return true;
+    }
+
+    @Override
     public JSONRPCTransport create(@Nullable JSONRPCTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
-        JSONRPCTransportConfig currentClientTransportConfig = clientTransportConfig;
-        if (currentClientTransportConfig == null) {
-            currentClientTransportConfig = new JSONRPCTransportConfig(
-                    A2AHttpClientFactory.create(A2AHttpClientConfiguration.DEFAULT));
+        JSONRPCTransportConfig config = clientTransportConfig == null ? new JSONRPCTransportConfig() : clientTransportConfig;
+        try {
+            return new JSONRPCTransport(config.getHttpClient(), agentCard, agentInterface,
+                    config.getInterceptors(), config.isFollowRedirects(), config.httpClientConfiguration());
+        } catch (IllegalArgumentException e) {
+            throw new A2AClientException("Invalid HTTP transport endpoint", e);
         }
-        return new JSONRPCTransport(currentClientTransportConfig.getHttpClient(), agentCard, agentInterface,
-                currentClientTransportConfig.getInterceptors(), currentClientTransportConfig.isFollowRedirects());
     }
 
     @Override

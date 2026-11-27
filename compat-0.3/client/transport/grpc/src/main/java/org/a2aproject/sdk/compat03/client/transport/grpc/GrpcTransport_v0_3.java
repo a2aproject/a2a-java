@@ -7,8 +7,15 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
+import com.google.protobuf.Message;
+import io.grpc.Channel;
+import io.grpc.Metadata;
+import io.grpc.StatusException;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
+import io.grpc.stub.StreamObserver;
 import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth.AuthInterceptor_v0_3;
@@ -27,7 +34,6 @@ import org.a2aproject.sdk.compat03.grpc.StreamResponse;
 import org.a2aproject.sdk.compat03.grpc.TaskSubscriptionRequest;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.FromProto;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3.ToProto;
-import io.grpc.StatusException;
 import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
@@ -44,16 +50,12 @@ import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
-import io.grpc.Channel;
-import io.grpc.Metadata;
-import io.grpc.StatusRuntimeException;
-import io.grpc.stub.MetadataUtils;
-import io.grpc.stub.StreamObserver;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
+import org.a2aproject.sdk.util.InterceptorPayloads;
 import org.jspecify.annotations.Nullable;
 
 public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
@@ -68,7 +70,6 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
     private final A2AServiceStub asyncStub;
     private final @Nullable List<ClientCallInterceptor_v0_3> interceptors;
     private AgentCard_v0_3 agentCard;
-
     public GrpcTransport_v0_3(Channel channel, AgentCard_v0_3 agentCard) {
         this(channel, agentCard, null);
     }
@@ -86,13 +87,13 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
     public EventKind_v0_3 sendMessage(MessageSendParams_v0_3 request, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
 
-        SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
+        SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request);
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SendMessageRequest_v0_3.METHOD, sendMessageRequest,
                 agentCard, context);
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            SendMessageResponse response = stubWithMetadata.sendMessage(sendMessageRequest);
+            SendMessageResponse response = stubWithMetadata.sendMessage(interceptedRequest(payloadAndHeaders, SendMessageRequest.class));
             if (response.hasMsg()) {
                 return FromProto.message(response.getMsg());
             } else if (response.hasTask()) {
@@ -110,14 +111,14 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
                                      Consumer<Throwable> errorConsumer, @Nullable ClientCallContext_v0_3 context) throws A2AClientException_v0_3 {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
-        SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request, context);
+        SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request);
         PayloadAndHeaders_v0_3 payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest_v0_3.METHOD,
                 grpcRequest, agentCard, context);
         StreamObserver<StreamResponse> streamObserver = new EventStreamObserver_v0_3(eventConsumer, errorConsumer);
 
         try {
             A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
-            stubWithMetadata.sendStreamingMessage(grpcRequest, streamObserver);
+            stubWithMetadata.sendStreamingMessage(interceptedRequest(payloadAndHeaders, SendMessageRequest.class), streamObserver);
         } catch (StatusRuntimeException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to send streaming message request: ");
         }
@@ -136,7 +137,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.task(stubWithMetadata.getTask(getTaskRequest));
+            return FromProto.task(stubWithMetadata.getTask(interceptedRequest(payloadAndHeaders, GetTaskRequest.class)));
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to get task: ");
         }
@@ -154,7 +155,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.task(stubWithMetadata.cancelTask(cancelTaskRequest));
+            return FromProto.task(stubWithMetadata.cancelTask(interceptedRequest(payloadAndHeaders, CancelTaskRequest.class)));
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to cancel task: ");
         }
@@ -176,7 +177,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.taskPushNotificationConfig(stubWithMetadata.createTaskPushNotificationConfig(grpcRequest));
+            return FromProto.taskPushNotificationConfig(stubWithMetadata.createTaskPushNotificationConfig(interceptedRequest(payloadAndHeaders, CreateTaskPushNotificationConfigRequest.class)));
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to create task push notification config: ");
         }
@@ -196,7 +197,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.taskPushNotificationConfig(stubWithMetadata.getTaskPushNotificationConfig(grpcRequest));
+            return FromProto.taskPushNotificationConfig(stubWithMetadata.getTaskPushNotificationConfig(interceptedRequest(payloadAndHeaders, GetTaskPushNotificationConfigRequest.class)));
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to get task push notification config: ");
         }
@@ -216,7 +217,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return stubWithMetadata.listTaskPushNotificationConfig(grpcRequest).getConfigsList().stream()
+            return stubWithMetadata.listTaskPushNotificationConfig(interceptedRequest(payloadAndHeaders, ListTaskPushNotificationConfigRequest.class)).getConfigsList().stream()
                     .map(FromProto::taskPushNotificationConfig)
                     .collect(Collectors.toList());
         } catch (StatusRuntimeException | StatusException e) {
@@ -237,7 +238,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            stubWithMetadata.deleteTaskPushNotificationConfig(grpcRequest);
+            stubWithMetadata.deleteTaskPushNotificationConfig(interceptedRequest(payloadAndHeaders, DeleteTaskPushNotificationConfigRequest.class));
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to delete task push notification config: ");
         }
@@ -259,7 +260,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
 
         try {
             A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
-            stubWithMetadata.taskSubscription(grpcRequest, streamObserver);
+            stubWithMetadata.taskSubscription(interceptedRequest(payloadAndHeaders, TaskSubscriptionRequest.class), streamObserver);
         } catch (StatusRuntimeException e) {
             throw GrpcErrorMapper_v0_3.mapGrpcError(e, "Failed to resubscribe task push notification config: ");
         }
@@ -275,7 +276,7 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
     public void close() {
     }
 
-    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams_v0_3 messageSendParams, @Nullable ClientCallContext_v0_3 context) {
+    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams_v0_3 messageSendParams) {
         SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
         builder.setRequest(ToProto.message(messageSendParams.message()));
         if (messageSendParams.configuration() != null) {
@@ -384,6 +385,14 @@ public class GrpcTransport_v0_3 implements ClientTransport_v0_3 {
             }
         }
         return payloadAndHeaders;
+    }
+
+    private static <T extends Message> T interceptedRequest(PayloadAndHeaders_v0_3 call, Class<T> type) {
+        Object payload = call.getPayload();
+        if (payload instanceof Message.Builder builder) {
+            payload = builder.build();
+        }
+        return InterceptorPayloads.cast(payload, type);
     }
 
 }

@@ -6,6 +6,7 @@ import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
+import org.a2aproject.sdk.server.apps.common.GrpcTestEndpoint;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -18,7 +19,7 @@ public class QuarkusA2AGrpcTest extends AbstractA2AServerTest {
     private static ManagedChannel channel;
 
     public QuarkusA2AGrpcTest() {
-        super(8081); // HTTP server port for utility endpoints
+        super(GrpcTestEndpoint.PORT); // HTTP server port for utility endpoints
     }
 
     @Override
@@ -28,9 +29,9 @@ public class QuarkusA2AGrpcTest extends AbstractA2AServerTest {
 
     @Override
     protected String getTransportUrl() {
-        // gRPC server runs on port 8081, which is the same port as the main web server.
+        // gRPC shares the HTTP test port.
         // This is from the setting on the
-        return "localhost:8081";
+        return GrpcTestEndpoint.AUTHORITY;
     }
 
     @Override

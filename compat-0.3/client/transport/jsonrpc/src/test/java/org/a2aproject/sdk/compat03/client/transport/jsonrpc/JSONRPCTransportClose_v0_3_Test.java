@@ -31,6 +31,18 @@ import org.junit.jupiter.api.Test;
 public class JSONRPCTransportClose_v0_3_Test {
 
     @Test
+    public void nullStreamFutureIsIgnoredBeforeAndAfterClose() throws Exception {
+        PendingHttpClient http = new PendingHttpClient();
+        http.returnNull = true;
+        JSONRPCTransport_v0_3 transport = transport(http);
+        List<Throwable> terminals = terminals();
+        sendStreaming(transport, terminals::add);
+        transport.close();
+        transport.resubscribe(new TaskIdParams_v0_3("task"), event -> {}, terminals::add, null);
+        assertTrue(terminals.isEmpty());
+    }
+
+    @Test
     public void closeEndsEveryActiveStreamOnceAndIsIdempotent() throws Exception {
         PendingHttpClient http = new PendingHttpClient();
         JSONRPCTransport_v0_3 transport = transport(http);
@@ -160,6 +172,7 @@ public class JSONRPCTransportClose_v0_3_Test {
     }
 
     private static class PendingHttpClient implements A2AHttpClient {
+        private boolean returnNull;
         private final List<CountingFuture> requests = new ArrayList<>();
         private volatile Runnable duringSetup = () -> {};
 
@@ -200,6 +213,9 @@ public class JSONRPCTransportClose_v0_3_Test {
                 public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer,
                                                             Consumer<Throwable> errorConsumer,
                                                             Runnable completeRunnable) {
+                    if (returnNull) {
+                        return null;
+                    }
                     CountingFuture request = new CountingFuture();
                     request.errors = errorConsumer;
                     request.completion = completeRunnable;
