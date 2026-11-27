@@ -168,6 +168,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     @Override
     public Task getTask(TaskQueryParams taskQueryParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskQueryParams", taskQueryParams);
+        HttpEndpoint.checkPathSegment(taskQueryParams.id());
         org.a2aproject.sdk.grpc.GetTaskRequest.Builder builder = org.a2aproject.sdk.grpc.GetTaskRequest.newBuilder();
         builder.setId(taskQueryParams.id());
         if (taskQueryParams.historyLength() != null) {
@@ -181,9 +182,9 @@ public class RestTransport implements ClientTransport, AutoCloseable {
             org.a2aproject.sdk.grpc.GetTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.GetTaskRequestOrBuilder.class);
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             if (effective.hasHistoryLength()) {
-                url.append(String.format("/tasks/%s?historyLength=%d", effective.getId(), effective.getHistoryLength()));
+                url.append(String.format("/tasks/%s?historyLength=%d", HttpEndpoint.pathSegment(effective.getId()), effective.getHistoryLength()));
             } else {
-                url.append(String.format("/tasks/%1s", effective.getId()));
+                url.append(String.format("/tasks/%1s", HttpEndpoint.pathSegment(effective.getId())));
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
@@ -205,11 +206,12 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     @Override
     public Task cancelTask(CancelTaskParams taskIdParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskIdParams", taskIdParams);
+        HttpEndpoint.checkPathSegment(taskIdParams.id());
         org.a2aproject.sdk.grpc.CancelTaskRequest.Builder builder = org.a2aproject.sdk.grpc.CancelTaskRequest.newBuilder(ProtoUtils.ToProto.cancelTaskRequest(taskIdParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(CANCEL_TASK_METHOD, builder, agentCard, context);
         try {
             org.a2aproject.sdk.grpc.CancelTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.CancelTaskRequestOrBuilder.class);
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:cancel", effective.getId()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:cancel", HttpEndpoint.pathSegment(effective.getId())), payloadAndHeaders);
             org.a2aproject.sdk.grpc.Task.Builder responseBuilder = org.a2aproject.sdk.grpc.Task.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
@@ -330,12 +332,13 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     @Override
     public TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        HttpEndpoint.checkPathSegment(request.taskId());
         org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder builder
                 = ProtoUtils.ToProto.taskPushNotificationConfig(request).toBuilder();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder, agentCard, context);
         try {
             org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.TaskPushNotificationConfigOrBuilder.class);
-            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs", effective.getTaskId()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs", HttpEndpoint.pathSegment(effective.getTaskId())), payloadAndHeaders);
             org.a2aproject.sdk.grpc.TaskPushNotificationConfig.Builder responseBuilder = org.a2aproject.sdk.grpc.TaskPushNotificationConfig.newBuilder();
             ProtoJsonUtils.mergeIgnoringUnknownFields(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
@@ -349,10 +352,12 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        HttpEndpoint.checkPathSegment(request.taskId());
         org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.Builder builder
                 = org.a2aproject.sdk.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
         builder.setTaskId(request.taskId());
-        if (request.id() != null) {
+        if (request.id() != null && !request.id().isEmpty()) {
+            HttpEndpoint.checkPathSegment(request.id());
             builder.setId(request.id());
         }
         if (request.tenant() != null) {
@@ -365,9 +370,9 @@ public class RestTransport implements ClientTransport, AutoCloseable {
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             String configId = effective.getId();
             if (!configId.isEmpty()) {
-                url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", effective.getTaskId(), configId));
+                url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", HttpEndpoint.pathSegment(effective.getTaskId()), HttpEndpoint.pathSegment(configId)));
             } else {
-                url.append(String.format("/tasks/%1s/pushNotificationConfigs/", effective.getTaskId()));
+                url.append(String.format("/tasks/%1s/pushNotificationConfigs/", HttpEndpoint.pathSegment(effective.getTaskId())));
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url.toString());
             addStandardHeaders(getBuilder, payloadAndHeaders);
@@ -389,6 +394,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     @Override
     public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        HttpEndpoint.checkPathSegment(request.id());
         org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.Builder builder
                 = org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
         builder.setTaskId(request.id());
@@ -406,7 +412,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
         try {
             org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder.class);
             StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
-            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", effective.getTaskId()));
+            urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", HttpEndpoint.pathSegment(effective.getTaskId())));
             String queryString = buildListPushNotificationConfigsQueryString(ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(effective));
             if (!queryString.isEmpty()) {
                 urlBuilder.append("?").append(queryString);
@@ -431,6 +437,8 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     @Override
     public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        HttpEndpoint.checkPathSegment(request.taskId());
+        HttpEndpoint.checkPathSegment(request.id());
         org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder().setTaskId(request.taskId()).setId(request.id());
         if (request.tenant() != null) {
             builder.setTenant(request.tenant());
@@ -439,7 +447,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
                 agentCard, context);
         try {
             org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder.class);
-            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", effective.getTaskId(), effective.getId());
+            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", HttpEndpoint.pathSegment(effective.getTaskId()), HttpEndpoint.pathSegment(effective.getId()));
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
             addStandardHeaders(deleteBuilder, payloadAndHeaders);
             A2AHttpResponse response = deleteBuilder.delete();
@@ -457,6 +465,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     public void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
             Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        HttpEndpoint.checkPathSegment(request.id());
         org.a2aproject.sdk.grpc.SubscribeToTaskRequest.Builder builder = org.a2aproject.sdk.grpc.SubscribeToTaskRequest.newBuilder();
         builder.setId(request.id());
         if (request.tenant() != null) {
@@ -468,7 +477,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.SubscribeToTaskRequestOrBuilder.class);
-            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:subscribe", effective.getId());
+            String url = Utils.buildBaseUrl(agentInterface, effective.getTenant()) + String.format("/tasks/%1s:subscribe", HttpEndpoint.pathSegment(effective.getId()));
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders, false);
             var streamFuture = streams.track(postBuilder.postAsyncSSE(
                     event -> sseEventListener.onMessage(event, ref.get()),
