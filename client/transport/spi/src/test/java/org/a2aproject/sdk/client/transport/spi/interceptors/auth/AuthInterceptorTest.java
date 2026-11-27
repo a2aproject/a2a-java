@@ -22,6 +22,7 @@ import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.SecurityScheme;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuthInterceptorTest {
 
@@ -502,5 +503,75 @@ public class AuthInterceptorTest {
             .securityRequirements(List.of(SecurityRequirement.builder().scheme(schemeName, List.of()).build()))
             .securitySchemes(Map.of(schemeName, securityScheme))
             .build();
+    }
+
+    @Test
+    void requiresEverySchemeInAnAlternative() {
+        var card = AgentCard.builder().name("agent").description("agent").version("1")
+                .supportedInterfaces(List.of(new AgentInterface("JSONRPC", "http://agent")))
+                .capabilities(AgentCapabilities.builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of())
+                .securityRequirements(List.of(SecurityRequirement.builder().scheme("bearer", List.of()).scheme("key", List.of()).build()))
+                .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme(null, "bearer", "Bearer"),
+                        "key", new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "key"))).build();
+        var context = new ClientCallContext(Map.of("sessionId", "session"), Map.of());
+        credentialStore.setCredential("session", "bearer", "token");
+        assertEquals(Map.of(), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), card, context).getHeaders());
+        credentialStore.setCredential("session", "key", "api-key");
+        assertEquals(Map.of("Authorization", "Bearer token", "X-API-Key", "api-key"),
+                authInterceptor.intercept("SendMessage", Map.of(), Map.of(), card, context).getHeaders());
+    }
+
+    @Test
+    void firstAnonymousAlternativeTakesPrecedenceOverAvailableCredentials() {
+        var card = AgentCard.builder().name("agent").description("agent").version("1")
+                .supportedInterfaces(List.of(new AgentInterface("JSONRPC", "http://agent")))
+                .capabilities(AgentCapabilities.builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of())
+                .securityRequirements(List.of(new SecurityRequirement(Map.of()),
+                        SecurityRequirement.builder().scheme("bearer", List.of()).build()))
+                .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme(null, "bearer", "Bearer"))).build();
+        var calls = new AtomicInteger();
+        var auth = new AuthInterceptor((scheme, context) -> {
+            calls.incrementAndGet();
+            return "token";
+        });
+        assertEquals(Map.of(), auth.intercept("SendMessage", Map.of(), Map.of(), card, null).getHeaders());
+        assertEquals(0, calls.get());
+    }
+
+    @Test
+    void anonymousAlternativeWorksWithoutSecuritySchemes() {
+        var card = AgentCard.builder().name("agent").description("agent").version("1")
+                .supportedInterfaces(List.of(new AgentInterface("JSONRPC", "http://agent")))
+                .capabilities(AgentCapabilities.builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of())
+                .securityRequirements(List.of(SecurityRequirement.builder().scheme("missing", List.of()).build(),
+                        new SecurityRequirement(Map.of())))
+                .build();
+        assertNull(card.securitySchemes());
+        assertEquals(Map.of(), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), card, null).getHeaders());
+    }
+
+    @Test
+    void selectsAnAlternativeAndRejectsConflictingHeaders() {
+        var context = new ClientCallContext(Map.of("sessionId", "session"), Map.of());
+        credentialStore.setCredential("session", "bearer", "token");
+        credentialStore.setCredential("session", "basic", "basic-token");
+        var alternate = AgentCard.builder().name("agent").description("agent").version("1")
+                .supportedInterfaces(List.of(new AgentInterface("JSONRPC", "http://agent")))
+                .capabilities(AgentCapabilities.builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of()) .securityRequirements(List.of(SecurityRequirement.builder().scheme("missing", List.of()).build(), SecurityRequirement.builder().scheme("bearer", List.of()).build())) .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme(null, "bearer", "Bearer"),
+                        "basic", new HTTPAuthSecurityScheme(null, "basic", "Basic"))).build();
+        assertEquals(Map.of("Authorization", "Bearer token"), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), alternate, context).getHeaders());
+        assertEquals(Map.of("Authorization", "Bearer token", "other", "value"),
+                authInterceptor.intercept("SendMessage", Map.of(),
+                        Map.of("authorization", "old", "AUTHORIZATION", "older", "other", "value"), alternate, context).getHeaders());
+        var conflict = AgentCard.builder().name("agent").description("agent").version("1")
+                .supportedInterfaces(List.of(new AgentInterface("JSONRPC", "http://agent")))
+                .capabilities(AgentCapabilities.builder().build()).defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text")).skills(List.of()) .securityRequirements(List.of(SecurityRequirement.builder().scheme("bearer", List.of()).scheme("basic", List.of()).build())) .securitySchemes(Map.of("bearer", new HTTPAuthSecurityScheme(null, "bearer", "Bearer"),
+                        "basic", new HTTPAuthSecurityScheme(null, "basic", "Basic"))).build();
+        assertEquals(Map.of(), authInterceptor.intercept("SendMessage", Map.of(), Map.of(), conflict, context).getHeaders());
     }
 }

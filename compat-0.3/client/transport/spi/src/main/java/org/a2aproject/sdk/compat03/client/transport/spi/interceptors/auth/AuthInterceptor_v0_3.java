@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,52 +55,75 @@ public class AuthInterceptor_v0_3 extends ClientCallInterceptor_v0_3 {
     public PayloadAndHeaders_v0_3 intercept(String methodName, Object payload, Map<String, String> headers,
                                             AgentCard_v0_3 agentCard, @Nullable ClientCallContext_v0_3 clientCallContext) {
         Map<String, String> updatedHeaders = new HashMap<>(headers == null ? new HashMap<>() : headers);
-        if (agentCard == null || agentCard.security() == null || agentCard.securitySchemes() == null) {
-            return new PayloadAndHeaders_v0_3(payload, updatedHeaders);
-        }
-        for (Map<String, List<String>> requirement : agentCard.security()) {
-            for (String securitySchemeName : requirement.keySet()) {
-                String credential = credentialService.getCredential(securitySchemeName, clientCallContext);
-                if (credential != null && agentCard.securitySchemes().containsKey(securitySchemeName)) {
-                    SecurityScheme_v0_3 securityScheme = agentCard.securitySchemes().get(securitySchemeName);
-                    if (securityScheme == null) {
-                        continue;
-                    }
-                    if (securityScheme instanceof HTTPAuthSecurityScheme_v0_3 httpAuthSecurityScheme) {
-                        String scheme = httpAuthSecurityScheme.scheme().toLowerCase(Locale.ROOT);
-                        if (scheme.equals(BEARER_SCHEME)) {
-                            updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
-                            return new PayloadAndHeaders_v0_3(payload, updatedHeaders);
-                        } else if (scheme.equals(BASIC_SCHEME)) {
-                            updatedHeaders.put(AUTHORIZATION, getBasicValue(credential));
-                            return new PayloadAndHeaders_v0_3(payload, updatedHeaders);
-                        }
-                    } else if (securityScheme instanceof OAuth2SecurityScheme_v0_3
-                            || securityScheme instanceof OpenIdConnectSecurityScheme_v0_3) {
-                        updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
-                        return new PayloadAndHeaders_v0_3(payload, updatedHeaders);
-                    } else if (securityScheme instanceof APIKeySecurityScheme_v0_3 apiKeySecurityScheme) {
-                        // Only inject API key if it's intended for header transport and the header name is safe
-                        if ("header".equals(apiKeySecurityScheme.in())
-                                && isSafeHeaderName(apiKeySecurityScheme.name())) {
-                            updatedHeaders.put(apiKeySecurityScheme.name(), credential);
-                            return new PayloadAndHeaders_v0_3(payload, updatedHeaders);
-                        }
-                        // Skip credential injection for unsafe header names or non-header locations
-                    }
-                }
+        if (agentCard != null) {
+            Map<String, String> credentials = resolveCredentials(agentCard, clientCallContext);
+            if (credentials != null) {
+                credentials.forEach((name, value) -> {
+                    updatedHeaders.keySet().removeIf(existing -> existing.equalsIgnoreCase(name));
+                    updatedHeaders.put(name, value);
+                });
             }
         }
         return new PayloadAndHeaders_v0_3(payload, updatedHeaders);
     }
 
-    private static String getBearerValue(String credential) {
-        return BEARER + credential;
+    private @Nullable Map<String, String> resolveCredentials(AgentCard_v0_3 agentCard,
+            @Nullable ClientCallContext_v0_3 clientCallContext) {
+        if (agentCard.security() == null || agentCard.security().isEmpty()) {
+            return Map.of();
+        }
+        var schemes = agentCard.securitySchemes();
+        for (Map<String, List<String>> requirement : agentCard.security()) {
+            if (requirement == null) {
+                continue;
+            }
+            Map<String, String> headers = resolveAlternative(requirement.keySet(), schemes,
+                    clientCallContext);
+            if (headers != null) {
+                return headers;
+            }
+        }
+        return null;
     }
 
-    private static String getBasicValue(String credential) {
-        return BASIC + credential;
+    private @Nullable Map<String, String> resolveAlternative(Set<String> names,
+            @Nullable Map<String, SecurityScheme_v0_3> schemes,
+            @Nullable ClientCallContext_v0_3 context) {
+        Map<String, String> headers = new HashMap<>();
+        Set<String> headerNames = new HashSet<>();
+        for (String name : names) {
+            SecurityScheme_v0_3 scheme = schemes == null ? null : schemes.get(name);
+            HeaderCredential header = headerForScheme(scheme);
+            if (header == null || !headerNames.add(header.name().toLowerCase(Locale.ROOT))) {
+                return null;
+            }
+            String value = credentialService.getCredential(name, context);
+            if (value == null) {
+                return null;
+            }
+            headers.put(header.name(), header.prefix() + value);
+        }
+        return headers;
     }
+
+    private static @Nullable HeaderCredential headerForScheme(@Nullable SecurityScheme_v0_3 scheme) {
+        if (scheme instanceof HTTPAuthSecurityScheme_v0_3 http) {
+            if (BEARER_SCHEME.equalsIgnoreCase(http.scheme())) {
+                return new HeaderCredential(AUTHORIZATION, BEARER);
+            }
+            if (BASIC_SCHEME.equalsIgnoreCase(http.scheme())) {
+                return new HeaderCredential(AUTHORIZATION, BASIC);
+            }
+        } else if (scheme instanceof OAuth2SecurityScheme_v0_3 || scheme instanceof OpenIdConnectSecurityScheme_v0_3) {
+            return new HeaderCredential(AUTHORIZATION, BEARER);
+        } else if (scheme instanceof APIKeySecurityScheme_v0_3 apiKey
+                && "header".equals(apiKey.in()) && isSafeHeaderName(apiKey.name())) {
+            return new HeaderCredential(apiKey.name(), "");
+        }
+        return null;
+    }
+
+    private record HeaderCredential(String name, String prefix) {}
 
     /**
      * Validates that a header name is safe for API key injection.
