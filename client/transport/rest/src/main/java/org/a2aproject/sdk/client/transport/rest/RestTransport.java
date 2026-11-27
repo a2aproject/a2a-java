@@ -16,6 +16,8 @@ import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,9 @@ import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
+import org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder;
+import org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder;
+import org.a2aproject.sdk.grpc.TaskState;
 import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
@@ -290,26 +295,21 @@ public class RestTransport implements ClientTransport, AutoCloseable {
     }
 
     
-    private String buildListTasksQueryString(org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder request) {
-        java.util.List<String> queryParts = new java.util.ArrayList<>();
+    private String buildListTasksQueryString(ListTasksRequestOrBuilder request) {
+        List<String> queryParts = new ArrayList<>();
         if (!request.getContextId().isEmpty()) {
             queryParts.add("contextId=" + URLEncoder.encode(request.getContextId(), StandardCharsets.UTF_8));
         }
-        if (request.getStatus() != org.a2aproject.sdk.grpc.TaskState.TASK_STATE_UNSPECIFIED) {
+        if (request.getStatus() != TaskState.TASK_STATE_UNSPECIFIED) {
             queryParts.add("status=" + URLEncoder.encode(request.getStatus().toString(), StandardCharsets.UTF_8));
         }
-        if (request.hasPageSize()) {
-            queryParts.add("pageSize=" + request.getPageSize());
-        }
-        if (!request.getPageToken().isEmpty()) {
-            queryParts.add("pageToken=" + URLEncoder.encode(request.getPageToken(), StandardCharsets.UTF_8));
-        }
+        addPagination(queryParts, request.hasPageSize() ? request.getPageSize() : null, request.getPageToken());
         if (request.hasHistoryLength()) {
             queryParts.add("historyLength=" + request.getHistoryLength());
         }
         if (request.hasStatusTimestampAfter()) {
             var timestamp = request.getStatusTimestampAfter();
-            var instant = java.time.Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+            var instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
             queryParts.add("statusTimestampAfter=" + URLEncoder.encode(instant.toString(), StandardCharsets.UTF_8));
         }
         if (request.hasIncludeArtifacts()) {
@@ -318,15 +318,19 @@ public class RestTransport implements ClientTransport, AutoCloseable {
         return String.join("&", queryParts);
     }
 
-    private String buildListPushNotificationConfigsQueryString(ListTaskPushNotificationConfigsParams request) {
-        java.util.List<String> queryParts = new java.util.ArrayList<>();
-        if (request.pageSize() > 0) {
-            queryParts.add("pageSize=" + request.pageSize());
-        }
-        if (request.pageToken() != null && !request.pageToken().isEmpty()) {
-            queryParts.add("pageToken=" + URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
-        }
+    private String buildListPushNotificationConfigsQueryString(ListTaskPushNotificationConfigsRequestOrBuilder request) {
+        List<String> queryParts = new ArrayList<>();
+        addPagination(queryParts, request.getPageSize() > 0 ? request.getPageSize() : null, request.getPageToken());
         return String.join("&", queryParts);
+    }
+
+    private static void addPagination(List<String> queryParts, @Nullable Integer pageSize, String pageToken) {
+        if (pageSize != null) {
+            queryParts.add("pageSize=" + pageSize);
+        }
+        if (!pageToken.isEmpty()) {
+            queryParts.add("pageToken=" + URLEncoder.encode(pageToken, StandardCharsets.UTF_8));
+        }
     }
 
     @Override
@@ -413,7 +417,7 @@ public class RestTransport implements ClientTransport, AutoCloseable {
             org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.ListTaskPushNotificationConfigsRequestOrBuilder.class);
             StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             urlBuilder.append(String.format("/tasks/%1s/pushNotificationConfigs", HttpEndpoint.pathSegment(effective.getTaskId())));
-            String queryString = buildListPushNotificationConfigsQueryString(ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(effective));
+            String queryString = buildListPushNotificationConfigsQueryString(effective);
             if (!queryString.isEmpty()) {
                 urlBuilder.append("?").append(queryString);
             }
