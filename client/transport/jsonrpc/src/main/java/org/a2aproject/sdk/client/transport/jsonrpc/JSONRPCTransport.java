@@ -21,26 +21,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
-
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
-import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
-import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
-import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity;
-import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
 import org.a2aproject.sdk.client.transport.jsonrpc.sse.SSEEventListener;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
+import org.a2aproject.sdk.client.transport.spi.HttpTransportSecurity;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientRoutingInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
+import org.a2aproject.sdk.grpc.utils.RequestTenant;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2AResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
@@ -49,7 +52,6 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTaskPushNotificationConfig
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.spec.A2AClientError;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.A2AClientHTTPError;
@@ -344,16 +346,25 @@ public class JSONRPCTransport implements ClientTransport, AutoCloseable {
         httpLifecycle.close();
     }
 
-    private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
-                                                @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
-        PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
-        if (interceptors != null && ! interceptors.isEmpty()) {
-            for (ClientCallInterceptor interceptor : interceptors) {
-                payloadAndHeaders = interceptor.intercept(methodName, payloadAndHeaders.getPayload(),
-                        payloadAndHeaders.getHeaders(), agentCard, clientCallContext);
+    private PayloadAndHeaders applyInterceptors(String methodName, Message payload,
+            @Nullable AgentCard agentCard, @Nullable ClientCallContext context) {
+        String destination = agentInterface.url();
+        String tenant = ClientRoutingInterceptor.selectTenant(interceptors, destination, methodName,
+                RequestTenant.resolve(payload, agentInterface.tenant()), agentCard, context);
+        Message.Builder routed = payload.toBuilder();
+        RequestTenant.set(routed, tenant);
+        var call = new PayloadAndHeaders(routed.build(), getHttpHeaders(context));
+        if (interceptors != null) {
+            for (var interceptor : interceptors) {
+                if (interceptor instanceof ClientRoutingInterceptor) {
+                    continue;
+                }
+                call = interceptor.intercept(methodName, call.getPayload(), call.getHeaders(), agentCard, context);
+                RequestTenant.requireUnchanged(call.getPayload(), tenant);
             }
+            call = new PayloadAndHeaders(call.getPayload(), call.getHeaders());
         }
-        return payloadAndHeaders;
+        return call;
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders, String method) throws IOException, InterruptedException, JsonProcessingException {

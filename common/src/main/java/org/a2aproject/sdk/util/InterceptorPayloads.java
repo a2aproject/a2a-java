@@ -21,6 +21,17 @@ public final class InterceptorPayloads {
         return Assert.checkNotNullParam("payload", castNullable(payload, expectedType));
     }
 
+    /**
+     * Checks the type of a required interceptor payload for calls with a fixed request path.
+     *
+     * @param payload the interceptor payload
+     * @param expectedType the expected payload type
+     * @throws IllegalArgumentException if the payload is null or has an unexpected type
+     */
+    public static void requireType(Object payload, Class<?> expectedType) {
+        cast(payload, expectedType);
+    }
+
     /** Casts a payload while preserving null for transports that allow it. */
     public static <T> @Nullable T castNullable(@Nullable Object payload, Class<T> expectedType) {
         if (payload != null && !expectedType.isInstance(payload)) {

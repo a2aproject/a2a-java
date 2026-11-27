@@ -10,6 +10,11 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 public class RestTransportProvider implements ClientTransportProvider<RestTransport, RestTransportConfig> {
 
     @Override
+    public boolean supportsTenantRouting() {
+        return true;
+    }
+
+    @Override
     public String getTransportProtocol() {
         return TransportProtocol.HTTP_JSON.asString();
     }

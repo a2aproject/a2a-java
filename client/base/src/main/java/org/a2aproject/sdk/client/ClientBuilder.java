@@ -17,13 +17,13 @@ import org.a2aproject.sdk.client.transport.spi.ClientTransportConfig;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportConfigBuilder;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportProvider;
 import org.a2aproject.sdk.client.transport.spi.ClientTransportWrapper;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientRoutingInterceptor;
 import org.a2aproject.sdk.spec.A2AClientException;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -323,6 +323,11 @@ public class ClientBuilder {
 
         if (clientTransportConfig == null) {
             throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
+        }
+
+        if (!clientTransportProvider.supportsTenantRouting()
+                && clientTransportConfig.getInterceptors().stream().anyMatch(ClientRoutingInterceptor.class::isInstance)) {
+            throw new A2AClientException("The selected transport does not support tenant routing");
         }
 
         return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig);

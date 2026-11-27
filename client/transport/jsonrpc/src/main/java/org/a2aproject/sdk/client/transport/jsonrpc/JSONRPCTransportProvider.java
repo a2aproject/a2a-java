@@ -10,6 +10,11 @@ import org.jspecify.annotations.Nullable;
 public class JSONRPCTransportProvider implements ClientTransportProvider<JSONRPCTransport, JSONRPCTransportConfig> {
 
     @Override
+    public boolean supportsTenantRouting() {
+        return true;
+    }
+
+    @Override
     public JSONRPCTransport create(@Nullable JSONRPCTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         JSONRPCTransportConfig config = clientTransportConfig == null ? new JSONRPCTransportConfig() : clientTransportConfig;
         try {
