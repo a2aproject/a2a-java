@@ -243,7 +243,7 @@ public class RestTransport implements ClientTransport {
             org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder effective = InterceptorPayloads.cast(payloadAndHeaders.getPayload(), org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder.class);
             StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, effective.getTenant()));
             urlBuilder.append("/tasks");
-            String queryParams = buildListTasksQueryString(effective, request);
+            String queryParams = buildListTasksQueryString(effective);
             if (!queryParams.isEmpty()) {
                 urlBuilder.append("?").append(queryParams);
             }
@@ -272,19 +272,18 @@ public class RestTransport implements ClientTransport {
     }
 
     
-    private String buildListTasksQueryString(org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder request, ListTasksParams original) {
+    private String buildListTasksQueryString(org.a2aproject.sdk.grpc.ListTasksRequestOrBuilder request) {
         java.util.List<String> queryParts = new java.util.ArrayList<>();
-        if (!request.getContextId().isEmpty() || "".equals(original.contextId())) {
+        if (!request.getContextId().isEmpty()) {
             queryParts.add("contextId=" + URLEncoder.encode(request.getContextId(), StandardCharsets.UTF_8));
         }
-        if (request.getStatus() != org.a2aproject.sdk.grpc.TaskState.TASK_STATE_UNSPECIFIED
-                || original.status() == org.a2aproject.sdk.spec.TaskState.TASK_STATE_UNSPECIFIED) {
+        if (request.getStatus() != org.a2aproject.sdk.grpc.TaskState.TASK_STATE_UNSPECIFIED) {
             queryParts.add("status=" + URLEncoder.encode(request.getStatus().toString(), StandardCharsets.UTF_8));
         }
         if (request.hasPageSize()) {
             queryParts.add("pageSize=" + request.getPageSize());
         }
-        if (!request.getPageToken().isEmpty() || "".equals(original.pageToken())) {
+        if (!request.getPageToken().isEmpty()) {
             queryParts.add("pageToken=" + URLEncoder.encode(request.getPageToken(), StandardCharsets.UTF_8));
         }
         if (request.hasHistoryLength()) {
