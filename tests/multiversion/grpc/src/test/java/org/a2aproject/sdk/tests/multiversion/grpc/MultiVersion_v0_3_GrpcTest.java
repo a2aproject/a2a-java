@@ -9,6 +9,7 @@ import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportConfigBuilder_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
+import org.a2aproject.sdk.compat03.conversion.GrpcTestEndpoint;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
 import org.junit.jupiter.api.AfterAll;
 
@@ -18,7 +19,7 @@ public class MultiVersion_v0_3_GrpcTest extends AbstractA2AServerServerTest_v0_3
     private static ManagedChannel channel;
 
     public MultiVersion_v0_3_GrpcTest() {
-        super(8081);
+        super(GrpcTestEndpoint.PORT);
     }
 
     @Override
@@ -28,7 +29,7 @@ public class MultiVersion_v0_3_GrpcTest extends AbstractA2AServerServerTest_v0_3
 
     @Override
     protected String getTransportUrl() {
-        return "localhost:8081";
+        return GrpcTestEndpoint.AUTHORITY;
     }
 
     @Override
