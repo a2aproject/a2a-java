@@ -1,20 +1,35 @@
 package org.a2aproject.sdk.compat03.client.transport.jsonrpc;
 
 import static org.a2aproject.sdk.compat03.client.transport.jsonrpc.JsonMessages_v0_3.GET_TASK_TEST_RESPONSE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import com.google.gson.JsonParser;
-import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
+
+import com.google.gson.JsonParser;
+import com.sun.net.httpserver.HttpServer;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.junit.jupiter.api.Test;
 
 class V03ResponseIdProbeTest {
@@ -50,19 +65,19 @@ class V03ResponseIdProbeTest {
             var error = assertThrows(A2AClientException_v0_3.class, () -> client.getTask(params, null));
             assertTrue(error.getMessage().contains("server rejection"));
 
-            var interceptor = new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3() {
+            var interceptor = new ClientCallInterceptor_v0_3() {
                 @Override
-                public org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3 intercept(
-                        String method, Object payload, java.util.Map<String, String> headers,
-                        org.a2aproject.sdk.compat03.spec.AgentCard_v0_3 card,
-                        org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3 context) {
-                    var request = (org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3) payload;
-                    var replacement = new org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3("intercepted-id", request.getParams());
-                    return new org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3(replacement, headers);
+                public PayloadAndHeaders_v0_3 intercept(
+                        String method, Object payload, Map<String, String> headers,
+                        AgentCard_v0_3 card,
+                        ClientCallContext_v0_3 context) {
+                    var request = (GetTaskRequest_v0_3) payload;
+                    var replacement = new GetTaskRequest_v0_3("intercepted-id", request.getParams());
+                    return new PayloadAndHeaders_v0_3(replacement, headers);
                 }
             };
             var interceptedClient = new JSONRPCTransport_v0_3(null, null,
-                    "http://localhost:" + server.getAddress().getPort(), java.util.List.of(interceptor));
+                    "http://localhost:" + server.getAddress().getPort(), List.of(interceptor));
             bodyFn.set(id -> GET_TASK_TEST_RESPONSE.replace("\"jsonrpc\": \"2.0\",", "\"jsonrpc\": \"2.0\", \"id\":\"intercepted-id\","));
             assertEquals(TASK_ID, interceptedClient.getTask(params, null).id());
             assertEquals("intercepted-id", wireId.get());

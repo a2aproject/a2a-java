@@ -5,32 +5,35 @@ import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonParseException;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientConfiguration;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory.ClientSelection;
+import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.client.http.HttpEndpoint;
 import org.a2aproject.sdk.client.http.HttpStreamLifecycle;
-import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
-import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
-
-import org.a2aproject.sdk.client.http.A2AHttpClient;
-import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
-import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.compat03.client.http.A2ACardResolver_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.jsonrpc.sse.SSEEventListener_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.PayloadAndHeaders_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.spi.ClientTransport_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientException_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskResponse_v0_3;
-
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
+import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardResponse_v0_3;
@@ -42,12 +45,9 @@ import org.a2aproject.sdk.compat03.spec.GetTaskResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCMessage_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
-
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigResponse_v0_3;
-import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageResponse_v0_3;
@@ -55,14 +55,11 @@ import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingEventKind_v0_3;
-import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.jsonrpc.sse.SSEEventListener_v0_3;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
+import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 
 public class JSONRPCTransport_v0_3 implements ClientTransport_v0_3, AutoCloseable {
 
